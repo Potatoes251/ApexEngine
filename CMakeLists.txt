@@ -32,8 +32,8 @@ add_custom_target(Assets SOURCES
     ${ASSET_FILES}
 )
 
-add_subdirectory(assets)
-add_subdirectory(dependencies)
+add_subdirectory(Assets)
+add_subdirectory(Dependencies)
 add_subdirectory(LibMath)
 add_subdirectory(Resources)
 add_subdirectory(LowRenderer)
