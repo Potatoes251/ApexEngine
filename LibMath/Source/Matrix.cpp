@@ -636,7 +636,7 @@ LibMath::Matrix4::Matrix4(float val1, float val2, float val3, float val4,
 	m_values[3][3] = val16;  // col 3, row 3
 }
 
-float* LibMath::Matrix4::data()
+const float* LibMath::Matrix4::data() const
 {
 	return &m_values[0][0];
 }

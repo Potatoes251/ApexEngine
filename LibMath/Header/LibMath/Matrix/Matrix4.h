@@ -17,7 +17,7 @@ namespace LibMath
 			float, float, float, float,
 			float, float, float, float);
 
-		float*			data();
+		const float*			data() const;
 
 		Matrix4&		operator=(Matrix4 const);						// copy asignement
 
