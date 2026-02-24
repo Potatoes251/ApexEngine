@@ -13,7 +13,8 @@ namespace Apex::SceneGraph
 	class SceneNode
 	{
 	public:
-		SceneNode(void* model, Matrix4 localTransform = Matrix4());
+		SceneNode(Matrix4 localTransform = Matrix4());
+		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
 				Matrix4&						GetLocalTransform();
@@ -21,9 +22,6 @@ namespace Apex::SceneGraph
 
 		const	Matrix4							GetWorldTransform();
 				void							SetWorldTransform();
-
-		//get model
-		//set model
 
 				SceneNode*						GetParent() const;
 		const	vector<unique_ptr<SceneNode>>&	GetChildren() const;
@@ -37,8 +35,6 @@ namespace Apex::SceneGraph
 		Matrix4							m_localTransform;
 		Matrix4							m_worldTransform;
 		bool							m_dirty = true;
-
-		void*							m_model;
 
 		SceneNode*						m_parent = nullptr;	
 		vector<unique_ptr<SceneNode>>	m_children;

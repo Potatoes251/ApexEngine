@@ -2,8 +2,8 @@
 
 using namespace Apex::SceneGraph;
 
-SceneNode::SceneNode(void* model, Matrix4 localTransform) :
-	m_model(model), m_localTransform(localTransform), m_worldTransform(localTransform) {}
+SceneNode::SceneNode(Matrix4 localTransform) :
+	m_localTransform(localTransform), m_worldTransform(localTransform) {}
 
 Matrix4& SceneNode::GetLocalTransform()
 {
