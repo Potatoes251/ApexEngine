@@ -21,7 +21,6 @@ namespace Apex::Windowing
 		Unknown
 	};
 
-
 	enum class MouseButton
 	{
 		Left,
@@ -37,9 +36,9 @@ namespace Apex::Windowing
 
 	// ── Callbacks ─────────────────────────────────────────────────
 	using KeyCallback = std::function<void(Key, bool)>;
-	using MouseMoveCallback = std::function<void(double dX, double dY)>;
+	using MouseMoveCallback = std::function<void(double dx, double dy)>;
 	using MouseButtonCallback = std::function<void(MouseButton, bool)>;
-	using ScrollCallback = std::function<void(double xOffset, double yOffset)>;
+	using ScrollCallback = std::function<void(double xoffset, double yoffset)>;
 	using ResizeCallback = std::function<void(int width, int height)>;
 
 	// ── Window interface ─────────────────────────────────────────
@@ -55,15 +54,15 @@ namespace Apex::Windowing
 		virtual void Close() = 0;
 
 		// Properties
-		virtual int GetWidth() const = 0;
-		virtual int GetHeight() const = 0;
-		virtual float GetAspectRatio() const = 0;
-		virtual float GetDeltaTime() const = 0;
+		virtual int		GetWidth() const = 0;
+		virtual int		GetHeight() const = 0;
+		virtual float	GetAspectRatio() const = 0;
+		virtual float	GetDeltaTime() const = 0;
 
 		// Input
-		virtual bool IsKeyPressed(Key key) const = 0;
-		virtual MousePosition GetMousePosition() const = 0;
-		virtual void SetCursorCaptured(bool captured) = 0;
+		virtual bool			IsKeyPressed(Key key) const = 0;
+		virtual MousePosition	GetMousePosition() const = 0;
+		virtual void			SetCursorCaptured(bool captured) = 0;
 
 		// Callbacks
 		virtual void SetKeyCallback(KeyCallback callback) = 0;
