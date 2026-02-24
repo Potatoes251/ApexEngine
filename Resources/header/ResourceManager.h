@@ -25,7 +25,7 @@ namespace Apex::Resources
 		~ResourceManager() = default;
 
 		template <typename ResourceType>
-		void CreateAsync(std::string const& id, bool persistent = false);
+		ResourceHandle CreateAsync(std::string const& id, bool persistent = false);
 
 		template <typename ResourceType>
 		ResourceHandle Get(std::string id);
@@ -42,9 +42,17 @@ namespace Apex::Resources
 
 
 	template <typename ResourceType>
-	void ResourceManager::CreateAsync(std::string const& id, bool persistent)
+	ResourceHandle ResourceManager::CreateAsync(std::string const& id, bool persistent)
 	{
+		std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+		auto [it, inserted] = m_resources.try_emplace(id, nullptr, persistent);
+
+		ResourceEntry* entry = &it->second;
+
 		m_threadPool.Enqueue(this, &ResourceManager::Create<ResourceType>, id, persistent);
+
+		return ResourceHandle(entry);
 	}
 
 	template <typename ResourceType>
@@ -69,7 +77,11 @@ namespace Apex::Resources
 		printf("creating %s\n", id.c_str());
 		std::unique_ptr<ResourceType> ptr = std::make_unique<ResourceType>(id);
 		std::unique_lock<std::shared_mutex> lock(m_mutex);
-		m_resources.try_emplace(id, std::unique_ptr<IResource>(ptr.release()), persistent);
+		auto it = m_resources.find(id);
+		if (it != m_resources.end())
+		{
+			it->second.m_resource = std::unique_ptr<IResource>(ptr.release());
+		}
 	}
 }
 

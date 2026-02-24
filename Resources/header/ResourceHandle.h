@@ -1,10 +1,10 @@
 #ifndef RESOURCE_HANDLE
 #define RESOURCE_HANDLE
 
-#include <memory>
-#include <shared_mutex>
-
 #include "IResource.h"
+
+#include <memory>
+#include <atomic>
 
 namespace Apex::Resources
 {
@@ -17,7 +17,7 @@ namespace Apex::Resources
 		ResourceEntry& operator=(ResourceEntry const&) = delete;
 
 		std::unique_ptr<IResource>	m_resource = nullptr;
-		int							m_refCount = 0;
+		std::atomic<int>			m_refCount = 0;
 		bool						m_persistent = false;
 	};	
 	
@@ -34,6 +34,7 @@ namespace Apex::Resources
 		~ResourceHandle();
 
 		bool IsValid() const;
+		bool IsLoaded() const;
 		IResource* operator->() const;
 
 	private:

@@ -8,7 +8,7 @@ ResourceHandle::ResourceHandle(ResourceEntry* resourceEntry)
 	if (m_resourceEntry)
 	{
 		(m_resourceEntry->m_refCount)++;
-		printf("%d\n", m_resourceEntry->m_refCount);
+		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 }
 
@@ -16,7 +16,7 @@ ResourceHandle::ResourceHandle(ResourceHandle const& other)
 	: m_resourceEntry(other.m_resourceEntry)
 {
 	(m_resourceEntry->m_refCount)++;
-	printf("%d\n", m_resourceEntry->m_refCount);
+	printf("%d\n", m_resourceEntry->m_refCount.load());
 }
 
 ResourceHandle& ResourceHandle::operator=(ResourceHandle const& other)
@@ -27,7 +27,7 @@ ResourceHandle& ResourceHandle::operator=(ResourceHandle const& other)
 
 		m_resourceEntry = other.m_resourceEntry;
 		(m_resourceEntry->m_refCount)++;
-		printf("%d\n", m_resourceEntry->m_refCount);
+		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 	return *this;
 }
@@ -49,7 +49,12 @@ ResourceHandle::~ResourceHandle()
 
 bool ResourceHandle::IsValid() const
 {
-	return (m_resourceEntry != nullptr);
+	return (m_resourceEntry);
+}
+
+bool ResourceHandle::IsLoaded() const
+{
+	return (m_resourceEntry && m_resourceEntry->m_resource);
 }
 
 IResource* ResourceHandle::operator->() const
