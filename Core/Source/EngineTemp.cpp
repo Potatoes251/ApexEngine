@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "LuaBehavior.h"
+#include "LuaBehaviour.h"
 
 #include <chrono>
 
@@ -57,9 +57,9 @@ int main()
 
 	int ref = luaL_ref(luaState, LUA_REGISTRYINDEX);
 
-	LuaBehavior luaBehavior(luaState, ref);
+	Apex::Scripting::LuaBehaviour luaBehaviour(luaState, ref);
 
-	luaBehavior.Start();
+	luaBehaviour.Start();
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
@@ -71,7 +71,7 @@ int main()
 		float deltaTime = elapsed.count();
 		lastTime = currentTime;
 
-		luaBehavior.Update(deltaTime);
+		luaBehaviour.Update(deltaTime);
 	}
 
 	lua_close(luaState);

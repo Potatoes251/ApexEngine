@@ -1,8 +1,8 @@
-#include "LuaBehavior.h"
+#include "LuaBehaviour.h"
 
 #include <lua.hpp>
 
-void LuaBehavior::Start()
+void Apex::Scripting::LuaBehaviour::Start()
 {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, m_scriptRef);
 	lua_getfield(L, -1, "Start");
@@ -11,7 +11,7 @@ void LuaBehavior::Start()
 	lua_pop(L, 1);
 }
 
-void LuaBehavior::Update(float dt)
+void Apex::Scripting::LuaBehaviour::Update(float dt)
 {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, m_scriptRef);
 	lua_getfield(L, -1, "Update");
