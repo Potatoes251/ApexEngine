@@ -16,17 +16,23 @@ namespace Apex::SceneGraph
 		SceneNode(void* model, Matrix4 localTransform = Matrix4());
 		~SceneNode() = default;
 
-		Matrix4&	GetLocalTransform();
-		void		SetLocalTransform(const Matrix4& localTransform);
+				Matrix4&						GetLocalTransform();
+				void							SetLocalTransform(const Matrix4& localTransform);
 
-		Matrix4		GetWorldTransform();
-		void		SetWorldTransform();
+		const	Matrix4							GetWorldTransform();
+				void							SetWorldTransform();
 
 		//get model
 		//set model
 
-		void		AddChild(unique_ptr<SceneNode> child);
+				SceneNode*						GetParent() const;
+		const	vector<unique_ptr<SceneNode>>&	GetChildren() const;
 
+				void							AddChild(unique_ptr<SceneNode> child);
+				void							DestroyChild(SceneNode* child);
+				unique_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
+
+				void							Destroy();
 	private:
 		Matrix4							m_localTransform;
 		Matrix4							m_worldTransform;
@@ -37,7 +43,7 @@ namespace Apex::SceneGraph
 		SceneNode*						m_parent = nullptr;	
 		vector<unique_ptr<SceneNode>>	m_children;
 		
-		void		MarkDirty();
+		void	MarkDirty();
 	};
 }
 #endif
