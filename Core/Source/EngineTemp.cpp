@@ -19,24 +19,6 @@
 
 int main()
 {
-	FbxManager* manager = FbxManager::Create();
-
-	if (!manager)
-	{
-		std::cerr << "FBX SDK manager creation failed." << std::endl;
-		return 1;
-	}
-
-	// Create IO settings (required by many FBX operations)
-	FbxIOSettings* ioSettings = FbxIOSettings::Create(manager, IOSROOT);
-	manager->SetIOSettings(ioSettings);
-
-	std::cout << "FBX SDK is correctly included and linked." << std::endl;
-
-	// Proper cleanup
-	manager->Destroy();
-
-
 	lua_State* luaState = luaL_newstate();
 
 	if (!luaState)

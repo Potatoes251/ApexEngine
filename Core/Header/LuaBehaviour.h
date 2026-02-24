@@ -13,13 +13,15 @@ namespace Apex::Scripting
         LuaBehaviour(lua_State* luaState, int scriptRef)
             : L(luaState), m_scriptRef(scriptRef) {}
 
+        ~LuaBehaviour();
+
         void Start() override;
         void Update(float dt) override;
 
     private:
-        //GameObject* m_owner;
-        lua_State* L;
-        int m_scriptRef;
+        lua_State* L = nullptr;
+        int m_scriptRef = LUA_NOREF;
+        int m_updateFuncRef = LUA_NOREF;
     };
 }
 
