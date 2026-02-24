@@ -12,6 +12,9 @@ namespace Apex::Core
 	{
 	public:
 		ThreadPool(int nbThreads = std::thread::hardware_concurrency());
+		ThreadPool(ThreadPool const&) = delete;
+		ThreadPool& operator=(ThreadPool const&) = delete;
+
 		~ThreadPool();
 
 		template <class Func, typename... Args>
@@ -22,7 +25,7 @@ namespace Apex::Core
 		}
 
 		template <class Func, typename Obj, typename... Args>
-		void Enqueue(Func&& func, Obj* obj, Args&&... args)
+		void Enqueue(Obj* obj, Func&& func, Args&&... args)
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
 			m_queue.emplace(std::bind(std::forward<Func>(func), obj, std::forward<Args>(args)...));

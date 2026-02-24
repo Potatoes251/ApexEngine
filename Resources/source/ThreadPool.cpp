@@ -25,7 +25,6 @@ void ThreadPool::WorkerLoop()
 {
 	while (!m_stop)
 	{
-		printf("gbrbrgbrezbrb\n");
 		std::function<void()> task;
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);

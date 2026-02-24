@@ -1,11 +1,13 @@
 #ifndef LIBMATH_MATRIX4VECTOR4OPERATION_H_
 #define LIBMATH_MATRIX4VECTOR4OPERATION_H_
 
-#include "Vector/Vector4.h"
-#include "Matrix/Matrix4.h"
+//#include "Vector/Vector4.h"
+//#include "Matrix/Matrix4.h"
 
 namespace LibMath
 {
+	class Matrix4;
+	class Vector4;
 	Vector4 operator*(Matrix4&, Vector4&);
 }
 
