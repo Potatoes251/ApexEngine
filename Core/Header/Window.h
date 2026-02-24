@@ -1,0 +1,81 @@
+﻿#ifndef WINDOW
+#define WINDOW
+
+#include <functional>
+#include <string>
+
+// ============================================================
+// Window.h — Public windowing interface 
+// GLFW is NEVER referenced here. This is the only header
+// the rest of the engine should include.
+// ============================================================
+
+namespace Apex::Windowing
+{
+	// ── Input types ──────────────────────────────────────────────
+	enum class Key
+	{
+		W, A, S, D, Q, E,
+		Up, Down, Left, Right,
+		Escape, Space,
+		Unknown
+	};
+
+
+	enum class MouseButton
+	{
+		Left,
+		Right,
+		Middle
+	};
+
+	struct MousePosition
+	{
+		double m_x;
+		double m_y;
+	};
+
+	// ── Callbacks ─────────────────────────────────────────────────
+	using KeyCallback = std::function<void(Key, bool)>;
+	using MouseMoveCallback = std::function<void(double dX, double dY)>;
+	using MouseButtonCallback = std::function<void(MouseButton, bool)>;
+	using ScrollCallback = std::function<void(double xOffset, double yOffset)>;
+	using ResizeCallback = std::function<void(int width, int height)>;
+
+	// ── Window interface ─────────────────────────────────────────
+	class IWindow
+	{
+	public:
+		virtual ~IWindow() = default;
+
+		// Lifecycle
+		virtual bool ShouldClose() const = 0;
+		virtual void PollEvents() = 0;
+		virtual void SwapBuffers() = 0;
+		virtual void Close() = 0;
+
+		// Properties
+		virtual int GetWidth() const = 0;
+		virtual int GetHeight() const = 0;
+		virtual float GetAspectRatio() const = 0;
+		virtual float GetDeltaTime() const = 0;
+
+		// Input
+		virtual bool IsKeyPressed(Key key) const = 0;
+		virtual MousePosition GetMousePosition() const = 0;
+		virtual void SetCursorCaptured(bool captured) = 0;
+
+		// Callbacks
+		virtual void SetKeyCallback(KeyCallback callback) = 0;
+		virtual void SetMouseMoveCallback(MouseMoveCallback callback) = 0;
+		virtual void SetMouseButtonCallback(MouseButtonCallback callback) = 0;
+		virtual void SetScrollCallback(ScrollCallback callback) = 0;
+		virtual void SetResizeCallback(ResizeCallback callback) = 0;
+	};
+
+	// ── Factory ───────────────────────────────────────────────────
+	// Creates a concrete GLFW window — the ONLY place GLFW leaks through.
+	IWindow* CreateWindow(const std::string& title, int width, int height);
+
+} // namespace Apex::Windowing
+#endif
