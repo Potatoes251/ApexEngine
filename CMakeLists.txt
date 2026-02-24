@@ -21,6 +21,7 @@ file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/assets/*.png
     ${CMAKE_SOURCE_DIR}/assets/*.jpg
     ${CMAKE_SOURCE_DIR}/assets/*.tga
+    ${CMAKE_SOURCE_DIR}/assets/*.lua
 )
 
 # Group them properly in Visual Studio
