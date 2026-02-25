@@ -49,12 +49,14 @@ ResourceHandle::~ResourceHandle()
 
 bool ResourceHandle::IsValid() const
 {
-	return (m_resourceEntry);
+	return m_resourceEntry;
 }
 
-bool ResourceHandle::IsLoaded() const
+bool ResourceHandle::IsReady() const
 {
-	return (m_resourceEntry && m_resourceEntry->m_resource);
+	return	m_resourceEntry && 
+			m_resourceEntry->m_resource &&
+			m_resourceEntry->m_resource->getState() == ResourceState::Uploaded;
 }
 
 IResource* ResourceHandle::operator->() const

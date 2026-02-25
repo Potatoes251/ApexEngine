@@ -20,15 +20,8 @@ namespace Apex::Core
 		template <class Func, typename... Args>
 		void Enqueue(Func&& func, Args&&... args)
 		{
-			std::unique_lock<std::mutex> lock(m_mutex);
+			std::lock_guard<std::mutex> lock(m_mutex);
 			m_queue.emplace(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
-		}
-
-		template <class Func, typename Obj, typename... Args>
-		void Enqueue(Obj* obj, Func&& func, Args&&... args)
-		{
-			std::unique_lock<std::mutex> lock(m_mutex);
-			m_queue.emplace(std::bind(std::forward<Func>(func), obj, std::forward<Args>(args)...));
 		}
 
 

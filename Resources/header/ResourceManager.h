@@ -11,7 +11,7 @@
 
 namespace Apex::Resources
 {
-	// restrict template type for create and get function
+	// restrict template type for CreateAsync function
 	template <typename T>
 	concept ResourceType = std::derived_from<T, IResource> && std::constructible_from<T, std::string const&>;
 
@@ -26,16 +26,20 @@ namespace Apex::Resources
 
 		template <typename ResourceType>
 		ResourceHandle CreateAsync(std::string const& id, bool persistent = false);
-
-		template <typename ResourceType>
 		ResourceHandle Get(std::string id);
 
+		void ProcessGpuUploads();
+		void AddToGpuQueue(IResource*);
+
 	private:
-		template <typename ResourceType>
-		void Create(std::string const& id, bool persistent);
+		void Create(std::string const& id);
 
 		Core::ThreadPool&	m_threadPool;
-		std::shared_mutex	m_mutex;
+
+		std::mutex				m_gpuQueueMutex;
+		std::queue<IResource*>	m_gpuUploadQueue;
+
+		std::shared_mutex		m_mapMutex;
 		std::unordered_map<std::string, ResourceEntry> m_resources;
 	};
 
@@ -44,44 +48,23 @@ namespace Apex::Resources
 	template <typename ResourceType>
 	ResourceHandle ResourceManager::CreateAsync(std::string const& id, bool persistent)
 	{
-		std::unique_lock<std::shared_mutex> lock(m_mutex);
+		std::unique_lock<std::shared_mutex> lock(m_mapMutex);
 
 		auto [it, inserted] = m_resources.try_emplace(id, nullptr, persistent);
-
 		ResourceEntry* entry = &it->second;
 
-		m_threadPool.Enqueue(this, &ResourceManager::Create<ResourceType>, id, persistent);
+		// If already loading or loaded, do not enqueue again
+		if (entry->m_resource && entry->m_resource->getState() != ResourceState::Unloaded)
+		{
+			return ResourceHandle(entry);
+		}
+
+		entry->m_resource = std::make_unique<ResourceType>(id);
+		entry->m_resource->setState(ResourceState::Loading);
+
+		m_threadPool.Enqueue(&ResourceManager::Create, this, id);
 
 		return ResourceHandle(entry);
-	}
-
-	template <typename ResourceType>
-	ResourceHandle ResourceManager::Get(std::string id)
-	{
-		std::shared_lock<std::shared_mutex> lock(m_mutex);
-		auto it = m_resources.find(id);
-		if (it != m_resources.end())
-		{
-			ResourceEntry* resource = &it->second;
-			return ResourceHandle(resource);
-		}
-		else
-		{
-			return ResourceHandle(nullptr);
-		}
-	}
-
-	template <typename ResourceType>
-	void ResourceManager::Create(std::string const& id, bool persistent)
-	{
-		printf("creating %s\n", id.c_str());
-		std::unique_ptr<ResourceType> ptr = std::make_unique<ResourceType>(id);
-		std::unique_lock<std::shared_mutex> lock(m_mutex);
-		auto it = m_resources.find(id);
-		if (it != m_resources.end())
-		{
-			it->second.m_resource = std::unique_ptr<IResource>(ptr.release());
-		}
 	}
 }
 

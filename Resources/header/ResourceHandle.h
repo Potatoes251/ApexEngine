@@ -34,7 +34,7 @@ namespace Apex::Resources
 		~ResourceHandle();
 
 		bool IsValid() const;
-		bool IsLoaded() const;
+		bool IsReady() const;
 		IResource* operator->() const;
 
 	private:
