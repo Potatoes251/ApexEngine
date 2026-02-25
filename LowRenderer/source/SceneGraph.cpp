@@ -62,6 +62,20 @@ void SceneNode::MarkDirty()
 	}
 }
 
+bool SceneNode::IsDescendantOf(SceneNode& otherNode)
+{
+	SceneNode* current = m_parent;
+
+	while (current != nullptr)
+	{
+		if (current == &otherNode) return true;
+
+		current = current->m_parent;
+	}
+
+	return false;
+}
+
 void SceneNode::AddChild(unique_ptr<SceneNode> child)
 {
 	if (child->m_parent != nullptr)
@@ -117,4 +131,20 @@ void SceneNode::Destroy()
 	{
 		m_parent->DestroyChild(this);
 	}
+}
+
+void SceneNode::Move(SceneNode& newParent)
+{
+	if (m_parent == &newParent			||	//No move to origine place
+		this == &newParent				||	//No move to itself
+		newParent.IsDescendantOf(*this) ||	//No loop descendance
+		m_parent == nullptr)				
+	{
+		return;
+	}
+
+	unique_ptr<SceneNode> self = m_parent->DetachChild(this);
+	newParent.AddChild(std::move(self));
+
+	MarkDirty();
 }

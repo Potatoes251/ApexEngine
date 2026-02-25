@@ -31,6 +31,7 @@ namespace Apex::SceneGraph
 				unique_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
 
 				void							Destroy();
+				void							Move(SceneNode& newParent);
 	private:
 		Matrix4							m_localTransform;
 		Matrix4							m_worldTransform;
@@ -40,6 +41,7 @@ namespace Apex::SceneGraph
 		vector<unique_ptr<SceneNode>>	m_children;
 		
 		void	MarkDirty();
+		bool	IsDescendantOf(SceneNode& otherNode);
 	};
 }
 #endif
