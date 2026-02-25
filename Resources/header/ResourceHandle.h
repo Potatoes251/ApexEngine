@@ -35,6 +35,7 @@ namespace Apex::Resources
 
 		bool IsValid() const;
 		bool IsReady() const;
+		bool IsFailed() const;
 		IResource* operator->() const;
 
 	private:

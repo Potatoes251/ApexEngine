@@ -9,8 +9,10 @@ void ResourceManager::ProcessGpuUploads()
 	{
 		IResource* resource = m_gpuUploadQueue.front();
 		m_gpuUploadQueue.pop();
+		if (resource->GetState() == ResourceState::Failed) continue;
 		resource->UploadToGpu();
-		resource->setState(ResourceState::Uploaded);
+		if (resource->GetState() == ResourceState::Failed) continue;
+		resource->SetState(ResourceState::Uploaded);
 	}
 }
 
@@ -24,7 +26,7 @@ ResourceHandle ResourceManager::Get(std::string id)
 {
 	std::shared_lock<std::shared_mutex> lock(m_mapMutex);
 	auto it = m_resources.find(id);
-	if (it != m_resources.end())
+	if (it != m_resources.end() && it->second.m_resource)
 	{
 		ResourceEntry* resource = &it->second;
 		return ResourceHandle(resource);
@@ -54,6 +56,6 @@ void ResourceManager::Create(std::string const& id)
 	resource->LoadFromFile();
 
 	// place the resource inside the already existing ResourceEntry
-	resource->setState(ResourceState::Loaded);
+	resource->SetState(ResourceState::Loaded);
 	AddToGpuQueue(resource);
 }

@@ -8,7 +8,7 @@ if (MSVC)
     add_compile_options(/W4)
     add_compile_options(/wd4505)
     add_compile_options(/WX)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
 set(EXE_NAME Engine)

@@ -54,13 +54,13 @@ namespace Apex::Resources
 		ResourceEntry* entry = &it->second;
 
 		// If already loading or loaded, do not enqueue again
-		if (entry->m_resource && entry->m_resource->getState() != ResourceState::Unloaded)
+		if (entry->m_resource && entry->m_resource->GetState() != ResourceState::Unloaded)
 		{
 			return ResourceHandle(entry);
 		}
 
 		entry->m_resource = std::make_unique<ResourceType>(id);
-		entry->m_resource->setState(ResourceState::Loading);
+		entry->m_resource->SetState(ResourceState::Loading);
 
 		m_threadPool.Enqueue(&ResourceManager::Create, this, id);
 

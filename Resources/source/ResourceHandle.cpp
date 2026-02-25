@@ -7,7 +7,7 @@ ResourceHandle::ResourceHandle(ResourceEntry* resourceEntry)
 {
 	if (m_resourceEntry)
 	{
-		(m_resourceEntry->m_refCount)++;
+		m_resourceEntry->m_refCount.fetch_add(1);
 		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 }
@@ -15,7 +15,7 @@ ResourceHandle::ResourceHandle(ResourceEntry* resourceEntry)
 ResourceHandle::ResourceHandle(ResourceHandle const& other)
 	: m_resourceEntry(other.m_resourceEntry)
 {
-	(m_resourceEntry->m_refCount)++;
+	m_resourceEntry->m_refCount.fetch_add(1);
 	printf("%d\n", m_resourceEntry->m_refCount.load());
 }
 
@@ -23,10 +23,10 @@ ResourceHandle& ResourceHandle::operator=(ResourceHandle const& other)
 {
 	if (this != &other)
 	{
-		if (m_resourceEntry) (m_resourceEntry->m_refCount)--;
+		if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_sub(1);
 
 		m_resourceEntry = other.m_resourceEntry;
-		(m_resourceEntry->m_refCount)++;
+		m_resourceEntry->m_refCount.fetch_add(1);
 		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 	return *this;
@@ -37,12 +37,11 @@ ResourceHandle::~ResourceHandle()
 	if (!m_resourceEntry)
 		return;
 
-	--(m_resourceEntry->m_refCount);
+	m_resourceEntry->m_refCount.fetch_sub(1);
 
-	if (m_resourceEntry->m_refCount == 0 && !m_resourceEntry->m_persistent)
+	if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
 	{
 		m_resourceEntry->m_resource.reset();
-		m_resourceEntry = nullptr;
 		printf("resource destroyed\n");
 	}
 }
@@ -56,7 +55,14 @@ bool ResourceHandle::IsReady() const
 {
 	return	m_resourceEntry && 
 			m_resourceEntry->m_resource &&
-			m_resourceEntry->m_resource->getState() == ResourceState::Uploaded;
+			m_resourceEntry->m_resource->GetState() == ResourceState::Uploaded;
+}
+
+bool ResourceHandle::IsFailed() const
+{
+	return	m_resourceEntry && 
+			m_resourceEntry->m_resource &&
+			m_resourceEntry->m_resource->GetState() == ResourceState::Failed;
 }
 
 IResource* ResourceHandle::operator->() const

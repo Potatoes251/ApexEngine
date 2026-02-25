@@ -15,6 +15,7 @@ void Texture::LoadFromFile()
 	if (!data)
 	{
 		std::cout << "Failed to load texture: " << m_path << std::endl;
+        SetState(ResourceState::Failed);
 		return;
 	}
 
@@ -27,6 +28,7 @@ void Texture::UploadToGpu()
     if (m_imageData.empty())
     {
         std::cout << "No image data to upload for texture: " << m_path << std::endl;
+        SetState(ResourceState::Failed);
         return;
     }
 
