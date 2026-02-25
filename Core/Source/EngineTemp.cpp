@@ -13,35 +13,16 @@
 
 #include <iostream>
 
+#include "LuaManager.h"
 #include "LuaBehaviour.h"
 
 #include <chrono>
 
 int main()
 {
-	lua_State* luaState = luaL_newstate();
+	Apex::Scripting::LuaManager luaManager;
 
-	if (!luaState)
-	{
-		std::cerr << "LuaJIT state creation failed." << std::endl;
-		return 1;
-	}
-
-	luaL_openlibs(luaState);
-
-	if (luaL_dofile(luaState, "../../Assets/Scripts/Script.lua") != LUA_OK)
-	{
-		std::cerr << "Lua error: "
-			<< lua_tostring(luaState, -1)
-			<< std::endl;
-		return 1;
-	}
-
-	int ref = luaL_ref(luaState, LUA_REGISTRYINDEX);
-
-	Apex::Scripting::LuaBehaviour luaBehaviour(luaState, ref);
-
-	luaBehaviour.Start();
+	luaManager.LoadScript("../../Assets/Scripts/Script.lua");
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
@@ -53,10 +34,8 @@ int main()
 		float deltaTime = elapsed.count();
 		lastTime = currentTime;
 
-		luaBehaviour.Update(deltaTime);
+		luaManager.CallUpdateAll(deltaTime);
 	}
-
-	lua_close(luaState);
 
 	return 0;
 }

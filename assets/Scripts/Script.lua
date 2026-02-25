@@ -5,7 +5,7 @@ function Script:Start()
 end
 
 function Script:Update(dt)
-    print("Update:", dt)
+    Print("Update called");
 end
 
 return Script
