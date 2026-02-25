@@ -14,6 +14,9 @@ namespace Apex::Scripting
         LuaManager();
         ~LuaManager();
 
+        LuaManager(const LuaManager& other) = delete;
+        LuaManager& operator=(const LuaManager&) = delete;
+
         int LoadScript(const std::string& path);
 
         void CallStart(int scriptRef);

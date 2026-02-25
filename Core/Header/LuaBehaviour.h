@@ -12,8 +12,10 @@ namespace Apex::Scripting
     public:
         LuaBehaviour(lua_State* luaState, int scriptRef)
             : L(luaState), m_scriptRef(scriptRef) {}
-
         ~LuaBehaviour();
+
+        LuaBehaviour(const LuaBehaviour& other) = delete;
+        LuaBehaviour& operator=(const LuaBehaviour&) = delete;
 
         void Start() override;
         void Update(float dt) override;
