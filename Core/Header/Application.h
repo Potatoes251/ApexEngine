@@ -8,8 +8,8 @@ namespace Apex
 	class Application
 	{
     public:
-        Application();
-        ~Application();
+        Application() = default;
+        ~Application() = default;
 
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
@@ -28,9 +28,6 @@ namespace Apex
         bool m_running = true;
 
         Apex::Scripting::LuaManager m_luaManager;
-        //Renderer m_renderer;
-        //Scene m_scene;
-
 	};
 }
 

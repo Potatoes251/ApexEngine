@@ -11,17 +11,17 @@ namespace Apex::Scripting
     {
     public:
         LuaBehaviour(lua_State* luaState, int scriptRef)
-            : L(luaState), m_scriptRef(scriptRef) {}
+            : m_luaState(luaState), m_scriptRef(scriptRef) {}
         ~LuaBehaviour();
 
-        LuaBehaviour(const LuaBehaviour& other) = delete;
+        LuaBehaviour(const LuaBehaviour&) = delete;
         LuaBehaviour& operator=(const LuaBehaviour&) = delete;
 
         void Start() override;
         void Update(float dt) override;
 
     private:
-        lua_State* L = nullptr;
+        lua_State* m_luaState = nullptr;
         int m_scriptRef = LUA_NOREF;
         int m_updateFuncRef = LUA_NOREF;
     };

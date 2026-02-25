@@ -19,12 +19,6 @@ namespace Apex::Scripting
 
         int LoadScript(const std::string& path);
 
-        void CallStart(int scriptRef);
-        void CallUpdate(int scriptRef, float dt);
-
-        void CallStartAll();
-        void CallUpdateAll(float dt);
-
         void RegisterFunction(const char* name, lua_CFunction func);
         void RegisterFunctions();
 

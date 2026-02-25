@@ -5,46 +5,47 @@
 Apex::Scripting::LuaBehaviour::~LuaBehaviour()
 {
     if (m_updateFuncRef != LUA_NOREF)
-        luaL_unref(L, LUA_REGISTRYINDEX, m_updateFuncRef);
+        luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_updateFuncRef);
 
-    luaL_unref(L, LUA_REGISTRYINDEX, m_scriptRef);
+    if (m_scriptRef != LUA_NOREF)
+        luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_scriptRef);
 }
 
 void Apex::Scripting::LuaBehaviour::Start()
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m_scriptRef); // push script table
+    lua_rawgeti(m_luaState, LUA_REGISTRYINDEX, m_scriptRef); // push script table
 
     // --------- STORE UPDATE ---------
-    lua_getfield(L, -1, "Update"); // push script.Update
+    lua_getfield(m_luaState, -1, "Update"); // push script.Update
 
-    if (lua_isfunction(L, -1))
+    if (lua_isfunction(m_luaState, -1))
     {
-        m_updateFuncRef = luaL_ref(L, LUA_REGISTRYINDEX);
+        m_updateFuncRef = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
     }
     else
     {
-        lua_pop(L, 1);
+        lua_pop(m_luaState, 1);
     }
 
     // --------- CALL START ---------
-    lua_getfield(L, -1, "Start");
+    lua_getfield(m_luaState, -1, "Start");
 
-    if (lua_isfunction(L, -1))
+    if (lua_isfunction(m_luaState, -1))
     {
-        lua_pushvalue(L, -2); // push self
+        lua_pushvalue(m_luaState, -2); // push self
 
-        if (lua_pcall(L, 1, 0, 0) != LUA_OK)
+        if (lua_pcall(m_luaState, 1, 0, 0) != LUA_OK)
         {
-            printf("Lua Error: %s\n", lua_tostring(L, -1));
-            lua_pop(L, 1);
+            printf("Lua Error: %s\n", lua_tostring(m_luaState, -1));
+            lua_pop(m_luaState, 1);
         }
     }
     else
     {
-        lua_pop(L, 1);
+        lua_pop(m_luaState, 1);
     }
 
-    lua_pop(L, 1); // pop script table
+    lua_pop(m_luaState, 1); // pop script table
 }
 
 void Apex::Scripting::LuaBehaviour::Update(float dt)
@@ -52,14 +53,14 @@ void Apex::Scripting::LuaBehaviour::Update(float dt)
     if (m_updateFuncRef == LUA_NOREF)
         return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m_updateFuncRef); // push Update
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m_scriptRef);     // push self
+    lua_rawgeti(m_luaState, LUA_REGISTRYINDEX, m_updateFuncRef); // push Update
+    lua_rawgeti(m_luaState, LUA_REGISTRYINDEX, m_scriptRef);     // push self
 
-    lua_pushnumber(L, dt);
+    lua_pushnumber(m_luaState, dt);
 
-    if (lua_pcall(L, 2, 0, 0) != LUA_OK)
+    if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK)
     {
-        printf("Lua Error: %s\n", lua_tostring(L, -1));
-        lua_pop(L, 1);
+        printf("Lua Error: %s\n", lua_tostring(m_luaState, -1));
+        lua_pop(m_luaState, 1);
     }
 }

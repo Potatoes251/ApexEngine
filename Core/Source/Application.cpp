@@ -3,16 +3,6 @@
 #include <chrono>
 #include <iostream>
 
-Apex::Application::Application()
-{
-
-}
-
-Apex::Application::~Application()
-{
-
-}
-
 void Apex::Application::Run()
 {
     Init();
@@ -36,9 +26,8 @@ void Apex::Application::Run()
 void Apex::Application::Init()
 {
     std::cout << "Application Init\n" << std::endl;
-
-    m_luaManager.LoadScript("../../Assets/Scripts/Script.lua");
-    m_luaManager.CallStartAll();
+    
+    // TODO: crate objects and call Start() on scene
 }
 
 void Apex::Application::Shutdown()
@@ -56,15 +45,15 @@ void Apex::Application::Tick(float dt)
 
 void Apex::Application::ProcessInput()
 {
-    
+    // TODO: Handle window events and input system
 }
 
 void Apex::Application::Update(float dt)
 {
-    m_luaManager.CallUpdateAll(dt);
+    // TODO: Update scene
 }
 
 void Apex::Application::Render()
 {
-
+    // TODO: Add rendering system here when implemented
 }
