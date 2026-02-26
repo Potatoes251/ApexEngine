@@ -2,8 +2,10 @@
 #define OBJECT
 
 #include <LibMath/Matrix/Matrix4.h>
-#include "../../LowRenderer/header/SceneGraph.h"
 
+namespace Apex::SceneGraph { class SceneNode; }
+
+using std::shared_ptr;
 using LibMath::Matrix4;
 using Apex::SceneGraph::SceneNode;
 
@@ -12,15 +14,19 @@ namespace Apex::Data
 	class Object
 	{
 	public:
-		Object() = default;
-		~Object() = default;
+		Object();
+		Object(const Matrix4& transform);
 		Object(const Object& other);
+		~Object() = default;
 
-		Object& operator=(const Object& other) = delete;
+				Object&		operator=(const Object& other) = delete;
+				Matrix4		GetTransform();
+		const	Matrix4		GetTransform() const;
+				void		SetTransform(const Matrix4& transform);
 
-		Matrix4	GetTransform();
 	private:
-		SceneNode m_sceneNode;
+		Matrix4					m_transform;
+		shared_ptr<SceneNode>	m_owner;
 	};
 }
 

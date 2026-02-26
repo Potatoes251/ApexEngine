@@ -1,25 +1,13 @@
 #include "sceneGraph.h"
+#include <../../Resources/header/Object.h>
 
 using namespace Apex::SceneGraph;
 
 SceneNode::SceneNode(Matrix4 localTransform) :
-	m_localTransform(localTransform), m_worldTransform(localTransform) {}
+	m_worldTransform(localTransform), m_object(nullptr) {}
 
-Matrix4 SceneNode::GetLocalTransform()
-{
-	return m_localTransform;
-}
-
-const Matrix4 Apex::SceneGraph::SceneNode::GetLocalTransform() const
-{
-	return m_localTransform;
-}
-
-void SceneNode::SetLocalTransform(const Matrix4& localTransform)
-{
-	m_localTransform = localTransform;
-	MarkDirty();
-}
+SceneNode::SceneNode(Matrix4 localTransform, Object* object) :
+	m_worldTransform(localTransform), m_object(object) {}
 
 const Matrix4 SceneNode::GetWorldTransform()
 {
@@ -38,11 +26,11 @@ void SceneNode::SetWorldTransform()
 	}
 	if (m_parent)
 	{
-		m_worldTransform = m_parent->GetWorldTransform() * m_localTransform;
+		m_worldTransform = m_parent->GetWorldTransform() * m_object->GetTransform();
 	}
 	else
 	{
-		m_worldTransform = m_localTransform;
+		m_worldTransform = m_object->GetTransform();
 	}
 
 	m_dirty = false;
@@ -53,18 +41,9 @@ SceneNode* SceneNode::GetParent() const
 	return m_parent;
 }
 
-const vector<unique_ptr<SceneNode>>& SceneNode::GetChildren() const
+const vector<shared_ptr<SceneNode>>& SceneNode::GetChildren() const
 {
 	return m_children;
-}
-
-void SceneNode::MarkDirty()
-{
-	m_dirty = true;
-	for (unique_ptr<SceneNode>& child : m_children)
-	{
-		child->MarkDirty();
-	}
 }
 
 bool SceneNode::IsDescendantOf(SceneNode& otherNode)
@@ -81,24 +60,24 @@ bool SceneNode::IsDescendantOf(SceneNode& otherNode)
 	return false;
 }
 
-void SceneNode::AddChild(unique_ptr<SceneNode> child)
+void SceneNode::AddChild(shared_ptr<SceneNode> child)
 {
-	if (child->m_parent != nullptr)
+	//remove from parent
+	if (child->m_parent && child->m_parent != this)
 	{
-		unique_ptr<SceneNode> detached = child->m_parent->DetachChild(child.get());
-
-		child = std::move(detached);
+		shared_ptr<SceneNode> detached = child->m_parent->DetachChild(child.get());
 	}
 
 	child->m_parent = this;
-	m_children.push_back(std::move(child));
+	m_children.push_back(child);
+	MarkDirty();
 }
 
 void SceneNode::DestroyChild(SceneNode* child)
 {
 	//search the child in all the children
 	auto iterator = std::find_if(m_children.begin(), m_children.end(),
-		[child](const unique_ptr<SceneNode>& ptr)
+		[child](const shared_ptr<SceneNode>& ptr)
 		{
 			return ptr.get() == child;
 		});
@@ -110,46 +89,49 @@ void SceneNode::DestroyChild(SceneNode* child)
 	}
 }
 
-unique_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
+shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
 {
 	//search the child in all the children
 	auto iterator = std::find_if(m_children.begin(), m_children.end(),
-		[child](const unique_ptr<SceneNode>& ptr)
-		{
-			return ptr.get() == child;
+		[&](const shared_ptr<SceneNode>& c) 
+		{ 
+			return c.get() == child; 
 		});
 
 	if (iterator != m_children.end())
 	{
-		unique_ptr<SceneNode> result = std::move(*iterator);
+		shared_ptr<SceneNode> ptr = *iterator;
+		ptr->m_parent = nullptr;
 		m_children.erase(iterator);
-		result->m_parent = nullptr;
-		return result;
+		return ptr;
 	}
-
 	return nullptr;
 }
 
 void SceneNode::Destroy()
 {
-	if (m_parent != nullptr)
-	{
-		m_parent->DestroyChild(this);
-	}
+	m_children.clear();	//all descandantes are also Destroyed
 }
 
 void SceneNode::Move(SceneNode& newParent)
 {
-	if (m_parent == &newParent			||	//No move to origine place
-		this == &newParent				||	//No move to itself
-		newParent.IsDescendantOf(*this) ||	//No loop descendance
-		m_parent == nullptr)				
+	if (m_parent == &newParent	||	//No move to origine place
+		&newParent == this		||	//No move to itself
+		IsDescendantOf(newParent))	//No loop descendance
 	{
 		return;
 	}
 
-	unique_ptr<SceneNode> self = m_parent->DetachChild(this);
-	newParent.AddChild(std::move(self));
-
+	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
+	newParent.AddChild(self);
 	MarkDirty();
+}
+
+void SceneNode::MarkDirty()
+{
+	m_dirty = true;
+	for (shared_ptr<SceneNode>& child : m_children)
+	{
+		child->MarkDirty();
+	}
 }

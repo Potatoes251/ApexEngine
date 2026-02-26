@@ -4,47 +4,49 @@
 #include <vector>
 #include <LibMath/Matrix/Matrix4.h>
 
+namespace Apex::Data { class Object; }
+
 using std::vector;
-using std::unique_ptr;
+using std::shared_ptr;
 using LibMath::Matrix4;
+using Apex::Data::Object;
 
 namespace Apex::SceneGraph
 {
-	class SceneNode
+	class SceneNode : public std::enable_shared_from_this<SceneNode>
 	{
 	public:
 		SceneNode(Matrix4 localTransform = Matrix4());
+		SceneNode(Matrix4 localTransform = Matrix4(), Object* object = nullptr);
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
 				SceneNode&						operator=(const SceneNode& other) = delete;
 
-				Matrix4							GetLocalTransform();
-		const	Matrix4							GetLocalTransform() const;
-				void							SetLocalTransform(const Matrix4& localTransform);
-
 		const	Matrix4							GetWorldTransform();
 				void							SetWorldTransform();
 
 				SceneNode*						GetParent() const;
-		const	vector<unique_ptr<SceneNode>>&	GetChildren() const;
+		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
 
-				void							AddChild(unique_ptr<SceneNode> child);
+				void							AddChild(shared_ptr<SceneNode> child);
 				void							DestroyChild(SceneNode* child);
-				unique_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
+				shared_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
 
 				void							Destroy();
 				void							Move(SceneNode& newParent);
+				void							MarkDirty();
 	private:
-		void	MarkDirty();
 		bool	IsDescendantOf(SceneNode& otherNode);
 
-		Matrix4							m_localTransform;
 		Matrix4							m_worldTransform;
 		bool							m_dirty = true;
 
+		Object*							m_object;
+
 		SceneNode*						m_parent = nullptr;	
-		vector<unique_ptr<SceneNode>>	m_children;
+		vector<shared_ptr<SceneNode>>	m_children;
 	};
 }
+
 #endif
