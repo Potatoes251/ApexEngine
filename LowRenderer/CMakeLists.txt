@@ -1,8 +1,8 @@
 set(LOW_NAME LowRenderer) #Local variable only
 
 file(GLOB_RECURSE PROJECT_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/header/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp
 )
 
 add_library(${LOW_NAME})

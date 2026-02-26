@@ -1,9 +1,6 @@
 #ifndef LIBMATH_MATRIX4VECTOR4OPERATION_H_
 #define LIBMATH_MATRIX4VECTOR4OPERATION_H_
 
-//#include "Vector/Vector4.h"
-//#include "Matrix/Matrix4.h"
-
 namespace LibMath
 {
 	class Matrix4;
