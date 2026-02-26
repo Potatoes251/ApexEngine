@@ -37,10 +37,10 @@ namespace Apex::Rendering
 
 		void SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) override;
 		void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) override;
-		void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3* vec) override;
-		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4* matrix) override;
+		void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) override;
+		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) override;
 
-		void SetupVertextLayout() override;
+		void SetupVertexLayout() override;
 		void DrawIndexed(GLsizei indexCount) override;
 		void DrawArrays(GLsizei vertexCount) override;
 		void SetDepthTest(bool enabled) override;

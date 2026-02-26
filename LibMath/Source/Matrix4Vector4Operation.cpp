@@ -1,4 +1,6 @@
 #include "LibMath/Matrix4Vector4Operation.h"
+#include "LibMath/Matrix/Matrix4.h"
+#include "LibMath/Vector/Vector4.h"
 
 LibMath::Vector4 LibMath::operator*(Matrix4& m , Vector4& vec)
 {

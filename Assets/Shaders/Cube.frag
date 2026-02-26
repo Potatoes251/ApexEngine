@@ -1,11 +1,9 @@
-﻿#version 330 core
+#version 330 core
 
-// ── Inputs from vertex shader ─────────────────────────────────
 in vec3 vFragPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 
-// ── Uniforms ──────────────────────────────────────────────────
 uniform sampler2D uTexture;
 uniform int       uUseTexture;
 
@@ -13,7 +11,6 @@ uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
 
-// ── Output ────────────────────────────────────────────────────
 out vec4 FragColor;
 
 void main() 

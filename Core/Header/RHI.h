@@ -84,11 +84,11 @@ namespace Apex::Rendering
 		// Uniforms (bound shader must be active)
 		virtual void SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) = 0;
 		virtual void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) = 0;
-		virtual void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3* vec) = 0;
-		virtual void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4* matrix) = 0;
+		virtual void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) = 0;
+		virtual void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) = 0;
 
 		// Draw
-		virtual void SetupVertextLayout() = 0;
+		virtual void SetupVertexLayout() = 0;
 		virtual void DrawIndexed(GLsizei indexCount) = 0;
 		virtual void DrawArrays(GLsizei vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;

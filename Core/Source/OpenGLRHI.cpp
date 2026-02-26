@@ -95,7 +95,9 @@ namespace Apex::Rendering
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, desc.m_width, desc.m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, desc.m_data);
+		const GLenum internalFmt = (desc.m_channels == 4) ? GL_RGBA8 : GL_RGB8;
+		const GLenum pixelFmt = (desc.m_channels == 4) ? GL_RGBA : GL_RGB;
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFmt, desc.m_width, desc.m_height, 0, pixelFmt, GL_UNSIGNED_BYTE, desc.m_data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		RHITextureHandle texture = NewHandle();
@@ -168,21 +170,21 @@ namespace Apex::Rendering
 		glUniform1f(location, value);
 	}
 
-	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3* vec) 
+	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) 
 	{
 		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
-		const LibMath::Vector3& vector = *vec;
+		const LibMath::Vector3& vector = vec;
 		glUniform3f(location, vector[0], vector[1], vector[2]);
 	}
 
-	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4* matrix) 
+	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) 
 	{
 		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
-		glUniformMatrix4fv(location, 1, GL_FALSE, matrix->data());
+		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
 	// ── Vertex layout ─────────────────────────────────────────────
-	void OpenGLRHI::SetupVertextLayout() 
+	void OpenGLRHI::SetupVertexLayout() 
 	{
 		glEnableVertexAttribArray(0); // Position
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
