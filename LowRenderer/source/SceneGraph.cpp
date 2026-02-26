@@ -5,7 +5,12 @@ using namespace Apex::SceneGraph;
 SceneNode::SceneNode(Matrix4 localTransform) :
 	m_localTransform(localTransform), m_worldTransform(localTransform) {}
 
-Matrix4& SceneNode::GetLocalTransform()
+Matrix4 SceneNode::GetLocalTransform()
+{
+	return m_localTransform;
+}
+
+const Matrix4 Apex::SceneGraph::SceneNode::GetLocalTransform() const
 {
 	return m_localTransform;
 }

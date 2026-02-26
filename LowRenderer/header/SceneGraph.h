@@ -17,7 +17,10 @@ namespace Apex::SceneGraph
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
-				Matrix4&						GetLocalTransform();
+				SceneNode&						operator=(const SceneNode& other) = delete;
+
+				Matrix4							GetLocalTransform();
+		const	Matrix4							GetLocalTransform() const;
 				void							SetLocalTransform(const Matrix4& localTransform);
 
 		const	Matrix4							GetWorldTransform();
@@ -33,15 +36,15 @@ namespace Apex::SceneGraph
 				void							Destroy();
 				void							Move(SceneNode& newParent);
 	private:
+		void	MarkDirty();
+		bool	IsDescendantOf(SceneNode& otherNode);
+
 		Matrix4							m_localTransform;
 		Matrix4							m_worldTransform;
 		bool							m_dirty = true;
 
 		SceneNode*						m_parent = nullptr;	
 		vector<unique_ptr<SceneNode>>	m_children;
-		
-		void	MarkDirty();
-		bool	IsDescendantOf(SceneNode& otherNode);
 	};
 }
 #endif

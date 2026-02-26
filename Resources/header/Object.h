@@ -14,6 +14,9 @@ namespace Apex::Data
 	public:
 		Object() = default;
 		~Object() = default;
+		Object(const Object& other);
+
+		Object& operator=(const Object& other) = delete;
 
 		Matrix4	GetTransform();
 	private:
