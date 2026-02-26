@@ -2,14 +2,10 @@
 #include "Window.h"
 #include "RHI.h"
 #include "Camera.h"
-#include "MeshRenderer.h"
+#include "Scene.h"
 
 // ── Resource system ───────────────────────────────────────────
 #include "ThreadPool.h"
-#include "ResourceManager.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Shader.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
@@ -25,11 +21,10 @@ int main()
 
 	// ThreadPool spins up hardware_concurrency worker threads for async loads.
 	ThreadPool threadPool;
-	ResourceManager resourceManager(threadPool);
+	Scene scene(rhi.get(), threadPool);
 
-	auto meshHandle = resourceManager.CreateAsync<Mesh>("bunny.obj");
-	auto textureHandle = resourceManager.CreateAsync<Texture>("container2.png");
-	auto shaderHandle = resourceManager.CreateAsync<Shader>("Cube.vert|Cube.frag");
+	size_t bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
+	size_t tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
 
 	Camera camera;
 	window->SetCursorCaptured(true);
@@ -51,9 +46,6 @@ int main()
 		camera.ProcessScroll(yoff);
 	});
 
-	// Scene objects
-	MeshRenderer meshRenderer(rhi.get());
-
 	float totalTime = 0.f;
 	while (!window->ShouldClose()) 
 	{
@@ -72,21 +64,12 @@ int main()
 			deltaTime
 		);
 
-		resourceManager.ProcessGpuUploads();
-
-		if (meshHandle.IsReady())    meshRenderer.SetMesh(meshHandle);
-		if (textureHandle.IsReady()) meshRenderer.SetTexture(textureHandle);
-		if (shaderHandle.IsReady())  meshRenderer.SetShader(shaderHandle);
-
 		// Clear
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
-		// Matrices from camera
-		LibMath::Matrix4 view = camera.GetViewMatrix();
-		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
-
-		// Draw mesh
-		meshRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		scene.Update(camera.GetViewMatrix(),
+			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
+			camera.GetPosition(), totalTime);
 
 		window->SwapBuffers();
 	}

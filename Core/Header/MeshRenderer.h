@@ -10,30 +10,14 @@
 
 namespace Apex::Rendering
 {
-	class MeshRenderer
-	{
-	public:
-		explicit MeshRenderer(IRHI* rhi);
-		~MeshRenderer() = default;
-		MeshRenderer(const MeshRenderer&) = delete;
-		MeshRenderer& operator=(const MeshRenderer&) = delete;
+    struct MeshRenderer 
+    {
+        Apex::Resources::ResourceHandle m_mesh;
+        Apex::Resources::ResourceHandle m_shader;
+        Apex::Resources::ResourceHandle m_texture;
 
-		void SetMesh(Apex::Resources::ResourceHandle mesh);
-		void SetTexture(Apex::Resources::ResourceHandle texture);
-		void SetShader(Apex::Resources::ResourceHandle shader);
-
-		void Render(const LibMath::Matrix4& view, const LibMath::Matrix4& projection, 
-					const LibMath::Vector3& cameraPosition, float deltaTime);
-
-		float m_rotationSpeed = 5.f;
-
-	private:
-		IRHI* m_rhi = nullptr;
-
-		Apex::Resources::ResourceHandle m_meshHandle;
-		Apex::Resources::ResourceHandle m_textureHandle;
-		Apex::Resources::ResourceHandle m_shaderHandle;
-	};
+        float  m_rotationSpeed = 20.f;          // degrees/s around Y
+    };
 }
 
 #endif

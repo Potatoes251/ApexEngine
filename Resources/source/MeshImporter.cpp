@@ -1,21 +1,41 @@
-#include "MeshImporter.h"
+﻿#include "MeshImporter.h"
+
+// ── Singleton FbxManager ──────────────────────────────────────
+// FBX SDK allows exactly one FbxManager per process.
+// Creating multiple managers (e.g. one per async import thread)
+// causes undefined behaviour and crashes.
+// Initialized on first use via std::call_once; kept alive for
+// the process lifetime as the SDK recommends.
+FbxManager* MeshImporter::s_manager = nullptr;
+std::mutex  MeshImporter::s_mutex;
+
+static void EnsureManager()
+{
+    // Called inside the locked region — safe to check/create once.
+    if (!MeshImporter::s_manager)
+    {
+        MeshImporter::s_manager = FbxManager::Create();
+        FbxIOSettings* ios = FbxIOSettings::Create(MeshImporter::s_manager, IOSROOT);
+        MeshImporter::s_manager->SetIOSettings(ios);
+    }
+}
 
 void MeshImporter::Import(std::string path, Mesh& mesh)
 {
-	FbxManager* manager = FbxManager::Create();
-	FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
-	manager->SetIOSettings(ios);
+    // Serialize all FBX operations — the SDK is not thread-safe.
+    std::lock_guard<std::mutex> lock(s_mutex);
 
+    EnsureManager();
 
-	FbxScene* scene = FbxScene::Create(manager, "");
+	FbxScene* scene = FbxScene::Create(s_manager, "");
 
-	FbxImporter* importer = FbxImporter::Create(manager, "");
+	FbxImporter* importer = FbxImporter::Create(s_manager, "");
 
-    if (!importer->Initialize(path.c_str(), -1, manager->GetIOSettings())) 
+    if (!importer->Initialize(path.c_str(), -1, s_manager->GetIOSettings()))
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        manager->Destroy();
+        s_manager->Destroy();
         return;
     }
 
@@ -23,13 +43,13 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        manager->Destroy();
+        s_manager->Destroy();
         return;
     }
 
 	importer->Destroy();
 
-    FbxGeometryConverter converter(manager);
+    FbxGeometryConverter converter(s_manager);
     converter.Triangulate(scene, true);
 
     FbxAxisSystem::OpenGL.ConvertScene(scene);
