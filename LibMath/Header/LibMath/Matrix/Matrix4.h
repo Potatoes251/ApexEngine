@@ -17,7 +17,7 @@ namespace LibMath
 			float, float, float, float,
 			float, float, float, float);
 
-		float*			data();
+		const float*			data() const;
 
 		Matrix4&		operator=(Matrix4 const);						// copy asignement
 
@@ -61,7 +61,7 @@ namespace LibMath
 }
 
 #ifdef LIBMATH_VECTOR_VECTOR4_H_
-#include "Matrix4Vector4Operation.h"
+#include "LibMath/Matrix4Vector4Operation.h"
 #endif // LIBMATH_MATRIX_H_
 
 #endif // !LIBMATH_MATRIX_MATRIX4_H_

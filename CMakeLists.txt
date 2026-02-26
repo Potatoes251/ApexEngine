@@ -17,10 +17,16 @@ project(${EXE_NAME} LANGUAGES C CXX)
 # Collect assets
 file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/assets/*.glsl
+    ${CMAKE_SOURCE_DIR}/assets/*.vert
+    ${CMAKE_SOURCE_DIR}/assets/*.frag
     ${CMAKE_SOURCE_DIR}/assets/*.obj
     ${CMAKE_SOURCE_DIR}/assets/*.png
     ${CMAKE_SOURCE_DIR}/assets/*.jpg
     ${CMAKE_SOURCE_DIR}/assets/*.tga
+    ${CMAKE_SOURCE_DIR}/assets/*.wav
+    ${CMAKE_SOURCE_DIR}/assets/*.mp3
+    ${CMAKE_SOURCE_DIR}/assets/*.ogg
+    ${CMAKE_SOURCE_DIR}/assets/*.mid
 )
 
 # Group them properly in Visual Studio
