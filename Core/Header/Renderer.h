@@ -6,17 +6,21 @@
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
+#include "ResourceHandle.h"
+
 namespace Apex::Rendering
 {
 	class Renderer
 	{
 	public:
-		Renderer(IRHI* rhi);
+		explicit Renderer(IRHI* rhi);
 		~Renderer();
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
 
-		void LoadTexture(const std::string& path);
+		void SetTexture(Apex::Resources::ResourceHandle texture);
+		void SetShader(Apex::Resources::ResourceHandle shader);
+
 		void Render(const LibMath::Matrix4& view, const LibMath::Matrix4& projection, 
 					const LibMath::Vector3& cameraPosition, float deltaTime);
 
@@ -27,8 +31,9 @@ namespace Apex::Rendering
 		RHIVAOHandle m_vao = RHI_INVALID;
 		RHIBufferHandle m_vbo = RHI_INVALID;
 		RHIBufferHandle m_ebo = RHI_INVALID;
-		RHIShaderHandle m_shader = RHI_INVALID;
-		RHITextureHandle m_texture = RHI_INVALID;
+
+		Apex::Resources::ResourceHandle m_textureHandle;
+		Apex::Resources::ResourceHandle m_shaderHandle;
 	};
 }
 

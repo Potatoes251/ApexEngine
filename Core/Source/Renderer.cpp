@@ -1,5 +1,8 @@
 ﻿#include "Renderer.h"
 
+#include "Texture.h"
+#include "Shader.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -50,8 +53,6 @@ namespace Apex::Rendering
             CUBE_INDICES.data(), CUBE_INDICES.size() * sizeof(int));
 
         rhi->SetupVertexLayout();
-
-        m_shader = rhi->CreateShader({ "../../Assets/Shaders/Cube.vert", "../../Assets/Shaders/Cube.frag" });
     }
 
     Renderer::~Renderer() 
@@ -59,62 +60,46 @@ namespace Apex::Rendering
         if (m_vao != RHI_INVALID) m_rhi->DeleteVAO(m_vao);
         if (m_vbo != RHI_INVALID) m_rhi->DeleteBuffer(m_vbo);
         if (m_ebo != RHI_INVALID) m_rhi->DeleteBuffer(m_ebo);
-        if (m_shader != RHI_INVALID) m_rhi->DeleteShader(m_shader);
-        if (m_texture != RHI_INVALID) m_rhi->DeleteTexture(m_texture);
     }
 
-    // ── Texture loading ───────────────────────────────────────────────
-    void Renderer::LoadTexture(const std::string& path) 
+    void Renderer::SetTexture(Apex::Resources::ResourceHandle texture)
     {
-        int width, height, channels;
-        stbi_set_flip_vertically_on_load(true);
-        unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-        if (!data) 
-        {
-            std::cout << "Failed to load texture: " << path << std::endl;
-            return;
-        }
-
-        TextureDescription desc;
-        desc.m_width = width;
-        desc.m_height = height;
-        desc.m_channels = channels;
-        desc.m_data = data;
-
-        m_texture = m_rhi->CreateTexture(desc);
-		stbi_image_free(data);
+        m_textureHandle = texture;
     }
-    void Renderer::Render(const LibMath::Matrix4& view, const LibMath::Matrix4& projection, 
+    void Renderer::SetShader(Apex::Resources::ResourceHandle shader)
+    {
+		m_shaderHandle = shader;
+    }
+
+    void Renderer::Render(const LibMath::Matrix4& view, const LibMath::Matrix4& projection,
                               const LibMath::Vector3& cameraPosition, float deltaTime)
     {
-		m_rhi->BindShader(m_shader);
+        if (!m_shaderHandle.IsReady() || !m_textureHandle.IsReady())
+            return;
+        
+        Shader* shader = static_cast<Shader*>(m_shaderHandle.operator->());
+        Texture* texture = static_cast<Texture*>(m_textureHandle.operator->());
+
+        shader->Use();
+
+        GLuint prog = shader->GetProgram();
 
         float angle = m_rotationSpeed * deltaTime;
         LibMath::Radian angleRad{ angle };
 
         LibMath::Matrix4 model = LibMath::Matrix4::createRotationY(angleRad);
 
-        m_rhi->SetUniformMat4(m_shader, "uModel", model);
-        m_rhi->SetUniformMat4(m_shader, "uView", view);
-        m_rhi->SetUniformMat4(m_shader, "uProjection", projection);
-        m_rhi->SetUniformVec3(m_shader, "uCameraPos", cameraPosition);
-        m_rhi->BindTexture(m_texture);
-		m_rhi->DrawIndexed(static_cast<GLsizei>(CUBE_INDICES.size()));
+        m_rhi->SetUniformMat4(prog, "uModel", model);
+        m_rhi->SetUniformMat4(prog, "uView", view);
+        m_rhi->SetUniformMat4(prog, "uProjection", projection);
 
-		m_rhi->SetUniformVec3(m_shader, "uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
-		m_rhi->SetUniformVec3(m_shader, "uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
-		m_rhi->SetUniformVec3(m_shader, "uViewPos", cameraPosition);
+		m_rhi->SetUniformVec3(prog, "uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
+		m_rhi->SetUniformVec3(prog, "uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
+		m_rhi->SetUniformVec3(prog, "uViewPos", cameraPosition);
 
-        if (m_texture != RHI_INVALID) 
-        {
-            m_rhi->BindTexture(m_texture, 0);
-			m_rhi->SetUniformInt(m_shader, "uTexture", 0);
-			m_rhi->SetUniformInt(m_shader, "uUseTexture", 1);
-		}
-        else
-        {
-            m_rhi->SetUniformInt(m_shader, "uUseTexture", 0);
-        }
+		texture->Bind(0);
+        m_rhi->SetUniformInt(prog, "uTexture", 0);
+		m_rhi->SetUniformInt(prog, "uUseTexture", 1);
 
         m_rhi->BindVAO(m_vao);
         m_rhi->DrawIndexed(static_cast<GLsizei>(CUBE_INDICES.size()));
