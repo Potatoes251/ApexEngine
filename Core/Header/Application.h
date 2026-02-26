@@ -2,6 +2,9 @@
 #define GAME_MANAGER
 
 #include "LuaManager.h"
+#include "Behaviour.h"
+
+#include <memory>
 
 namespace Apex
 {
@@ -22,12 +25,15 @@ namespace Apex
         void Tick(float dt);
         void ProcessInput();
         void Update(float dt);
+        void SyncPhysicsToTransforms();
         void Render();
 
     private:
         bool m_running = true;
 
-        Apex::Scripting::LuaManager m_luaManager;
+        std::unique_ptr<Apex::Scripting::LuaManager> m_luaManager;
+
+        std::vector<std::unique_ptr<Apex::Scripting::Behaviour>> m_objects; // temporary, only for testing
 	};
 }
 

@@ -17,10 +17,15 @@ namespace Apex::Scripting
         LuaManager(const LuaManager& other) = delete;
         LuaManager& operator=(const LuaManager&) = delete;
 
+        lua_State* GetState() { return luaState; }
+
         int LoadScript(const std::string& path);
 
         void RegisterFunction(const char* name, lua_CFunction func);
         void RegisterFunctions();
+
+        int CreateScriptInstance(int scriptRef);
+        bool CallFunction(int instanceRef, const std::string& funcName, float dt = 0.f);
 
     private:
         lua_State* luaState;

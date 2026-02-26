@@ -22,17 +22,24 @@ Apex::Scripting::LuaManager::~LuaManager()
 
 int Apex::Scripting::LuaManager::LoadScript(const std::string& path)
 {
-	if (luaL_dofile(luaState, path.c_str()) != LUA_OK)
-	{
-		std::cerr << "in LoadScript: " << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
-		lua_pop(luaState, 1);
-		return -1;
-	}
+    if (luaL_dofile(luaState, path.c_str()) != LUA_OK)
+    {
+        const char* msg = lua_tostring(luaState, -1);
+        std::cerr << "Lua error: " << (msg ? msg : "unknown") << std::endl;
+        lua_pop(luaState, 1);
+        return LUA_NOREF;
+    }
 
-	int ref = luaL_ref(luaState, LUA_REGISTRYINDEX);
-	m_scriptRefs.push_back(ref);
+    if (!lua_istable(luaState, -1))
+    {
+        std::cerr << "Lua error: script did not return a table!" << std::endl;
+        lua_pop(luaState, 1);
+        return LUA_NOREF;
+    }
 
-	return ref;
+    int ref = luaL_ref(luaState, LUA_REGISTRYINDEX);
+    m_scriptRefs.push_back(ref);
+    return ref;
 }
 
 void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFunction func)
@@ -43,4 +50,66 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
 	RegisterFunction("Print", Apex::Engine::Debug::Lua_ApexPrint);
+}
+
+int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
+{
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, scriptRef);
+    lua_getfield(luaState, -1, "New");
+    if (!lua_isfunction(luaState, -1))
+    {
+        lua_pop(luaState, 1);
+        return LUA_NOREF;
+    }
+
+    lua_pushvalue(luaState, -2);
+    if (lua_pcall(luaState, 1, 1, 0) != LUA_OK)
+    {
+        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        lua_pop(luaState, 1);
+        return LUA_NOREF;
+    }
+
+    int instanceRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
+    lua_pop(luaState, 1);
+    return instanceRef;
+}
+
+bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::string& funcName, float dt)
+{
+    if (instanceRef == LUA_NOREF) return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instanceRef); // push instance
+    if (!lua_istable(luaState, -1))
+    {
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_getfield(luaState, -1, funcName.c_str()); // push function
+    if (!lua_isfunction(luaState, -1))
+    {
+        lua_pop(luaState, 1);
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_pushvalue(luaState, -2); // push self
+    int args = 1;
+    if (dt != 0.f)
+    {
+        lua_pushnumber(luaState, dt);
+        args++;
+    }
+
+    if (lua_pcall(luaState, args, 0, 0) != LUA_OK)
+    {
+        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        lua_pop(luaState, 1);
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_pop(luaState, 1); // pop instance
+    return true;
 }
