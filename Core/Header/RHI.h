@@ -20,14 +20,6 @@ namespace Apex::Rendering
 
 	constexpr GLuint RHI_INVALID = 0;
 
-	// ── Vertex layout ─────────────────────────────────────────────
-	struct Vertex
-	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_normal;
-		LibMath::Vector2 m_uv;
-	};
-
 	// ── Buffer types ────────────────────────────────────────────── 
 	enum class BufferType
 	{
@@ -68,7 +60,6 @@ namespace Apex::Rendering
 		virtual void SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
 
 		// Draw
-		virtual void SetupVertexLayout() = 0;
 		virtual void DrawIndexed(GLsizei indexCount) = 0;
 		virtual void DrawArrays(GLsizei vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;

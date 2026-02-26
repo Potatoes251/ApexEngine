@@ -111,17 +111,6 @@ namespace Apex::Rendering
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
-	// ── Vertex layout ─────────────────────────────────────────────
-	void OpenGLRHI::SetupVertexLayout() 
-	{
-		glEnableVertexAttribArray(0); // Position
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
-		glEnableVertexAttribArray(1); // Normal
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
-		glEnableVertexAttribArray(2); // UV
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
-	}
-
 	// ── Draw ───────────────────────────────────────────────────────
 	void OpenGLRHI::DrawIndexed(GLsizei indexCount) 
 	{

@@ -10,14 +10,15 @@
 
 namespace Apex::Rendering
 {
-	class Renderer
+	class MeshRenderer
 	{
 	public:
-		explicit Renderer(IRHI* rhi);
-		~Renderer();
-		Renderer(const Renderer&) = delete;
-		Renderer& operator=(const Renderer&) = delete;
+		explicit MeshRenderer(IRHI* rhi);
+		~MeshRenderer() = default;
+		MeshRenderer(const MeshRenderer&) = delete;
+		MeshRenderer& operator=(const MeshRenderer&) = delete;
 
+		void SetMesh(Apex::Resources::ResourceHandle mesh);
 		void SetTexture(Apex::Resources::ResourceHandle texture);
 		void SetShader(Apex::Resources::ResourceHandle shader);
 
@@ -28,10 +29,8 @@ namespace Apex::Rendering
 
 	private:
 		IRHI* m_rhi = nullptr;
-		RHIVAOHandle m_vao = RHI_INVALID;
-		RHIBufferHandle m_vbo = RHI_INVALID;
-		RHIBufferHandle m_ebo = RHI_INVALID;
 
+		Apex::Resources::ResourceHandle m_meshHandle;
 		Apex::Resources::ResourceHandle m_textureHandle;
 		Apex::Resources::ResourceHandle m_shaderHandle;
 	};

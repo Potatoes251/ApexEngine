@@ -2,6 +2,13 @@
 
 #include "MeshImporter.h"
 
+Mesh::~Mesh()
+{
+	if (m_VAO) glDeleteVertexArrays(1, &m_VAO);
+	if (m_VBO) glDeleteBuffers(1, &m_VBO);
+	if (m_EBO) glDeleteBuffers(1, &m_EBO);
+}
+
 void Mesh::LoadFromFile()
 {
 	MeshImporter importer;
@@ -15,6 +22,12 @@ void Mesh::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
+
+	// generate VAO
+
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
+
 	// generate VBO
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -24,26 +37,32 @@ void Mesh::UploadToGpu()
 
 	glGenBuffers(1, &m_EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(uint32_t), m_indices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), m_indices.data(), GL_STATIC_DRAW);
 
-	// generate VAO
+	// layout: position (loc 0), normal (loc 1), texCoord (loc 2)
 
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-
-	// mesh :  pos_x, pos_y, pos_z, nor_x, nor_y, nor_z, tex_u, tex_v
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);	// pos
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));	// nor
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));	// tex
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_textureUV));
 	glEnableVertexAttribArray(2);
 
+	glBindVertexArray(0);
+
+	m_indexCount = static_cast<GLsizei>(m_indices.size());
+
+	m_vertices.clear();
+	m_vertices.shrink_to_fit();
+	m_indices.clear();
+	m_indices.shrink_to_fit();
+}
+
+void Mesh::Draw() const
+{
+	glBindVertexArray(m_VAO);
+	glDrawElements(GL_TRIANGLES, GetIndexCount(), GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }

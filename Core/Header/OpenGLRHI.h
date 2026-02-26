@@ -32,7 +32,6 @@ namespace Apex::Rendering
 		void SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec) override;
 		void SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix) override;
 
-		void SetupVertexLayout() override;
 		void DrawIndexed(GLsizei indexCount) override;
 		void DrawArrays(GLsizei vertexCount) override;
 		void SetDepthTest(bool enabled) override;

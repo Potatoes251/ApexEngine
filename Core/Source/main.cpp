@@ -2,11 +2,12 @@
 #include "Window.h"
 #include "RHI.h"
 #include "Camera.h"
-#include "Renderer.h"
+#include "MeshRenderer.h"
 
 // ── Resource system ───────────────────────────────────────────
 #include "ThreadPool.h"
 #include "ResourceManager.h"
+#include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 
@@ -26,10 +27,11 @@ int main()
 	ThreadPool threadPool;
 	ResourceManager resourceManager(threadPool);
 
-	auto textureHandle = resourceManager.CreateAsync<Texture>("container.jpg");
+	auto meshHandle = resourceManager.CreateAsync<Mesh>("bunny.obj");
+	auto textureHandle = resourceManager.CreateAsync<Texture>("container2.png");
 	auto shaderHandle = resourceManager.CreateAsync<Shader>("Cube.vert|Cube.frag");
 
-	Camera camera({ 0.f, 0.f, 3.f });
+	Camera camera;
 	window->SetCursorCaptured(true);
 
 	// Input callbacks
@@ -50,7 +52,7 @@ int main()
 	});
 
 	// Scene objects
-	Renderer cubeRenderer(rhi.get());
+	MeshRenderer meshRenderer(rhi.get());
 
 	float totalTime = 0.f;
 	while (!window->ShouldClose()) 
@@ -72,8 +74,9 @@ int main()
 
 		resourceManager.ProcessGpuUploads();
 
-		if (textureHandle.IsReady()) cubeRenderer.SetTexture(textureHandle);
-		if (shaderHandle.IsReady())  cubeRenderer.SetShader(shaderHandle);
+		if (meshHandle.IsReady())    meshRenderer.SetMesh(meshHandle);
+		if (textureHandle.IsReady()) meshRenderer.SetTexture(textureHandle);
+		if (shaderHandle.IsReady())  meshRenderer.SetShader(shaderHandle);
 
 		// Clear
 		rhi->Clear(0.12f, 0.12f, 0.15f);
@@ -82,8 +85,8 @@ int main()
 		LibMath::Matrix4 view = camera.GetViewMatrix();
 		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
 
-		// Draw cube
-		cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		// Draw mesh
+		meshRenderer.Render(view, proj, camera.GetPosition(), totalTime);
 
 		window->SwapBuffers();
 	}
