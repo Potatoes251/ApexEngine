@@ -61,7 +61,8 @@ namespace Apex::Resources
 
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
-
+		//if (id == "Fragment.glsl|vertexShader.glsl")
+		//	__debugbreak();
 		m_threadPool.Enqueue(&ResourceManager::Create, this, id);
 
 		return ResourceHandle(entry);

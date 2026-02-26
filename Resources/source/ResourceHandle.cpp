@@ -8,7 +8,6 @@ ResourceHandle::ResourceHandle(ResourceEntry* resourceEntry)
 	if (m_resourceEntry)
 	{
 		m_resourceEntry->m_refCount.fetch_add(1);
-		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 }
 
@@ -16,7 +15,6 @@ ResourceHandle::ResourceHandle(ResourceHandle const& other)
 	: m_resourceEntry(other.m_resourceEntry)
 {
 	m_resourceEntry->m_refCount.fetch_add(1);
-	printf("%d\n", m_resourceEntry->m_refCount.load());
 }
 
 ResourceHandle& ResourceHandle::operator=(ResourceHandle const& other)
@@ -27,7 +25,6 @@ ResourceHandle& ResourceHandle::operator=(ResourceHandle const& other)
 
 		m_resourceEntry = other.m_resourceEntry;
 		m_resourceEntry->m_refCount.fetch_add(1);
-		printf("%d\n", m_resourceEntry->m_refCount.load());
 	}
 	return *this;
 }

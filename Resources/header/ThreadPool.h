@@ -22,6 +22,7 @@ namespace Apex::Core
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_queue.emplace(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
+			m_cv.notify_one();
 		}
 
 

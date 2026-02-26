@@ -20,9 +20,9 @@ struct Vertex
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string path) : m_path("../../assets/Meshes/" + path) {}
-	Mesh(Mesh const& other) = delete;
-	Mesh& operator=(Mesh const& other) = delete;
+	Mesh(std::string name) : m_name("../../assets/Meshes/" + name) {}
+	Mesh(Mesh const&) = delete;
+	Mesh& operator=(Mesh const&) = delete;
 
 	//~Mesh();
 
@@ -34,7 +34,7 @@ public:
 	std::vector<unsigned int>	m_indices;
 
 private:
-	std::string m_path;
+	std::string m_name;
 
 	GLuint m_VBO;
 	GLuint m_VAO;
