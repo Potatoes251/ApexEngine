@@ -5,12 +5,18 @@
 
 namespace Apex::Rendering
 {
+	IRHI* CreateOpenGLRHI() { return new OpenGLRHI(); }
+
+	// ── Constructor ─────────────────────────────────────────────
+	OpenGLRHI::OpenGLRHI()
+	{
+		Initialize();
+	}
+
 	// ── Init / Clear ─────────────────────────────────────────────
 	void OpenGLRHI::Initialize()
 	{
 		glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	void OpenGLRHI::Clear(float r, float g, float b, float a)
 	{

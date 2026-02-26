@@ -7,8 +7,8 @@
 
 #include <glad/glad.h>
 
-#include "LibMath/Vector.h"
-#include "LibMath/Matrix.h"
+#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Matrix/Matrix4.h"
 
 #include <string>
 #include <vector>

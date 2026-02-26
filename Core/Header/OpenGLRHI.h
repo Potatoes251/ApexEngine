@@ -10,6 +10,11 @@ namespace Apex::Rendering
 	class OpenGLRHI final : public IRHI
 	{
 	public:
+		OpenGLRHI();
+		~OpenGLRHI() = default;
+		OpenGLRHI(const OpenGLRHI&) = delete;
+		OpenGLRHI& operator=(const OpenGLRHI&) = delete;
+
 		void Initialize() override;
 		void Clear(float r, float g, float b, float a = 1.f) override;
 
