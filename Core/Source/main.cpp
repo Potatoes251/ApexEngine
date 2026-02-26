@@ -19,13 +19,14 @@ int main()
 
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
 
-	// ThreadPool spins up hardware_concurrency worker threads for async loads.
+	// Initialize the scene
 	ThreadPool threadPool;
 	Scene scene(rhi.get(), threadPool);
 
 	size_t bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
 	size_t tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
 
+	// Initialize Camera
 	Camera camera;
 	window->SetCursorCaptured(true);
 
