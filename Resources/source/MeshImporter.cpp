@@ -1,6 +1,5 @@
 #include "MeshImporter.h"
 
-
 void MeshImporter::Import(std::string path, Mesh& mesh)
 {
 	FbxManager* manager = FbxManager::Create();
@@ -8,7 +7,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
 	manager->SetIOSettings(ios);
 
 
-	FbxScene* scene = FbxScene::Create(manager, "MyScene");
+	FbxScene* scene = FbxScene::Create(manager, "");
 
 	FbxImporter* importer = FbxImporter::Create(manager, "");
 

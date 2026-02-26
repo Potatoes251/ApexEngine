@@ -6,7 +6,6 @@
 
 void Shader::UploadToGpu()
 {
-	printf("shader upload starts\n");
 	std::vector<std::string> files;
 
 	std::stringstream ss(m_name);
@@ -19,10 +18,8 @@ void Shader::UploadToGpu()
 	if (!CreateShader(files))
 	{
 		SetState(ResourceState::Failed);
-		printf("shader upload failed\n");
 		return;
 	}
-	printf("shader upload finished\n");
 }
 
 void Shader::Use() const
@@ -71,7 +68,7 @@ bool Shader::InitShader(std::string const& shaderFile, GLuint& shader) const
 	std::ifstream file("assets/shaders/" + shaderFile);	// open the file
 	if (!file.is_open())
 	{
-		std::cout << "Failed to open file : " << shaderFile << std::endl;	// handle file not found
+		std::cout << "Failed to open file : " << shaderFile << std::endl;
 		return false;
 	}
 

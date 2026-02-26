@@ -39,7 +39,6 @@ ResourceHandle::~ResourceHandle()
 	if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
 	{
 		m_resourceEntry->m_resource.reset();
-		printf("resource destroyed\n");
 	}
 }
 

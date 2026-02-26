@@ -51,7 +51,6 @@ void ResourceManager::Create(std::string const& id)
 
 	resource->LoadFromFile();
 
-	// place the resource inside the already existing ResourceEntry
 	resource->SetState(ResourceState::Loaded);
 	AddToGpuQueue(resource);
 }

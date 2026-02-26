@@ -6,7 +6,6 @@ void Mesh::LoadFromFile()
 {
 	MeshImporter importer;
 	importer.Import(m_name, *this);
-	printf("finished loading\n");
 }
 
 void Mesh::UploadToGpu()
@@ -47,6 +46,4 @@ void Mesh::UploadToGpu()
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
-
-	printf("finished upload of %s\n", m_name.c_str());
 }
