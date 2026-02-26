@@ -3,8 +3,8 @@
 # -----------------------------------
 
 # Collect code files
-file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/header/*.h)
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
+file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h)
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
 
 # Group files for IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -46,7 +46,12 @@ target_link_libraries(${EXE_NAME}
     PRIVATE ${LOW_NAME}
 )
 
-# ---- Optional: Post-build copy for IrrKlang DLL ----
+add_custom_command(TARGET ${EXE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${EXE_NAME}>/assets
+)
+
 # This ensures the executable can find the DLL at runtime
 add_custom_command(TARGET ${EXE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

@@ -5,7 +5,6 @@ namespace LibMath
 {
 	class Matrix4;
 	class Vector4;
-
 	Vector4 operator*(Matrix4&, Vector4&);
 }
 
