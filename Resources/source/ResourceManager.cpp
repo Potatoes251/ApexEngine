@@ -4,25 +4,25 @@ using namespace Apex::Resources;
 
 void ResourceManager::ProcessGpuUploads()
 {
-	std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
-	while (!m_gpuUploadQueue.empty())
+	while (true)
 	{
-		IResource* resource = m_gpuUploadQueue.front();
-		m_gpuUploadQueue.pop();
-		if (resource->GetState() == ResourceState::Failed) continue;
+		ResourceHandle resource;
+		{
+			std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
+			if (m_gpuUploadQueue.empty()) break;
+
+			resource = m_gpuUploadQueue.front();
+			m_gpuUploadQueue.pop();
+		}
+
+		if (resource.IsFailed()) continue;
 		resource->UploadToGpu();
-		if (resource->GetState() == ResourceState::Failed) continue;
+		if (resource.IsFailed()) continue;
 		resource->SetState(ResourceState::Uploaded);
 	}
 }
 
-void ResourceManager::AddToGpuQueue(IResource* resource)
-{
-	std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
-	m_gpuUploadQueue.push(resource);
-}
-
-ResourceHandle ResourceManager::Get(std::string id)
+ResourceHandle ResourceManager::Get(std::string const& id)
 {
 	std::shared_lock<std::shared_mutex> lock(m_mapMutex);
 	auto it = m_resources.find(id);
@@ -37,21 +37,17 @@ ResourceHandle ResourceManager::Get(std::string id)
 	}
 }
 
+void ResourceManager::AddToGpuQueue(ResourceHandle resource)
+{
+	std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
+	m_gpuUploadQueue.push(resource);
+}
+
 void ResourceManager::Create(std::string const& id)
 {
-	printf("creating %s\n", id.c_str());
+	ResourceHandle resource = Get(id);
 
-	IResource* resource = nullptr;
-
-	{
-		std::lock_guard<std::shared_mutex> lock(m_mapMutex);
-
-		auto it = m_resources.find(id);
-
-		if (it == m_resources.end()) return;
-
-		resource = it->second.m_resource.get();
-	}
+	if (!resource.IsValid()) return;
 
 	resource->LoadFromFile();
 

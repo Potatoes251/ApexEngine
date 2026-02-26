@@ -16,11 +16,7 @@ project(${EXE_NAME} LANGUAGES C CXX)
 
 # Collect assets
 file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/assets/*.glsl
-    ${CMAKE_SOURCE_DIR}/assets/*.obj
-    ${CMAKE_SOURCE_DIR}/assets/*.png
-    ${CMAKE_SOURCE_DIR}/assets/*.jpg
-    ${CMAKE_SOURCE_DIR}/assets/*.tga
+    ${CMAKE_SOURCE_DIR}/assets/*
 )
 
 # Group them properly in Visual Studio
@@ -32,13 +28,11 @@ add_custom_target(Assets SOURCES
     ${ASSET_FILES}
 )
 
-add_subdirectory(assets)
 add_subdirectory(dependencies)
 add_subdirectory(LibMath)
 add_subdirectory(Resources)
 add_subdirectory(LowRenderer)
 add_subdirectory(Core)
-
 
 if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Engine)

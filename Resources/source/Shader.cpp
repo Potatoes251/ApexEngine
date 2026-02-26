@@ -68,7 +68,7 @@ bool Shader::CreateShader(std::vector<std::string> const& files)
 
 bool Shader::InitShader(std::string const& shaderFile, GLuint& shader) const
 {
-	std::ifstream file("../../assets/shaders/" + shaderFile);	// open the file
+	std::ifstream file("assets/shaders/" + shaderFile);	// open the file
 	if (!file.is_open())
 	{
 		std::cout << "Failed to open file : " << shaderFile << std::endl;	// handle file not found

@@ -46,7 +46,12 @@ target_link_libraries(${EXE_NAME}
     PRIVATE ${LOW_NAME}
 )
 
-# ---- Optional: Post-build copy for IrrKlang DLL ----
+add_custom_command(TARGET ${EXE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${EXE_NAME}>/assets
+)
+
 # This ensures the executable can find the DLL at runtime
 add_custom_command(TARGET ${EXE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

@@ -20,7 +20,7 @@ struct Vertex
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string name) : m_name("../../assets/Meshes/" + name) {}
+	Mesh(std::string name) : m_name("assets/Meshes/" + name) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 

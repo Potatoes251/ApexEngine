@@ -48,5 +48,5 @@ void Mesh::UploadToGpu()
 
 	glBindVertexArray(0);
 
-	printf("finished upload of %s", m_name.c_str());
+	printf("finished upload of %s\n", m_name.c_str());
 }

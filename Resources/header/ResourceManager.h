@@ -26,18 +26,18 @@ namespace Apex::Resources
 
 		template <typename ResourceType>
 		ResourceHandle CreateAsync(std::string const& id, bool persistent = false);
-		ResourceHandle Get(std::string id);
+		ResourceHandle Get(std::string const& id);
 
 		void ProcessGpuUploads();
-		void AddToGpuQueue(IResource*);
 
 	private:
+		void AddToGpuQueue(ResourceHandle);
 		void Create(std::string const& id);
 
 		Core::ThreadPool&	m_threadPool;
 
-		std::mutex				m_gpuQueueMutex;
-		std::queue<IResource*>	m_gpuUploadQueue;
+		std::mutex					m_gpuQueueMutex;
+		std::queue<ResourceHandle>	m_gpuUploadQueue;
 
 		std::shared_mutex		m_mapMutex;
 		std::unordered_map<std::string, ResourceEntry> m_resources;
@@ -61,8 +61,7 @@ namespace Apex::Resources
 
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
-		//if (id == "Fragment.glsl|vertexShader.glsl")
-		//	__debugbreak();
+
 		m_threadPool.Enqueue(&ResourceManager::Create, this, id);
 
 		return ResourceHandle(entry);
