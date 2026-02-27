@@ -28,9 +28,14 @@ namespace Apex::Physic
 
 		~PhysicSystem();
 
+		// should be called inside a fixed update
 		void Update(float deltaTime_s);
+
 		void AddGround();
 		void CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody);
+
+		// called on frame update
+		void SyncFromPhysx();
 
 	private:
 		void CreateActorDynamic(Collider const& collider, RigidBodyComponent const& rigidBody);
@@ -38,8 +43,6 @@ namespace Apex::Physic
 		void CreateActorKinematic(Collider const& collider, RigidBodyComponent const& rigidBody);
 
 		void SyncToPhysx();
-		void SyncFromPhysx();
-
 
 		std::vector<PhysicActor>		m_rigidBodies;
 

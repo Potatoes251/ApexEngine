@@ -54,6 +54,7 @@ PhysicSystem::~PhysicSystem()
 
 void PhysicSystem::Update(float deltaTime_s)
 {
+	SyncToPhysx();
 	m_scene->simulate(deltaTime_s);
 	m_scene->fetchResults(true);
 }
@@ -141,4 +142,33 @@ void PhysicSystem::CreateActorKinematic(Collider const& collider, RigidBodyCompo
 	m_scene->addActor(*body);
 
 	shape->release();
+}
+
+void PhysicSystem::SyncToPhysx()
+{
+	for (PhysicActor& actor : m_rigidBodies)
+	{
+		if (actor.m_owner->GetType() == BodyType::KINEMATIC)
+		{
+			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
+			LibMath::Vector3 pos = actor.m_owner->GetPosition();
+
+			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]));
+
+			body->setKinematicTarget(target);
+		}
+	}
+}
+
+void Apex::Physic::PhysicSystem::SyncFromPhysx()
+{
+	for (PhysicActor& actor : m_rigidBodies)
+	{
+		if (actor.m_owner->GetType() == BodyType::DYNAMIC)
+		{
+			physx::PxTransform transform = actor.m_actor->getGlobalPose();
+
+			actor.m_owner->SetPosition(LibMath::Vector3(transform.p.x, transform.p.y, transform.p.z));
+		}
+	}
 }

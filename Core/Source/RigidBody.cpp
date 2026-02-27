@@ -20,9 +20,11 @@ RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& othe
 	m_pos = other.m_pos;
 	m_mass = other.m_mass;
 	m_bodyType = other.m_bodyType;
+
+	return *this;
 }
 
-void RigidBodyComponent::SetPos(LibMath::Vector3 pos)
+void RigidBodyComponent::SetPosition(LibMath::Vector3 pos)
 {
 	m_pos = pos;
 }

@@ -27,7 +27,7 @@ namespace Apex::Physic
 		LibMath::Vector3	GetPosition() const { return m_pos; }
 		
 		
-		void SetPos(LibMath::Vector3 pos);
+		void SetPosition(LibMath::Vector3 pos);
 
 	private:
 		LibMath::Vector3 m_pos;
