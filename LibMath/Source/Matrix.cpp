@@ -636,7 +636,7 @@ LibMath::Matrix4::Matrix4(float val1, float val2, float val3, float val4,
 	m_values[3][3] = val16;  // col 3, row 3
 }
 
-float* LibMath::Matrix4::data()
+const float* LibMath::Matrix4::data() const
 {
 	return &m_values[0][0];
 }
@@ -950,21 +950,54 @@ LibMath::Matrix4 LibMath::Matrix4::perspective(float fovRadian, float aspectRati
 
 LibMath::Matrix4 LibMath::Matrix4::lookAt(Vector3 eye, Vector3 target, Vector3 up)
 {
-	Vector3 zAxis = (eye - target);
-	zAxis.normalize();
+	//Vector3 zAxis = (eye - target);
+	//zAxis.normalize();
 
-	// Compute the right vector (x-axis)
-	Vector3 xAxis = up.cross(zAxis);
-	xAxis.normalize();
+	//// Compute the right vector (x-axis)
+	//Vector3 xAxis = up.cross(zAxis);
+	//xAxis.normalize();
 
-	// Recompute the true up vector (y-axis)
-	Vector3 yAxis = zAxis.cross(xAxis);
+	//// Recompute the true up vector (y-axis)
+	//Vector3 yAxis = zAxis.cross(xAxis);
 
-	return LibMath::Matrix4(
-		xAxis[0],				yAxis[0],			-zAxis[0], .0f,
-		xAxis[1],				yAxis[1],			-zAxis[1], .0f,
-		xAxis[2],				yAxis[2],			-zAxis[2], .0f,
-		-xAxis.dot(eye),		-yAxis.dot(eye),	zAxis.dot(eye), 1.0f);
+	//return LibMath::Matrix4(
+	//	xAxis[0],				yAxis[0],			-zAxis[0], .0f,
+	//	xAxis[1],				yAxis[1],			-zAxis[1], .0f,
+	//	xAxis[2],				yAxis[2],			-zAxis[2], .0f,
+	//	-xAxis.dot(eye),		-yAxis.dot(eye),	zAxis.dot(eye), 1.0f);
+	
+	//Compute the forward direction (Z-axis) in a left-handed system
+	Vector3 forward = (target - eye);
+	forward.normalize();
+	// Compute the right direction (X-axis)
+	Vector3 right = up.cross(forward);
+	right.normalize();
+	// Compute the up direction (Y-axis)
+	Vector3 cameraUp = forward.cross(right);
+
+	// Construct the view matrix
+	Matrix4 viewMatrix;
+	viewMatrix.m_values[0][0] = -right[0];
+	viewMatrix.m_values[0][1] = cameraUp[0];
+	viewMatrix.m_values[0][2] = -forward[0];
+	viewMatrix.m_values[0][3] = 0.0f;
+
+	viewMatrix.m_values[1][0] = -right[1];
+	viewMatrix.m_values[1][1] = cameraUp[1];
+	viewMatrix.m_values[1][2] = -forward[1];
+	viewMatrix.m_values[1][3] = 0.0f;
+
+	viewMatrix.m_values[2][0] = -right[2];
+	viewMatrix.m_values[2][1] = cameraUp[2];
+	viewMatrix.m_values[2][2] = -forward[2];
+	viewMatrix.m_values[2][3] = 0.0f;
+
+	viewMatrix.m_values[3][0] = right.dot(eye);
+	viewMatrix.m_values[3][1] = -cameraUp.dot(eye);
+	viewMatrix.m_values[3][2] = forward.dot(eye);
+	viewMatrix.m_values[3][3] = 1.0f;
+
+	return viewMatrix;
 }
 
 LibMath::Matrix4 LibMath::Matrix4::orthogonal(float left, float right, float bottom, float top, float near, float far)
