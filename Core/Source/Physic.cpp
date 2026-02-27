@@ -1,7 +1,14 @@
 #include "Physic.h"
 
 #include <PxPhysicsAPI.h>
+
 #include <iostream>
+#include <cassert>
+
+#include "Rigidbody.h"
+#include "Collider.h"
+#include "BoxCollider.h"
+#include "CaspuleCollider.h"
 
 using namespace Apex::Physic;
 
@@ -68,71 +75,93 @@ void PhysicSystem::AddGround()
 
 void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody)
 {
+	physx::PxShape* shape = nullptr;
+	switch (collider.GetType())
+	{
+	case ColliderType::Box:
+		shape = CreateShapeBox(dynamic_cast<BoxCollider const&>(collider));
+		break;
+	case ColliderType::Capsule:
+		shape = CreateShapeCapsule(dynamic_cast<CapsuleCollider const&>(collider));
+		break;
+	default:
+		assert(false && "Unhandled collider type");
+		return;
+	}
+
+	if (!shape) return;
+
 	switch (rigidBody.GetType())
 	{
 	case BodyType::DYNAMIC:
-		CreateActorDynamic(collider, rigidBody);
+		CreateActorDynamic(shape, rigidBody);
 		break;
 	case BodyType::STATIC:
-		CreateActorStatic(collider, rigidBody);
+		CreateActorStatic(shape, rigidBody);
 		break;
+	case BodyType::KINEMATIC:
+		CreateActorKinematic(shape, rigidBody);
+		break;
+	default:
+		assert(false && "Unhandled rigidbody type");
+		return;
 	}
+
+	shape->release();
 }
 
-void PhysicSystem::CreateActorDynamic(Collider const& collider, RigidBodyComponent const& rigidBody)
+physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
+{
+	LibMath::Vector3 halfExtents = box.GetHalfExtents();
+
+	return m_physics->createShape(
+		physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])), *m_defaultMaterial);
+}
+
+physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
+{
+	float halfHeight = capsule.GetHalfHeight();
+	float radius = capsule.GetRadius();
+
+	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *m_defaultMaterial);
+}
+
+
+void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
-	LibMath::Vector3 halfExtents = collider.GetHalfExtents();
 
 	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]));
 
 	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
-
-	physx::PxShape* shape = m_physics->createShape(
-		physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])),
-		*m_defaultMaterial);
 
 	body->attachShape(*shape);
 
 	physx::PxRigidBodyExt::updateMassAndInertia(*body, rigidBody.GetMass());
 
 	m_scene->addActor(*body);
-
-	shape->release();
 }
 
-void PhysicSystem::CreateActorStatic(Collider const& collider, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
-	LibMath::Vector3 halfExtents = collider.GetHalfExtents();
 
 	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]));
 
 	physx::PxRigidStatic* body = m_physics->createRigidStatic(transform);
 
-	physx::PxShape* shape = m_physics->createShape(
-		physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])),
-		*m_defaultMaterial);
-
 	body->attachShape(*shape);
 
 	m_scene->addActor(*body);
-
-	shape->release();
 }
 
-void PhysicSystem::CreateActorKinematic(Collider const& collider, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
-	LibMath::Vector3 halfExtents = collider.GetHalfExtents();
 
 	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]));
 
 	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
-
-	physx::PxShape* shape = m_physics->createShape(
-		physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])),
-		*m_defaultMaterial);
 
 	body->attachShape(*shape);
 
@@ -140,8 +169,6 @@ void PhysicSystem::CreateActorKinematic(Collider const& collider, RigidBodyCompo
 	body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
 	m_scene->addActor(*body);
-
-	shape->release();
 }
 
 void PhysicSystem::SyncToPhysx()
@@ -160,7 +187,7 @@ void PhysicSystem::SyncToPhysx()
 	}
 }
 
-void Apex::Physic::PhysicSystem::SyncFromPhysx()
+void PhysicSystem::SyncFromPhysx()
 {
 	for (PhysicActor& actor : m_rigidBodies)
 	{

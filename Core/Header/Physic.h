@@ -5,14 +5,16 @@
 
 #include "LibMath/Vector/Vector3.h"
 
-#include "Rigidbody.h"
-#include "Collider.h"
-
 #include <vector>
 
 namespace Apex::Physic
 {
-	
+	class Collider;
+	class BoxCollider;
+	class CapsuleCollider;
+	class RigidBodyComponent;
+
+
 	struct PhysicActor
 	{
 		physx::PxRigidActor* m_actor;
@@ -29,20 +31,23 @@ namespace Apex::Physic
 		~PhysicSystem();
 
 		// should be called inside a fixed update
-		void Update(float deltaTime_s);
+		void	Update(float deltaTime_s);
 
-		void AddGround();
-		void CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody);
+		void	AddGround();
+		void	CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody);
 
 		// called on frame update
-		void SyncFromPhysx();
+		void	SyncFromPhysx();
 
 	private:
-		void CreateActorDynamic(Collider const& collider, RigidBodyComponent const& rigidBody);
-		void CreateActorStatic(Collider const& collider, RigidBodyComponent const& rigidBody);
-		void CreateActorKinematic(Collider const& collider, RigidBodyComponent const& rigidBody);
+		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
+		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
 
-		void SyncToPhysx();
+		void	CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
+		void	CreateActorStatic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
+		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
+
+		void	SyncToPhysx();
 
 		std::vector<PhysicActor>		m_rigidBodies;
 
