@@ -20,6 +20,7 @@ public:
 	void UploadToGpu() override;
 
 	void Use() const;
+	GLuint GetProgram() const;
 
 private:
 	bool	CreateShader(std::vector<std::string> const& files);

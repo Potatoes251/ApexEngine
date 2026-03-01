@@ -35,7 +35,7 @@ namespace Apex::Rendering
 	}
 	void OpenGLRHI::BindVAO(RHIVAOHandle vao) 
 	{
-		glBindVertexArray(GetGLVAO(vao));
+		glBindVertexArray(vao);
 	}
 	void OpenGLRHI::DeleteVAO(RHIVAOHandle vao) 
 	{
@@ -158,28 +158,28 @@ namespace Apex::Rendering
 	}
 
 	// ── Uniforms ─────────────────────────────────────────────────
-	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) 
+	void OpenGLRHI::SetUniformInt(GLuint program, const std::string& name, int value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniform1i(location, value);
 	}
 
-	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) 
+	void OpenGLRHI::SetUniformFloat(GLuint program, const std::string& name, float value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniform1f(location, value);
 	}
 
-	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) 
+	void OpenGLRHI::SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		const LibMath::Vector3& vector = vec;
 		glUniform3f(location, vector[0], vector[1], vector[2]);
 	}
 
-	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) 
+	void OpenGLRHI::SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 

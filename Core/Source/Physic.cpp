@@ -68,12 +68,12 @@ void PhysicSystem::Update(float deltaTime_s)
 
 void PhysicSystem::AddGround()
 {
-	physx::PxRigidStatic* ground = physx::PxCreatePlane(*m_physics, physx::PxPlane(0, 1, 0, 0), *m_defaultMaterial);
+	physx::PxRigidStatic* ground = physx::PxCreatePlane(*m_physics, physx::PxPlane(0, 0, 1, 0), *m_defaultMaterial);
 
 	m_scene->addActor(*ground);
 }
 
-void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rigidBody)
 {
 	physx::PxShape* shape = nullptr;
 	switch (collider.GetType())
@@ -127,7 +127,7 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 }
 
 
-void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
 
@@ -140,9 +140,15 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent 
 	physx::PxRigidBodyExt::updateMassAndInertia(*body, rigidBody.GetMass());
 
 	m_scene->addActor(*body);
+
+	PhysicActor actor;
+	actor.m_actor = body;
+	actor.m_owner = &rigidBody; // or pointer to component
+
+	m_rigidBodies.push_back(actor);
 }
 
-void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
 
@@ -153,9 +159,15 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent c
 	body->attachShape(*shape);
 
 	m_scene->addActor(*body);
+
+	PhysicActor actor;
+	actor.m_actor = body;
+	actor.m_owner = &rigidBody; // or pointer to component
+
+	m_rigidBodies.push_back(actor);
 }
 
-void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent const& rigidBody)
+void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
 	LibMath::Vector3 pos = rigidBody.GetPosition();
 
@@ -169,6 +181,12 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 	body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
 	m_scene->addActor(*body);
+
+	PhysicActor actor;
+	actor.m_actor = body;
+	actor.m_owner = &rigidBody; // or pointer to component
+
+	m_rigidBodies.push_back(actor);
 }
 
 void PhysicSystem::SyncToPhysx()
@@ -180,7 +198,7 @@ void PhysicSystem::SyncToPhysx()
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
 			LibMath::Vector3 pos = actor.m_owner->GetPosition();
 
-			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]));
+			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]), { 0,0,0,1 });
 
 			body->setKinematicTarget(target);
 		}

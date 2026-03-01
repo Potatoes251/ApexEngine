@@ -15,6 +15,10 @@ void Mesh::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
+	// generate VAO
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
+
 	// generate VBO
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -26,13 +30,6 @@ void Mesh::UploadToGpu()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(uint32_t), m_indices.data(), GL_STATIC_DRAW);
 
-	// generate VAO
-
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 
 	// mesh :  pos_x, pos_y, pos_z, nor_x, nor_y, nor_z, tex_u, tex_v
 
@@ -46,4 +43,9 @@ void Mesh::UploadToGpu()
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
+}
+
+GLuint Mesh::GetVAO() const
+{
+	return m_VAO;
 }

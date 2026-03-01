@@ -34,7 +34,7 @@ namespace Apex::Physic
 		void	Update(float deltaTime_s);
 
 		void	AddGround();
-		void	CreateActor(Collider const& collider, RigidBodyComponent const& rigidBody);
+		void	CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 
 		// called on frame update
 		void	SyncFromPhysx();
@@ -43,9 +43,9 @@ namespace Apex::Physic
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
 
-		void	CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
-		void	CreateActorStatic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
-		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent const& rigidBody);
+		void	CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
+		void	CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
+		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 
 		void	SyncToPhysx();
 
