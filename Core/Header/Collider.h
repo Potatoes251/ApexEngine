@@ -6,7 +6,8 @@ namespace Apex::Physic
 	enum class ColliderType
 	{
 		Box,
-		Capsule
+		Capsule,
+		Mesh
 	};
 
 	class Collider

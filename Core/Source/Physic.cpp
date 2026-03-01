@@ -9,6 +9,7 @@
 #include "Collider.h"
 #include "BoxCollider.h"
 #include "CaspuleCollider.h"
+#include "MeshCollider.h"
 
 using namespace Apex::Physic;
 
@@ -84,6 +85,8 @@ void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rig
 	case ColliderType::Capsule:
 		shape = CreateShapeCapsule(dynamic_cast<CapsuleCollider const&>(collider));
 		break;
+	case ColliderType::Mesh:
+		break;
 	default:
 		assert(false && "Unhandled collider type");
 		return;
@@ -124,6 +127,11 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float radius = capsule.GetRadius();
 
 	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *m_defaultMaterial);
+}
+
+physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh)
+{
+	return nullptr;
 }
 
 

@@ -11,6 +11,7 @@ namespace Apex::Physic
 {
 	class Collider;
 	class BoxCollider;
+	class MeshCollider;
 	class CapsuleCollider;
 	class RigidBodyComponent;
 
@@ -42,6 +43,7 @@ namespace Apex::Physic
 	private:
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
+		physx::PxShape*		CreateShapeMesh(MeshCollider const& mesh);
 
 		void	CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 		void	CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& rigidBody);

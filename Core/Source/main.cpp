@@ -61,11 +61,11 @@ int main(int argc, char* argv[])
 	// dragon (slow)
 	//ResourceHandle mesh = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
 	// faster
-	ResourceHandle mesh = rm.CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
-	ResourceHandle texture = rm.CreateAsync<Texture>("Assets/Textures/container.jpg");
-	ResourceHandle shader = rm.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+	ResourceHandle<Mesh> mesh = rm.CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
+	ResourceHandle<Texture> texture = rm.CreateAsync<Texture>("Assets/Textures/container.jpg");
+	ResourceHandle<Shader> shader = rm.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
 
-	ResourceHandle cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+	ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
 
 	//LibMath::Matrix4 trans = LibMath::Matrix4::createScale(LibMath::Vector3(0.0005f));
 	//trans = trans * LibMath::Matrix4::createRotationX(LibMath::Degree(-90));
@@ -122,13 +122,9 @@ int main(int argc, char* argv[])
 			physics.Update(deltaTime);
 			physics.SyncFromPhysx();
 
-			Shader* shaderPtr = dynamic_cast<Shader*>(shader.operator->());
-			Texture* texPtr = dynamic_cast<Texture*>(texture.operator->());
-			Mesh* meshPtr = dynamic_cast<Mesh*>(mesh.operator->());
-			Mesh* cubePtr = dynamic_cast<Mesh*>(cube.operator->());
-			shaderPtr->Use();
-			texPtr->Bind();
-			GLuint prog = shaderPtr->GetProgram();
+			shader->Use();
+			texture->Bind();
+			GLuint prog = shader->GetProgram();
 			
 			rhi->SetUniformMat4(prog, "uModel", trans * LibMath::Matrix4::createTranslation(body.GetPosition()));
 			rhi->SetUniformMat4(prog, "uView", view);
@@ -142,13 +138,13 @@ int main(int argc, char* argv[])
 			rhi->SetUniformInt(prog, "uTexture", 0);
 			rhi->SetUniformInt(prog, "uUseTexture", 1);
 
-			rhi->BindVAO(cubePtr->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(cubePtr->m_indices.size()));
+			rhi->BindVAO(cube->GetVAO());
+			rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
 
 
 			rhi->SetUniformMat4(prog, "uModel", trans2 * LibMath::Matrix4::createTranslation(body2.GetPosition()));
-			rhi->BindVAO(cubePtr->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(cubePtr->m_indices.size()));
+			rhi->BindVAO(cube->GetVAO());
+			rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
 		}
 
 		// Draw cube
