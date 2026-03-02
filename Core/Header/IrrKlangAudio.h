@@ -46,6 +46,7 @@ namespace Apex::Audio
         void  PauseSound(SoundHandle handle, bool paused) override;
         void  SetVolume(SoundHandle handle, float volume) override;
         bool  IsPlaying(SoundHandle handle) const        override;
+		bool  IsPaused(SoundHandle handle) const         override;
 
         void SetListenerPosition(const LibMath::Vector3& position,
                                  const LibMath::Vector3& lookDirection,

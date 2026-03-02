@@ -151,7 +151,13 @@ namespace Apex::Audio
     bool IrrKlangAudio::IsPlaying(SoundHandle handle) const
     {
         irrklang::ISound* sound = GetSound(handle);
-        return sound && !sound->isFinished();
+        return sound && !sound->isFinished() && !sound->getIsPaused();
+    }
+
+    bool IrrKlangAudio::IsPaused(SoundHandle handle) const
+    {
+        irrklang::ISound* sound = GetSound(handle);
+        return sound && !sound->isFinished() && sound->getIsPaused();
     }
 
     // ── Listener ─────────────────────────────────────────────────────

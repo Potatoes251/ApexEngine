@@ -57,6 +57,7 @@ namespace Apex::Audio
         virtual void  PauseSound(SoundHandle handle, bool paused) = 0;
         virtual void  SetVolume(SoundHandle handle, float volume) = 0;
         virtual bool  IsPlaying(SoundHandle handle) const = 0;
+        virtual bool  IsPaused(SoundHandle handle) const = 0;
 
         // Listener transform (for 3-D audio)
         virtual void SetListenerPosition(const LibMath::Vector3& position,
