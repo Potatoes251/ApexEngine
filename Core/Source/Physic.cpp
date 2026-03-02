@@ -157,12 +157,23 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 			return nullptr;
 		}
 		{
-			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()));
+			LibMath::Vector3 scale = rigidBody.GetScale();
+			physx::PxMeshScale meshScale(
+				{ scale[0], scale[1], scale[2] },  // scaling
+				physx::PxQuat(physx::PxIdentity)           // rotation (usually identity)
+			);
+			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
 			return m_physics->createShape(geometry, *m_defaultMaterial);
 		}
 	case MeshColliderType::Convex:
 	{
-		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()));
+		LibMath::Vector3 scale = rigidBody.GetScale();
+		physx::PxMeshScale meshScale(
+			{ scale[0], scale[1], scale[2] },  // scaling
+			physx::PxQuat(physx::PxIdentity)           // rotation (usually identity)
+		);
+
+		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
 		return m_physics->createShape(geometry, *m_defaultMaterial);
 		break;
@@ -177,9 +188,11 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 
 void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
-	LibMath::Vector3 pos = rigidBody.GetPosition();
+	LibMath::Transform trans = rigidBody.GetTransform();
+	LibMath::Vector3 pos = trans.getPosition();
+	LibMath::Quaternion rot = trans.getRotation();
 
-	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]));
+	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
 
 	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
 
@@ -245,8 +258,9 @@ void PhysicSystem::SyncToPhysx()
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
 			LibMath::Vector3 pos = actor.m_owner->GetPosition();
+			LibMath::Quaternion rot = actor.m_owner->GetRotation();
 
-			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]), { 0,0,0,1 });
+			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
 
 			body->setKinematicTarget(target);
 		}
@@ -262,6 +276,7 @@ void PhysicSystem::SyncFromPhysx()
 			physx::PxTransform transform = actor.m_actor->getGlobalPose();
 
 			actor.m_owner->SetPosition(LibMath::Vector3(transform.p.x, transform.p.y, transform.p.z));
+			actor.m_owner->SetRotation(LibMath::Quaternion(transform.q.x, transform.q.y, transform.q.z, transform.q.w));
 		}
 	}
 }

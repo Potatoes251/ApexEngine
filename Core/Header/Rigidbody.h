@@ -1,7 +1,7 @@
 #ifndef RIGIDBODY
 #define RIGIDBODY
 
-#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Transform.h"
 #include "Physic.h"
 
 namespace Apex::Physic
@@ -25,13 +25,19 @@ namespace Apex::Physic
 
 		BodyType			GetType() const { return m_bodyType; }
 		float				GetMass() const { return m_mass; }
-		LibMath::Vector3	GetPosition() const { return m_pos; }
+		LibMath::Transform	GetTransform() const{ return m_trans; }
+		LibMath::Quaternion	GetRotation() const { return m_trans.getRotation(); }
+		LibMath::Vector3	GetPosition() const { return m_trans.getPosition(); }
+		LibMath::Vector3	GetScale() const { return m_trans.getScale(); }
 		
 		
+		void SetTransform(LibMath::Transform trans);
+		void SetRotation(LibMath::Quaternion rot);
 		void SetPosition(LibMath::Vector3 pos);
+		void SetScale(LibMath::Vector3 scale);
 
 	private:
-		LibMath::Vector3 m_pos;
+		LibMath::Transform m_trans;
 
 		BodyType	m_bodyType;
 		float		m_mass;

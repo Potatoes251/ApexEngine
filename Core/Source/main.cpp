@@ -60,47 +60,49 @@ int main(int argc, char* argv[])
 		});
 
 	// dragon (slow)
-	//ResourceHandle mesh = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
+	ResourceHandle mesh2 = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
 	// faster
 	ResourceHandle<Mesh> mesh = rm.CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
 	ResourceHandle<Texture> texture = rm.CreateAsync<Texture>("Assets/Textures/container.jpg");
+	ResourceHandle<Texture> texture2 = rm.CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
 	ResourceHandle<Shader> shader = rm.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
 
-	ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+	//ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
 
-	//LibMath::Matrix4 trans = LibMath::Matrix4::createScale(LibMath::Vector3(0.0005f));
-	//trans = trans * LibMath::Matrix4::createRotationX(LibMath::Degree(-90));
-	LibMath::Matrix4 trans = LibMath::Matrix4::createScale(LibMath::Vector3(1));
-	LibMath::Matrix4 trans2 = LibMath::Matrix4::createScale(LibMath::Vector3(2));
+	while (!mesh.IsReady() || !mesh2.IsReady() || /*!cube.IsReady() ||*/ !texture.IsReady() || !shader.IsReady())
+		rm.ProcessGpuUploads();
 
 	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-	RigidBodyComponent body = RigidBodyComponent(10, BodyType::DYNAMIC);
+	RigidBodyComponent body = RigidBodyComponent(1, BodyType::DYNAMIC);
 
 
 	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
 	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::STATIC);
 
-	MeshCollider meshCollider = MeshCollider(cube, MeshColliderType::Convex);
+	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex);
+	MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
 	body.SetPosition({ 0, 10, 0 });
 	body2.SetPosition({ 0, 0, 0 });
-
-	while (!cube.IsReady()) rm.ProcessGpuUploads();
+	body2.SetScale(LibMath::Vector3(0.001f));
+	body2.SetRotation(LibMath::Quaternion(LibMath::Degree(90), LibMath::Radian(0), LibMath::Radian(0)));
 
 
 	physics.CreateActor(meshCollider, body);
-	physics.CreateActor(collider, body2);
+	physics.CreateActor(meshCollider2, body2);
 	//physics.AddGround();
 
 	// Scene objects
-	Renderer cubeRenderer(rhi.get());
-	cubeRenderer.LoadTexture("Assets/Textures/container.jpg");
+	//Renderer cubeRenderer(rhi.get());
+	//cubeRenderer.LoadTexture("Assets/Textures/container.jpg");
 
 	float totalTime = 0.f;
+	float accumulator = 0.f;
 	while (!window->ShouldClose())
 	{
 		window->PollEvents();
 		float deltaTime = window->GetDeltaTime();
+		if (deltaTime > 0.1f) deltaTime = 1.f / 60.f;
 		totalTime += deltaTime;
 
 		// Camera keyboard movement
@@ -121,18 +123,23 @@ int main(int argc, char* argv[])
 		LibMath::Matrix4 view = camera.GetViewMatrix();
 		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
 
-		if (mesh.IsReady() && texture.IsReady() && shader.IsReady() && cube.IsReady())
+		if (mesh2.IsReady() && mesh.IsReady() && texture.IsReady() && shader.IsReady() /*&& cube.IsReady()*/)
 		{
 			printf("here\r");
 
-			physics.Update(deltaTime);
+			accumulator += deltaTime;
+			while (accumulator >= 1.f / 60.f)
+			{
+				physics.Update(1.f / 60.f);
+				accumulator -= 1.f / 60.f;
+			}
 			physics.SyncFromPhysx();
 
 			shader->Use();
 			texture->Bind();
 			GLuint prog = shader->GetProgram();
 			
-			rhi->SetUniformMat4(prog, "uModel", trans * LibMath::Matrix4::createTranslation(body.GetPosition()));
+			rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
 			rhi->SetUniformMat4(prog, "uView", view);
 			rhi->SetUniformMat4(prog, "uProjection", proj);
 			rhi->SetUniformVec3(prog, "uCameraPos", camera.GetPosition());
@@ -144,17 +151,17 @@ int main(int argc, char* argv[])
 			rhi->SetUniformInt(prog, "uTexture", 0);
 			rhi->SetUniformInt(prog, "uUseTexture", 1);
 
-			rhi->BindVAO(cube->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
+			rhi->BindVAO(mesh->GetVAO());
+			rhi->DrawIndexed(static_cast<GLsizei>(mesh->m_indices.size()));
 
-
-			rhi->SetUniformMat4(prog, "uModel", trans2 * LibMath::Matrix4::createTranslation(body2.GetPosition()));
-			rhi->BindVAO(cube->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
+			texture2->Bind();
+			rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
+			rhi->BindVAO(mesh2->GetVAO());
+			rhi->DrawIndexed(static_cast<GLsizei>(mesh2->m_indices.size()));
 		}
 
 		// Draw cube
-		cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		//cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
 
 		rm.ProcessGpuUploads();
 
