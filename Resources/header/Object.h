@@ -24,6 +24,8 @@ namespace Apex::Data
 		const	Matrix4		GetTransform() const;
 				void		SetTransform(const Matrix4& transform);
 
+		shared_ptr<SceneNode> GetNode() const { return m_owner; }
+
 	private:
 		Matrix4					m_transform;
 		shared_ptr<SceneNode>	m_owner;

@@ -1,13 +1,17 @@
+﻿// ── Engine abstractions ───────────────────────────────────────
 #include "Window.h"
-
 #include "RHI.h"
-
 #include "Camera.h"
+#include "Scene.h"
+#include "SceneGraph.h"
 
-#include "Renderer.h"
+// ── Resource system ───────────────────────────────────────────
+#include "ThreadPool.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
+using namespace Apex::Core;
+using namespace Apex::Resources;
 
 int main()
 {
@@ -16,9 +20,20 @@ int main()
 
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
 
-	Camera camera({ 0.f, 0.f, 3.f });
+	// Initialize the scene
+	ThreadPool threadPool;
+	Scene scene(rhi.get(), threadPool);
 
-	// Capture mouse for FPS look
+	Apex::Data::Object* bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
+	Apex::Data::Object* tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
+
+	bunny->SetTransform(LibMath::Matrix4::createTranslation({ 5.f, 0.f, 0.f }));
+	tyrannosaurus->SetTransform(LibMath::Matrix4::createTranslation({ -5.f, 0.f, 0.f }));
+
+	bunny->GetNode()->AddChild(tyrannosaurus->GetNode());
+
+	// Initialize Camera
+	Camera camera;
 	window->SetCursorCaptured(true);
 
 	// Input callbacks
@@ -37,10 +52,6 @@ int main()
 	{
 		camera.ProcessScroll(yoff);
 	});
-
-	// Scene objects
-	Renderer cubeRenderer(rhi.get());
-	cubeRenderer.LoadTexture("../../Assets/Textures/container.jpg");
 
 	float totalTime = 0.f;
 	while (!window->ShouldClose()) 
@@ -63,12 +74,9 @@ int main()
 		// Clear
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
-		// Matrices from camera
-		LibMath::Matrix4 view = camera.GetViewMatrix();
-		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
-
-		// Draw cube
-		cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		scene.Update(camera.GetViewMatrix(),
+			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
+			camera.GetPosition(), totalTime);
 
 		window->SwapBuffers();
 	}

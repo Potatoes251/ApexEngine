@@ -85,113 +85,30 @@ namespace Apex::Rendering
 		m_buffers.erase(buffer);
 	}
 
-	// ── Textures ─────────────────────────────────────────────────
-	RHITextureHandle OpenGLRHI::CreateTexture(const TextureDescription& desc) 
-	{
-		GLuint glTexture;
-		glGenTextures(1, &glTexture);
-		glBindTexture(GL_TEXTURE_2D, glTexture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		const GLenum internalFmt = (desc.m_channels == 4) ? GL_RGBA8 : GL_RGB8;
-		const GLenum pixelFmt = (desc.m_channels == 4) ? GL_RGBA : GL_RGB;
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFmt, desc.m_width, desc.m_height, 0, pixelFmt, GL_UNSIGNED_BYTE, desc.m_data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		RHITextureHandle texture = NewHandle();
-		m_textures[texture] = glTexture;
-		return texture;
-	}
-
-	void OpenGLRHI::BindTexture(RHITextureHandle texture, GLuint unit) 
-	{
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_2D, GetGLTexture(texture));
-	}
-
-	void OpenGLRHI::DeleteTexture(RHITextureHandle texture) 
-	{
-		GLuint glTexture = GetGLTexture(texture);
-		glDeleteTextures(1, &glTexture);
-		m_textures.erase(texture);
-	}
-
-	// ── Shaders ──────────────────────────────────────────────────
-	RHIShaderHandle OpenGLRHI::CreateShader(const ShaderSource& source) 
-	{
-		GLuint vertexShader = CompileShader(source.vertexPath, GL_VERTEX_SHADER);
-		GLuint fragmentShader = CompileShader(source.fragmentPath, GL_FRAGMENT_SHADER);
-		GLuint program = glCreateProgram();
-		glAttachShader(program, vertexShader);
-		glAttachShader(program, fragmentShader);
-		glLinkProgram(program);
-
-		GLint success;
-		glGetProgramiv(program, GL_LINK_STATUS, &success);
-		if (!success) 
-		{
-			GLchar infoLog[512];
-			glGetProgramInfoLog(program, 512, nullptr, infoLog);
-			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-		}
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragmentShader);
-
-		RHIShaderHandle shader = NewHandle();
-		m_shaders[shader] = program;
-		return shader;
-	}
-
-	void OpenGLRHI::BindShader(RHIShaderHandle shader) 
-	{
-		m_boundShader = GetGLShader(shader);
-		glUseProgram(m_boundShader);
-	}
-
-	void OpenGLRHI::DeleteShader(RHIShaderHandle shader) 
-	{
-		GLuint glShader = GetGLShader(shader);
-		glDeleteProgram(glShader);
-		m_shaders.erase(shader);
-	}
-
 	// ── Uniforms ─────────────────────────────────────────────────
-	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) 
+	void OpenGLRHI::SetUniformInt(GLuint program, const std::string& name, int value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniform1i(location, value);
 	}
 
-	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) 
+	void OpenGLRHI::SetUniformFloat(GLuint program, const std::string& name, float value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniform1f(location, value);
 	}
 
-	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) 
+	void OpenGLRHI::SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		const LibMath::Vector3& vector = vec;
 		glUniform3f(location, vector[0], vector[1], vector[2]);
 	}
 
-	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) 
+	void OpenGLRHI::SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(program, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
-	}
-
-	// ── Vertex layout ─────────────────────────────────────────────
-	void OpenGLRHI::SetupVertexLayout() 
-	{
-		glEnableVertexAttribArray(0); // Position
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
-		glEnableVertexAttribArray(1); // Normal
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
-		glEnableVertexAttribArray(2); // UV
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
 	}
 
 	// ── Draw ───────────────────────────────────────────────────────
@@ -215,39 +132,5 @@ namespace Apex::Rendering
 
 	// ── Helpers ───────────────────────────────────────────────────
 	GLuint OpenGLRHI::GetGLBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
-	GLuint OpenGLRHI::GetGLTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
-	GLuint OpenGLRHI::GetGLShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
 	GLuint OpenGLRHI::GetGLVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }
-
-	GLuint OpenGLRHI::CompileShader(const std::string& path, GLenum type)
-	{
-		std::string source = ReadFile(path);
-		const char* sourceCStr = source.c_str();
-		GLuint shader = glCreateShader(type);
-		glShaderSource(shader, 1, &sourceCStr, nullptr);
-		glCompileShader(shader);
-
-		GLint success;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-		if (!success) 
-		{
-			GLchar infoLog[512];
-			glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-			std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-		}
-		return shader;
-	}
-
-	std::string OpenGLRHI::ReadFile(const std::string& path)
-	{
-		std::ifstream file(path);
-		if (!file.is_open()) 
-		{
-			std::cerr << "ERROR::FILE::COULD_NOT_OPEN " << path << std::endl;
-			return "";
-		}
-		std::stringstream buffer;
-		buffer << file.rdbuf();
-		return buffer.str();
-	}
 }
