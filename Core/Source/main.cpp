@@ -11,6 +11,7 @@
 
 #include "Physic.h"
 #include "BoxCollider.h"
+#include "MeshCollider.h"
 #include "Rigidbody.h"
 
 #include <filesystem>
@@ -73,17 +74,22 @@ int main(int argc, char* argv[])
 	LibMath::Matrix4 trans2 = LibMath::Matrix4::createScale(LibMath::Vector3(2));
 
 	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-	RigidBodyComponent body = RigidBodyComponent(1, BodyType::DYNAMIC);
+	RigidBodyComponent body = RigidBodyComponent(10, BodyType::DYNAMIC);
 
 
 	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
 	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::STATIC);
 
+	MeshCollider meshCollider = MeshCollider(cube, MeshColliderType::Convex);
+
 	body.SetPosition({ 0, 10, 0 });
 	body2.SetPosition({ 0, 0, 0 });
 
-	physics.CreateActor(collider, body);
-	physics.CreateActor(collider2, body2);
+	while (!cube.IsReady()) rm.ProcessGpuUploads();
+
+
+	physics.CreateActor(meshCollider, body);
+	physics.CreateActor(collider, body2);
 	//physics.AddGround();
 
 	// Scene objects

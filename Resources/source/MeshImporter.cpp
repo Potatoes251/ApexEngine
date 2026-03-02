@@ -6,13 +6,14 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
 {
     FbxManager* manager = nullptr;
     FbxIOSettings* ios = nullptr;
-    {
-        static std::mutex mutex;
-        std::lock_guard<std::mutex> lock(mutex);
-        manager = FbxManager::Create();
-        ios = FbxIOSettings::Create(manager, IOSROOT);
-	    manager->SetIOSettings(ios);
-    }
+    
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
+
+    manager = FbxManager::Create();
+    ios = FbxIOSettings::Create(manager, IOSROOT);
+	manager->SetIOSettings(ios);
+
 
 	FbxScene* scene = FbxScene::Create(manager, "");
 

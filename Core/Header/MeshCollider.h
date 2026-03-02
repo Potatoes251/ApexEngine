@@ -7,21 +7,31 @@
 
 namespace Apex::Physic
 {
+	enum class MeshColliderType
+	{
+		Triangle,
+		Convex
+	};
+
 	class MeshCollider : public Collider
 	{
 	public:
-		MeshCollider(LibMath::Vector3 halfExtents) : m_halfExtents(halfExtents) {}
+		MeshCollider(Resources::ResourceHandle<Mesh> mesh, MeshColliderType type) : m_mesh(mesh), m_type(type) {}
 		MeshCollider(MeshCollider const&);
 		MeshCollider& operator=(MeshCollider const&);
 
 		~MeshCollider() = default;
 
 		ColliderType GetType() const override { return ColliderType::Mesh; }
+		MeshColliderType GetMeshColliderType() const { return m_type; }
 
-		LibMath::Vector3 GetHalfExtents() const { return m_halfExtents; }
+		Resources::ResourceHandle<Mesh> GetMesh() const { return m_mesh; }
+
+		Resources::ResourceHandle<Mesh> SetMeshColliderType(MeshColliderType type) { m_type = type; }
 
 	private:
-		LibMath::Vector3 m_halfExtents;
+		Resources::ResourceHandle<Mesh> m_mesh;
+		MeshColliderType m_type;
 	};
 }
 

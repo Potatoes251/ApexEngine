@@ -1,6 +1,7 @@
 #include "Physic.h"
 
 #include <PxPhysicsAPI.h>
+#include <cooking/PxCooking.h>
 
 #include <iostream>
 #include <cassert>
@@ -10,6 +11,7 @@
 #include "BoxCollider.h"
 #include "CaspuleCollider.h"
 #include "MeshCollider.h"
+#include "Mesh.h"
 
 using namespace Apex::Physic;
 
@@ -86,6 +88,7 @@ void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rig
 		shape = CreateShapeCapsule(dynamic_cast<CapsuleCollider const&>(collider));
 		break;
 	case ColliderType::Mesh:
+		shape = CreateShapeMesh(dynamic_cast<MeshCollider const&>(collider), rigidBody);
 		break;
 	default:
 		assert(false && "Unhandled collider type");
@@ -113,6 +116,20 @@ void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rig
 	shape->release();
 }
 
+void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
+{
+	for (auto it = m_rigidBodies.begin(); it != m_rigidBodies.end(); ++it)
+	{
+		if (it->m_owner == &rigidbody)
+		{
+			m_scene->removeActor(*(it->m_actor));
+			it->m_actor->release();
+			m_rigidBodies.erase(it);
+			return;
+		}
+	}
+}
+
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
 	LibMath::Vector3 halfExtents = box.GetHalfExtents();
@@ -129,8 +146,31 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *m_defaultMaterial);
 }
 
-physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh)
+physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody)
 {
+	switch (mesh.GetMeshColliderType())
+	{
+	case MeshColliderType::Triangle:
+		if (rigidBody.GetType() != BodyType::STATIC)
+		{
+			assert(false && "Triangle mesh can only be static");
+			return nullptr;
+		}
+		{
+			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()));
+			return m_physics->createShape(geometry, *m_defaultMaterial);
+		}
+	case MeshColliderType::Convex:
+	{
+		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()));
+
+		return m_physics->createShape(geometry, *m_defaultMaterial);
+		break;
+	}
+	default:
+		assert(false && "Unhandled mesh collider type");
+		break;
+	}
 	return nullptr;
 }
 
@@ -151,7 +191,7 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 
 	PhysicActor actor;
 	actor.m_actor = body;
-	actor.m_owner = &rigidBody; // or pointer to component
+	actor.m_owner = &rigidBody;
 
 	m_rigidBodies.push_back(actor);
 }
@@ -170,7 +210,7 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 
 	PhysicActor actor;
 	actor.m_actor = body;
-	actor.m_owner = &rigidBody; // or pointer to component
+	actor.m_owner = &rigidBody;
 
 	m_rigidBodies.push_back(actor);
 }
@@ -192,7 +232,7 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 
 	PhysicActor actor;
 	actor.m_actor = body;
-	actor.m_owner = &rigidBody; // or pointer to component
+	actor.m_owner = &rigidBody;
 
 	m_rigidBodies.push_back(actor);
 }
@@ -224,4 +264,64 @@ void PhysicSystem::SyncFromPhysx()
 			actor.m_owner->SetPosition(LibMath::Vector3(transform.p.x, transform.p.y, transform.p.z));
 		}
 	}
+}
+
+physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh)
+{
+	physx::PxTriangleMeshDesc meshDesc;
+
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.stride = sizeof(Vertex);
+	meshDesc.points.data = mesh->m_vertices.data();
+
+	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->m_indices.size() / 3);
+	meshDesc.triangles.stride = sizeof(int) * 3;
+	meshDesc.triangles.data = mesh->m_indices.data();
+
+	physx::PxTolerancesScale scale;
+	physx::PxCookingParams params(scale);
+
+	physx::PxDefaultMemoryOutputStream writeBuffer;
+
+	if (!PxCookTriangleMesh(params, meshDesc, writeBuffer))
+	{
+		assert(false && "Triangle mesh cooking failed");
+		return nullptr;
+	}
+
+	physx::PxDefaultMemoryInputData readBuffer(
+		writeBuffer.getData(),
+		writeBuffer.getSize()
+	);
+
+	return m_physics->createTriangleMesh(readBuffer);
+}
+
+physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh)
+{
+	physx::PxConvexMeshDesc meshDesc;
+
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.stride = sizeof(Vertex);
+	meshDesc.points.data = mesh->m_vertices.data();
+
+	meshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+
+	physx::PxTolerancesScale scale;
+	physx::PxCookingParams params(scale);
+
+	physx::PxDefaultMemoryOutputStream writeBuffer;
+
+	if (!PxCookConvexMesh(params, meshDesc, writeBuffer))
+	{
+		assert(false && "Convex mesh cooking failed");
+		return nullptr;
+	}
+
+	physx::PxDefaultMemoryInputData readBuffer(
+		writeBuffer.getData(),
+		writeBuffer.getSize()
+	);
+
+	return m_physics->createConvexMesh(readBuffer);
 }

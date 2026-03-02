@@ -5,6 +5,9 @@
 
 #include "LibMath/Vector/Vector3.h"
 
+#include "ResourceHandle.h"
+#include "Mesh.h"
+
 #include <vector>
 
 namespace Apex::Physic
@@ -36,14 +39,17 @@ namespace Apex::Physic
 
 		void	AddGround();
 		void	CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
+		void	RemoveActor(RigidBodyComponent const& rigidbody);
 
 		// called on frame update
 		void	SyncFromPhysx();
+		physx::PxTriangleMesh* CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxConvexMesh* CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
 
 	private:
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
-		physx::PxShape*		CreateShapeMesh(MeshCollider const& mesh);
+		physx::PxShape*		CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody);
 
 		void	CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 		void	CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& rigidBody);

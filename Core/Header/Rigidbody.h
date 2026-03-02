@@ -2,6 +2,7 @@
 #define RIGIDBODY
 
 #include "LibMath/Vector/Vector3.h"
+#include "Physic.h"
 
 namespace Apex::Physic
 {
