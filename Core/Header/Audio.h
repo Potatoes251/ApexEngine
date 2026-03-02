@@ -1,14 +1,15 @@
-﻿#ifndef AUDIO_H
-#define AUDIO_H
+﻿#ifndef AUDIO
+#define AUDIO
 
 // ============================================================
 // Audio.h — Public audio interface.
 // irrKlang headers are NEVER referenced here.
 // This is the only header the rest of the engine should include.
 // ============================================================
-#include "LibMath/Vector/Vector3.h"
 
 #include <string>
+
+#include "LibMath/Vector/Vector3.h"
 
 namespace Apex::Audio
 {
@@ -71,4 +72,4 @@ namespace Apex::Audio
 
 } // namespace Apex::Audio
 
-#endif // AUDIO_H
+#endif // AUDIO

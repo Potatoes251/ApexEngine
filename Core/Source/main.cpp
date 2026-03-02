@@ -1,5 +1,6 @@
 ﻿// ── Engine abstractions ───────────────────────────────────────
 #include "Window.h"
+#include "Audio.h"
 #include "RHI.h"
 #include "Camera.h"
 #include "Scene.h"
@@ -12,13 +13,14 @@ using namespace Apex::Windowing;
 using namespace Apex::Rendering;
 using namespace Apex::Core;
 using namespace Apex::Resources;
+using namespace Apex::Audio;
 
 int main()
 {
-	// Initialize window and RHI
+	// Initialize
 	std::unique_ptr<IWindow> window(CreateWindow("Apex Renderer", 1280, 720));
-
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
+	std::unique_ptr<IAudioEngine> audio(CreateAudioEngine());
 
 	// Initialize the scene
 	ThreadPool threadPool;
@@ -31,6 +33,15 @@ int main()
 	tyrannosaurus->SetTransform(LibMath::Matrix4::createTranslation({ -5.f, 0.f, 0.f }));
 
 	bunny->GetNode()->AddChild(tyrannosaurus->GetNode());
+
+	// Audio setup 
+	if (audio)
+	{
+		audio->Preload("fragments of hope.ogg");
+	}
+
+	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
+		{ .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
 
 	// Initialize Camera
 	Camera camera;
@@ -71,7 +82,18 @@ int main()
 			deltaTime
 		);
 
-		// Clear
+		// Audio Listener
+		if (audio)
+		{
+			LibMath::Vector3 pos = camera.GetPosition();
+			LibMath::Vector3 front = camera.GetFront();
+			audio->SetListenerPosition(
+				{ pos[0],   pos[1],   pos[2] },
+				{ front[0], front[1], front[2] }
+			);
+		}
+
+		// Rendering
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
 		scene.Update(camera.GetViewMatrix(),
