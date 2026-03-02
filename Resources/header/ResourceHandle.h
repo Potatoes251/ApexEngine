@@ -21,22 +21,71 @@ namespace Apex::Resources
 		bool						m_persistent = false;
 	};	
 	
-	
+	template <typename T>
+	concept HandleType = std::derived_from<T, IResource>;
+
+	template<typename HandleType>
 	class ResourceHandle
 	{
 	public:
 		ResourceHandle() = default;
-		ResourceHandle(ResourceEntry* resourceEntry);
+		ResourceHandle(ResourceEntry* resourceEntry) : m_resourceEntry(resourceEntry)
+		{
+			if (m_resourceEntry)
+			{
+				m_resourceEntry->m_refCount.fetch_add(1);
+			}
+		}
 
-		ResourceHandle(ResourceHandle const& other);
-		ResourceHandle& operator=(ResourceHandle const& other);
+		ResourceHandle(ResourceHandle const& other) : m_resourceEntry(other.m_resourceEntry)
+		{
+			m_resourceEntry->m_refCount.fetch_add(1);
+		}
+		ResourceHandle& operator=(ResourceHandle const& other) 
+		{
+			if (this != &other)
+			{
+				if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_sub(1);
 
-		~ResourceHandle();
+				m_resourceEntry = other.m_resourceEntry;
+				m_resourceEntry->m_refCount.fetch_add(1);
+			}
+			return *this;
+		}
 
-		bool IsValid() const;
-		bool IsReady() const;
-		bool IsFailed() const;
-		IResource* operator->() const;
+		~ResourceHandle()
+		{
+			if (!m_resourceEntry)
+				return;
+
+			m_resourceEntry->m_refCount.fetch_sub(1);
+
+			if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
+			{
+				m_resourceEntry->m_resource.reset();
+			}
+		}
+
+		bool IsValid() const
+		{
+			return m_resourceEntry;
+		}
+		bool IsReady() const
+		{
+			return	m_resourceEntry &&
+				m_resourceEntry->m_resource &&
+				m_resourceEntry->m_resource->GetState() == ResourceState::Uploaded;
+		}
+		bool IsFailed() const
+		{
+			return	m_resourceEntry &&
+				m_resourceEntry->m_resource &&
+				m_resourceEntry->m_resource->GetState() == ResourceState::Failed;
+		}
+		HandleType* operator->() const
+		{
+			return m_resourceEntry ? (HandleType*)(m_resourceEntry->m_resource.get()) : nullptr;
+		}
 
 	private:
 		ResourceEntry*	m_resourceEntry = nullptr;

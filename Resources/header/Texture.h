@@ -12,7 +12,7 @@
 class Texture : public IResource
 {
 public:
-	Texture(std::string name) : m_path("assets/Textures/" + name) {}
+	Texture(std::string name) : m_path(name) {}
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 

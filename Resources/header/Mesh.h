@@ -17,10 +17,17 @@ struct Vertex
 	LibMath::Vector2	m_textureUV;
 };
 
+struct SubMesh
+{
+	int m_indexOffset;
+	int m_indexCount;
+	int m_materialIndex;
+};
+
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string name) : m_name("assets/Meshes/" + name) {}
+	Mesh(std::string name) : m_name(name) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 
@@ -29,9 +36,12 @@ public:
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
+	GLuint GetVAO() const;
 
 	std::vector<Vertex>			m_vertices;
 	std::vector<unsigned int>	m_indices;
+	std::vector<SubMesh>		m_subMeshes;
+
 
 private:
 	std::string m_name;

@@ -6,7 +6,7 @@ void ResourceManager::ProcessGpuUploads()
 {
 	while (true)
 	{
-		ResourceHandle resource;
+		ResourceHandle<IResource> resource;
 		{
 			std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
 			if (m_gpuUploadQueue.empty()) break;
@@ -22,35 +22,8 @@ void ResourceManager::ProcessGpuUploads()
 	}
 }
 
-ResourceHandle ResourceManager::Get(std::string const& id)
-{
-	std::shared_lock<std::shared_mutex> lock(m_mapMutex);
-	auto it = m_resources.find(id);
-	if (it != m_resources.end() && it->second.m_resource)
-	{
-		ResourceEntry* resource = &it->second;
-		return ResourceHandle(resource);
-	}
-	else
-	{
-		return ResourceHandle(nullptr);
-	}
-}
-
-void ResourceManager::AddToGpuQueue(ResourceHandle resource)
+void ResourceManager::AddToGpuQueue(ResourceHandle<IResource> resource)
 {
 	std::lock_guard<std::mutex> lock(m_gpuQueueMutex);
 	m_gpuUploadQueue.push(resource);
-}
-
-void ResourceManager::Create(std::string const& id)
-{
-	ResourceHandle resource = Get(id);
-
-	if (!resource.IsValid()) return;
-
-	resource->LoadFromFile();
-
-	resource->SetState(ResourceState::Loaded);
-	AddToGpuQueue(resource);
 }

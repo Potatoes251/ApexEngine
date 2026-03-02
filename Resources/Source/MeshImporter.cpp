@@ -1,9 +1,17 @@
 #include "MeshImporter.h"
 
+#include <mutex>
+
 void MeshImporter::Import(std::string path, Mesh& mesh)
 {
-	FbxManager* manager = FbxManager::Create();
-	FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
+    FbxManager* manager = nullptr;
+    FbxIOSettings* ios = nullptr;
+    
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
+
+    manager = FbxManager::Create();
+    ios = FbxIOSettings::Create(manager, IOSROOT);
 	manager->SetIOSettings(ios);
 
 
@@ -33,7 +41,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     converter.Triangulate(scene, true);
 
     FbxAxisSystem::OpenGL.ConvertScene(scene);
-    FbxSystemUnit::cm.ConvertScene(scene);
+    FbxSystemUnit::m.ConvertScene(scene);
 
     FbxNode* root = scene->GetRootNode();
     if (!root)

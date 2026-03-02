@@ -25,19 +25,21 @@ namespace Apex::Resources
 		~ResourceManager() = default;
 
 		template <typename ResourceType>
-		ResourceHandle CreateAsync(std::string const& id, bool persistent = false);
-		ResourceHandle Get(std::string const& id);
+		ResourceHandle<ResourceType> CreateAsync(std::string const& id, bool persistent = false);
+		template <typename ResourceType>
+		ResourceHandle<ResourceType> Get(std::string const& id);
 
 		void ProcessGpuUploads();
 
 	private:
-		void AddToGpuQueue(ResourceHandle);
+		void AddToGpuQueue(ResourceHandle<IResource>);
+		template<typename ResourceType>
 		void Create(std::string const& id);
 
 		Core::ThreadPool&	m_threadPool;
 
 		std::mutex					m_gpuQueueMutex;
-		std::queue<ResourceHandle>	m_gpuUploadQueue;
+		std::queue<ResourceHandle<IResource>>	m_gpuUploadQueue;
 
 		std::shared_mutex		m_mapMutex;
 		std::unordered_map<std::string, ResourceEntry> m_resources;
@@ -46,7 +48,7 @@ namespace Apex::Resources
 
 
 	template <typename ResourceType>
-	ResourceHandle ResourceManager::CreateAsync(std::string const& id, bool persistent)
+	ResourceHandle<ResourceType> ResourceManager::CreateAsync(std::string const& id, bool persistent)
 	{
 		std::unique_lock<std::shared_mutex> lock(m_mapMutex);
 
@@ -56,15 +58,44 @@ namespace Apex::Resources
 		// If already loading or loaded, do not enqueue again
 		if (entry->m_resource && entry->m_resource->GetState() != ResourceState::Unloaded)
 		{
-			return ResourceHandle(entry);
+			return ResourceHandle<ResourceType>(entry);
 		}
 
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
 
-		m_threadPool.Enqueue(&ResourceManager::Create, this, id);
+		m_threadPool.Enqueue(&ResourceManager::Create<ResourceType>, this, id);
 
-		return ResourceHandle(entry);
+		return ResourceHandle<ResourceType>(entry);
+	}
+
+	template <typename ResourceType>
+	ResourceHandle<ResourceType> ResourceManager::Get(std::string const& id)
+	{
+		std::shared_lock<std::shared_mutex> lock(m_mapMutex);
+		auto it = m_resources.find(id);
+		if (it != m_resources.end() && it->second.m_resource)
+		{
+			ResourceEntry* resource = &it->second;
+			return ResourceHandle<ResourceType>(resource);
+		}
+		else
+		{
+			return ResourceHandle<ResourceType>(nullptr);
+		}
+	}
+
+	template <typename ResourceType>
+	void ResourceManager::Create(std::string const& id)
+	{
+		ResourceHandle resource = Get<IResource>(id);
+
+		if (!resource.IsValid()) return;
+
+		resource->LoadFromFile();
+
+		resource->SetState(ResourceState::Loaded);
+		AddToGpuQueue(resource);
 	}
 }
 

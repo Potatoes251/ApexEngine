@@ -1,6 +1,6 @@
 #include "Texture.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <iostream>
@@ -9,8 +9,7 @@ void Texture::LoadFromFile()
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	int width, height, nbChannels;
-	unsigned char* data = stbi_load(m_path.c_str(), &width, &height, &nbChannels, 0);
+	unsigned char* data = stbi_load(m_path.c_str(), &m_width, &m_height, &m_channels, 0);
 
 	if (!data)
 	{
@@ -19,7 +18,7 @@ void Texture::LoadFromFile()
 		return;
 	}
 
-	m_imageData.assign(data, data + (width * height * nbChannels));
+	m_imageData.assign(data, data + (m_width * m_height * m_channels));
 	stbi_image_free(data);
 }
 

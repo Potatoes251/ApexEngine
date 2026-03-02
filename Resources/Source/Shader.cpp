@@ -27,6 +27,11 @@ void Shader::Use() const
 	glUseProgram(m_shaderProgram);
 }
 
+GLuint Shader::GetProgram() const
+{
+	return m_shaderProgram;
+}
+
 bool Shader::CreateShader(std::vector<std::string> const& files)
 {
 	if (files.size() != 2 && files.size() != 3) return false;
@@ -65,7 +70,7 @@ bool Shader::CreateShader(std::vector<std::string> const& files)
 
 bool Shader::InitShader(std::string const& shaderFile, GLuint& shader) const
 {
-	std::ifstream file("assets/shaders/" + shaderFile);	// open the file
+	std::ifstream file(shaderFile);	// open the file
 	if (!file.is_open())
 	{
 		std::cout << "Failed to open file : " << shaderFile << std::endl;

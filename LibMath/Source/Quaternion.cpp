@@ -11,7 +11,7 @@ LibMath::Quaternion::Quaternion()
 	m_x = 0;
 	m_y = 0;
 	m_z = 0;
-	m_w = 0;
+	m_w = 1;
 }
 
 LibMath::Quaternion::Quaternion(float x, float y, float z, float w)
@@ -268,17 +268,18 @@ LibMath::Quaternion LibMath::Quaternion::operator*(float val) const
 
 LibMath::Quaternion::operator LibMath::Matrix4() const
 {
-	//assert(isUnit);
+	//assert(isUnit());
+	LibMath::Quaternion q = normalized();
 
-	float xx = m_x * m_x;
-	float yy = m_y * m_y;
-	float zz = m_z * m_z;
-	float xy = m_x * m_y;
-	float xz = m_x * m_z;
-	float yz = m_y * m_z;
-	float wx = m_w * m_x;
-	float wy = m_w * m_y;
-	float wz = m_w * m_z;
+	float xx = q.m_x * q.m_x;
+	float yy = q.m_y * q.m_y;
+	float zz = q.m_z * q.m_z;
+	float xy = q.m_x * q.m_y;
+	float xz = q.m_x * q.m_z;
+	float yz = q.m_y * q.m_z;
+	float wx = q.m_w * q.m_x;
+	float wy = q.m_w * q.m_y;
+	float wz = q.m_w * q.m_z;
 
 	return Matrix4(
 		1.f - 2.f * (yy + zz),	2.f * (xy - wz),		2.f * (xz + wy),		0.f,
