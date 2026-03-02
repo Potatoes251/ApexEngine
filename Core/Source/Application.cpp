@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "LuaBehaviour.h"
+#include "ScriptComponent.h"
 
 #include "Renderer.h"
 
@@ -8,6 +9,7 @@
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
+using namespace Apex::Scripting;
 
 void Apex::Application::Run()
 {
@@ -25,9 +27,8 @@ void Apex::Application::Init()
 {
     std::cout << "Application Init\n";
 
-    //using namespace Apex::Scripting;
 
-    //m_luaManager = std::make_unique<LuaManager>();
+    m_luaManager = std::make_unique<LuaManager>();
     //int scriptRef = m_luaManager->LoadScript("../../Assets/Scripts/Script.lua");
 
     //int instance1 = m_luaManager->CreateScriptInstance(scriptRef);
@@ -40,31 +41,46 @@ void Apex::Application::Init()
     //    obj->Start();
 
     m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Renderer", 1280, 720));
-    m_rhi = std::unique_ptr<IRHI>(CreateOpenGLRHI());
-    m_camera = std::make_unique<Camera>();
+    //m_rhi = std::unique_ptr<IRHI>(CreateOpenGLRHI());
+    //m_camera = std::make_unique<Camera>();
 
-    m_window->SetCursorCaptured(true);
+    //m_window->SetCursorCaptured(true);
 
-    // Input callbacks
-    m_window->SetKeyCallback([&](Key key, bool pressed)
-        {
-            if (key == Key::Escape && pressed)
-                m_window->Close();
-        });
+    //// Input callbacks
+    //m_window->SetKeyCallback([&](Key key, bool pressed)
+    //    {
+    //        if (key == Key::Escape && pressed)
+    //            m_window->Close();
+    //    });
 
-    m_window->SetMouseMoveCallback([&](double dx, double dy)
-        {
-            m_camera->ProcessMouse(dx, dy);
-        });
+    //m_window->SetMouseMoveCallback([&](double dx, double dy)
+    //    {
+    //        m_camera->ProcessMouse(dx, dy);
+    //    });
 
-    m_window->SetScrollCallback([&](double, double yoff)
-        {
-            m_camera->ProcessScroll(yoff);
-        });
+    //m_window->SetScrollCallback([&](double, double yoff)
+    //    {
+    //        m_camera->ProcessScroll(yoff);
+    //    });
 
-    // Scene objects
-    cubeRenderer = std::make_unique<Renderer>(m_rhi.get());
-    cubeRenderer->LoadTexture("../../Assets/Textures/container.jpg");
+    //// Scene objects
+    //cubeRenderer = std::make_unique<Renderer>(m_rhi.get());
+    //cubeRenderer->LoadTexture("../../Assets/Textures/container.jpg");
+
+    m_objects.push_back(std::make_unique<Apex::Data::Object>());
+    auto& obj = *m_objects.back();
+
+    m_objects.push_back(std::make_unique<Apex::Data::Object>());
+    auto& obj2 = *m_objects.back();
+    
+    auto& script = obj.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
+    script.SetScript("../../Assets/Scripts/Script.lua");
+
+    auto& script2 = obj2.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
+    script2.SetScript("../../Assets/Scripts/Script2.lua");
+
+    obj.Start();
+    obj2.Start();
 }
 
 void Apex::Application::Shutdown()
@@ -95,15 +111,15 @@ void Apex::Application::Tick()
 void Apex::Application::ProcessInput()
 {
     // Camera keyboard movement
-    m_camera->ProcessKeyboard(
-        m_window->IsKeyPressed(Key::W),
-        m_window->IsKeyPressed(Key::S),
-        m_window->IsKeyPressed(Key::A),
-        m_window->IsKeyPressed(Key::D),
-        m_window->IsKeyPressed(Key::E),
-        m_window->IsKeyPressed(Key::Q),
-        m_deltaTime
-    );
+    //m_camera->ProcessKeyboard(
+    //    m_window->IsKeyPressed(Key::W),
+    //    m_window->IsKeyPressed(Key::S),
+    //    m_window->IsKeyPressed(Key::A),
+    //    m_window->IsKeyPressed(Key::D),
+    //    m_window->IsKeyPressed(Key::E),
+    //    m_window->IsKeyPressed(Key::Q),
+    //    m_deltaTime
+    //);
 }
 
 void Apex::Application::Update()
@@ -120,12 +136,12 @@ void Apex::Application::SyncPhysicsToTransforms()
 void Apex::Application::Render()
 {        
     // Clear
-    m_rhi->Clear(0.12f, 0.12f, 0.15f);
+    //m_rhi->Clear(0.12f, 0.12f, 0.15f);
 
-    // Matrices from camera
-    LibMath::Matrix4 view = m_camera->GetViewMatrix();
-    LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio(), m_camera->m_fov);
+    //// Matrices from camera
+    //LibMath::Matrix4 view = m_camera->GetViewMatrix();
+    //LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio(), m_camera->m_fov);
 
-    // Draw cube
-    cubeRenderer->Render(view, proj, m_camera->GetPosition(), m_totalTime);
+    //// Draw cube
+    //cubeRenderer->Render(view, proj, m_camera->GetPosition(), m_totalTime);
 }

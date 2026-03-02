@@ -33,3 +33,19 @@ const Matrix4 Object::GetTransform() const
 {
 	return m_transform;
 }
+
+void Object::Start()
+{
+	for (auto& comp : m_components)
+		if (comp->IsEnabled())
+			comp->OnStart();
+}
+
+void Object::Update(float deltaTime)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnUpdate(deltaTime);
+	}
+}

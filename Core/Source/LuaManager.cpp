@@ -96,11 +96,9 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     lua_pushvalue(luaState, -2); // push self
     int args = 1;
-    if (dt != 0.f)
-    {
-        lua_pushnumber(luaState, dt);
-        args++;
-    }
+
+    lua_pushnumber(luaState, dt);
+    args++;
 
     if (lua_pcall(luaState, args, 0, 0) != LUA_OK)
     {

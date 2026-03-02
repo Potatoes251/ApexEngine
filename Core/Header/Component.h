@@ -1,32 +1,35 @@
 #ifndef COMPONENT
 #define COMPONENT
 
-class Object;
+namespace Apex::Data { class Object; }
 
-class Component
+namespace Apex
 {
-public:
-    Component() = default;
-    virtual ~Component() = default;
+    class Component
+    {
+    public:
+        Component() = default;
+        virtual ~Component() = default;
 
-    Component(const Component&) = delete;
-    Component& operator=(const Component&) = delete;
+        Component(const Component&) = delete;
+        Component& operator=(const Component&) = delete;
 
-    virtual void OnStart() {}
-    virtual void OnUpdate(float deltaTime) {}
-    virtual void OnDestroy() {}
-    virtual void OnFixedUpdate(float fixedDeltaTime) {}
+        virtual void OnStart() {}
+        virtual void OnUpdate(float deltaTime) {}
+        virtual void OnDestroy() {}
+        virtual void OnFixedUpdate(float fixedDeltaTime) {}
 
-    void SetEnabled(bool enabled) { m_enabled = enabled; }
-    bool IsEnabled() const { return m_enabled; }
+        void SetEnabled(bool enabled) { m_enabled = enabled; }
+        bool IsEnabled() const { return m_enabled; }
 
-    Object* GetOwner() const { return m_owner; }
+        Apex::Data::Object* GetOwner() const { return m_owner; }
 
-private:
-    friend class Object;
+    private:
+        friend class Apex::Data::Object;
 
-    Object* m_owner = nullptr;
-    bool m_enabled = true;
-};
+        Apex::Data::Object* m_owner = nullptr;
+        bool m_enabled = true;
+    };
+}
 
 #endif // COMPONENT

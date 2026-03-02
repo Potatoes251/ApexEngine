@@ -1,14 +1,17 @@
-local Script = {}
+local M = {}
 
-function Script:New()
-    local inst = { value = 0 }
-    setmetatable(inst, { __index = Script })
-    return inst
+function M:New()
+    local instance = {}
+    setmetatable(instance, { __index = self })
+    return instance
 end
 
-function Script:Increment()
-    self.value = self.value + 1
-    print("Value:", self.value)
+function M:Start()
+    print("Start called")
 end
 
-return Script
+function M:Update(dt)
+    print("Update 1")
+end
+
+return M
