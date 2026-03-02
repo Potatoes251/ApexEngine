@@ -5,6 +5,7 @@
 #include "RHI.h"
 
 #include "ResourceManager.h"
+#include "Object.h"
 
 namespace Apex::Rendering
 {
@@ -16,9 +17,9 @@ namespace Apex::Rendering
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		size_t AddMesh(const std::string& meshFile,
-					   const std::string& textureFile,
-			           const std::string& shaderName);
+		Apex::Data::Object* AddMesh(const std::string& meshFile,
+									const std::string& textureFile,
+									const std::string& shaderName);
 
 		MeshRenderer& GetRenderer(size_t index) { return m_renderers[index]; }
 		const MeshRenderer& GetRenderer(size_t index) const { return m_renderers[index]; }

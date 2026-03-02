@@ -3,6 +3,7 @@
 #include "RHI.h"
 #include "Camera.h"
 #include "Scene.h"
+#include "SceneGraph.h"
 
 // ── Resource system ───────────────────────────────────────────
 #include "ThreadPool.h"
@@ -23,8 +24,13 @@ int main()
 	ThreadPool threadPool;
 	Scene scene(rhi.get(), threadPool);
 
-	size_t bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
-	size_t tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
+	Apex::Data::Object* bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
+	Apex::Data::Object* tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
+
+	bunny->SetTransform(LibMath::Matrix4::createTranslation({ 5.f, 0.f, 0.f }));
+	tyrannosaurus->SetTransform(LibMath::Matrix4::createTranslation({ -5.f, 0.f, 0.f }));
+
+	bunny->GetNode()->AddChild(tyrannosaurus->GetNode());
 
 	// Initialize Camera
 	Camera camera;

@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "SceneGraph.h"
 
 #include "Mesh.h"
 #include "Texture.h"
@@ -8,7 +9,7 @@ namespace Apex::Rendering
 {
 	Scene::Scene(IRHI* rhi, Apex::Core::ThreadPool& threadPool) : m_rhi(rhi), m_resourceManager(threadPool) {}
 
-	size_t Scene::AddMesh(const std::string& meshFile, const std::string& textureFile, const std::string& shaderName)
+	Apex::Data::Object* Scene::AddMesh(const std::string& meshFile, const std::string& textureFile, const std::string& shaderName)
 	{
 		MeshRenderer renderer;
 
@@ -16,8 +17,9 @@ namespace Apex::Rendering
 		renderer.m_texture = m_resourceManager.CreateAsync<Texture>(textureFile);
 		renderer.m_shader = m_resourceManager.CreateAsync<Shader>(shaderName);
 
+		Apex::Data::Object* obj = renderer.object.get();
 		m_renderers.push_back(std::move(renderer));
-		return m_renderers.size() - 1;
+		return obj;
 	}
 	void Scene::Update(const LibMath::Matrix4& view, const LibMath::Matrix4& projection,
 					   const LibMath::Vector3& cameraPosition, float deltaTime)
@@ -36,10 +38,7 @@ namespace Apex::Rendering
 			shader->Use();
 			GLuint prog = shader->GetProgram();
 
-			float angle = renderer.m_rotationSpeed * deltaTime;
-			LibMath::Radian angleRad{ angle };
-
-			LibMath::Matrix4 model = LibMath::Matrix4::createRotationY(angleRad);
+			LibMath::Matrix4 model = renderer.object->GetNode()->GetWorldTransform();
 
 			m_rhi->SetUniformMat4(prog, "uModel", model);
 			m_rhi->SetUniformMat4(prog, "uView", view);

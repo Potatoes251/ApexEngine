@@ -8,6 +8,8 @@
 
 #include "ResourceHandle.h"
 
+#include "Object.h"
+
 namespace Apex::Rendering
 {
     struct MeshRenderer 
@@ -16,7 +18,7 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle m_shader;
         Apex::Resources::ResourceHandle m_texture;
 
-        float  m_rotationSpeed = 20.f;          // degrees/s around Y
+        std::shared_ptr<Apex::Data::Object> object = std::make_shared<Apex::Data::Object>();
     };
 }
 
