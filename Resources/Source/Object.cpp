@@ -2,36 +2,54 @@
 #include "../../LowRenderer/header/SceneGraph.h"
 
 using namespace Apex::Data;
-
+using namespace LibMath;
+using namespace Apex::SceneGraph;
+	
 Apex::Data::Object::Object() :
-	m_transform(Matrix4()) 
+	m_localTransform(Transform()), m_globalTransform(Transform())
 {
-	m_owner = std::make_shared<SceneNode>(m_transform, this);
+	m_owner = std::make_shared<SceneNode>(this);
 }
 
-Object::Object(const Matrix4& transform) :
-	m_transform(transform) 
+Object::Object(const Transform& localTransform, const Transform& globalTransform) :
+	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
-	m_owner = std::make_shared<SceneNode>(m_transform, this);
+	m_owner = std::make_shared<SceneNode>(this);
 }
 
 Object::Object(const Object& other) :
-	m_transform(other.m_transform) {}
+	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform) {}
 
-void Object::SetTransform(const Matrix4& transform)
+void Object::SetLocalTransform(const Transform& transform)
 {
-	m_transform = transform;
+	m_localTransform = transform;
 	m_owner->MarkDirty();
 }
 
-Matrix4 Object::GetTransform()
+void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 {
-	return m_transform;
+	m_globalTransform = transform;
+	m_owner->MarkDirty();
 }
 
-const Matrix4 Object::GetTransform() const
+Transform Object::GetLocalTransform()
 {
-	return m_transform;
+	return m_localTransform;
+}
+
+const Transform Object::GetLocalTransform() const
+{
+	return m_localTransform;
+}
+
+Transform Object::GetGlobalTransform()
+{
+	return m_globalTransform;
+}
+
+const Transform Object::GetGlobalTransform() const
+{
+	return m_globalTransform;
 }
 
 void Object::Start()
@@ -48,4 +66,9 @@ void Object::Update(float deltaTime)
 		if (comp->IsEnabled())
 			comp->OnUpdate(deltaTime);
 	}
+	auto pos = m_localTransform.getPosition();
+	std::cout << "Pos: "
+		<< pos[0] << " "
+		<< pos[1] << " "
+		<< pos[2] << "\n";
 }

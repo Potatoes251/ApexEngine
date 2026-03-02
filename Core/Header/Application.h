@@ -42,8 +42,6 @@ namespace Apex
         float m_deltaTime = 0.0f;
 
         std::unique_ptr<Apex::Scripting::LuaManager> m_luaManager;
-        //std::vector<std::unique_ptr<Apex::Scripting::Behaviour>> m_objects; // temporary, only for testing
-
         std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
 
         std::unique_ptr<Apex::Windowing::IWindow> m_window;

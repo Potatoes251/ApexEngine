@@ -3,38 +3,11 @@
 
 using namespace Apex::SceneGraph;
 
-SceneNode::SceneNode(Matrix4 localTransform) :
-	m_worldTransform(localTransform), m_object(nullptr) {}
+SceneNode::SceneNode() :
+	m_object(nullptr) {}
 
-SceneNode::SceneNode(Matrix4 localTransform, Object* object) :
-	m_worldTransform(localTransform), m_object(object) {}
-
-const Matrix4 SceneNode::GetWorldTransform()
-{
-	if (m_dirty)
-	{
-		SetWorldTransform();
-	}
-	return m_worldTransform;
-}
-
-void SceneNode::SetWorldTransform()
-{
-	if (!m_dirty)
-	{
-		return;
-	}
-	if (m_parent)
-	{
-		m_worldTransform = m_parent->GetWorldTransform() * m_object->GetTransform();
-	}
-	else
-	{
-		m_worldTransform = m_object->GetTransform();
-	}
-
-	m_dirty = false;
-}
+SceneNode::SceneNode(Object* object) :
+	m_object(object) {}
 
 SceneNode* SceneNode::GetParent() const
 {

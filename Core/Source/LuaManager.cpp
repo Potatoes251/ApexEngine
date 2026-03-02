@@ -2,6 +2,7 @@
 
 #include "Debug.h"
 #include "DebugLuaBindings.h"
+#include "TransformFunc.h"
 
 #include <iostream>
 
@@ -50,6 +51,7 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
 	RegisterFunction("Print", Apex::Engine::Debug::Lua_ApexPrint);
+    RegisterFunction("SetPosition_Internal", Apex::Transform::Lua_SetPosition);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

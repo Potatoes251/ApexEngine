@@ -2,13 +2,12 @@
 #define SCENE_GRAPH
 
 #include <vector>
-#include <LibMath/Matrix/Matrix4.h>
+#include <memory>
 
 namespace Apex::Data { class Object; }
 
 using std::vector;
 using std::shared_ptr;
-using LibMath::Matrix4;
 using Apex::Data::Object;
 
 namespace Apex::SceneGraph
@@ -16,15 +15,12 @@ namespace Apex::SceneGraph
 	class SceneNode : public std::enable_shared_from_this<SceneNode>
 	{
 	public:
-		SceneNode(Matrix4 localTransform = Matrix4());
-		SceneNode(Matrix4 localTransform = Matrix4(), Object* object = nullptr);
+		SceneNode();
+		SceneNode(Object* object = nullptr);
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
 				SceneNode&						operator=(const SceneNode& other) = delete;
-
-		const	Matrix4							GetWorldTransform();
-				void							SetWorldTransform();
 
 				SceneNode*						GetParent() const;
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
@@ -39,7 +35,6 @@ namespace Apex::SceneGraph
 	private:
 		bool	IsDescendantOf(SceneNode& otherNode);
 
-		Matrix4							m_worldTransform;
 		bool							m_dirty = true;
 
 		Object*							m_object;

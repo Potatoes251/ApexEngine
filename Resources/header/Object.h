@@ -2,17 +2,20 @@
 #define OBJECT
 
 #include <LibMath/Matrix/Matrix4.h>
+#include "LibMath/Transform.h"
 
 #include "../../Core/Header/Component.h"
 
 #include <vector>
+#include <memory>
+#include <utility>
 
 namespace Apex::SceneGraph { class SceneNode; }
 
-using std::shared_ptr;
-using LibMath::Matrix4;
-using Apex::SceneGraph::SceneNode;
-using Apex::Component;
+//using std::shared_ptr;
+//using Apex::SceneGraph::SceneNode;
+//using Apex::Component;
+//using namespace LibMath;
 
 namespace Apex::Data
 {
@@ -20,14 +23,17 @@ namespace Apex::Data
 	{
 	public:
 		Object();
-		Object(const Matrix4& transform);
+		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other);
 		~Object() = default;
 
 				Object&		operator=(const Object& other) = delete;
-				Matrix4		GetTransform();
-		const	Matrix4		GetTransform() const;
-				void		SetTransform(const Matrix4& transform);
+				LibMath::Transform	GetLocalTransform();
+		const	LibMath::Transform	GetLocalTransform() const;
+				LibMath::Transform	GetGlobalTransform();
+		const	LibMath::Transform	GetGlobalTransform() const;
+				void		SetLocalTransform(const LibMath::Transform& transform);
+				void		SetGlobalTransform(const LibMath::Transform& transform);
 
 				void		Start();
 				void		Update(float deltaTime);
@@ -46,10 +52,11 @@ namespace Apex::Data
 				}
 
 	private:
-		Matrix4					m_transform;
-		shared_ptr<SceneNode>	m_owner;
+		LibMath::Transform				m_localTransform;
+		LibMath::Transform				m_globalTransform;
+		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
 
-		std::vector<std::unique_ptr<Component>>		m_components;
+		std::vector<std::unique_ptr<Apex::Component>>		m_components;
 	};
 }
 
