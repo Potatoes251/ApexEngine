@@ -67,8 +67,4 @@ void Object::Update(float deltaTime)
 			comp->OnUpdate(deltaTime);
 	}
 	auto pos = m_localTransform.getPosition();
-	std::cout << "Pos: "
-		<< pos[0] << " "
-		<< pos[1] << " "
-		<< pos[2] << "\n";
 }

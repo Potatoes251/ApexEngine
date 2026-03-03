@@ -18,6 +18,8 @@ namespace Apex::Scripting
 
         void SetScript(const std::string& path);
 
+        int GetInstanceRef() const { return m_instanceRef; }
+
     protected:
         void OnStart() override;
         void OnUpdate(float deltaTime) override;

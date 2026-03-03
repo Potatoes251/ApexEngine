@@ -29,43 +29,8 @@ void Apex::Application::Init()
 
 
     m_luaManager = std::make_unique<LuaManager>();
-    //int scriptRef = m_luaManager->LoadScript("../../Assets/Scripts/Script.lua");
-
-    //int instance1 = m_luaManager->CreateScriptInstance(scriptRef);
-    //int instance2 = m_luaManager->CreateScriptInstance(scriptRef);
-
-    //m_objects.push_back(std::make_unique<LuaBehaviour>(m_luaManager.get(), instance1));
-    //m_objects.push_back(std::make_unique<LuaBehaviour>(m_luaManager.get(), instance2));
-
-    //for (auto& obj : m_objects)
-    //    obj->Start();
 
     m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Renderer", 1280, 720));
-    //m_rhi = std::unique_ptr<IRHI>(CreateOpenGLRHI());
-    //m_camera = std::make_unique<Camera>();
-
-    //m_window->SetCursorCaptured(true);
-
-    //// Input callbacks
-    //m_window->SetKeyCallback([&](Key key, bool pressed)
-    //    {
-    //        if (key == Key::Escape && pressed)
-    //            m_window->Close();
-    //    });
-
-    //m_window->SetMouseMoveCallback([&](double dx, double dy)
-    //    {
-    //        m_camera->ProcessMouse(dx, dy);
-    //    });
-
-    //m_window->SetScrollCallback([&](double, double yoff)
-    //    {
-    //        m_camera->ProcessScroll(yoff);
-    //    });
-
-    //// Scene objects
-    //cubeRenderer = std::make_unique<Renderer>(m_rhi.get());
-    //cubeRenderer->LoadTexture("../../Assets/Textures/container.jpg");
 
     m_objects.push_back(std::make_unique<Apex::Data::Object>());
     auto& obj = *m_objects.back();
@@ -74,10 +39,23 @@ void Apex::Application::Init()
     auto& obj2 = *m_objects.back();
     
     auto& script = obj.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
-    script.SetScript("../../Assets/Scripts/Script.lua");
+    script.SetScript("../../Assets/Scripts/ScriptParent.lua");
 
     auto& script2 = obj2.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
-    script2.SetScript("../../Assets/Scripts/Script2.lua");
+    script2.SetScript("../../Assets/Scripts/ScriptChild.lua");
+
+    lua_State* L = m_luaManager->GetState();
+
+    // push parent instance
+    lua_rawgeti(L, LUA_REGISTRYINDEX, script.GetInstanceRef());
+
+    // push child instance
+    lua_rawgeti(L, LUA_REGISTRYINDEX, script2.GetInstanceRef());
+
+    // parent.other = child
+    lua_setfield(L, -2, "other");
+
+    lua_pop(L, 1); // pop parent
 
     obj.Start();
     obj2.Start();
