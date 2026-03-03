@@ -8,7 +8,6 @@
 using std::vector;
 
 // Forward declaration of IMGUI types to avoid including IMGUI headers in UI.h
-struct ImGUIManager;
 struct ImFont;
 
 namespace Apex::UserInterface

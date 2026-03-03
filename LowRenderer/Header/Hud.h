@@ -1,7 +1,6 @@
 #ifndef HUD
 #define HUD
 
-#include "imgui.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -13,7 +12,7 @@ using std::vector;
 using std::unique_ptr;
 using LibMath::Vector2;
 
-namespace Apex::UI		// can't be 'HUD' as used on top
+namespace Apex::UserInterface		// can't be 'HUD' as used on top
 {
 	struct UIElement
 	{

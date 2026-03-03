@@ -1,6 +1,6 @@
 #include "Hud.h"
 
-using namespace Apex::UI;
+using namespace Apex::UserInterface;
 
 UIElement::UIElement(Vector2 position, Vector2 size) :
 	m_position(position), m_size(size) {}

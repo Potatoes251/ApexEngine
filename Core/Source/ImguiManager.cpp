@@ -1,5 +1,4 @@
 #include "ImguiManager.h"
-#include "UI.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -7,31 +6,32 @@
 
 #include <GLFW/glfw3.h>
 
-using namespace Apex;
-
-namespace Apex::UserInterface
+namespace Apex::UserInterface   //to prevent a bug
 {
-    IGUI* UserInterface::CreateGUI(void* nativeWindow)
+    IGUI* CreateGUI(void* nativeWindow)
     {
         return new ImGUIManager(static_cast<GLFWwindow*>(nativeWindow));
     }
-
-    FontInitializer::FontInitializer(FontID id, const std::string& file, float fontSize) :
-        m_id(id), m_file(file), m_fontSize(fontSize) {}
 }
 
-UserInterface::ImGUIManager::ImGUIManager(GLFWwindow* nativeWindow) :
+using namespace Apex::UserInterface;
+
+FontInitializer::FontInitializer(FontID id, const std::string& file, float fontSize) :
+    m_id(id), m_file(file), m_fontSize(fontSize) {}
+
+
+ImGUIManager::ImGUIManager(GLFWwindow* nativeWindow) :
 	m_window(nativeWindow)
 {
 	Initialize();
 }
 
-Apex::UserInterface::ImGUIManager::~ImGUIManager()
+ImGUIManager::~ImGUIManager()
 {
 	Shutdown();
 }
 
-void UserInterface::ImGUIManager::Initialize()
+void ImGUIManager::Initialize()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -47,14 +47,14 @@ void UserInterface::ImGUIManager::Initialize()
     LoadFonts();
 }
 
-void UserInterface::ImGUIManager::Shutdown()
+void ImGUIManager::Shutdown()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
-void UserInterface::ImGUIManager::LoadFonts()
+void ImGUIManager::LoadFonts()
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -68,80 +68,80 @@ void UserInterface::ImGUIManager::LoadFonts()
     }
 }
 
-void UserInterface::ImGUIManager::BeginFrame()
+void ImGUIManager::BeginFrame()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
-void UserInterface::ImGUIManager::EndFrame()
+void ImGUIManager::EndFrame()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-bool UserInterface::ImGUIManager::WantCaptureMouse() const
+bool ImGUIManager::WantCaptureMouse() const
 {
     return ImGui::GetIO().WantCaptureMouse;
 }
 
-bool UserInterface::ImGUIManager::WantCaptureKeyboard() const
+bool ImGUIManager::WantCaptureKeyboard() const
 {
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void UserInterface::ImGUIManager::BeginPanel(const std::string& title)
+void ImGUIManager::BeginPanel(const std::string& title)
 {
     ImGui::Begin(title.c_str());
 }
 
-void UserInterface::ImGUIManager::EndPanel()
+void ImGUIManager::EndPanel()
 {
     ImGui::End();
 }
 
-void UserInterface::ImGUIManager::Text(const std::string& text)
+void ImGUIManager::Text(const std::string& text)
 {
     ImGui::TextUnformatted(text.c_str());
 }
 
-bool UserInterface::ImGUIManager::Button(const std::string& label)
+bool ImGUIManager::Button(const std::string& label)
 {
     return ImGui::Button(label.c_str());
 }
 
-bool UserInterface::ImGUIManager::Checkbox(const std::string& label, bool* v)
+bool ImGUIManager::Checkbox(const std::string& label, bool* v)
 {
     return ImGui::Checkbox(label.c_str(), v);
 }
 
-bool UserInterface::ImGUIManager::SliderFloat(const char* label, float* v, float min, float max)
+bool ImGUIManager::SliderFloat(const char* label, float* v, float min, float max)
 {
     return ImGui::SliderFloat(label, v, min, max);
 }
 
-bool UserInterface::ImGUIManager::SliderInt(const char* label, int* v, int min, int max)
+bool ImGUIManager::SliderInt(const char* label, int* v, int min, int max)
 {
     return ImGui::SliderInt(label, v, min, max);
 }
 
-bool UserInterface::ImGUIManager::ColorEdit3(const char* label, float color[3])
+bool ImGUIManager::ColorEdit3(const char* label, float color[3])
 {
     return ImGui::ColorEdit3(label, color);
 }
 
-void UserInterface::ImGUIManager::Separator()
+void ImGUIManager::Separator()
 {
     ImGui::Separator();
 }
 
-void UserInterface::ImGUIManager::SameLine()
+void ImGUIManager::SameLine()
 {
     ImGui::SameLine();
 }
 
-void UserInterface::ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
+void ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
 {
     ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
