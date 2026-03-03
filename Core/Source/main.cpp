@@ -1,4 +1,4 @@
-﻿// ── Engine abstractions ───────────────────────────────────────
+// ── Engine abstractions ───────────────────────────────────────
 #include "Window.h"
 #include "Audio.h"
 #include "RHI.h"
@@ -9,8 +9,11 @@
 // ── Resource system ───────────────────────────────────────────
 #include "ThreadPool.h"
 
+#include "UI.h"
+
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
+using namespace Apex::UserInterface;
 using namespace Apex::Core;
 using namespace Apex::Resources;
 using namespace Apex::Audio;
@@ -64,6 +67,9 @@ int main()
 		camera.ProcessScroll(yoff);
 	});
 
+	// GUI
+	std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
+
 	float totalTime = 0.f;
 	while (!window->ShouldClose()) 
 	{
@@ -100,6 +106,16 @@ int main()
 			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
 			camera.GetPosition(), totalTime);
 
+		window->SwapBuffers();
+
+		// Draw UI
+		gui->BeginFrame();
+
+		gui->DrawText2D("Hello The HUD Works!", 50.0f, 50.0f, 18.0f, FontID::Default);
+
+		gui->EndFrame();
+
+		//Swap buffer
 		window->SwapBuffers();
 	}
 
