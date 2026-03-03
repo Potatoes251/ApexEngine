@@ -16,19 +16,9 @@
 namespace Apex::Rendering
 {
 	using RHIBufferHandle = GLuint;
-	using RHIShaderHandle = GLuint;
-	using RHITextureHandle = GLuint;
 	using RHIVAOHandle = GLuint;
 
 	constexpr GLuint RHI_INVALID = 0;
-
-	// ── Vertex layout ─────────────────────────────────────────────
-	struct Vertex
-	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_normal;
-		LibMath::Vector2 m_uv;
-	};
 
 	// ── Buffer types ────────────────────────────────────────────── 
 	enum class BufferType
@@ -37,14 +27,6 @@ namespace Apex::Rendering
 		Index
 	};
 
-	// ── Texture description ───────────────────────────────────────
-	struct TextureDescription
-	{
-		int m_width = 0;
-		int m_height = 0;
-		int m_channels = 4; // Default to RGBA
-		unsigned char* m_data = nullptr;
-	};
 	// ── Shader source ─────────────────────────────────────────────
 	struct ShaderSource 
 	{
@@ -71,24 +53,13 @@ namespace Apex::Rendering
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
 
-		// Textures
-		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
-		virtual void				BindTexture(RHITextureHandle texture, GLuint unit = 0) = 0;
-		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
-
-		// Shaders
-		virtual RHIShaderHandle		CreateShader(const ShaderSource& source) = 0;
-		virtual void				BindShader(RHIShaderHandle shader) = 0;
-		virtual void				DeleteShader(RHIShaderHandle shader) = 0;
-
 		// Uniforms (bound shader must be active)
-		virtual void SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) = 0;
-		virtual void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) = 0;
-		virtual void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) = 0;
-		virtual void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) = 0;
+		virtual void SetUniformInt(GLuint program, const std::string& name, int value) = 0;
+		virtual void SetUniformFloat(GLuint program, const std::string& name, float value) = 0;
+		virtual void SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec) = 0;
+		virtual void SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
 
 		// Draw
-		virtual void SetupVertexLayout() = 0;
 		virtual void DrawIndexed(GLsizei indexCount) = 0;
 		virtual void DrawArrays(GLsizei vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
