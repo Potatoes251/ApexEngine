@@ -1,27 +1,53 @@
+// ── Engine abstractions ───────────────────────────────────────
 #include "Window.h"
-
+#include "Audio.h"
 #include "RHI.h"
-
 #include "Camera.h"
+#include "Scene.h"
+#include "SceneGraph.h"
 
-#include "Renderer.h"
+// ── Resource system ───────────────────────────────────────────
+#include "ThreadPool.h"
 
 #include "UI.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
 using namespace Apex::UserInterface;
+using namespace Apex::Core;
+using namespace Apex::Resources;
+using namespace Apex::Audio;
 
 int main()
 {
-	// Initialize window and RHI
+	// Initialize
 	std::unique_ptr<IWindow> window(CreateWindow("Apex Renderer", 1280, 720));
-
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
+	std::unique_ptr<IAudioEngine> audio(CreateAudioEngine());
 
-	Camera camera({ 0.f, 0.f, 3.f });
+	// Initialize the scene
+	ThreadPool threadPool;
+	Scene scene(rhi.get(), threadPool);
 
-	// Capture mouse for FPS look
+	Apex::Data::Object* bunny = scene.AddMesh("bunny.obj", "container.jpg", "Cube.vert|Cube.frag");
+	Apex::Data::Object* tyrannosaurus = scene.AddMesh("tyra.obj", "container2.png", "Cube.vert|Cube.frag");
+
+	bunny->SetTransform(LibMath::Matrix4::createTranslation({ 5.f, 0.f, 0.f }));
+	tyrannosaurus->SetTransform(LibMath::Matrix4::createTranslation({ -5.f, 0.f, 0.f }));
+
+	bunny->GetNode()->AddChild(tyrannosaurus->GetNode());
+
+	// Audio setup 
+	if (audio)
+	{
+		audio->Preload("fragments of hope.ogg");
+	}
+
+	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
+		{ .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
+
+	// Initialize Camera
+	Camera camera;
 	window->SetCursorCaptured(true);
 
 	// Input callbacks
@@ -40,10 +66,6 @@ int main()
 	{
 		camera.ProcessScroll(yoff);
 	});
-
-	// Scene objects
-	Renderer cubeRenderer(rhi.get());
-	cubeRenderer.LoadTexture("../../Assets/Textures/container.jpg");
 
 	// GUI
 	std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
@@ -66,15 +88,23 @@ int main()
 			deltaTime
 		);
 
-		// Clear
+		// Audio Listener
+		if (audio)
+		{
+			LibMath::Vector3 pos = camera.GetPosition();
+			LibMath::Vector3 front = camera.GetFront();
+			audio->SetListenerPosition(
+				{ pos[0],   pos[1],   pos[2] },
+				{ front[0], front[1], front[2] }
+			);
+		}
+
+		// Rendering
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
-		// Matrices from camera
-		LibMath::Matrix4 view = camera.GetViewMatrix();
-		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
-
-		// Draw cube
-		cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		scene.Update(camera.GetViewMatrix(),
+			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
+			camera.GetPosition(), totalTime);
 
 		window->SwapBuffers();
 
