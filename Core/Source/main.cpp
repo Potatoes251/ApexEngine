@@ -9,7 +9,7 @@
 // ── Resource system ───────────────────────────────────────────
 #include "ThreadPool.h"
 
-#include "UI.h"
+#include "Hud.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
@@ -68,7 +68,14 @@ int main()
 	});
 
 	// GUI
-	std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
+	//std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
+
+
+	//HUD
+	UIManager uiManager(window->NativeHandle());
+
+	uiManager.GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default ));
+
 
 	float totalTime = 0.f;
 	while (!window->ShouldClose()) 
@@ -109,11 +116,7 @@ int main()
 		window->SwapBuffers();
 
 		// Draw UI
-		gui->BeginFrame();
-
-		gui->DrawText2D("Hello The HUD Works!", 50.0f, 50.0f, 18.0f, FontID::Default);
-
-		gui->EndFrame();
+		uiManager.RenderCanvas();
 
 		//Swap buffer
 		window->SwapBuffers();
