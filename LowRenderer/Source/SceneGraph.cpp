@@ -129,7 +129,7 @@ void SceneNode::Destroy()
 	m_children.clear();	//all descandantes are also Destroyed
 }
 
-void SceneNode::Move(SceneNode& newParent)
+void SceneNode::SetParent(SceneNode& newParent)
 {
 	if (m_parent == &newParent	||	//No move to origine place
 		&newParent == this		||	//No move to itself

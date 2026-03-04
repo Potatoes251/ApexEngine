@@ -12,6 +12,18 @@ Apex::Scripting::LuaManager::LuaManager()
 	luaState = luaL_newstate();
 	luaL_openlibs(luaState);
 
+    lua_getglobal(luaState, "package");
+    lua_getfield(luaState, -1, "path");
+
+    std::string currentPath = lua_tostring(luaState, -1);
+    lua_pop(luaState, 1);
+
+    currentPath += ";../../Assets/Scripts/?.lua";
+
+    lua_pushstring(luaState, currentPath.c_str());
+    lua_setfield(luaState, -2, "path");
+    lua_pop(luaState, 1);
+
 	RegisterFunctions();
 }
 
@@ -55,6 +67,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     RegisterFunction("SetPosition_Internal", Apex::Transform::Lua_SetPosition);
     RegisterFunction("AddChild_Internal", Apex::Hierarchy::Lua_AddChild);
     RegisterFunction("RemoveChild_Internal", Apex::Hierarchy::Lua_RemoveChild);
+    RegisterFunction("Reparent_Internal", Apex::Hierarchy::Lua_SetParent);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

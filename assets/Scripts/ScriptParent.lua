@@ -1,24 +1,14 @@
-local M = {}
+local Base = require("BaseObject")
 
-function M:New()
-    local instance = {}
-    setmetatable(instance, { __index = self })
-
-    function instance:AddChild(child)
-        AddChild_Internal(self, child)
-    end
-
-    function instance:RemoveChild(child)
-        RemoveChild_Internal(self, child)
-    end
-
-    return instance
-end
+local M = Base:New()
 
 function M:Start()
     print("Parent Start")
 
-    self:AddChild(self.other)
+    print("Reparent on self:", self.Reparent)
+print("Reparent on other:", self.other.Reparent)
+
+    self.other:Reparent(self)
 
     self:RemoveChild(self.other);
 end

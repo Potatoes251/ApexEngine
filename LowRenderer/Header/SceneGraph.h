@@ -30,7 +30,7 @@ namespace Apex::SceneGraph
 				shared_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
 
 				void							Destroy();
-				void							Move(SceneNode& newParent);
+				void							SetParent(SceneNode& newParent);
 				void							MarkDirty();
 	private:
 		bool	IsDescendantOf(SceneNode& otherNode);

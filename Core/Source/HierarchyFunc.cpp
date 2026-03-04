@@ -1,6 +1,8 @@
 #include "HierarchyFunc.h"
 #include "SceneGraph.h"
 
+using namespace Apex::SceneGraph;
+
 static Apex::Data::Object* Apex::Hierarchy::GetObject(lua_State* L, int index)
 {
     lua_getfield(L, index, "__object");
@@ -31,6 +33,25 @@ int Apex::Hierarchy::Lua_RemoveChild(lua_State* L)
         return 0;
 
     parent->GetSceneNode()->DetachChild(child->GetSceneNodeRaw());
+
+    return 0;
+}
+
+int Apex::Hierarchy::Lua_SetParent(lua_State* L)
+{
+    auto* childObj = GetObject(L, 1);
+    auto* newParentObj = GetObject(L, 2);
+
+    if (!childObj || !newParentObj)
+        return 0;
+
+    SceneNode* childNode = childObj->GetSceneNodeRaw();
+    SceneNode* parentNode = newParentObj->GetSceneNodeRaw();
+
+    if (!childNode || !parentNode)
+        return 0;
+
+    childNode->SetParent(*parentNode);
 
     return 0;
 }

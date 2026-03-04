@@ -1,11 +1,6 @@
-local M = {}
+local Base = require("BaseObject")
 
-function M:New()
-    local instance = {}
-    setmetatable(instance, { __index = self })
-
-    return instance
-end
+local M = Base:New()
 
 function M:Start()
     print("Child Start")
