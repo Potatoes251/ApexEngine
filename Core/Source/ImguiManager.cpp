@@ -70,7 +70,10 @@ namespace Apex::UserInterface
         {
             ImFont* font = io.Fonts->AddFontFromFileTTF(fontDef.m_file.c_str(), fontDef.m_fontSize);
 
-            m_fonts[static_cast<int>(fontDef.m_id)] = font;
+            if (font)
+            {
+                m_fonts[static_cast<int>(fontDef.m_id)] = font;
+            }
         }
     }
 
@@ -122,19 +125,19 @@ namespace Apex::UserInterface
         return ImGui::Checkbox(label.c_str(), v);
     }
 
-    bool ImGUIManager::SliderFloat(const char* label, float* v, float min, float max)
+    bool ImGUIManager::SliderFloat(const std::string& label, float* v, float min, float max)
     {
-        return ImGui::SliderFloat(label, v, min, max);
+        return ImGui::SliderFloat(label.c_str(), v, min, max);
     }
 
-    bool ImGUIManager::SliderInt(const char* label, int* v, int min, int max)
+    bool ImGUIManager::SliderInt(const std::string& label, int* v, int min, int max)
     {
-        return ImGui::SliderInt(label, v, min, max);
+        return ImGui::SliderInt(label.c_str(), v, min, max);
     }
 
-    bool ImGUIManager::ColorEdit3(const char* label, float color[3])
+    bool ImGUIManager::ColorEdit3(const std::string& label, float color[3])
     {
-        return ImGui::ColorEdit3(label, color);
+        return ImGui::ColorEdit3(label.c_str(), color);
     }
 
     void ImGUIManager::Separator()

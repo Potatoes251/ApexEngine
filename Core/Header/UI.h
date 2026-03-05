@@ -50,9 +50,9 @@ namespace Apex::UserInterface
         virtual void Text(const std::string& text) = 0;
         virtual bool Button(const std::string& label) = 0;
         virtual bool Checkbox(const std::string& label, bool* v) = 0;
-        virtual bool SliderFloat(const char* label, float* v, float min, float max) = 0;
-        virtual bool SliderInt(const char* label, int* v, int min, int max) = 0;
-        virtual bool ColorEdit3(const char* label, float color[3]) = 0;
+        virtual bool SliderFloat(const std::string& label, float* v, float min, float max) = 0;
+        virtual bool SliderInt(const std::string& label, int* v, int min, int max) = 0;
+        virtual bool ColorEdit3(const std::string& label, float color[3]) = 0;
         virtual void Separator() = 0;
         virtual void SameLine() = 0;
 

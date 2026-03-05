@@ -30,11 +30,7 @@ namespace Apex::UserInterface
 	}
 	LibMath::Vector2 ImDrawListWrapper::CalculateTextSize(const std::string& text)
 	{
-		if (m_drawList)
-		{
-			ImVec2 size = ImGui::CalcTextSize(text.c_str());
-			return LibMath::Vector2(size.x, size.y);
-		}
-		return LibMath::Vector2(0.f, 0.f);
+		ImVec2 size = ImGui::CalcTextSize(text.c_str());
+		return LibMath::Vector2(size.x, size.y);
 	}
 } // namespace Apex::UserInterface
