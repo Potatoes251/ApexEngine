@@ -85,7 +85,7 @@ namespace Apex::Audio
     {
         if (!m_engine) return INVALID_SOUND;
 
-		const std::string path = "../../Assets/Sounds/" + filePath;
+		const std::string path = "Assets/Sounds/" + filePath;
 
         irrklang::ISound* sound = m_engine->play2D(
             path.c_str(),
@@ -109,7 +109,7 @@ namespace Apex::Audio
 
         irrklang::vec3df pos(position[0], position[1], position[2]);
 
-		const std::string path = "../../Assets/Sounds/" + filePath;
+		const std::string path = "Assets/Sounds/" + filePath;
 
         irrklang::ISound* sound = m_engine->play3D(
             path.c_str(),

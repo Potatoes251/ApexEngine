@@ -10,13 +10,17 @@
 
 #include "Object.h"
 
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
+
 namespace Apex::Rendering
 {
     struct MeshRenderer 
     {
-        Apex::Resources::ResourceHandle m_mesh;
-        Apex::Resources::ResourceHandle m_shader;
-        Apex::Resources::ResourceHandle m_texture;
+        Apex::Resources::ResourceHandle<Mesh> m_mesh;
+        Apex::Resources::ResourceHandle<Shader> m_shader;
+        Apex::Resources::ResourceHandle<Texture> m_texture;
 
         std::shared_ptr<Apex::Data::Object> object = std::make_shared<Apex::Data::Object>();
     };

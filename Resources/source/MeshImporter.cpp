@@ -53,7 +53,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     converter.Triangulate(scene, true);
 
     FbxAxisSystem::OpenGL.ConvertScene(scene);
-    FbxSystemUnit::cm.ConvertScene(scene);
+    FbxSystemUnit::m.ConvertScene(scene);
 
     FbxNode* root = scene->GetRootNode();
     if (!root)

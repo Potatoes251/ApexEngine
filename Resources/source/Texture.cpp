@@ -8,8 +8,7 @@ void Texture::LoadFromFile()
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	int width, height, nbChannels;
-	unsigned char* data = stbi_load(m_path.c_str(), &width, &height, &nbChannels, 0);
+	unsigned char* data = stbi_load(m_path.c_str(), &m_width, &m_height, &m_channels, 0);
 
 	if (!data)
 	{
@@ -18,11 +17,7 @@ void Texture::LoadFromFile()
 		return;
 	}
 
-    m_width = width;
-    m_height = height;
-    m_channels = nbChannels;
-
-	m_imageData.assign(data, data + (width * height * nbChannels));
+	m_imageData.assign(data, data + (m_width * m_height * m_channels));
 	stbi_image_free(data);
 }
 

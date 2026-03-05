@@ -31,12 +31,8 @@ namespace Apex::Rendering
 			if (!renderer.m_mesh.IsReady() || !renderer.m_shader.IsReady() || !renderer.m_texture.IsReady())
 				continue;
 
-			auto* mesh = static_cast<Mesh*>   (renderer.m_mesh.operator->());
-			auto* shader = static_cast<Shader*> (renderer.m_shader.operator->());
-			auto* texture = static_cast<Texture*>(renderer.m_texture.operator->());
-
-			shader->Use();
-			GLuint prog = shader->GetProgram();
+			renderer.m_shader->Use();
+			GLuint prog = renderer.m_shader->GetProgram();
 
 			LibMath::Matrix4 model = renderer.object->GetNode()->GetWorldTransform();
 
@@ -48,11 +44,11 @@ namespace Apex::Rendering
 			m_rhi->SetUniformVec3(prog, "uLightColor", { 1.f, 1.f, 1.f });
 			m_rhi->SetUniformVec3(prog, "uViewPos", cameraPosition);
 
-			texture->Bind(0);
+			renderer.m_texture->Bind(0);
 			m_rhi->SetUniformInt(prog, "uTexture", 0);
 			m_rhi->SetUniformInt(prog, "uUseTexture", 1);
 
-			mesh->Draw();
+			renderer.m_mesh->Draw();
 		}
 	}
 } // namespace Apex::Rendering

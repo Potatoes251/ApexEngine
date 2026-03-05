@@ -16,7 +16,7 @@ namespace Apex::Rendering
 
 		// View projection
 		LibMath::Matrix4 GetViewMatrix() const;
-		LibMath::Matrix4 GetProjectionMatrix(float aspect, float fovDeg, 
+		LibMath::Matrix4 GetProjectionMatrix(float aspect, 
 											 float near = 0.1f, float far = 100.f) const;
 		LibMath::Vector3 GetPosition() const { return m_position; }
 		LibMath::Vector3 GetFront() const { return m_front; }

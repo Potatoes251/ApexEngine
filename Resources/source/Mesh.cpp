@@ -22,9 +22,7 @@ void Mesh::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
-
 	// generate VAO
-
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
@@ -54,10 +52,10 @@ void Mesh::UploadToGpu()
 
 	m_indexCount = static_cast<GLsizei>(m_indices.size());
 
-	m_vertices.clear();
-	m_vertices.shrink_to_fit();
-	m_indices.clear();
-	m_indices.shrink_to_fit();
+	//m_vertices.clear();
+	//m_vertices.shrink_to_fit();
+	//m_indices.clear();
+	//m_indices.shrink_to_fit();
 }
 
 void Mesh::Draw() const

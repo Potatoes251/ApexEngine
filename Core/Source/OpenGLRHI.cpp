@@ -35,7 +35,7 @@ namespace Apex::Rendering
 	}
 	void OpenGLRHI::BindVAO(RHIVAOHandle vao) 
 	{
-		glBindVertexArray(GetGLVAO(vao));
+		glBindVertexArray(vao);
 	}
 	void OpenGLRHI::DeleteVAO(RHIVAOHandle vao) 
 	{

@@ -9,10 +9,10 @@
 namespace Apex::UserInterface
 {
     const std::vector<FontInitializer> ImGUIManager::m_fontDefinitions = {
-    { FontID::Small,   "../../assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL   },
-    { FontID::Default, "../../assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
-    { FontID::Large,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE   },
-    { FontID::Title,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE   },
+    { FontID::Small,   "Assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL   },
+    { FontID::Default, "Assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
+    { FontID::Large,   "Assets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE   },
+    { FontID::Title,   "Assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE   },
     };
 
     IGUI* CreateGUI(void* nativeWindow)
