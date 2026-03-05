@@ -100,9 +100,6 @@ LibMath::Quaternion LibMath::Quaternion::inversed() const
 LibMath::Quaternion LibMath::Quaternion::normalized() const
 {
 	float mag = magnitude();
-	
-	//if (mag <= g_epsilon)
-	//	return identity();
 
 	return *this * (1.f / mag);
 }
@@ -110,12 +107,6 @@ LibMath::Quaternion LibMath::Quaternion::normalized() const
 LibMath::Quaternion& LibMath::Quaternion::normalize()
 {
 	float mag = magnitude();
-
-	//if (mag <= g_epsilon)
-	//{
-	//	*this = identity();
-	//	return *this;
-	//}
 
 	m_x /= mag;
 	m_y /= mag;
@@ -282,9 +273,9 @@ LibMath::Quaternion::operator LibMath::Matrix4() const
 	float wz = q.m_w * q.m_z;
 
 	return Matrix4(
-		1.f - 2.f * (yy + zz),	2.f * (xy - wz),		2.f * (xz + wy),		0.f,
-		2.f * (xy + wz),		1.f - 2.f * (xx + zz),	2.f * (yz - wx),		0.f,
-		2.f * (xz - wy),		2.f * (yz + wx),		1.f - 2.f * (xx + yy),	0.f,
+		1.f - 2.f * (yy + zz),	2.f * (xy + wz),		2.f * (xz - wy),		0.f,
+		2.f * (xy - wz),		1.f - 2.f * (xx + zz),	2.f * (yz + wx),		0.f,
+		2.f * (xz + wy),		2.f * (yz - wx),		1.f - 2.f * (xx + yy),	0.f,
 		0.f,					0.f,					0.f,					1.f);
 }
 

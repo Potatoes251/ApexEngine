@@ -7,6 +7,7 @@
 
 #include "ResourceHandle.h"
 #include "Mesh.h"
+#include "Shader.h"
 
 #include <vector>
 
@@ -43,10 +44,12 @@ namespace Apex::Physic
 
 		// called on frame update
 		void	SyncFromPhysx();
-		physx::PxTriangleMesh* CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
-		physx::PxConvexMesh* CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+
+		void	DrawColliders();
 
 	private:
+		void	DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* actor, LibMath::Vector3 scale);
+
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
 		physx::PxShape*		CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody);
@@ -56,6 +59,9 @@ namespace Apex::Physic
 		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 
 		void	SyncToPhysx();
+
+		physx::PxTriangleMesh* CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxConvexMesh* CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
 
 		std::vector<PhysicActor>		m_rigidBodies;
 

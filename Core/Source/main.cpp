@@ -11,8 +11,11 @@
 
 #include "Physic.h"
 #include "BoxCollider.h"
+#include "CapsuleCollider.h"
 #include "MeshCollider.h"
 #include "Rigidbody.h"
+
+#include "DebugRenderer.h"
 
 #include <filesystem>
 
@@ -31,7 +34,7 @@ int main(int argc, char* argv[])
 
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
 
-	Camera camera({ 0.f, 0.f, 3.f });
+	Camera camera({ 0.f, 0.f, 10.f });
 
 	// Capture mouse for FPS look
 	window->SetCursorCaptured(true);
@@ -39,6 +42,7 @@ int main(int argc, char* argv[])
 	ThreadPool tp;
 	ResourceManager rm(tp);
 	PhysicSystem physics;
+	DebugRenderer::Initialize(rm.CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
 
 	rhi->SetupVertexLayout();
 
@@ -67,9 +71,13 @@ int main(int argc, char* argv[])
 	ResourceHandle<Texture> texture2 = rm.CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
 	ResourceHandle<Shader> shader = rm.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
 
-	//ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+	ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
 
-	while (!mesh.IsReady() || !mesh2.IsReady() || /*!cube.IsReady() ||*/ !texture.IsReady() || !shader.IsReady())
+	while (!mesh.IsReady() || 
+		!mesh2.IsReady() || 
+		!cube.IsReady() || 
+		!texture.IsReady() || 
+		!shader.IsReady())
 		rm.ProcessGpuUploads();
 
 	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
@@ -82,28 +90,24 @@ int main(int argc, char* argv[])
 	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex);
 	MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
+	CapsuleCollider capsule(2, 2);
+
 	body.SetPosition({ 0, 10, 0 });
 	body2.SetPosition({ 0, 0, 0 });
 	body2.SetScale(LibMath::Vector3(0.001f));
-	body2.SetRotation(LibMath::Quaternion(LibMath::Degree(90), LibMath::Radian(0), LibMath::Radian(0)));
+	body2.SetRotation(LibMath::Quaternion(LibMath::Degree(-90), LibMath::Radian(0), LibMath::Radian(0)));
 
 
 	physics.CreateActor(meshCollider, body);
 	physics.CreateActor(meshCollider2, body2);
-	//physics.AddGround();
 
-	// Scene objects
-	//Renderer cubeRenderer(rhi.get());
-	//cubeRenderer.LoadTexture("Assets/Textures/container.jpg");
 
-	float totalTime = 0.f;
 	float accumulator = 0.f;
 	while (!window->ShouldClose())
 	{
 		window->PollEvents();
 		float deltaTime = window->GetDeltaTime();
 		if (deltaTime > 0.1f) deltaTime = 1.f / 60.f;
-		totalTime += deltaTime;
 
 		// Camera keyboard movement
 		camera.ProcessKeyboard(
@@ -123,45 +127,42 @@ int main(int argc, char* argv[])
 		LibMath::Matrix4 view = camera.GetViewMatrix();
 		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
 
-		if (mesh2.IsReady() && mesh.IsReady() && texture.IsReady() && shader.IsReady() /*&& cube.IsReady()*/)
+
+		accumulator += deltaTime;
+		while (accumulator >= 1.f / 60.f)
 		{
-			printf("here\r");
-
-			accumulator += deltaTime;
-			while (accumulator >= 1.f / 60.f)
-			{
-				physics.Update(1.f / 60.f);
-				accumulator -= 1.f / 60.f;
-			}
-			physics.SyncFromPhysx();
-
-			shader->Use();
-			texture->Bind();
-			GLuint prog = shader->GetProgram();
-			
-			rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
-			rhi->SetUniformMat4(prog, "uView", view);
-			rhi->SetUniformMat4(prog, "uProjection", proj);
-			rhi->SetUniformVec3(prog, "uCameraPos", camera.GetPosition());
-								
-			rhi->SetUniformVec3(prog, "uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
-			rhi->SetUniformVec3(prog, "uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
-			rhi->SetUniformVec3(prog, "uViewPos", camera.GetPosition());
-
-			rhi->SetUniformInt(prog, "uTexture", 0);
-			rhi->SetUniformInt(prog, "uUseTexture", 1);
-
-			rhi->BindVAO(mesh->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(mesh->m_indices.size()));
-
-			texture2->Bind();
-			rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
-			rhi->BindVAO(mesh2->GetVAO());
-			rhi->DrawIndexed(static_cast<GLsizei>(mesh2->m_indices.size()));
+			physics.Update(1.f / 60.f);
+			accumulator -= 1.f / 60.f;
 		}
+		physics.SyncFromPhysx();
 
-		// Draw cube
-		//cubeRenderer.Render(view, proj, camera.GetPosition(), totalTime);
+		shader->Use();
+		texture->Bind();
+		GLuint prog = shader->GetProgram();
+
+		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
+		rhi->SetUniformMat4(prog, "uView", view);
+		rhi->SetUniformMat4(prog, "uProjection", proj);
+		rhi->SetUniformVec3(prog, "uCameraPos", camera.GetPosition());
+							
+		rhi->SetUniformVec3(prog, "uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
+		rhi->SetUniformVec3(prog, "uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
+		rhi->SetUniformVec3(prog, "uViewPos", camera.GetPosition());
+
+		rhi->SetUniformInt(prog, "uTexture", 0);
+		rhi->SetUniformInt(prog, "uUseTexture", 1);
+
+		rhi->BindVAO(mesh->GetVAO());
+		rhi->DrawIndexed(static_cast<GLsizei>(mesh->m_indices.size()));
+
+		texture2->Bind();
+		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
+		rhi->BindVAO(mesh2->GetVAO());
+		rhi->DrawIndexed(static_cast<GLsizei>(mesh2->m_indices.size()));
+
+
+		physics.DrawColliders();
+		DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
 
 		rm.ProcessGpuUploads();
 

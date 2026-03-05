@@ -8,6 +8,7 @@ namespace Apex::Rendering
 {
 	Camera::Camera(LibMath::Vector3 position)
 	{
+		m_position = position;
 		UpdateVectors();
 	}
 

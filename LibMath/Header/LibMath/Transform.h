@@ -21,8 +21,8 @@ namespace LibMath
 		Vector3		getPosition() const { return m_position; }
 		Vector3		getScale() const { return m_scale; }
 		
-		void	setRotation(Radian pitch, Radian yaw, Radian roll) { m_rotation = Quaternion(pitch, yaw, roll).normalize(); }
-		void	setRotation(Quaternion rotation) { m_rotation = rotation.normalize(); }
+		void	setRotation(Radian pitch, Radian yaw, Radian roll) { m_rotation = Quaternion(pitch, yaw, roll); }
+		void	setRotation(Quaternion rotation) { m_rotation = rotation; }
 		void	setPosition(Vector3 position) { m_position = position; }
 		void	setScale(Vector3 scale) { m_scale = scale; }
 
