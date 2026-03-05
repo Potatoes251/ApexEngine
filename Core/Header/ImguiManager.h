@@ -29,18 +29,10 @@ namespace Apex::UserInterface
 		float			m_fontSize;
 	};
 
-	std::vector<FontInitializer> m_fontDefinitions =
-	{
-		{ FontID::Small,   "../../assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL },
-		{ FontID::Default, "../../assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
-		{ FontID::Large,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE },
-		{ FontID::Title,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE }
-	};
-
 	class ImGUIManager final : public IGUI
 	{
 	public:
-		ImGUIManager(GLFWwindow* nativeWindow);
+		explicit ImGUIManager(GLFWwindow* nativeWindow);
 		~ImGUIManager() override;
 
 		void	Initialize() override;
@@ -72,8 +64,9 @@ namespace Apex::UserInterface
 
 	private:
 		GLFWwindow*		m_window = nullptr;
-
 		vector<ImFont*> m_fonts;
+
+		static const std::vector<FontInitializer> m_fontDefinitions;
 	};
 }
 

@@ -1,12 +1,18 @@
 #ifndef UI
 #define UI
 
+#include "IDrawList.h"
 #include <string>
 
 struct GLFWwindow;
 
 namespace Apex::UserInterface
 {
+    struct Color
+    {
+        float m_r, m_g, m_b, m_a = 1.f;
+	};
+
     enum class FontID
     {
         Small = 0,      //0
