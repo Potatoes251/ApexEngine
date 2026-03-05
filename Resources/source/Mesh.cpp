@@ -2,11 +2,13 @@
 
 #include "MeshImporter.h"
 
+using namespace Apex::Rendering;
+
 Mesh::~Mesh()
 {
-	if (m_VAO) glDeleteVertexArrays(1, &m_VAO);
-	if (m_VBO) glDeleteBuffers(1, &m_VBO);
-	if (m_EBO) glDeleteBuffers(1, &m_EBO);
+	m_rhi->DeleteVAO(m_VAO);
+	m_rhi->DeleteBuffer(m_VBO);
+	m_rhi->DeleteBuffer(m_EBO);
 }
 
 void Mesh::LoadFromFile()
@@ -22,33 +24,14 @@ void Mesh::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
-	// generate VAO
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
 
-	// generate VBO
-	glGenBuffers(1, &m_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), m_vertices.data(), GL_STATIC_DRAW);
+	m_VAO = m_rhi->CreateVAO();
+	m_rhi->BindVAO(m_VAO);
 
-	// generate EBO
+	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertices.size() * sizeof(Vertex));
+	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indices.size() * sizeof(int));
 
-	glGenBuffers(1, &m_EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), m_indices.data(), GL_STATIC_DRAW);
-
-	// layout: position (loc 0), normal (loc 1), texCoord (loc 2)
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_textureUV));
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
+	m_rhi->SetupVertexLayout();
 
 	m_indexCount = static_cast<GLsizei>(m_indices.size());
 
@@ -60,7 +43,6 @@ void Mesh::UploadToGpu()
 
 void Mesh::Draw() const
 {
-	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
+	m_rhi->BindVAO(m_VAO);
+	m_rhi->DrawIndexed(m_indexCount);
 }

@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
 	// Initialize the scene
 	ThreadPool threadPool;
-	//Scene scene(rhi.get(), threadPool);
+	Scene scene(rhi.get(), threadPool);
 
 	// Audio setup 
 	if (audio)
@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
 	Camera camera;
 	window->SetCursorCaptured(true);
 
-	ThreadPool tp;
-	ResourceManager rm(tp);
+	ResourceManager rm(threadPool);
+	rm.SetRHI(rhi.get());
 	PhysicSystem physics;
 	DebugRenderer::Initialize(rm.CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 		//	camera.GetPosition(), totalTime);
 
 		// Draw UI
-		uiManager.RenderCanvas();
+		//uiManager.RenderCanvas();
 
 		accumulator += deltaTime;
 		totalTime += deltaTime;
@@ -176,34 +176,31 @@ int main(int argc, char* argv[])
 
 		shader->Use();
 		texture->Bind();
-		GLuint prog = shader->GetProgram();
 
 		LibMath::Matrix4 view = camera.GetViewMatrix();
 		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio());
 
-		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
-		rhi->SetUniformMat4(prog, "uView", view);
-		rhi->SetUniformMat4(prog, "uProjection", proj);
-		rhi->SetUniformVec3(prog, "uCameraPos", camera.GetPosition());
-							
-		rhi->SetUniformVec3(prog, "uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
-		rhi->SetUniformVec3(prog, "uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
-		rhi->SetUniformVec3(prog, "uViewPos", camera.GetPosition());
+		shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
+		shader->SetUniform("uView", view);
+		shader->SetUniform("uProjection", proj);
+		shader->SetUniform("uCameraPos", camera.GetPosition());
+					
+		shader->SetUniform("uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
+		shader->SetUniform("uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
+		shader->SetUniform("uViewPos", camera.GetPosition());
+		
+		shader->SetUniform("uTexture", 0);
+		shader->SetUniform("uUseTexture", 1);
 
-		rhi->SetUniformInt(prog, "uTexture", 0);
-		rhi->SetUniformInt(prog, "uUseTexture", 1);
-
-		rhi->BindVAO(mesh->GetVAO());
-		rhi->DrawIndexed(static_cast<GLsizei>(mesh->m_indices.size()));
+		mesh->Draw();
 
 		texture2->Bind();
-		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
-		rhi->BindVAO(cube->GetVAO());
-		rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
+		shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
+		cube->Draw();
 
 
-		//physics.DrawColliders();
-		//DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
+		physics.DrawColliders();
+		DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
 
 		rm.ProcessGpuUploads();
 

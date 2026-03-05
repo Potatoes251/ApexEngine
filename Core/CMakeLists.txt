@@ -20,6 +20,7 @@ target_include_directories(${CORE_NAME}
     PRIVATE ${LIB_INCLUDE_DIR}
     PRIVATE ${LOW_INCLUDE_DIR}
     PRIVATE ${RESOURCES_INCLUDE_DIR}
+    PRIVATE ${UI_INCLUDE_DIR}
 )
 
 # ---- Link libraries ----
@@ -39,6 +40,7 @@ target_link_libraries(${CORE_NAME}
     PRIVATE ${RESOURCES_NAME}
     PRIVATE ${DAT_NAME}
     PRIVATE ${LOW_NAME}
+    PRIVATE ${UI_NAME}
 )
 
 set(CORE_NAME ${CORE_NAME} PARENT_SCOPE) #outer scope variable only

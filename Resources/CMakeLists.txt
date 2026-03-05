@@ -1,4 +1,4 @@
-# Resource manager/CMakeLists.txt
+# Resource/CMakeLists.txt
 
 set(RESOURCES_NAME Resources) #Local variable only
 
@@ -11,7 +11,11 @@ add_library(${RESOURCES_NAME})
 
 target_sources(${RESOURCES_NAME} PRIVATE ${PROJECT_FILES})
 
-target_include_directories(${RESOURCES_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Header)
+target_include_directories(${RESOURCES_NAME} 
+PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Header 
+PRIVATE ${LOW_INCLUDE_DIR}
+)
+
 target_include_directories(${RESOURCES_NAME} PRIVATE ${LIB_INCLUDE_DIR})
 target_link_libraries(${RESOURCES_NAME}
     PRIVATE Glad
@@ -26,6 +30,7 @@ target_link_libraries(${RESOURCES_NAME}
     PRIVATE gdi32
     PRIVATE shell32
     PRIVATE ${LIB_NAME}  
+    PRIVATE ${LOW_NAME}
 )
 set(RESOURCES_NAME ${RESOURCES_NAME} PARENT_SCOPE) #outer scope variable only
 

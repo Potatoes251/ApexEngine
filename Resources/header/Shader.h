@@ -15,23 +15,21 @@ public:
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 
-	~Shader() { if (m_shaderProgram) glDeleteProgram(m_shaderProgram); }
+	~Shader() { m_rhi->DeleteShader(m_shader); }
 
 	void UploadToGpu() override;
 
 	void Use() const;
-	GLuint GetProgram() const { return m_shaderProgram; }
+
+	void SetUniform(std::string const& name, int value);
+	void SetUniform(std::string const& name, float value);
+	void SetUniform(std::string const& name, LibMath::Vector3 const& value);
+	void SetUniform(std::string const& name, LibMath::Matrix4 const& value);
 
 private:
-	bool	CreateShader(std::vector<std::string> const& files);
-	bool	InitShader(std::string const& shaderFile, GLuint& shader) const;				// load a shader
-	bool	Link(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader) const;	// link into a shader program
-	void	Cleanup(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader);
-
-
 	std::string m_name;
 
-	GLuint m_shaderProgram = 0;
+	GLuint m_shader = 0;
 };
 
 

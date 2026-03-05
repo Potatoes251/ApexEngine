@@ -4,6 +4,7 @@
 #include "RHI.h"
 
 #include <unordered_map>
+#include <string>
 
 namespace Apex::Rendering
 {
@@ -27,11 +28,20 @@ namespace Apex::Rendering
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
 
-		void SetUniformInt(GLuint program, const std::string& name, int value) override;
-		void SetUniformFloat(GLuint program, const std::string& name, float value) override;
-		void SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec) override;
-		void SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix) override;
+		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
+		void				BindTexture(RHITextureHandle texture, GLuint unit = 0) override;
+		void				DeleteTexture(RHITextureHandle texture) override;
 
+		RHIShaderHandle		CreateShader(const ShaderSource& source) override;
+		void				BindShader(RHIShaderHandle shader) override;
+		void				DeleteShader(RHIShaderHandle shader) override;
+
+		void SetUniformInt(GLuint shader, const std::string& name, int value) override;
+		void SetUniformFloat(GLuint shader, const std::string& name, float value) override;
+		void SetUniformVec3(GLuint shader, const std::string& name, const LibMath::Vector3& vec) override;
+		void SetUniformMat4(GLuint shader, const std::string& name, const LibMath::Matrix4& matrix) override;
+
+		void SetupVertexLayout() override;
 		void DrawIndexed(GLsizei indexCount) override;
 		void DrawArrays(GLsizei vertexCount) override;
 		void SetDepthTest(bool enabled) override;
@@ -39,13 +49,20 @@ namespace Apex::Rendering
 	private:
 		std::unordered_map<RHIBufferHandle, GLuint>		m_buffers;
 		std::unordered_map<RHIVAOHandle, GLuint>		m_vaos;
+		std::unordered_map<RHITextureHandle, GLuint>	m_textures;
+		std::unordered_map<RHIShaderHandle, GLuint>		m_shaders;
 
 		GLuint m_nextHandle = 1;
 
 		GLuint NewHandle() { return m_nextHandle++; }
 
 		GLuint GetGLBuffer(RHIBufferHandle handle)  const;
-		GLuint GetGLVAO(RHIVAOHandle handle)     const;
+		GLuint GetGLVAO(RHIVAOHandle handle)		const;
+		GLuint GetGLTexture(RHITextureHandle handle) const;
+		GLuint GetGLShader(RHIShaderHandle handle)  const;
+
+		static GLuint       CompileShader(const std::string& path, GLenum type);
+		static std::string  ReadFile(const std::string& path);
 	};
 }
 

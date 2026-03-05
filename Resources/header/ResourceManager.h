@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <string>
 #include <shared_mutex>
-
+#include <cassert>
 
 namespace Apex::Resources
 {
@@ -24,6 +24,7 @@ namespace Apex::Resources
 		ResourceManager& operator=(ResourceManager const&) = delete;
 		~ResourceManager() = default;
 
+
 		template <typename ResourceType>
 		ResourceHandle<ResourceType> CreateAsync(std::string const& id, bool persistent = false);
 		template <typename ResourceType>
@@ -31,10 +32,14 @@ namespace Apex::Resources
 
 		void ProcessGpuUploads();
 
+		void SetRHI(Rendering::IRHI* rhi) { m_rhi = rhi; }
+
 	private:
 		void AddToGpuQueue(ResourceHandle<IResource>);
 		template<typename ResourceType>
 		void Create(std::string const& id);
+
+		Rendering::IRHI* m_rhi = nullptr;
 
 		Core::ThreadPool&	m_threadPool;
 
@@ -50,6 +55,7 @@ namespace Apex::Resources
 	template <typename ResourceType>
 	ResourceHandle<ResourceType> ResourceManager::CreateAsync(std::string const& id, bool persistent)
 	{
+		assert(m_rhi != nullptr && "rhi must be set in the ResourceManager before starting to load resources");
 		std::unique_lock<std::shared_mutex> lock(m_mapMutex);
 
 		auto [it, inserted] = m_resources.try_emplace(id, nullptr, persistent);
@@ -63,6 +69,7 @@ namespace Apex::Resources
 
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
+		entry->m_resource->SetRhi(m_rhi);
 
 		m_threadPool.Enqueue(&ResourceManager::Create<ResourceType>, this, id);
 

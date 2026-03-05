@@ -1,5 +1,8 @@
 ﻿#include "MeshImporter.h"
 
+// includes Vertex
+#include "RHI.h"
+
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
@@ -103,7 +106,7 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
             int controlPointIndex = fbxMesh->GetPolygonVertex(i, j);
             FbxVector4 position = controlPoints[controlPointIndex];
 
-            Vertex vertex{};
+            Apex::Rendering::Vertex vertex{};
 
             vertex.m_position = { static_cast<float>(position[0]), static_cast<float>(position[1]),static_cast<float>(position[2]) };
 
@@ -122,7 +125,7 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
 
                 fbxMesh->GetPolygonVertexUV(i, j, uvSetNames[0], uv, unmapped);
 
-                vertex.m_textureUV = { static_cast<float>(uv[0]), static_cast<float>(uv[1]) };
+                vertex.m_uv = { static_cast<float>(uv[0]), static_cast<float>(uv[1]) };
             }
 
             mesh.m_vertices.push_back(vertex);

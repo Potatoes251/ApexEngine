@@ -127,8 +127,8 @@ void DebugRenderer::DrawLines(IRHI* rhi, LibMath::Matrix4 viewProj)
 		return;
 
 	m_shader->Use();
-	rhi->SetUniformMat4(m_shader->GetProgram(), "uViewProjection", viewProj);
-	rhi->SetUniformVec3(m_shader->GetProgram(), "uColor", { 1,0,0 });
+	m_shader->SetUniform("uViewProjection", viewProj);
+	m_shader->SetUniform("uColor", { 1,0,0 });
 
 	// Upload to GPU
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);

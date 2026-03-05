@@ -1,7 +1,7 @@
 #ifndef HUD
 #define HUD
 
-#include "../../Core/Header/UI.h"
+#include "UI.h"
 #include <string>
 #include <vector>
 #include <memory>
