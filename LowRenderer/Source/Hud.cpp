@@ -2,31 +2,54 @@
 
 using namespace Apex::UserInterface;
 
-UIElement::UIElement(Vector2 position, Vector2 size) :
+//UIElements
+UIElement::UIElement(Vector2 position, float size) :
 	m_position(position), m_size(size) {}
 
-UIText::UIText(string text, Vector2 position, Vector2 size) :
-	UIElement(position, size), m_text(text) {}
+UIText::UIText(string text, Vector2 position, float size, FontID font) :
+	UIElement(position, size), m_text(text), m_font(font) {}
 
-void UIText::Draw()
+void UIText::Draw(IGUI& gui)
 {
-
+	gui.DrawText2D(m_text, m_position[0], m_position[1], m_size, m_font);
 }
 
-UIImage::UIImage(Texture* image, Vector2 position, Vector2 size) :
+UIImage::UIImage(Texture* image, Vector2 position, float size) :
 	UIElement(position, size), m_image(image) {}
 
-UIManager::UIManager()
-{
-	glDisable(GL_DEPTH_TEST);	//TOO SEE IF IYT AFFECT 3D RENDERING
-}
-
-void UIManager::AddElement(unique_ptr<UIElement> element)
+//Canvas
+void UICanvas::AddElement(unique_ptr<UIElement> element)
 {
 	m_elements.push_back(std::move(element));
 }
 
-void UIManager::Render()
+void UICanvas::Render(IGUI& gui)
 {
-	for (auto& element : m_elements) element->Draw();
+	for (auto& element : m_elements) element->Draw(gui);
+}
+
+
+//UIManager
+UIManager::UIManager(void* nativeWindow)
+{
+	m_gui = unique_ptr<IGUI>(CreateGUI(nativeWindow));
+
+	// mess with the rest of rendering
+	//glDisable(GL_DEPTH_TEST);	//TOO SEE IF IYT AFFECT 3D RENDERING
+}
+
+UICanvas& Apex::UserInterface::UIManager::GetCanvas()
+{
+	return m_canvas;
+}
+
+void UIManager::RenderCanvas()
+{
+	m_gui.get()->BeginFrame();
+	glDisable(GL_DEPTH_TEST);
+
+	m_canvas.Render(*m_gui);
+
+	m_gui.get()->EndFrame();
+	glEnable(GL_DEPTH_TEST);
 }
