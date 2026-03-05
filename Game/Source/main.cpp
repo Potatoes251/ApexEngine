@@ -24,6 +24,7 @@
 
 #include "UI.h"
 #include "Scene.h"
+#include "Hud.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
 
 	// Initialize the scene
 	ThreadPool threadPool;
-	Scene scene(rhi.get(), threadPool);
+	//Scene scene(rhi.get(), threadPool);
 
 	// Audio setup 
 	if (audio)
@@ -80,8 +81,6 @@ int main(int argc, char* argv[])
 			camera.ProcessScroll(yoff);
 		});
 
-	// GUI
-	std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
 	// dragon (slow)
 	//ResourceHandle mesh2 = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
 	// faster
@@ -91,6 +90,12 @@ int main(int argc, char* argv[])
 	ResourceHandle<Shader> shader = rm.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
 
 	ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+
+	//HUD
+	UIManager uiManager(window->NativeHandle());
+
+	uiManager.GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default ));
+
 
 	while (!mesh.IsReady() || 
 		//!mesh2.IsReady() || 
@@ -153,16 +158,12 @@ int main(int argc, char* argv[])
 		// Rendering
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
-		scene.Update(camera.GetViewMatrix(),
-			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
-			camera.GetPosition(), totalTime);
+		//scene.Update(camera.GetViewMatrix(),
+		//	camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
+		//	camera.GetPosition(), totalTime);
 
 		// Draw UI
-		gui->BeginFrame();
-
-		gui->DrawText2D("Hello The HUD Works!", 50.0f, 50.0f, 18.0f, FontID::Default);
-
-		gui->EndFrame();
+		uiManager.RenderCanvas();
 
 		accumulator += deltaTime;
 		totalTime += deltaTime;
@@ -201,8 +202,8 @@ int main(int argc, char* argv[])
 		rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
 
 
-		physics.DrawColliders();
-		DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
+		//physics.DrawColliders();
+		//DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
 
 		rm.ProcessGpuUploads();
 

@@ -2,33 +2,28 @@
 # Core/CMakeLists.txt
 # -----------------------------------
 
+set(CORE_NAME Engine) #Local variable only
+
 # Collect code files
-file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h)
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
+file(GLOB_RECURSE PROJECT_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp
+)
 
-# Group files for IDE
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
-             FILES ${PROJECT_HEADERS} ${PROJECT_SOURCES})
+add_library(${CORE_NAME})
 
-
-# Create executable
-add_executable(${EXE_NAME})
-
-# Add source files
-target_sources(${EXE_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
-
+target_sources(${CORE_NAME} PRIVATE ${PROJECT_FILES})
 
 # ---- Include directories ----
-target_include_directories(${EXE_NAME}
+target_include_directories(${CORE_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/header
     PRIVATE ${LIB_INCLUDE_DIR}
-    PRIVATE ${DAT_INCLUDE_DIR}
     PRIVATE ${LOW_INCLUDE_DIR}
     PRIVATE ${RESOURCES_INCLUDE_DIR}
 )
 
 # ---- Link libraries ----
-target_link_libraries(${EXE_NAME}
+target_link_libraries(${CORE_NAME}
     PRIVATE Glad
     PRIVATE GLFW
     PRIVATE ImGui
@@ -46,49 +41,6 @@ target_link_libraries(${EXE_NAME}
     PRIVATE ${LOW_NAME}
 )
 
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${EXE_NAME}>/assets
-)
+set(CORE_NAME ${CORE_NAME} PARENT_SCOPE) #outer scope variable only
 
-# This ensures the executable can find the DLL at runtime
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/External/irrKlang/bin/irrKlang.dll"
-        $<TARGET_FILE_DIR:${EXE_NAME}>
-)
-
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/External/FBX_SDK/lib/x64/debug/libfbxsdk.dll>
-
-    $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/External/FBX_SDK/lib/x64/release/libfbxsdk.dll>
-
-    $<TARGET_FILE_DIR:${EXE_NAME}>
-)
-
-set(PHYSX_ROOT "${CMAKE_SOURCE_DIR}/External/PhysX")
-
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysX_64.dll>
-        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXCommon_64.dll>
-        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXFoundation_64.dll>
-        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXCooking_64.dll>
-
-        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysX_64.dll>
-        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXCommon_64.dll>
-        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXFoundation_64.dll>
-        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXCooking_64.dll>
-        $<TARGET_FILE_DIR:${EXE_NAME}>
-)
-
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/External/Lua/bin/Debug/lua51.dll>
-
-    $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/External/Lua/bin/Release/lua51.dll>
-
-    $<TARGET_FILE_DIR:${EXE_NAME}>
-)
+set(CORE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Header PARENT_SCOPE)

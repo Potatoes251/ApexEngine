@@ -1,4 +1,4 @@
-set(LOW_NAME LowRenderer) #Local variable only
+set(LOW_NAME Rendering) #Local variable only
 
 file(GLOB_RECURSE PROJECT_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h
