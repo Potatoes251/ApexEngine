@@ -106,8 +106,6 @@ int main()
 			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
 			camera.GetPosition(), totalTime);
 
-		window->SwapBuffers();
-
 		// Draw UI
 		gui->BeginFrame();
 

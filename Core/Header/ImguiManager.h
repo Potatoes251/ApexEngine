@@ -29,18 +29,10 @@ namespace Apex::UserInterface
 		float			m_fontSize;
 	};
 
-	std::vector<FontInitializer> m_fontDefinitions =
-	{
-		{ FontID::Small,   "../../assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL },
-		{ FontID::Default, "../../assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
-		{ FontID::Large,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE },
-		{ FontID::Title,   "../../assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE }
-	};
-
 	class ImGUIManager final : public IGUI
 	{
 	public:
-		ImGUIManager(GLFWwindow* nativeWindow);
+		explicit ImGUIManager(GLFWwindow* nativeWindow);
 		~ImGUIManager() override;
 
 		void	Initialize() override;
@@ -61,9 +53,9 @@ namespace Apex::UserInterface
 		void	Text(const std::string& text) override;
 		bool	Button(const std::string& label) override;
 		bool	Checkbox(const std::string& label, bool* v) override;
-		bool	SliderFloat(const char* label, float* v, float min, float max) override;
-		bool	SliderInt(const char* label, int* v, int min, int max) override;
-		bool	ColorEdit3(const char* label, float color[3]) override;
+		bool	SliderFloat(const std::string& label, float* v, float min, float max) override;
+		bool	SliderInt(const std::string& label, int* v, int min, int max) override;
+		bool	ColorEdit3(const std::string& label, float color[3]) override;
 		void	Separator() override;
 		void	SameLine() override;
 
@@ -72,8 +64,9 @@ namespace Apex::UserInterface
 
 	private:
 		GLFWwindow*		m_window = nullptr;
-
 		vector<ImFont*> m_fonts;
+
+		static const std::vector<FontInitializer> m_fontDefinitions;
 	};
 }
 
