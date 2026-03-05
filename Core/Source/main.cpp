@@ -1,7 +1,8 @@
+// ── Engine abstractions ───────────────────────────────────────
 #include "Window.h"
+#include "Audio.h"
 #include "RHI.h"
 #include "Camera.h"
-#include "Renderer.h"
 
 #include "ThreadPool.h"
 #include "ResourceManager.h"
@@ -17,34 +18,50 @@
 
 #include "DebugRenderer.h"
 
+#include "Object.h"
+
 #include <filesystem>
+
+#include "UI.h"
+#include "Scene.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
-using namespace Apex::Resources;
-using namespace Apex::Physic;
+using namespace Apex::UserInterface;
 using namespace Apex::Core;
+using namespace Apex::Resources;
+using namespace Apex::Audio;
+using namespace Apex::Physic;
 
 int main(int argc, char* argv[])
 {
 	std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
-
-	// Initialize window and RHI
-	std::unique_ptr<IWindow> window(CreateWindow("Engine", 1280, 720));
-
+	// Initialize
+	std::unique_ptr<IWindow> window(CreateWindow("Apex Renderer", 1280, 720));
 	std::unique_ptr<IRHI> rhi(CreateOpenGLRHI());
+	std::unique_ptr<IAudioEngine> audio(CreateAudioEngine());
 
-	Camera camera({ 0.f, 0.f, 10.f });
+	// Initialize the scene
+	ThreadPool threadPool;
+	Scene scene(rhi.get(), threadPool);
 
-	// Capture mouse for FPS look
+	// Audio setup 
+	if (audio)
+	{
+		audio->Preload("fragments of hope.ogg");
+	}
+
+	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
+		{ .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
+
+	// Initialize Camera
+	Camera camera;
 	window->SetCursorCaptured(true);
 
 	ThreadPool tp;
 	ResourceManager rm(tp);
 	PhysicSystem physics;
 	DebugRenderer::Initialize(rm.CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
-
-	rhi->SetupVertexLayout();
 
 	// Input callbacks
 	window->SetKeyCallback([&](Key key, bool pressed)
@@ -63,8 +80,10 @@ int main(int argc, char* argv[])
 			camera.ProcessScroll(yoff);
 		});
 
+	// GUI
+	std::unique_ptr<IGUI> gui(CreateGUI(window->NativeHandle()));
 	// dragon (slow)
-	ResourceHandle mesh2 = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
+	//ResourceHandle mesh2 = rm.CreateAsync<Mesh>("Assets/Meshes/M_B_44_Qishilong_skin_Skeleton.FBX");
 	// faster
 	ResourceHandle<Mesh> mesh = rm.CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
 	ResourceHandle<Texture> texture = rm.CreateAsync<Texture>("Assets/Textures/container.jpg");
@@ -74,34 +93,34 @@ int main(int argc, char* argv[])
 	ResourceHandle<Mesh> cube = rm.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
 
 	while (!mesh.IsReady() || 
-		!mesh2.IsReady() || 
+		//!mesh2.IsReady() || 
 		!cube.IsReady() || 
 		!texture.IsReady() || 
 		!shader.IsReady())
 		rm.ProcessGpuUploads();
 
 	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-	RigidBodyComponent body = RigidBodyComponent(1, BodyType::DYNAMIC);
+	RigidBodyComponent body = RigidBodyComponent(1, BodyType::Dynamic);
 
 
 	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
-	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::STATIC);
+	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::Static);
 
 	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex);
-	MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
+	//MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
 	CapsuleCollider capsule(2, 2);
 
 	body.SetPosition({ 0, 10, 0 });
 	body2.SetPosition({ 0, 0, 0 });
-	body2.SetScale(LibMath::Vector3(0.001f));
-	body2.SetRotation(LibMath::Quaternion(LibMath::Degree(-90), LibMath::Radian(0), LibMath::Radian(0)));
+	//body2.SetScale(LibMath::Vector3(0.001f));
+	//body2.SetRotation(LibMath::Quaternion(LibMath::Degree(-90), LibMath::Radian(0), LibMath::Radian(0)));
 
 
 	physics.CreateActor(meshCollider, body);
-	physics.CreateActor(meshCollider2, body2);
+	physics.CreateActor(collider2, body2);
 
-
+	float totalTime = 0.f;
 	float accumulator = 0.f;
 	while (!window->ShouldClose())
 	{
@@ -120,15 +139,33 @@ int main(int argc, char* argv[])
 			deltaTime
 		);
 
-		// Clear
+		// Audio Listener
+		if (audio)
+		{
+			LibMath::Vector3 pos = camera.GetPosition();
+			LibMath::Vector3 front = camera.GetFront();
+			audio->SetListenerPosition(
+				{ pos[0],   pos[1],   pos[2] },
+				{ front[0], front[1], front[2] }
+			);
+		}
+
+		// Rendering
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
-		// Matrices from camera
-		LibMath::Matrix4 view = camera.GetViewMatrix();
-		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov);
+		scene.Update(camera.GetViewMatrix(),
+			camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
+			camera.GetPosition(), totalTime);
 
+		// Draw UI
+		gui->BeginFrame();
+
+		gui->DrawText2D("Hello The HUD Works!", 50.0f, 50.0f, 18.0f, FontID::Default);
+
+		gui->EndFrame();
 
 		accumulator += deltaTime;
+		totalTime += deltaTime;
 		while (accumulator >= 1.f / 60.f)
 		{
 			physics.Update(1.f / 60.f);
@@ -139,6 +176,9 @@ int main(int argc, char* argv[])
 		shader->Use();
 		texture->Bind();
 		GLuint prog = shader->GetProgram();
+
+		LibMath::Matrix4 view = camera.GetViewMatrix();
+		LibMath::Matrix4 proj = camera.GetProjectionMatrix(window->GetAspectRatio());
 
 		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body.GetTransform()));
 		rhi->SetUniformMat4(prog, "uView", view);
@@ -157,8 +197,8 @@ int main(int argc, char* argv[])
 
 		texture2->Bind();
 		rhi->SetUniformMat4(prog, "uModel", static_cast<LibMath::Matrix4>(body2.GetTransform()));
-		rhi->BindVAO(mesh2->GetVAO());
-		rhi->DrawIndexed(static_cast<GLsizei>(mesh2->m_indices.size()));
+		rhi->BindVAO(cube->GetVAO());
+		rhi->DrawIndexed(static_cast<GLsizei>(cube->m_indices.size()));
 
 
 		physics.DrawColliders();
@@ -166,6 +206,7 @@ int main(int argc, char* argv[])
 
 		rm.ProcessGpuUploads();
 
+		//Swap buffer
 		window->SwapBuffers();
 	}
 

@@ -8,16 +8,16 @@ namespace Apex::Physic
 {
 	enum class BodyType
 	{
-		STATIC,
-		DYNAMIC,
-		KINEMATIC
+		Static,
+		Dynamic,
+		Kinematic
 	};
 
 
 	class RigidBodyComponent
 	{
 	public:
-		RigidBodyComponent(float mass, BodyType type = BodyType::DYNAMIC);
+		RigidBodyComponent(float mass, BodyType type = BodyType::Dynamic);
 		RigidBodyComponent(RigidBodyComponent const& other);
 		RigidBodyComponent& operator=(RigidBodyComponent const& other);
 

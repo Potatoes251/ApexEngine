@@ -103,13 +103,13 @@ void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rig
 
 	switch (rigidBody.GetType())
 	{
-	case BodyType::DYNAMIC:
+	case BodyType::Dynamic:
 		CreateActorDynamic(shape, rigidBody);
 		break;
-	case BodyType::STATIC:
+	case BodyType::Static:
 		CreateActorStatic(shape, rigidBody);
 		break;
-	case BodyType::KINEMATIC:
+	case BodyType::Kinematic:
 		CreateActorKinematic(shape, rigidBody);
 		break;
 	default:
@@ -236,7 +236,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 	switch (mesh.GetMeshColliderType())
 	{
 	case MeshColliderType::Triangle:
-		if (rigidBody.GetType() != BodyType::STATIC)
+		if (rigidBody.GetType() != BodyType::Static)
 		{
 			assert(false && "Triangle mesh can only be static");
 			return nullptr;
@@ -341,7 +341,7 @@ void PhysicSystem::SyncToPhysx()
 {
 	for (PhysicActor& actor : m_rigidBodies)
 	{
-		if (actor.m_owner->GetType() == BodyType::KINEMATIC)
+		if (actor.m_owner->GetType() == BodyType::Kinematic)
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
 			LibMath::Vector3 pos = actor.m_owner->GetPosition();
@@ -358,7 +358,7 @@ void PhysicSystem::SyncFromPhysx()
 {
 	for (PhysicActor& actor : m_rigidBodies)
 	{
-		if (actor.m_owner->GetType() == BodyType::DYNAMIC)
+		if (actor.m_owner->GetType() == BodyType::Dynamic)
 		{
 			physx::PxTransform trans = actor.m_actor->getGlobalPose();
 

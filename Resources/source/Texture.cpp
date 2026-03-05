@@ -1,6 +1,5 @@
 #include "Texture.h"
 
-//#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <iostream>
@@ -31,15 +30,17 @@ void Texture::UploadToGpu()
         return;
     }
 
-    GLenum format = GL_RGB;
-    if (m_channels == 1) format = GL_RED;
-    else if (m_channels == 3) format = GL_RGB;
-    else if (m_channels == 4) format = GL_RGBA;
+    GLenum internalFmt = GL_RGB8;
+    GLenum pixelFmt = GL_RGB;
+
+    if (m_channels == 1) { internalFmt = GL_R8;    pixelFmt = GL_RED; }
+    else if (m_channels == 3) { internalFmt = GL_RGB8;  pixelFmt = GL_RGB; }
+    else if (m_channels == 4) { internalFmt = GL_RGBA8; pixelFmt = GL_RGBA; }
 
     glGenTextures(1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, m_imageData.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFmt, m_width, m_height, 0, pixelFmt, GL_UNSIGNED_BYTE, m_imageData.data());
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

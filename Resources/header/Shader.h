@@ -15,12 +15,12 @@ public:
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 
-	~Shader() { (m_shaderProgram); }
+	~Shader() { if (m_shaderProgram) glDeleteProgram(m_shaderProgram); }
 
 	void UploadToGpu() override;
 
 	void Use() const;
-	GLuint GetProgram() const;
+	GLuint GetProgram() const { return m_shaderProgram; }
 
 private:
 	bool	CreateShader(std::vector<std::string> const& files);
@@ -32,7 +32,6 @@ private:
 	std::string m_name;
 
 	GLuint m_shaderProgram = 0;
-
 };
 
 

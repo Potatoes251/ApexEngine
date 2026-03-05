@@ -31,24 +31,28 @@ public:
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 
-	//~Mesh();
+	~Mesh();
 
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
-	GLuint GetVAO() const;
+	void Draw() const;
 
 	std::vector<Vertex>			m_vertices;
 	std::vector<unsigned int>	m_indices;
 	std::vector<SubMesh>		m_subMeshes;
 
 
+	GLsizei GetIndexCount()  const { return m_indexCount; }
+	GLuint  GetVAO()         const { return m_VAO; }
+
 private:
 	std::string m_name;
 
-	GLuint m_VBO;
-	GLuint m_VAO;
-	GLuint m_EBO;
+	GLuint m_VBO = 0;
+	GLuint m_VAO = 0;
+	GLuint m_EBO = 0;
+	GLsizei m_indexCount = 0;
 };
 
 
