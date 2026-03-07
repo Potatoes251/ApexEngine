@@ -14,6 +14,7 @@ target_include_directories(${EDITOR_NAME}
 	PRIVATE ${RESOURCES_INCLUDE_DIR}
 	PRIVATE ${LOW_INCLUDE_DIR}
 	PRIVATE ${UI_INCLUDE_DIR}
+    	PRIVATE ${PHYS_INCLUDE_DIR}
 	PRIVATE ${CORE_INCLUDE_DIR}
 )
 
@@ -35,6 +36,7 @@ target_link_libraries(${EDITOR_NAME}
     PRIVATE ${LOW_NAME}
     PRIVATE ${UI_NAME}
     PRIVATE ${CORE_NAME}
+    PRIVATE ${PHYS_NAME}
 )
 set(EDITOR_NAME ${EDITOR_NAME} PARENT_SCOPE) #outer scope variable only
 

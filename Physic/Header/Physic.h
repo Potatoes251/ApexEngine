@@ -9,7 +9,10 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+#include "PhysicMaterial.h"
+
 #include <vector>
+#include <unordered_map>
 
 namespace Apex::Physic
 {
@@ -18,7 +21,6 @@ namespace Apex::Physic
 	class MeshCollider;
 	class CapsuleCollider;
 	class RigidBodyComponent;
-
 
 	struct PhysicActor
 	{
@@ -35,12 +37,13 @@ namespace Apex::Physic
 
 		~PhysicSystem();
 
-		// should be called inside a fixed update
-		void	Update(float deltaTime_s);
-
-		void	AddGround();
+		Apex::Resources::ResourceHandle<PhysicMaterial> 
+				CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness);
 		void	CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 		void	RemoveActor(RigidBodyComponent const& rigidbody);
+
+		// should be called inside a fixed update
+		void	Update(float deltaTime_s);
 
 		// called on frame update
 		void	SyncFromPhysx();
@@ -48,7 +51,16 @@ namespace Apex::Physic
 		void	DrawColliders();
 
 	private:
-		void	DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* actor, LibMath::Vector3 scale);
+		void	DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* actor, LibMath::Vector3 scale) const;
+		void	DrawTriangleMeshCollider32(
+			physx::PxTriangleMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
+
+		void	DrawTriangleMeshCollider16(
+			physx::PxTriangleMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
+		
+		void	DrawConvexMeshCollider(
+			physx::PxConvexMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
+
 
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
@@ -60,10 +72,14 @@ namespace Apex::Physic
 
 		void	SyncToPhysx();
 
-		physx::PxTriangleMesh* CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
-		physx::PxConvexMesh* CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxTriangleMesh*	CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxConvexMesh*	CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
 
 		std::vector<PhysicActor>		m_rigidBodies;
+		std::vector<physx::PxMaterial*>	m_physxMaterials;
+
+		std::unordered_map<std::string, Apex::Resources::ResourceEntry>			
+										m_materialsMap;
 
 		physx::PxDefaultAllocator		m_allocator;
 		physx::PxDefaultErrorCallback	m_errorCallback;
@@ -71,7 +87,6 @@ namespace Apex::Physic
 		physx::PxFoundation*			m_foundation = nullptr;
 		physx::PxPhysics*				m_physics = nullptr;
 		physx::PxScene*					m_scene	= nullptr;
-		physx::PxPvd*					m_pvd = nullptr;
 
 		physx::PxMaterial*				m_defaultMaterial = nullptr;
 	};

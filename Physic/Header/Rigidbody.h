@@ -13,7 +13,6 @@ namespace Apex::Physic
 		Kinematic
 	};
 
-
 	class RigidBodyComponent
 	{
 	public:

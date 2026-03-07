@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 	// Audio setup 
 	if (audio)
 	{
-		audio->Preload("fragments of hope.ogg");
+		//audio->Preload("fragments of hope.ogg");
 	}
 
 	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
