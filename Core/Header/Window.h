@@ -70,6 +70,8 @@ namespace Apex::Windowing
 		virtual void SetMouseButtonCallback(MouseButtonCallback callback) = 0;
 		virtual void SetScrollCallback(ScrollCallback callback) = 0;
 		virtual void SetResizeCallback(ResizeCallback callback) = 0;
+
+		virtual void* NativeHandle() const = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────

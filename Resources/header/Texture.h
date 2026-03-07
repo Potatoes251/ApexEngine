@@ -16,7 +16,7 @@ public:
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 
-	~Texture() { if (m_id) glDeleteTextures(1, &m_id); }
+	~Texture() { m_rhi->DeleteTexture(m_id); }
 
 	GLuint GetId() const { return m_id; }
 

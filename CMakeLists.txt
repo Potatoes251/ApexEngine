@@ -11,7 +11,7 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
-set(EXE_NAME Engine)
+set(EXE_NAME Game)
 project(${EXE_NAME} LANGUAGES C CXX)
 
 # Collect assets
@@ -31,10 +31,13 @@ add_custom_target(Assets SOURCES
 
 add_subdirectory(Dependencies)
 add_subdirectory(LibMath)
-add_subdirectory(Resources)
 add_subdirectory(LowRenderer)
+add_subdirectory(Resources)
+add_subdirectory(UI)
 add_subdirectory(Core)
+add_subdirectory(Editor)
+add_subdirectory(Game)
 
 if (MSVC)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Engine)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXE_NAME})
 endif()

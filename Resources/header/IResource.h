@@ -1,6 +1,8 @@
 #ifndef IRESOURCE
 #define IRESOURCE
 
+#include "RHI.h"
+
 enum class ResourceState
 {
     Unloaded,
@@ -21,8 +23,10 @@ public:
 
     ResourceState   GetState() const { return m_state; }
     void            SetState(ResourceState state) { m_state = state; }
+    void            SetRhi(Apex::Rendering::IRHI* rhi) { m_rhi = rhi; }
 
 protected:
+    Apex::Rendering::IRHI* m_rhi;
     ResourceState   m_state = ResourceState::Unloaded;
 };
 

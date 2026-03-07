@@ -1,6 +1,7 @@
 #include "Texture.h"
 
-//#define STB_IMAGE_IMPLEMENTATION
+#include "RHI.h"
+
 #include <stb_image.h>
 
 #include <iostream>
@@ -30,24 +31,8 @@ void Texture::UploadToGpu()
         SetState(ResourceState::Failed);
         return;
     }
-
-    GLenum format = GL_RGB;
-    if (m_channels == 1) format = GL_RED;
-    else if (m_channels == 3) format = GL_RGB;
-    else if (m_channels == 4) format = GL_RGBA;
-
-    glGenTextures(1, &m_id);
-    glBindTexture(GL_TEXTURE_2D, m_id);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, m_imageData.data());
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    m_id = m_rhi->CreateTexture(Apex::Rendering::TextureDescription(m_width, m_height, m_channels, m_imageData.data()));
 
     m_imageData.clear();
     m_imageData.shrink_to_fit();
@@ -55,6 +40,5 @@ void Texture::UploadToGpu()
 
 void Texture::Bind(GLuint slot)
 {
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    m_rhi->BindTexture(m_id, slot);
 }

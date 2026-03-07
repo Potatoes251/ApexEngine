@@ -35,7 +35,7 @@ namespace Apex::Rendering
 	}
 	void OpenGLRHI::BindVAO(RHIVAOHandle vao) 
 	{
-		glBindVertexArray(vao);
+		glBindVertexArray(GetGLVAO(vao));
 	}
 	void OpenGLRHI::DeleteVAO(RHIVAOHandle vao) 
 	{
@@ -86,7 +86,7 @@ namespace Apex::Rendering
 	}
 
 	// ── Textures ─────────────────────────────────────────────────
-	RHITextureHandle OpenGLRHI::CreateTexture(const TextureDescription& desc) 
+	RHITextureHandle OpenGLRHI::CreateTexture(const TextureDescription& desc)
 	{
 		GLuint glTexture;
 		glGenTextures(1, &glTexture);
@@ -105,13 +105,13 @@ namespace Apex::Rendering
 		return texture;
 	}
 
-	void OpenGLRHI::BindTexture(RHITextureHandle texture, GLuint unit) 
+	void OpenGLRHI::BindTexture(RHITextureHandle texture, GLuint unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, GetGLTexture(texture));
 	}
 
-	void OpenGLRHI::DeleteTexture(RHITextureHandle texture) 
+	void OpenGLRHI::DeleteTexture(RHITextureHandle texture)
 	{
 		GLuint glTexture = GetGLTexture(texture);
 		glDeleteTextures(1, &glTexture);
@@ -119,7 +119,7 @@ namespace Apex::Rendering
 	}
 
 	// ── Shaders ──────────────────────────────────────────────────
-	RHIShaderHandle OpenGLRHI::CreateShader(const ShaderSource& source) 
+	RHIShaderHandle OpenGLRHI::CreateShader(const ShaderSource& source)
 	{
 		GLuint vertexShader = CompileShader(source.vertexPath, GL_VERTEX_SHADER);
 		GLuint fragmentShader = CompileShader(source.fragmentPath, GL_FRAGMENT_SHADER);
@@ -130,7 +130,7 @@ namespace Apex::Rendering
 
 		GLint success;
 		glGetProgramiv(program, GL_LINK_STATUS, &success);
-		if (!success) 
+		if (!success)
 		{
 			GLchar infoLog[512];
 			glGetProgramInfoLog(program, 512, nullptr, infoLog);
@@ -144,47 +144,44 @@ namespace Apex::Rendering
 		return shader;
 	}
 
-	void OpenGLRHI::BindShader(RHIShaderHandle shader) 
+	void OpenGLRHI::BindShader(RHIShaderHandle shader)
 	{
-		m_boundShader = GetGLShader(shader);
-		glUseProgram(m_boundShader);
+		glUseProgram(GetGLShader(shader));
 	}
 
-	void OpenGLRHI::DeleteShader(RHIShaderHandle shader) 
+	void OpenGLRHI::DeleteShader(RHIShaderHandle shader)
 	{
-		GLuint glShader = GetGLShader(shader);
-		glDeleteProgram(glShader);
+		glDeleteProgram(GetGLShader(shader));
 		m_shaders.erase(shader);
 	}
 
 	// ── Uniforms ─────────────────────────────────────────────────
-	void OpenGLRHI::SetUniformInt(GLuint program, const std::string& name, int value)
+	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string& name, int value)
 	{
-		GLint location = glGetUniformLocation(program, name.c_str());
+		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
 		glUniform1i(location, value);
 	}
 
-	void OpenGLRHI::SetUniformFloat(GLuint program, const std::string& name, float value)
+	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value)
 	{
-		GLint location = glGetUniformLocation(program, name.c_str());
+		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
 		glUniform1f(location, value);
 	}
 
-	void OpenGLRHI::SetUniformVec3(GLuint program, const std::string& name, const LibMath::Vector3& vec)
+	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec)
 	{
-		GLint location = glGetUniformLocation(program, name.c_str());
+		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
 		const LibMath::Vector3& vector = vec;
 		glUniform3f(location, vector[0], vector[1], vector[2]);
 	}
 
-	void OpenGLRHI::SetUniformMat4(GLuint program, const std::string& name, const LibMath::Matrix4& matrix)
+	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix)
 	{
-		GLint location = glGetUniformLocation(program, name.c_str());
+		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
-	// ── Vertex layout ─────────────────────────────────────────────
-	void OpenGLRHI::SetupVertexLayout() 
+	void OpenGLRHI::SetupVertexLayout()
 	{
 		glEnableVertexAttribArray(0); // Position
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
@@ -229,7 +226,7 @@ namespace Apex::Rendering
 
 		GLint success;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-		if (!success) 
+		if (!success)
 		{
 			GLchar infoLog[512];
 			glGetShaderInfoLog(shader, 512, nullptr, infoLog);
@@ -241,7 +238,7 @@ namespace Apex::Rendering
 	std::string OpenGLRHI::ReadFile(const std::string& path)
 	{
 		std::ifstream file(path);
-		if (!file.is_open()) 
+		if (!file.is_open())
 		{
 			std::cerr << "ERROR::FILE::COULD_NOT_OPEN " << path << std::endl;
 			return "";

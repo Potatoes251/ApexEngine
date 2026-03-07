@@ -7,31 +7,60 @@
 #include "Object.h"
 
 #include "Window.h"
+#include "Audio.h"
 #include "RHI.h"
-#include "Renderer.h"
-
 #include "Camera.h"
 
+#include "ThreadPool.h"
+#include "ResourceManager.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
+
+#include "Physic.h"
+#include "BoxCollider.h"
+#include "CapsuleCollider.h"
+#include "MeshCollider.h"
+#include "Rigidbody.h"
+
+#include "DebugRenderer.h"
+
+#include "UI.h"
+#include "Scene.h"
+#include "Hud.h"
+
 #include <memory>
+#include <filesystem>
 
 namespace Apex
 {
 	class Application
 	{
     public:
-        Application() = default;
+        Application(const char* argv0) : m_argv0(argv0) {}
         ~Application() = default;
 
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
+        bool Init();
         void Run();
+        void LoadScene();
 
     private:
-        void Init();
+        bool InitResourceManager();
+        bool InitCamera();
+        bool InitWindow();
+        bool InitRHI();
+        bool InitRendering();
+        bool InitAudio();
+        bool InitScene();
+        bool InitUI();
+
         void Shutdown();
         void Tick();
         void ProcessInput();
+        void UpdateAudioListener();
         void Update();
         void SyncPhysicsToTransforms();
         void Render();
@@ -40,14 +69,34 @@ namespace Apex
         bool m_running = true;
         float m_totalTime = 0.0f;
         float m_deltaTime = 0.0f;
+        float m_accumulator = 0.f;
+
+        const char* m_argv0;
+
+        std::unique_ptr<Apex::Rendering::IRHI> m_rhi;
 
         std::unique_ptr<Apex::Scripting::LuaManager> m_luaManager;
         std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
+        std::unique_ptr<Apex::Resources::ResourceManager> m_resourceManager;
+        std::unique_ptr<Apex::UserInterface::UIManager> m_uiManager;
 
         std::unique_ptr<Apex::Windowing::IWindow> m_window;
-        std::unique_ptr<Apex::Rendering::IRHI> m_rhi;
         std::unique_ptr<Apex::Rendering::Camera> m_camera;
-        std::unique_ptr<Apex::Rendering::Renderer> cubeRenderer;
+        std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;
+
+        Apex::Core::ThreadPool m_threadPool;
+        std::unique_ptr<Apex::Rendering::Scene> m_scene;
+
+        Apex::Physic::PhysicSystem m_physics;
+
+        Apex::Resources::ResourceHandle<Shader> m_shader;
+        Apex::Resources::ResourceHandle<Mesh> m_sphere;
+        Apex::Resources::ResourceHandle<Mesh> m_cube;
+        Apex::Resources::ResourceHandle<Texture> m_texture;
+        Apex::Resources::ResourceHandle<Texture> m_texture2;
+
+        std::unique_ptr<Apex::Physic::RigidBodyComponent> m_body;
+        std::unique_ptr<Apex::Physic::RigidBodyComponent> m_body2;
 	};
 }
 

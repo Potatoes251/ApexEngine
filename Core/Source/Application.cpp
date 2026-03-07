@@ -2,19 +2,19 @@
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
 
-#include "Renderer.h"
-
 #include <chrono>
 #include <iostream>
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
 using namespace Apex::Scripting;
+using namespace Apex::Audio;
+using namespace Apex::Resources;
+using namespace Apex::UserInterface;
+using namespace Apex::Physic;
 
 void Apex::Application::Run()
 {
-    Init();
-
     while (!m_window->ShouldClose())
     {   
         Tick();
@@ -23,42 +23,147 @@ void Apex::Application::Run()
     Shutdown();
 }
 
-void Apex::Application::Init()
+bool Apex::Application::Init()
 {
+    std::filesystem::current_path(std::filesystem::path(m_argv0).parent_path());
+
     std::cout << "Application Init\n";
 
+    if (!InitResourceManager()) return false;
+    if (!InitCamera())          return false;
+    if (!InitWindow())          return false;
+    if (!InitRHI())             return false;
+    if (!InitRendering())       return false;
+    if (!InitAudio())           return false;
+    if (!InitScene())           return false;
 
-    m_luaManager = std::make_unique<LuaManager>();
+    return true;
+}
 
+bool Apex::Application::InitResourceManager()
+{
+    m_resourceManager = std::make_unique<ResourceManager>(m_threadPool);
+    return true;
+}
+
+bool Apex::Application::InitCamera()
+{
+    m_camera = std::make_unique<Camera>();
+    return true;
+}
+
+bool Apex::Application::InitWindow()
+{
     m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Renderer", 1280, 720));
 
-    m_objects.push_back(std::make_unique<Apex::Data::Object>());
-    auto& obj = *m_objects.back();
+    if (!m_window)
+        return false;
 
-    m_objects.push_back(std::make_unique<Apex::Data::Object>());
-    auto& obj2 = *m_objects.back();
-    
-    auto& script = obj.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
-    script.SetScript("../../Assets/Scripts/ScriptParent.lua");
+    m_window->SetCursorCaptured(true);
 
-    auto& script2 = obj2.AddComponent<Apex::Scripting::ScriptComponent>(*m_luaManager);
-    script2.SetScript("../../Assets/Scripts/ScriptChild.lua");
+    m_window->SetKeyCallback([&](Key key, bool pressed)
+        {
+            if (key == Key::Escape && pressed)
+                m_window->Close();
+        });
 
-    lua_State* L = m_luaManager->GetState();
+    m_window->SetMouseMoveCallback([&](double dx, double dy)
+        {
+            m_camera->ProcessMouse(dx, dy);
+        });
 
-    // push parent instance
-    lua_rawgeti(L, LUA_REGISTRYINDEX, script.GetInstanceRef());
+    m_window->SetScrollCallback([&](double, double yoff)
+        {
+            m_camera->ProcessScroll(yoff);
+        });
 
-    // push child instance
-    lua_rawgeti(L, LUA_REGISTRYINDEX, script2.GetInstanceRef());
+    return true;
+}
 
-    // parent.other = child
-    lua_setfield(L, -2, "other");
+bool Apex::Application::InitRHI()
+{
+    m_rhi = std::unique_ptr<IRHI>(CreateOpenGLRHI());
 
-    lua_pop(L, 1); // pop parent
+    if (!m_rhi)
+        return false;
 
-    obj.Start();
-    obj2.Start();
+    m_resourceManager->SetRHI(m_rhi.get());
+
+    return true;
+}
+
+bool Apex::Application::InitRendering()
+{
+    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
+
+    return true;
+}
+
+bool Apex::Application::InitAudio()
+{
+    m_audio = std::unique_ptr<IAudioEngine>(CreateAudioEngine());
+
+    if (m_audio)
+    {
+        m_audio->Preload("fragments of hope.ogg");
+
+        m_audio->Play2D("fragments of hope.ogg",
+            { .m_loop = true, .m_volume = 1.f });
+    }
+
+    return true;
+}
+
+bool Apex::Application::InitScene()
+{
+    m_scene = std::make_unique<Apex::Rendering::Scene>(m_rhi.get(), m_threadPool);
+    return true;
+}
+
+bool Apex::Application::InitUI()
+{
+    m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
+
+    if (!m_uiManager)
+        return false;
+
+    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default));
+
+    return true;
+}
+
+void Apex::Application::LoadScene()
+{
+    m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
+    m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
+    m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
+    m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+
+    m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+
+    while (!m_sphere.IsReady() ||
+        !m_cube.IsReady() ||
+        !m_texture.IsReady() ||
+        !m_texture2.IsReady() ||
+        !m_shader.IsReady())
+        m_resourceManager->ProcessGpuUploads();
+
+    BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
+    BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
+
+    m_body = std::make_unique<RigidBodyComponent>(1, BodyType::Dynamic);
+    m_body2 = std::make_unique<RigidBodyComponent>(0, BodyType::Static);
+
+    MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
+    //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
+
+    CapsuleCollider capsule(2, 2);
+
+    m_body->SetPosition({ 0, 10, 0 });
+    m_body2->SetPosition({ 0, 0, 0 });
+
+    m_physics.CreateActor(meshCollider, *m_body);
+    m_physics.CreateActor(collider2, *m_body2);
 }
 
 void Apex::Application::Shutdown()
@@ -71,13 +176,19 @@ void Apex::Application::Tick()
     m_window->PollEvents();
 
     m_deltaTime = m_window->GetDeltaTime();
-    m_totalTime += m_deltaTime;
+    if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;
 
     ProcessInput();
-
     Update();
 
-    // TODO: m_physicsSystem->Step(dt);
+    m_accumulator += m_deltaTime;
+    m_totalTime += m_deltaTime;
+
+    while (m_accumulator >= 1.f / 60.f)
+    {
+        m_physics.Update(1.f / 60.f);
+        m_accumulator -= 1.f / 60.f;
+    }
 
     SyncPhysicsToTransforms();
 
@@ -88,16 +199,28 @@ void Apex::Application::Tick()
 
 void Apex::Application::ProcessInput()
 {
-    // Camera keyboard movement
-    //m_camera->ProcessKeyboard(
-    //    m_window->IsKeyPressed(Key::W),
-    //    m_window->IsKeyPressed(Key::S),
-    //    m_window->IsKeyPressed(Key::A),
-    //    m_window->IsKeyPressed(Key::D),
-    //    m_window->IsKeyPressed(Key::E),
-    //    m_window->IsKeyPressed(Key::Q),
-    //    m_deltaTime
-    //);
+    m_camera->ProcessKeyboard(
+        m_window->IsKeyPressed(Key::W),
+        m_window->IsKeyPressed(Key::S),
+        m_window->IsKeyPressed(Key::A),
+        m_window->IsKeyPressed(Key::D),
+        m_window->IsKeyPressed(Key::E),
+        m_window->IsKeyPressed(Key::Q),
+        m_deltaTime
+    );
+}
+
+void Apex::Application::UpdateAudioListener()
+{
+    if (m_audio)
+    {
+        LibMath::Vector3 pos = m_camera->GetPosition();
+        LibMath::Vector3 front = m_camera->GetFront();
+        m_audio->SetListenerPosition(
+            { pos[0],   pos[1],   pos[2] },
+            { front[0], front[1], front[2] }
+        );
+    }
 }
 
 void Apex::Application::Update()
@@ -108,18 +231,40 @@ void Apex::Application::Update()
 
 void Apex::Application::SyncPhysicsToTransforms()
 {
-    // TODO: Synchronize scene objects transforms after physics simulation
+    m_physics.SyncFromPhysx();
 }
 
 void Apex::Application::Render()
 {        
     // Clear
-    //m_rhi->Clear(0.12f, 0.12f, 0.15f);
+    m_rhi->Clear(0.12f, 0.12f, 0.15f);
 
-    //// Matrices from camera
-    //LibMath::Matrix4 view = m_camera->GetViewMatrix();
-    //LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio(), m_camera->m_fov);
+    m_shader->Use();
+    m_resourceManager->Get<Texture>("Assets/Textures/container.jpg")->Bind();
 
-    //// Draw cube
-    //cubeRenderer->Render(view, proj, m_camera->GetPosition(), m_totalTime);
+    LibMath::Matrix4 view = m_camera->GetViewMatrix();
+    LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
+
+    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body->GetTransform()));
+    m_shader->SetUniform("uView", view);
+    m_shader->SetUniform("uProjection", proj);
+    m_shader->SetUniform("uCameraPos", m_camera->GetPosition());
+
+    m_shader->SetUniform("uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
+    m_shader->SetUniform("uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
+    m_shader->SetUniform("uViewPos", m_camera->GetPosition());
+
+    m_shader->SetUniform("uTexture", 0);
+    m_shader->SetUniform("uUseTexture", 1);
+
+    m_sphere->Draw();
+
+    m_texture2->Bind();
+    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body2->GetTransform()));
+    m_cube->Draw();
+
+    m_physics.DrawColliders();
+    DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);
+
+    m_resourceManager->ProcessGpuUploads();
 }

@@ -1,4 +1,4 @@
-#include "CaspuleCollider.h"
+#include "CapsuleCollider.h"
 
 using namespace Apex::Physic;
 

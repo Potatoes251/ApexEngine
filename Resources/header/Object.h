@@ -5,12 +5,11 @@
 #include "LibMath/Transform.h"
 
 #include "../../Core/Header/Component.h"
+#include "../../LowRenderer/Header/SceneGraph.h"
 
 #include <vector>
 #include <memory>
 #include <utility>
-
-namespace Apex::SceneGraph { class SceneNode; }
 
 namespace Apex::Data
 {
@@ -50,6 +49,8 @@ namespace Apex::Data
 
 					return ref;
 				}
+
+		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
 		LibMath::Transform				m_localTransform;

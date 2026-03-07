@@ -1,8 +1,12 @@
 #include "Shader.h"
 
+#include "RHI.h"
+
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
+using namespace Apex::Rendering;
 
 void Shader::UploadToGpu()
 {
@@ -15,126 +19,50 @@ void Shader::UploadToGpu()
 	{
 		files.push_back(item);
 	}
-	if (!CreateShader(files))
+	if (files.size() != 2)
 	{
+		m_shader = RHI_INVALID;
 		SetState(ResourceState::Failed);
 		return;
+	}
+
+	m_shader = m_rhi->CreateShader(ShaderSource{ files[0],files[1] });
+
+	if (m_shader == RHI_INVALID)
+	{
+		SetState(ResourceState::Failed);
 	}
 }
 
 void Shader::Use() const
 {
-	glUseProgram(m_shaderProgram);
+	if (m_rhi != nullptr)
+	{
+		m_rhi->BindShader(m_shader);
+	}
+	else
+	{
+		printf("rhi null\n");
+	}
+	
 }
 
-GLuint Shader::GetProgram() const
+void Shader::SetUniform(std::string const& name, int value)
 {
-	return m_shaderProgram;
+	m_rhi->SetUniformInt(m_shader, name, value);
 }
 
-bool Shader::CreateShader(std::vector<std::string> const& files)
+void Shader::SetUniform(std::string const& name, float value)
 {
-	if (files.size() != 2 && files.size() != 3) return false;
-
-	m_shaderProgram = glCreateProgram();
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	GLuint geometryShader = 0;
-
-	if (!InitShader(files[0], vertexShader) ||
-		!InitShader(files[1], fragmentShader))
-	{
-		Cleanup(vertexShader, fragmentShader, 0);
-		return false;
-	}
-
-	if (files.size() == 3)
-	{
-		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-		if (!InitShader(files[2], geometryShader))
-		{
-			Cleanup(vertexShader, fragmentShader, geometryShader);
-			return false;
-		}
-	}
-
-	if (!Link(vertexShader, fragmentShader, geometryShader))
-	{
-		Cleanup(vertexShader, fragmentShader, geometryShader);
-		return false;
-	}
-
-	return true;
+	m_rhi->SetUniformFloat(m_shader, name, value);
 }
 
-bool Shader::InitShader(std::string const& shaderFile, GLuint& shader) const
+void Shader::SetUniform(std::string const& name, LibMath::Vector3 const& value)
 {
-	std::ifstream file(shaderFile);	// open the file
-	if (!file.is_open())
-	{
-		std::cout << "Failed to open file : " << shaderFile << std::endl;
-		return false;
-	}
-
-	std::stringstream shaderStream;
-	shaderStream << file.rdbuf();
-
-	std::string shaderString = shaderStream.str();
-
-	char const* shaderSrc = shaderString.c_str();
-
-	glShaderSource(shader, 1, &shaderSrc, NULL);
-
-	glCompileShader(shader);
-
-	GLint result;
-	GLchar infolog[1024];
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		glGetShaderInfoLog(shader, sizeof(infolog), NULL, infolog);
-		std::cout << "Error! shader " << shaderFile << " failed to compile." << infolog << std::endl;
-		return false;
-	}
-
-	return true;
+	m_rhi->SetUniformVec3(m_shader, name, value);
 }
 
-bool Shader::Link(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader) const
+void Shader::SetUniform(std::string const& name, LibMath::Matrix4 const& value)
 {
-	glAttachShader(m_shaderProgram, vertexShader);
-	if (geometryShader)
-		glAttachShader(m_shaderProgram, geometryShader);
-	glAttachShader(m_shaderProgram, fragmentShader);
-
-	glLinkProgram(m_shaderProgram);
-
-	GLint result = 0;
-	GLchar infolog[1024];
-
-	glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		glGetProgramInfoLog(m_shaderProgram, sizeof(infolog), NULL, infolog);
-		std::cout << "Error! shader failed to link." << infolog << std::endl;
-		return false;
-	}
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	if (geometryShader)
-		glDeleteShader(geometryShader);
-
-	return true;
-}
-
-
-void Shader::Cleanup(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader)
-{
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	glDeleteShader(geometryShader);
-	glDeleteProgram(m_shaderProgram);
-	m_shaderProgram = 0;
+	m_rhi->SetUniformMat4(m_shader, name, value);
 }

@@ -2,6 +2,15 @@
 
 #include "MeshImporter.h"
 
+using namespace Apex::Rendering;
+
+Mesh::~Mesh()
+{
+	m_rhi->DeleteVAO(m_VAO);
+	m_rhi->DeleteBuffer(m_VBO);
+	m_rhi->DeleteBuffer(m_EBO);
+}
+
 void Mesh::LoadFromFile()
 {
 	MeshImporter importer;
@@ -15,37 +24,25 @@ void Mesh::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
-	// generate VAO
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
 
-	// generate VBO
-	glGenBuffers(1, &m_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), m_vertices.data(), GL_STATIC_DRAW);
+	m_VAO = m_rhi->CreateVAO();
+	m_rhi->BindVAO(m_VAO);
 
-	// generate EBO
+	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertices.size() * sizeof(Vertex));
+	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indices.size() * sizeof(int));
 
-	glGenBuffers(1, &m_EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(uint32_t), m_indices.data(), GL_STATIC_DRAW);
+	m_rhi->SetupVertexLayout();
 
+	m_indexCount = static_cast<GLsizei>(m_indices.size());
 
-	// mesh :  pos_x, pos_y, pos_z, nor_x, nor_y, nor_z, tex_u, tex_v
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);	// pos
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));	// nor
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));	// tex
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
+	//m_vertices.clear();
+	//m_vertices.shrink_to_fit();
+	//m_indices.clear();
+	//m_indices.shrink_to_fit();
 }
 
-GLuint Mesh::GetVAO() const
+void Mesh::Draw() const
 {
-	return m_VAO;
+	m_rhi->BindVAO(m_VAO);
+	m_rhi->DrawIndexed(m_indexCount);
 }

@@ -16,9 +16,9 @@
 namespace Apex::Rendering
 {
 	using RHIBufferHandle = GLuint;
+	using RHIVAOHandle = GLuint;
 	using RHIShaderHandle = GLuint;
 	using RHITextureHandle = GLuint;
-	using RHIVAOHandle = GLuint;
 
 	constexpr GLuint RHI_INVALID = 0;
 
@@ -30,14 +30,12 @@ namespace Apex::Rendering
 		LibMath::Vector2 m_uv;
 	};
 
-	// ── Buffer types ────────────────────────────────────────────── 
 	enum class BufferType
 	{
 		Vertex,
 		Index
 	};
 
-	// ── Texture description ───────────────────────────────────────
 	struct TextureDescription
 	{
 		int m_width = 0;
@@ -45,7 +43,7 @@ namespace Apex::Rendering
 		int m_channels = 4; // Default to RGBA
 		unsigned char* m_data = nullptr;
 	};
-	// ── Shader source ─────────────────────────────────────────────
+
 	struct ShaderSource 
 	{
 		std::string vertexPath;
@@ -82,10 +80,10 @@ namespace Apex::Rendering
 		virtual void				DeleteShader(RHIShaderHandle shader) = 0;
 
 		// Uniforms (bound shader must be active)
-		virtual void SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) = 0;
-		virtual void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) = 0;
-		virtual void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) = 0;
-		virtual void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) = 0;
+		virtual void SetUniformInt(RHIShaderHandle program, const std::string& name, int value) = 0;
+		virtual void SetUniformFloat(RHIShaderHandle program, const std::string& name, float value) = 0;
+		virtual void SetUniformVec3(RHIShaderHandle program, const std::string& name, const LibMath::Vector3& vec) = 0;
+		virtual void SetUniformMat4(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;

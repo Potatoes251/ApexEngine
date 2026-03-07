@@ -8,6 +8,7 @@ namespace Apex::Rendering
 {
 	Camera::Camera(LibMath::Vector3 position)
 	{
+		m_position = position;
 		UpdateVectors();
 	}
 
@@ -16,9 +17,9 @@ namespace Apex::Rendering
 		return LibMath::Matrix4::lookAt(m_position, m_position + m_front, m_up);
 	}
 
-	LibMath::Matrix4 Camera::GetProjectionMatrix(float aspect, float fovDeg, float near, float far) const
+	LibMath::Matrix4 Camera::GetProjectionMatrix(float aspect, float near, float far) const
 	{
-		LibMath::Radian fovRad = LibMath::Degree(fovDeg);
+		LibMath::Radian fovRad = LibMath::Degree(m_fov);
 
 		return LibMath::Matrix4::perspective(fovRad.radian(), aspect, near, far);
 	}

@@ -47,7 +47,7 @@ namespace Apex::Windowing
 		void SetResizeCallback(ResizeCallback callback) override;
 
 		// Native handle
-		GLFWwindow* NativeHandle() const { return m_window; }
+		void* NativeHandle() const override { return m_window; }
 
 	private:
 		GLFWwindow* m_window = nullptr;
