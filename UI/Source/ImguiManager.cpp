@@ -110,6 +110,15 @@ namespace Apex::UserInterface
         ImGui::End();
     }
 
+    Vector2 ImGUIManager::GetScreenSize()
+    {
+        int width;
+        int height;
+        glfwGetWindowSize(m_window, &width, &height);
+
+        return Vector2(width, height);
+    }
+
     void ImGUIManager::Text(const std::string& text)
     {
         ImGui::TextUnformatted(text.c_str());

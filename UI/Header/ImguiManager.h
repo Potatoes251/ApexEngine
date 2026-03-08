@@ -49,6 +49,8 @@ namespace Apex::UserInterface
 		void	BeginPanel(const std::string& title) override;
 		void	EndPanel() override;
 
+		Vector2 GetScreenSize() override;
+
 		//In checkbox
 		void	Text(const std::string& text) override;
 		bool	Button(const std::string& label) override;

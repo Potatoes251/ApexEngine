@@ -17,22 +17,40 @@ using Apex::UserInterface::FontID;
 
 namespace Apex::UserInterface		// can't be 'HUD' as used on top
 {
+	enum class UIAnchor
+	{
+		TopLeft,
+		TopCenter,
+		TopRight,
+
+		MiddleLeft,
+		Center,
+		MiddleRight,
+
+		BottomLeft,
+		BottomCenter,
+		BottomRight
+	};
+
 	struct UIElement
 	{
 	public:
-				UIElement(Vector2 position, float size);
+				UIElement(Vector2 position, float size, UIAnchor anchor);
 		virtual ~UIElement() = default;
 
 		virtual	void	Draw(IGUI& gui) = 0;
 
-		Vector2		m_position;
+				Vector2 ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screenSize);
+
+		Vector2		m_position;		//in percentage
 		float		m_size;
+		UIAnchor	m_anchor;
 	};
 
 	struct UIText : UIElement
 	{
 	public:
-		UIText(string text, Vector2 position, float size, FontID font);
+		UIText(string text, Vector2 position, float size = 1.f, UIAnchor anchor = UIAnchor::Center, FontID font = FontID::Default);
 
 		void	Draw(IGUI& gui) override;
 
@@ -43,7 +61,7 @@ namespace Apex::UserInterface		// can't be 'HUD' as used on top
 	struct UIImage : UIElement			//TODO take the right class from ReMa
 	{
 	public:
-		UIImage(Texture* image, Vector2 position, float size);	//error with Texture copy
+		UIImage(Texture* image, Vector2 position, float size = 1.f, UIAnchor anchor = UIAnchor::Center);	//error with Texture copy
 
 		Texture*	m_image;
 	};
