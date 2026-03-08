@@ -20,7 +20,7 @@ using namespace Apex::Physic;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
 
-PhysicSystem::PhysicSystem()
+PhysicSystem::PhysicSystem() : m_simCallback(this)
 {
 	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
 	if (!m_foundation)
@@ -49,6 +49,7 @@ PhysicSystem::PhysicSystem()
 	sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 	sceneDesc.cpuDispatcher = m_dispatcher;
 	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+	sceneDesc.simulationEventCallback = &m_simCallback;
 
 	m_scene = m_physics->createScene(sceneDesc);
 
@@ -107,6 +108,12 @@ void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rig
 
 	if (!shape) return;
 
+	if (collider.IsTrigger())
+	{
+		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+	}
+
 	switch (rigidBody.GetType())
 	{
 	case BodyType::Dynamic:
@@ -145,6 +152,8 @@ void PhysicSystem::Update(float deltaTime_s)
 	SyncToPhysx();
 	m_scene->simulate(deltaTime_s);
 	m_scene->fetchResults(true);
+
+
 }
 
 void PhysicSystem::SyncFromPhysx()
@@ -373,6 +382,8 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 
 	m_scene->addActor(*body);
 
+	body->userData = &rigidBody;
+
 	PhysicActor actor;
 	actor.m_actor = body;
 	actor.m_owner = &rigidBody;
@@ -393,6 +404,8 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 	body->attachShape(*shape);
 
 	m_scene->addActor(*body);
+
+	body->userData = &rigidBody;
 
 	PhysicActor actor;
 	actor.m_actor = body;
@@ -415,6 +428,8 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 	body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
 	m_scene->addActor(*body);
+
+	body->userData = &rigidBody;
 
 	PhysicActor actor;
 	actor.m_actor = body;
@@ -543,4 +558,49 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 	);
 
 	return m_physics->createConvexMesh(readBuffer);
+}
+
+
+
+// SimulationCallback
+
+void PhysicSystem::SimulationCallback::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
+{
+}
+
+void PhysicSystem::SimulationCallback::onWake(physx::PxActor** actors, physx::PxU32 count)
+{
+}
+
+void PhysicSystem::SimulationCallback::onSleep(physx::PxActor** actors, physx::PxU32 count)
+{
+}
+
+void PhysicSystem::SimulationCallback::onContact(physx::PxContactPairHeader const& pairHeader, physx::PxContactPair const* pairs, physx::PxU32 nbPairs)
+{
+}
+
+void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		RigidBodyComponent* otherbody = static_cast<RigidBodyComponent*>(pairs[i].otherActor->userData);
+		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(pairs[i].triggerActor->userData);
+		switch (pairs->status)
+		{
+		case physx::PxPairFlag::eNOTIFY_TOUCH_FOUND:
+			otherbody->OnTriggerEnter(body);
+			break;
+		case physx::PxPairFlag::eNOTIFY_TOUCH_LOST:
+			otherbody->OnTriggerExit(body);
+			break;
+		default:
+			assert(false && "Unhandled Trigger status");
+			break;
+		}
+	}
+}
+
+void PhysicSystem::SimulationCallback::onAdvance(physx::PxRigidBody const* const* bodyBuffer, physx::PxTransform const* poseBuffer, physx::PxU32 const count)
+{
 }

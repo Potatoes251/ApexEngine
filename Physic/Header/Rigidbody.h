@@ -35,6 +35,9 @@ namespace Apex::Physic
 		void SetPosition(LibMath::Vector3 pos);
 		void SetScale(LibMath::Vector3 scale);
 
+		void OnTriggerEnter(RigidBodyComponent* otherActor);
+		void OnTriggerExit(RigidBodyComponent* otherActor);
+
 	private:
 		LibMath::Transform m_trans;
 

@@ -19,7 +19,7 @@ namespace Apex::Physic
 	class Collider
 	{
 	public:
-		Collider(PhysMatHandle material) : m_material(material) {}
+		Collider(PhysMatHandle material, bool isTrigger) : m_material(material), m_isTrigger(isTrigger) {}
 		virtual ~Collider() = default;
 
 		virtual ColliderType GetType() const = 0;
@@ -27,8 +27,11 @@ namespace Apex::Physic
 		void SetMaterial(PhysMatHandle material) { m_material = material; }
 		PhysMatHandle GetMaterial() const { return m_material; }
 
+		bool IsTrigger() const { return m_isTrigger; }
+
 	protected:
-		PhysMatHandle m_material;
+		PhysMatHandle	m_material;
+		bool			m_isTrigger;
 	};
 }
 

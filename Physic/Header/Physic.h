@@ -17,7 +17,6 @@
 
 namespace Apex::Physic
 {
-	class Collider;
 	class BoxCollider;
 	class MeshCollider;
 	class CapsuleCollider;
@@ -51,6 +50,25 @@ namespace Apex::Physic
 		void	DrawColliders();
 
 	private:
+		// class to get the events callback for physic interaction
+		class SimulationCallback : public physx::PxSimulationEventCallback
+		{
+		public:
+			SimulationCallback(PhysicSystem* system) : m_system(system) {}
+			~SimulationCallback() = default;
+
+			void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override;
+			void onWake(physx::PxActor** actors, physx::PxU32 count) override;
+			void onSleep(physx::PxActor** actors, physx::PxU32 count) override;
+			void onContact(physx::PxContactPairHeader const& pairHeader, physx::PxContactPair const* pairs, physx::PxU32 nbPairs) override;
+			void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override;
+
+			void onAdvance(physx::PxRigidBody const* const* bodyBuffer, physx::PxTransform const* poseBuffer, physx::PxU32 const count) override;
+
+		private:
+			PhysicSystem* m_system; // back-pointer to the wrapper
+		};
+
 		void	DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* actor, LibMath::Vector3 scale) const;
 		void	DrawTriangleMeshCollider32(
 			physx::PxTriangleMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
@@ -77,11 +95,13 @@ namespace Apex::Physic
 		physx::PxTriangleMesh*	CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
 		physx::PxConvexMesh*	CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
 
-		std::vector<PhysicActor>		m_rigidBodies;
-		std::vector<physx::PxMaterial*>	m_physxMaterials;
-
 		std::unordered_map<std::string, Apex::Resources::ResourceEntry>			
 										m_materialsMap;
+
+		std::vector<physx::PxMaterial*>	m_physxMaterials;
+		std::vector<PhysicActor>		m_rigidBodies;
+
+		SimulationCallback				m_simCallback;
 
 		physx::PxDefaultAllocator		m_allocator;
 		physx::PxDefaultErrorCallback	m_errorCallback;
@@ -95,8 +115,4 @@ namespace Apex::Physic
 
 }
 
-
-
-
 #endif // !PHYSIC
-

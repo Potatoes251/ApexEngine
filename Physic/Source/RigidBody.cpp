@@ -43,3 +43,13 @@ void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 {
 	m_trans.setScale(scale);
 }
+
+void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)
+{
+	printf("OnTriggerEnter\n");
+}
+
+void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
+{
+	printf("OnTriggerExit\n");
+}

@@ -52,8 +52,7 @@ int main(int argc, char* argv[])
 		audio->Preload("fragments of hope.ogg");
 	}
 
-	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
-		{ .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
+	//SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", { .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
 
 	// Initialize Camera
 	Camera camera;
@@ -106,17 +105,17 @@ int main(int argc, char* argv[])
 
 	PhysMatHandle mat = physics.CreateMaterial("base material", 0.1f, 1.f, 0.f);
 
-	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
+	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f }, false);
 	RigidBodyComponent body = RigidBodyComponent(1, BodyType::Dynamic);
 
 
-	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f }, mat);
+	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f }, false, mat);
 	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::Static);
 
-	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex, mat);
-	//MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
+	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex, true, mat);
+	//MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle, false);
 
-	CapsuleCollider capsule(2.f, 2.f);
+	CapsuleCollider capsule(2.f, 2.f, false);
 
 	body.SetPosition({ 0.f, 10.f, 0.f });
 	body2.SetPosition({ 0.f, 0.f, 0.f });
