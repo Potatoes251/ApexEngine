@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 	// Audio setup 
 	if (audio)
 	{
-		//audio->Preload("fragments of hope.ogg");
+		audio->Preload("fragments of hope.ogg");
 	}
 
 	SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", 
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	//HUD
 	UIManager uiManager(window->NativeHandle());
 
-	uiManager.GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default ));
+	uiManager.GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, FontID::Default ));
 
 
 	while (!mesh.IsReady() || 
@@ -104,20 +104,22 @@ int main(int argc, char* argv[])
 		!shader.IsReady())
 		rm.ProcessGpuUploads();
 
+	PhysMatHandle mat = physics.CreateMaterial("base material", 0.1f, 1.f, 0.f);
+
 	BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
 	RigidBodyComponent body = RigidBodyComponent(1, BodyType::Dynamic);
 
 
-	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
+	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f }, mat);
 	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::Static);
 
-	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex);
+	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex, mat);
 	//MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
-	CapsuleCollider capsule(2, 2);
+	CapsuleCollider capsule(2.f, 2.f);
 
-	body.SetPosition({ 0, 10, 0 });
-	body2.SetPosition({ 0, 0, 0 });
+	body.SetPosition({ 0.f, 10.f, 0.f });
+	body2.SetPosition({ 0.f, 0.f, 0.f });
 	//body2.SetScale(LibMath::Vector3(0.001f));
 	//body2.SetRotation(LibMath::Quaternion(LibMath::Degree(-90), LibMath::Radian(0), LibMath::Radian(0)));
 

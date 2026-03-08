@@ -10,7 +10,8 @@ namespace Apex::Physic
 	class BoxCollider : public Collider
 	{
 	public:
-		BoxCollider(LibMath::Vector3 const& halfExtents) : m_halfExtents(halfExtents) {}
+		BoxCollider(LibMath::Vector3 const& halfExtents, PhysMatHandle material = PhysMatHandle()) 
+			: m_halfExtents(halfExtents), Collider(material) {}
 		BoxCollider(BoxCollider const&);
 		BoxCollider& operator=(BoxCollider const&);
 

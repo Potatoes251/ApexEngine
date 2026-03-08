@@ -67,17 +67,16 @@ PhysicSystem::~PhysicSystem()
 	if (m_foundation)  m_foundation->release();
 }
 
-ResourceHandle<PhysicMaterial> PhysicSystem::CreateMaterial(
-	std::string const& name, float staticFriction, float dynamicFriction, float bounciness)
+PhysMatHandle PhysicSystem::CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness)
 {
-	auto [it, inserted] = m_materialsMap.try_emplace(name, ResourceEntry{});
+	auto [it, inserted] = m_materialsMap.try_emplace(name, nullptr);
 	ResourceEntry* entry = &it->second;
 
 	// If already existing, do not create again
-	if (!inserted) return ResourceHandle<PhysicMaterial>(entry);
+	if (!inserted) return PhysMatHandle(entry);
 
 	entry->m_resource = std::make_unique<PhysicMaterial>(staticFriction, dynamicFriction, bounciness);
-	ResourceHandle<PhysicMaterial> handle(entry);
+	PhysMatHandle handle(entry);
 
 	handle->SetState(ResourceState::Uploaded);
 	handle->SetId(m_physxMaterials.size());
@@ -287,12 +286,27 @@ void PhysicSystem::DrawConvexMeshCollider(
 	}
 }
 
+physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& collider) const
+{
+	physx::PxMaterial* material = m_defaultMaterial;
+
+	PhysMatHandle matHandle = collider.GetMaterial();
+
+	if (matHandle.IsValid())
+	{
+		size_t id = matHandle->GetId();
+		assert(id < m_physxMaterials.size() && "Invalid PhysicMaterial id");
+
+		if (m_physxMaterials[id]) material = m_physxMaterials[id];
+	}
+	return material;
+}
+
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
 	LibMath::Vector3 halfExtents = box.GetHalfExtents();
 
-	return m_physics->createShape(
-		physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])), *m_defaultMaterial);
+	return m_physics->createShape(physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])), *GetMaterial(box));
 }
 
 physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
@@ -300,7 +314,7 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float halfHeight = capsule.GetHalfHeight();
 	float radius = capsule.GetRadius();
 
-	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *m_defaultMaterial);
+	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
 }
 
 physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody)
@@ -317,22 +331,22 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 			LibMath::Vector3 scale = rigidBody.GetScale();
 			physx::PxMeshScale meshScale(
 				{ scale[0], scale[1], scale[2] },  // scaling
-				physx::PxQuat(physx::PxIdentity)           // rotation (usually identity)
+				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
 			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
-			return m_physics->createShape(geometry, *m_defaultMaterial);
+			return m_physics->createShape(geometry, *GetMaterial(mesh));
 		}
 	case MeshColliderType::Convex:
 	{
 		LibMath::Vector3 scale = rigidBody.GetScale();
 		physx::PxMeshScale meshScale(
-			{ scale[0], scale[1], scale[2] },  // scaling
-			physx::PxQuat(physx::PxIdentity)           // rotation (usually identity)
+			{ scale[0], scale[1], scale[2] },	// scaling
+			physx::PxQuat(physx::PxIdentity)    // rotation
 		);
 
 		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
-		return m_physics->createShape(geometry, *m_defaultMaterial);
+		return m_physics->createShape(geometry, *GetMaterial(mesh));
 		break;
 	}
 	default:

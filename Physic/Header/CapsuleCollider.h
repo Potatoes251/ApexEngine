@@ -10,7 +10,8 @@ namespace Apex::Physic
 	class CapsuleCollider : public Collider
 	{
 	public:
-		CapsuleCollider(float halfHeight, float radius) : m_halfHeight(halfHeight), m_radius(radius) {}
+		CapsuleCollider(float halfHeight, float radius, PhysMatHandle material = PhysMatHandle()) 
+			: m_halfHeight(halfHeight), m_radius(radius), Collider(material) {}
 		CapsuleCollider(CapsuleCollider const& other);
 		CapsuleCollider& operator=(CapsuleCollider const& other);
 

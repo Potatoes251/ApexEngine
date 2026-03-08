@@ -10,6 +10,7 @@
 #include "Shader.h"
 
 #include "PhysicMaterial.h"
+#include "Collider.h"
 
 #include <vector>
 #include <unordered_map>
@@ -37,10 +38,9 @@ namespace Apex::Physic
 
 		~PhysicSystem();
 
-		Apex::Resources::ResourceHandle<PhysicMaterial> 
-				CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness);
-		void	CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
-		void	RemoveActor(RigidBodyComponent const& rigidbody);
+		PhysMatHandle	CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness);
+		void			CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
+		void			RemoveActor(RigidBodyComponent const& rigidbody);
 
 		// should be called inside a fixed update
 		void	Update(float deltaTime_s);
@@ -61,6 +61,8 @@ namespace Apex::Physic
 		void	DrawConvexMeshCollider(
 			physx::PxConvexMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
 
+
+		physx::PxMaterial*	GetMaterial(Collider const& collider) const;
 
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
