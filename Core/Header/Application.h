@@ -95,8 +95,8 @@ namespace Apex
         Apex::Resources::ResourceHandle<Texture> m_texture;
         Apex::Resources::ResourceHandle<Texture> m_texture2;
 
-        std::unique_ptr<Apex::Physic::RigidBodyComponent> m_body;
-        std::unique_ptr<Apex::Physic::RigidBodyComponent> m_body2;
+        Apex::Physic::RigidBodyComponent* m_body = nullptr;
+        Apex::Physic::RigidBodyComponent* m_body2 = nullptr;
 	};
 }
 

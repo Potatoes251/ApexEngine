@@ -23,10 +23,10 @@ namespace Apex::Data
 
 				Object&		operator=(const Object& other) = delete;
 
-				LibMath::Transform	GetLocalTransform();
-		const	LibMath::Transform	GetLocalTransform() const;
-				LibMath::Transform	GetGlobalTransform();
-		const	LibMath::Transform	GetGlobalTransform() const;
+				LibMath::Transform&		GetLocalTransform();
+		const	LibMath::Transform&		GetLocalTransform() const;
+				LibMath::Transform&		GetGlobalTransform();
+		const	LibMath::Transform&		GetGlobalTransform() const;
 
 				void		SetLocalTransform(const LibMath::Transform& transform);
 				void		SetGlobalTransform(const LibMath::Transform& transform);

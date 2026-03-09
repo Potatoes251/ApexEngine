@@ -151,19 +151,25 @@ void Apex::Application::LoadScene()
     BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
     BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
 
-    m_body = std::make_unique<RigidBodyComponent>(1, BodyType::Dynamic);
-    m_body2 = std::make_unique<RigidBodyComponent>(0, BodyType::Static);
+    auto obj = std::make_unique<Object>();
+    auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
+    body.SetPosition({0, 10, 0});
+    m_body = &body;
+    m_objects.push_back(std::move(obj));
+
+    auto obj2 = std::make_unique<Object>();
+    auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
+    body2.SetPosition({0, 0, 0});
+    m_body2 = &body2;
+    m_objects.push_back(std::move(obj2));
 
     MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
     //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
     CapsuleCollider capsule(2, 2);
 
-    m_body->SetPosition({ 0, 10, 0 });
-    m_body2->SetPosition({ 0, 0, 0 });
-
-    m_physics.CreateActor(meshCollider, *m_body);
-    m_physics.CreateActor(collider2, *m_body2);
+    m_physics.CreateActor(meshCollider, body);
+    m_physics.CreateActor(collider2, body2);
 }
 
 void Apex::Application::Shutdown()
@@ -235,8 +241,7 @@ void Apex::Application::SyncPhysicsToTransforms()
 }
 
 void Apex::Application::Render()
-{        
-    // Clear
+{
     m_rhi->Clear(0.12f, 0.12f, 0.15f);
 
     m_shader->Use();

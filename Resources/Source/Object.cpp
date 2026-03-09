@@ -32,22 +32,22 @@ void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 	m_owner->MarkDirty();
 }
 
-Transform Object::GetLocalTransform()
+Transform& Object::GetLocalTransform()
 {
 	return m_localTransform;
 }
 
-const Transform Object::GetLocalTransform() const
+const Transform& Object::GetLocalTransform() const
 {
 	return m_localTransform;
 }
 
-Transform Object::GetGlobalTransform()
+Transform& Object::GetGlobalTransform()
 {
 	return m_globalTransform;
 }
 
-const Transform Object::GetGlobalTransform() const
+const Transform& Object::GetGlobalTransform() const
 {
 	return m_globalTransform;
 }
