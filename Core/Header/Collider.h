@@ -1,6 +1,8 @@
 #ifndef COLLIDER
 #define COLLIDER
 
+#include "Component.h"
+
 namespace Apex::Physic
 {
 	enum class ColliderType
@@ -10,7 +12,7 @@ namespace Apex::Physic
 		Mesh
 	};
 
-	class Collider
+	class Collider : public Apex::Component
 	{
 	public:
 		virtual ~Collider() = default;

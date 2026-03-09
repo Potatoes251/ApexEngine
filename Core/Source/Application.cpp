@@ -147,9 +147,6 @@ void Apex::Application::LoadScene()
         !m_shader.IsReady())
         m_resourceManager->ProcessGpuUploads();
 
-    BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-    BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
-
     auto obj = m_scene->CreateObject();
 
     auto& renderer = obj->AddComponent<MeshRenderer>();
@@ -159,6 +156,8 @@ void Apex::Application::LoadScene()
 
     auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
     body.SetPosition({ 0,10,0 });
+    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex);    
+    
     auto obj2 = m_scene->CreateObject();
 
     auto& renderer2 = obj2->AddComponent<MeshRenderer>();
@@ -168,13 +167,9 @@ void Apex::Application::LoadScene()
 
     auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
     body2.SetPosition({ 0,0,0 });
+    auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f });
 
-    MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
-    //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
-
-    CapsuleCollider capsule(2, 2);
-
-    m_physics.CreateActor(meshCollider, body);
+    m_physics.CreateActor(collider, body);
     m_physics.CreateActor(collider2, body2);
 }
 

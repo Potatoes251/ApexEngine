@@ -16,7 +16,7 @@
 
 namespace Apex::Rendering
 {
-    class MeshRenderer : public Component
+    class MeshRenderer : public Apex::Component
     {
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;

@@ -33,4 +33,4 @@ namespace Apex::Rendering
 			renderer->Render(view, projection, cameraPosition);
 		}
 	}
-} // namespace Apex::Rendering
+}
