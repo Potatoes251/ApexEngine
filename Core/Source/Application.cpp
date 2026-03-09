@@ -116,7 +116,7 @@ bool Apex::Application::InitAudio()
 
 bool Apex::Application::InitScene()
 {
-    m_scene = std::make_unique<Apex::Rendering::Scene>(m_rhi.get(), m_threadPool);
+    m_scene = std::make_unique<Apex::Rendering::Scene>();
     return true;
 }
 
@@ -134,12 +134,11 @@ bool Apex::Application::InitUI()
 
 void Apex::Application::LoadScene()
 {
-    m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
-    m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
-    m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
-    m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
-
-    m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    Apex::Resources::ResourceHandle<Shader> m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+    Apex::Resources::ResourceHandle<Mesh> m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
+    Apex::Resources::ResourceHandle<Mesh> m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    Apex::Resources::ResourceHandle<Texture> m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
+    Apex::Resources::ResourceHandle<Texture> m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
 
     while (!m_sphere.IsReady() ||
         !m_cube.IsReady() ||
@@ -151,17 +150,24 @@ void Apex::Application::LoadScene()
     BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
     BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
 
-    auto obj = std::make_unique<Object>();
-    auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
-    body.SetPosition({0, 10, 0});
-    m_body = &body;
-    m_objects.push_back(std::move(obj));
+    auto obj = m_scene->CreateObject();
 
-    auto obj2 = std::make_unique<Object>();
+    auto& renderer = obj->AddComponent<MeshRenderer>();
+    renderer.SetMesh(m_sphere);
+    renderer.SetTexture(m_texture);
+    renderer.SetShader(m_shader);
+
+    auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
+    body.SetPosition({ 0,10,0 });
+    auto obj2 = m_scene->CreateObject();
+
+    auto& renderer2 = obj2->AddComponent<MeshRenderer>();
+    renderer2.SetMesh(m_cube);
+    renderer2.SetTexture(m_texture2);
+    renderer2.SetShader(m_shader);
+
     auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
-    body2.SetPosition({0, 0, 0});
-    m_body2 = &body2;
-    m_objects.push_back(std::move(obj2));
+    body2.SetPosition({ 0,0,0 });
 
     MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
     //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
@@ -231,8 +237,7 @@ void Apex::Application::UpdateAudioListener()
 
 void Apex::Application::Update()
 {
-    for (auto& obj : m_objects)
-        obj->Update(m_deltaTime);
+    m_scene->Update(m_deltaTime);
 }
 
 void Apex::Application::SyncPhysicsToTransforms()
@@ -244,29 +249,10 @@ void Apex::Application::Render()
 {
     m_rhi->Clear(0.12f, 0.12f, 0.15f);
 
-    m_shader->Use();
-    m_resourceManager->Get<Texture>("Assets/Textures/container.jpg")->Bind();
-
     LibMath::Matrix4 view = m_camera->GetViewMatrix();
     LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
 
-    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body->GetTransform()));
-    m_shader->SetUniform("uView", view);
-    m_shader->SetUniform("uProjection", proj);
-    m_shader->SetUniform("uCameraPos", m_camera->GetPosition());
-
-    m_shader->SetUniform("uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
-    m_shader->SetUniform("uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
-    m_shader->SetUniform("uViewPos", m_camera->GetPosition());
-
-    m_shader->SetUniform("uTexture", 0);
-    m_shader->SetUniform("uUseTexture", 1);
-
-    m_sphere->Draw();
-
-    m_texture2->Bind();
-    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body2->GetTransform()));
-    m_cube->Draw();
+    m_scene->Render(view, proj, m_camera->GetPosition());
 
     m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);

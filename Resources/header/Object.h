@@ -50,6 +50,18 @@ namespace Apex::Data
 					return ref;
 				}
 
+				template<typename T>
+				T* GetComponent()
+				{
+					for (auto& comp : m_components)
+					{
+						if (T* casted = dynamic_cast<T*>(comp.get()))
+							return casted;
+					}
+
+					return nullptr;
+				}
+
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:

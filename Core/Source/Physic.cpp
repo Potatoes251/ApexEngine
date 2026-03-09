@@ -364,6 +364,12 @@ void PhysicSystem::SyncFromPhysx()
 
 			actor.m_owner->SetPosition(LibMath::Vector3(trans.p.x, trans.p.y, trans.p.z));
 			actor.m_owner->SetRotation(LibMath::Quaternion(trans.q.x, trans.q.y, trans.q.z, trans.q.w));
+
+			if (auto* obj = actor.m_owner->GetOwner())
+			{
+				obj->GetGlobalTransform().setPosition(LibMath::Vector3(trans.p.x, trans.p.y, trans.p.z));
+				obj->GetGlobalTransform().setRotation(LibMath::Quaternion(trans.q.x, trans.q.y, trans.q.z, trans.q.w));
+			}
 		}
 	}
 }

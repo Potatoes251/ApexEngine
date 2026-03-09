@@ -76,7 +76,6 @@ namespace Apex
         std::unique_ptr<Apex::Rendering::IRHI> m_rhi;
 
         std::unique_ptr<Apex::Scripting::LuaManager> m_luaManager;
-        std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
         std::unique_ptr<Apex::Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<Apex::UserInterface::UIManager> m_uiManager;
 
@@ -88,15 +87,6 @@ namespace Apex
         std::unique_ptr<Apex::Rendering::Scene> m_scene;
 
         Apex::Physic::PhysicSystem m_physics;
-
-        Apex::Resources::ResourceHandle<Shader> m_shader;
-        Apex::Resources::ResourceHandle<Mesh> m_sphere;
-        Apex::Resources::ResourceHandle<Mesh> m_cube;
-        Apex::Resources::ResourceHandle<Texture> m_texture;
-        Apex::Resources::ResourceHandle<Texture> m_texture2;
-
-        Apex::Physic::RigidBodyComponent* m_body = nullptr;
-        Apex::Physic::RigidBodyComponent* m_body2 = nullptr;
 	};
 }
 
