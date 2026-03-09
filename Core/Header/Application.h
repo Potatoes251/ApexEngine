@@ -1,5 +1,5 @@
-#ifndef GAME_MANAGER
-#define GAME_MANAGER
+#ifndef APPLICATION
+#define APPLICATION
 
 #include "LuaManager.h"
 #include "Behaviour.h"
@@ -100,4 +100,4 @@ namespace Apex
 	};
 }
 
-#endif // GAME_MANAGER
+#endif // APPLICATION
