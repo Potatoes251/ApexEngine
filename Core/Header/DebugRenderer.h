@@ -41,8 +41,8 @@ namespace Apex::Rendering
 
 		static inline std::unique_ptr<DebugRenderer>	m_instance;
 
-		GLuint m_vao = 0;
-		GLuint m_vbo = 0;
+		uint32_t m_vao = 0;
+		uint32_t m_vbo = 0;
 
 		std::vector<Line> m_lines;
 

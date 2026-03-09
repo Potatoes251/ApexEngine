@@ -17,25 +17,26 @@ void Apex::Application::Run()
 {
     while (!m_window->ShouldClose())
     {   
+        PollAllEvents();
         Tick();
     }
 
     Shutdown();
 }
 
-bool Apex::Application::Init()
+bool Apex::Application::Init(Apex::Windowing::IWindow* shareContext)
 {
     std::filesystem::current_path(std::filesystem::path(m_argv0).parent_path());
 
     std::cout << "Application Init\n";
 
-    if (!InitResourceManager()) return false;
-    if (!InitCamera())          return false;
-    if (!InitWindow())          return false;
-    if (!InitRHI())             return false;
-    if (!InitRendering())       return false;
-    if (!InitAudio())           return false;
-    if (!InitScene())           return false;
+    if (!InitResourceManager())     return false;
+    if (!InitCamera())              return false;
+    if (!InitWindow(shareContext))  return false;
+    if (!InitRHI())                 return false;
+    if (!InitRendering())           return false;
+    if (!InitAudio())               return false;
+    if (!InitScene())               return false;
 
     return true;
 }
@@ -52,9 +53,9 @@ bool Apex::Application::InitCamera()
     return true;
 }
 
-bool Apex::Application::InitWindow()
+bool Apex::Application::InitWindow(Apex::Windowing::IWindow* shareContext)
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Renderer", 1280, 720));
+    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, shareContext));
 
     if (!m_window)
         return false;
@@ -179,7 +180,8 @@ void Apex::Application::Shutdown()
 
 void Apex::Application::Tick()
 {
-    m_window->PollEvents();
+    m_window->MakeContextCurrent();
+    m_window->UpdateDeltaTime();
 
     m_deltaTime = m_window->GetDeltaTime();
     if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;

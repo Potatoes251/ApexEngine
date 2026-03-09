@@ -25,10 +25,12 @@ namespace Apex::Windowing
 
 		// Lifecycle
 		bool ShouldClose() const override;
-		void PollEvents() override;
 		void SwapBuffers() override;
+		void Clear() override;
 		void Close() override;
-
+		void Focus() override;
+		void UpdateDeltaTime() override;
+		
 		// Properties
 		int		GetWidth() const override;
 		int		GetHeight() const override;

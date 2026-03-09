@@ -49,10 +49,12 @@ namespace Apex::Windowing
 
 		// Lifecycle
 		virtual bool ShouldClose() const = 0;
-		virtual void PollEvents() = 0;
 		virtual void SwapBuffers() = 0;
+		virtual void Clear() = 0;
 		virtual void Close() = 0;
-
+		virtual void Focus() = 0;
+		virtual void UpdateDeltaTime() = 0;
+		
 		// Properties
 		virtual int		GetWidth() const = 0;
 		virtual int		GetHeight() const = 0;
@@ -79,6 +81,10 @@ namespace Apex::Windowing
 	// shareContext: pass another IWindow* to share its GL context.
 	// Required so the editor window can use the same GL objects as the game.
 	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext = nullptr);
+
+	// Processes events for ALL open windows — one call per frame is enough.
+	// This is a GLFW global operation, not tied to any specific window.
+	void PollAllEvents();
 
 	// Convenience: make a window's GL context current on the calling thread.
 	// Use this in main.cpp to switch between game and editor windows.

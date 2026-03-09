@@ -33,7 +33,7 @@ void Mesh::UploadToGpu()
 
 	m_rhi->SetupVertexLayout();
 
-	m_indexCount = static_cast<GLsizei>(m_indices.size());
+	m_indexCount = static_cast<int32_t>(m_indices.size());
 
 	//m_vertices.clear();
 	//m_vertices.shrink_to_fit();

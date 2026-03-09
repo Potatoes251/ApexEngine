@@ -105,7 +105,7 @@ namespace Apex::Rendering
 		return texture;
 	}
 
-	void OpenGLRHI::BindTexture(RHITextureHandle texture, GLuint unit)
+	void OpenGLRHI::BindTexture(RHITextureHandle texture, uint32_t unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, GetGLTexture(texture));
@@ -192,12 +192,12 @@ namespace Apex::Rendering
 	}
 
 	// ── Draw ───────────────────────────────────────────────────────
-	void OpenGLRHI::DrawIndexed(GLsizei indexCount) 
+	void OpenGLRHI::DrawIndexed(int32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
 
-	void OpenGLRHI::DrawArrays(GLsizei vertexCount) 
+	void OpenGLRHI::DrawArrays(int32_t vertexCount)
 	{
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
