@@ -1,4 +1,4 @@
-#ifndef UI
+ï»¿#ifndef UI
 #define UI
 
 #include "IDrawList.h"
@@ -13,6 +13,12 @@ namespace Apex::UserInterface
         float m_r, m_g, m_b, m_a = 1.f;
 	};
 
+    // Pack a Color into a 32-bit RGBA integer (same bit layout as IM_COL32)
+    inline uint32_t PackColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+    {
+        return (uint32_t(a) << 24) | (uint32_t(b) << 16) | (uint32_t(g) << 8) | r;
+    }
+
     enum class FontID
     {
         Small = 0,      //0
@@ -22,41 +28,123 @@ namespace Apex::UserInterface
         Count           //Has to be at the end
     };
 
+    enum class MouseButton { Left, Right, Middle };
+
+    // Tree node flags
+    enum class TreeNodeFlags : uint32_t 
+    {
+        None = 0,
+        OpenOnArrow = 1 << 0,
+        Selected = 1 << 1,
+        Leaf = 1 << 2,
+        SpanAvailWidth = 1 << 3,
+    };
+
+    inline TreeNodeFlags operator|(TreeNodeFlags a, TreeNodeFlags b) 
+    {
+        return static_cast<TreeNodeFlags>(uint32_t(a) | uint32_t(b));
+    }
+
+    inline bool operator&(TreeNodeFlags a, TreeNodeFlags b) 
+    {
+        return (uint32_t(a) & uint32_t(b)) != 0;
+    }
+
+    // Style color targets
+    enum class StyleColor { Text, Button, ChildBackground };
+
 	class IGUI
 	{
 	public:
         IGUI() = default;
 		virtual	~IGUI() = default;
 
-        // Lifecycle — call once after window/RHI are initialised.
+        // Lifecycle
         virtual void Initialize() = 0;
         virtual void Shutdown() = 0;
-
         virtual void LoadFonts() = 0;
-
-        // Per-frame — BeginFrame after PollEvents, EndFrame before SwapBuffers.
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
 
-        // Returns true when ImGui wants to consume input,
-        // so the engine can suppress camera movement.
+        // Input Passthrough
         virtual bool WantCaptureMouse()    const = 0;
         virtual bool WantCaptureKeyboard() const = 0;
 
-        // Panel helpers — always call between BeginFrame / EndFrame.
-        virtual void BeginPanel(const std::string& title) = 0;
-        virtual void EndPanel() = 0;
+        // ID stack (for list items, tilesâ€¦)
+        virtual void PushID(const std::string& id) = 0;
+        virtual void PushID(int id) = 0;
+        virtual void PopID() = 0;
 
-        virtual void Text(const std::string& text) = 0;
-        virtual bool Button(const std::string& label) = 0;
-        virtual bool Checkbox(const std::string& label, bool* v) = 0;
-        virtual bool SliderFloat(const std::string& label, float* v, float min, float max) = 0;
-        virtual bool SliderInt(const std::string& label, int* v, int min, int max) = 0;
-        virtual bool ColorEdit3(const std::string& label, float color[3]) = 0;
+        // Style 
+        virtual void PushColor(StyleColor target, Color color) = 0;
+        virtual void PopColor() = 0;
+
+        // Layout 
         virtual void Separator() = 0;
         virtual void SameLine() = 0;
+        virtual void SetNextItemWidth(float width) = 0;
+        virtual LibMath::Vector2 GetAvailableSize() const = 0;
+        virtual LibMath::Vector2 GetCursorPos() const = 0;
+        virtual void SetCursorPos(LibMath::Vector2 pos) = 0;
+
+        //  Panels & children 
+        // BeginPanel / EndPanel - top-level named window
+        virtual void BeginPanel(const std::string& title,
+                                bool* open = nullptr) = 0;
+        virtual void EndPanel() = 0;
+
+        // BeginChildPanel / EndChildPanel - scrollable sub-region
+        virtual void BeginChildPanel(const std::string& id,
+                                    float width = 0.f,
+                                    float height = 0.f,
+                                    bool  border = false) = 0;
+        virtual void EndChildPanel() = 0;
+
+        // Tree nodes 
+        // Returns true if the node is open (caller must call EndTreeNode if so).
+        virtual bool BeginTreeNode(const std::string& label,
+                                   TreeNodeFlags flags = TreeNodeFlags::None) = 0;
+        virtual void EndTreeNode() = 0;
+
+        // Context menu 
+        // Must be called right after the widget it relates to.
+        // Returns true if the menu is open (caller must call EndContextMenu if so).
+        virtual bool BeginContextMenu() = 0;
+        virtual void EndContextMenu() = 0;
+        virtual bool MenuItem(const std::string& label,
+                              bool enabled = true) = 0;
+
+        // Tooltip 
+        virtual void BeginTooltip() = 0;
+        virtual void EndTooltip() = 0;
+
+        // Widgets 
+        virtual void Text(const std::string& text) = 0;
+        virtual void TextDisabled(const std::string& text) = 0;
+        virtual void TextColored(Color color, const std::string& text) = 0;
+        virtual bool Button(const std::string& label) = 0;
+        virtual bool SmallButton(const std::string& label) = 0;
+        virtual bool Checkbox(const std::string& label, bool* value) = 0;
+        virtual bool SliderFloat(const std::string& label, float* value, float min, float max) = 0;
+        virtual bool SliderInt(const std::string& label, int* value, int min, int max) = 0;
+        virtual bool ColorEdit3(const std::string& label, float color[3]) = 0;
+        virtual bool InputText(const std::string& label,
+                               char* buffer, size_t bufferSize,
+                               const std::string& hint = "") = 0;
+
+        // Clickable invisible rectangle â€” used for custom tile/icon hitboxes.
+        virtual bool InvisibleButton(const std::string& id, LibMath::Vector2 size) = 0;
+        
+        // Query 
+        virtual bool IsItemHovered() const = 0;
+        virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
+        virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
 
         virtual void DrawText2D(const std::string& text, float x, float y, float size, FontID id) = 0;
+
+        // Background draw list â€” for custom tile rendering inside panels.
+        // Lifetime: valid for the current frame only.
+        virtual IDrawList* GetDrawList() = 0;
 	private:
 	};
 
