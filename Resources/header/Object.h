@@ -4,7 +4,7 @@
 #include <LibMath/Matrix/Matrix4.h>
 #include "LibMath/Transform.h"
 
-#include "../../Core/Header/Component.h"
+#include "Component.h"
 #include "../../LowRenderer/Header/SceneGraph.h"
 
 #include <vector>

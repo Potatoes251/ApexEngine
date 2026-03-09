@@ -16,7 +16,8 @@ namespace Apex::Physic
 	class MeshCollider : public Collider
 	{
 	public:
-		MeshCollider(Resources::ResourceHandle<Mesh> mesh, MeshColliderType type) : m_mesh(mesh), m_type(type) {}
+		MeshCollider(Resources::ResourceHandle<Mesh> mesh, MeshColliderType type, bool isTrigger, PhysMatHandle material = PhysMatHandle())
+			: m_mesh(mesh), m_type(type), Collider(material, isTrigger) {}
 		MeshCollider(MeshCollider const&);
 		MeshCollider& operator=(MeshCollider const&);
 
