@@ -1,0 +1,36 @@
+#ifndef LUA_MANAGER
+#define LUA_MANAGER
+
+#include <lua.hpp>
+
+#include <string>
+#include <vector>
+
+namespace Apex::Scripting
+{
+    class LuaManager
+    {
+    public:
+        LuaManager();
+        ~LuaManager();
+
+        LuaManager(const LuaManager& other) = delete;
+        LuaManager& operator=(const LuaManager&) = delete;
+
+        lua_State* GetState() { return luaState; }
+
+        int LoadScript(const std::string& path);
+
+        void RegisterFunction(const char* name, lua_CFunction func);
+        void RegisterFunctions();
+
+        int CreateScriptInstance(int scriptRef);
+        bool CallFunction(int instanceRef, const std::string& funcName, float dt = 0.f);
+
+    private:
+        lua_State* luaState;
+        std::vector<int> m_scriptRefs;
+    };
+}
+
+#endif // LUA_MANAGER

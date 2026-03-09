@@ -3,38 +3,11 @@
 
 using namespace Apex::SceneGraph;
 
-SceneNode::SceneNode(Matrix4 localTransform) :
-	m_worldTransform(localTransform), m_object(nullptr) {}
+SceneNode::SceneNode() :
+	m_object(nullptr) {}
 
-SceneNode::SceneNode(Matrix4 localTransform, Object* object) :
-	m_worldTransform(localTransform), m_object(object) {}
-
-const Matrix4 SceneNode::GetWorldTransform()
-{
-	if (m_dirty)
-	{
-		SetWorldTransform();
-	}
-	return m_worldTransform;
-}
-
-void SceneNode::SetWorldTransform()
-{
-	if (!m_dirty)
-	{
-		return;
-	}
-	if (m_parent)
-	{
-		m_worldTransform = m_parent->GetWorldTransform() * m_object->GetTransform();
-	}
-	else
-	{
-		m_worldTransform = m_object->GetTransform();
-	}
-
-	m_dirty = false;
-}
+SceneNode::SceneNode(Object* object) :
+	m_object(object) {}
 
 SceneNode* SceneNode::GetParent() const
 {
@@ -62,15 +35,45 @@ bool SceneNode::IsDescendantOf(SceneNode& otherNode)
 
 void SceneNode::AddChild(shared_ptr<SceneNode> child)
 {
+	std::cout << "\n[AddChild] Called\n";
+	std::cout << "Parent: " << this << "\n";
+	std::cout << "Child : " << child.get() << "\n";
+	std::cout << "Children count BEFORE: "
+		<< m_children.size() << "\n";
+
 	//remove from parent
-	if (child->m_parent && child->m_parent != this)
+	if (child->m_parent)
 	{
-		shared_ptr<SceneNode> detached = child->m_parent->DetachChild(child.get());
+		std::cout << "Child already has parent: "
+			<< child->m_parent << "\n";
+
+		if (child->m_parent != this)
+		{
+			std::cout << "Detaching from old parent...\n";
+			shared_ptr<SceneNode> detached =
+				child->m_parent->DetachChild(child.get());
+
+			if (detached)
+				std::cout << "Detach from old parent SUCCESS\n";
+			else
+				std::cout << "Detach from old parent FAILED\n";
+		}
+		else
+		{
+			std::cout << "Child already attached to this parent\n";
+		}
 	}
 
 	child->m_parent = this;
 	m_children.push_back(child);
+
+	std::cout << "Child attached to new parent\n";
+
 	MarkDirty();
+
+	std::cout << "Children count AFTER: "
+		<< m_children.size() << "\n";
+	std::cout << "[AddChild] SUCCESS\n";
 }
 
 void SceneNode::DestroyChild(SceneNode* child)
@@ -91,6 +94,11 @@ void SceneNode::DestroyChild(SceneNode* child)
 
 shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
 {
+	std::cout << "\n[DetachChild] Called\n";
+	std::cout << "Parent: " << this << "\n";
+	std::cout << "Child to detach: " << child << "\n";
+	std::cout << "Children count BEFORE: " << m_children.size() << "\n";
+
 	//search the child in all the children
 	auto iterator = std::find_if(m_children.begin(), m_children.end(),
 		[&](const shared_ptr<SceneNode>& c) 
@@ -100,11 +108,19 @@ shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
 
 	if (iterator != m_children.end())
 	{
+		std::cout << "Child found. Detaching...\n";
+
 		shared_ptr<SceneNode> ptr = *iterator;
 		ptr->m_parent = nullptr;
 		m_children.erase(iterator);
+
+		std::cout << "Children count AFTER: " << m_children.size() << "\n";
+		std::cout << "[DetachChild] SUCCESS\n";
+
 		return ptr;
 	}
+
+	std::cout << "Child NOT found.\n";
 	return nullptr;
 }
 
@@ -113,7 +129,7 @@ void SceneNode::Destroy()
 	m_children.clear();	//all descandantes are also Destroyed
 }
 
-void SceneNode::Move(SceneNode& newParent)
+void SceneNode::SetParent(SceneNode& newParent)
 {
 	if (m_parent == &newParent	||	//No move to origine place
 		&newParent == this		||	//No move to itself

@@ -33,7 +33,7 @@ namespace Apex::Rendering
 
 			renderer.m_shader->Use();
 
-			LibMath::Matrix4 model = renderer.object->GetNode()->GetWorldTransform();
+			LibMath::Matrix4 model = renderer.object->GetGlobalTransform();
 
 			renderer.m_shader->SetUniform("uModel", model);
 			renderer.m_shader->SetUniform("uView", view);

@@ -36,7 +36,15 @@ void Shader::UploadToGpu()
 
 void Shader::Use() const
 {
-	m_rhi->BindShader(m_shader);
+	if (m_rhi != nullptr)
+	{
+		m_rhi->BindShader(m_shader);
+	}
+	else
+	{
+		printf("rhi null\n");
+	}
+	
 }
 
 void Shader::SetUniform(std::string const& name, int value)
