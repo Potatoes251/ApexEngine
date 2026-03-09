@@ -8,22 +8,6 @@ RigidBodyComponent::RigidBodyComponent(float mass, BodyType type)
 	m_bodyType = type;
 }
 
-RigidBodyComponent::RigidBodyComponent(RigidBodyComponent const& other)
-{
-	m_trans = other.m_trans;
-	m_mass = other.m_mass;
-	m_bodyType = other.m_bodyType;
-}
-
-RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& other)
-{
-	m_trans = other.m_trans;
-	m_mass = other.m_mass;
-	m_bodyType = other.m_bodyType;
-
-	return *this;
-}
-
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();
@@ -32,22 +16,28 @@ void RigidBodyComponent::ResetForces()
 
 void RigidBodyComponent::SetTransform(LibMath::Transform trans)
 {
-	m_trans = trans;
+	GetOwner()->SetLocalTransform(trans);
 }
 
 void RigidBodyComponent::SetRotation(LibMath::Quaternion rot)
 {
-	m_trans.setRotation(rot);
+	auto transform = GetOwner()->GetLocalTransform();
+	transform.setRotation(rot);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::SetPosition(LibMath::Vector3 pos)
 {
-	m_trans.setPosition(pos);
+	auto transform = GetOwner()->GetLocalTransform();
+	transform.setPosition(pos);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 {
-	m_trans.setScale(scale);
+	auto transform = GetOwner()->GetLocalTransform();
+	transform.setScale(scale);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)
