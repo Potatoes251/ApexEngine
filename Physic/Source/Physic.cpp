@@ -168,7 +168,6 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 	physx::PxRaycastHit hits[16];
 	physx::PxRaycastBuffer hitBuffer(hits, 16);
 
-	bool hitSomething = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
 	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
 	if (!result) return false;
 
@@ -391,7 +390,6 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
 		return m_physics->createShape(geometry, *GetMaterial(mesh));
-		break;
 	}
 	default:
 		assert(false && "Unhandled mesh collider type");
@@ -481,7 +479,7 @@ void PhysicSystem::SyncToPhysx()
 		case BodyType::Dynamic:
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
-			if (!body) return;
+			if (!body) continue;
 			std::vector<Force> forces = actor.m_owner->GetForces();
 			for (Force force : forces)
 			{
@@ -638,7 +636,7 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 	{
 		RigidBodyComponent* otherbody = static_cast<RigidBodyComponent*>(pairs[i].otherActor->userData);
 		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(pairs[i].triggerActor->userData);
-		switch (pairs->status)
+		switch (pairs[i].status)
 		{
 		case physx::PxPairFlag::eNOTIFY_TOUCH_FOUND:
 			otherbody->OnTriggerEnter(body);
