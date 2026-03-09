@@ -71,12 +71,18 @@ namespace Apex::Windowing
 		virtual void SetScrollCallback(ScrollCallback callback) = 0;
 		virtual void SetResizeCallback(ResizeCallback callback) = 0;
 
+		virtual void MakeContextCurrent() = 0;
 		virtual void* NativeHandle() const = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────
-	// Creates a concrete GLFW window — the ONLY place GLFW leaks through.
-	IWindow* CreateWindow(const std::string& title, int width, int height);
+	// shareContext: pass another IWindow* to share its GL context.
+	// Required so the editor window can use the same GL objects as the game.
+	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext = nullptr);
+
+	// Convenience: make a window's GL context current on the calling thread.
+	// Use this in main.cpp to switch between game and editor windows.
+	void MakeContextCurrent(IWindow& window);
 
 } // namespace Apex::Windowing
 #endif
