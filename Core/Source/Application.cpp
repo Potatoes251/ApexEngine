@@ -148,8 +148,8 @@ void Apex::Application::LoadScene()
         !m_shader.IsReady())
         m_resourceManager->ProcessGpuUploads();
 
-    BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-    BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
+    BoxCollider collider({ 1.f, 1.f, 1.f }, false);
+    BoxCollider collider2({ 10.f, .5f, 10.f }, false);
 
     auto obj = std::make_unique<Object>();
     auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
@@ -163,10 +163,10 @@ void Apex::Application::LoadScene()
     m_body2 = &body2;
     m_objects.push_back(std::move(obj2));
 
-    MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
+    MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex, false);
     //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
 
-    CapsuleCollider capsule(2, 2);
+    CapsuleCollider capsule(2.f, 2.f, false);
 
     m_physics.CreateActor(meshCollider, body);
     m_physics.CreateActor(collider2, body2);

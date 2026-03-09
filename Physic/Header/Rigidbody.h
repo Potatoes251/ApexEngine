@@ -3,6 +3,8 @@
 
 #include "LibMath/Transform.h"
 #include "Physic.h"
+#include "Component.h"
+#include "Object.h"
 
 namespace Apex::Physic
 {
@@ -27,7 +29,7 @@ namespace Apex::Physic
 		ForceType			m_type = ForceType::Force;
 	};
 
-	class RigidBodyComponent
+	class RigidBodyComponent : public Component
 	{
 	public:
 		RigidBodyComponent(float mass, BodyType type = BodyType::Dynamic);
@@ -38,10 +40,10 @@ namespace Apex::Physic
 
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }
-		LibMath::Transform			GetTransform() const{ return m_trans; }
-		LibMath::Quaternion			GetRotation() const { return m_trans.getRotation(); }
-		LibMath::Vector3			GetPosition() const { return m_trans.getPosition(); }
-		LibMath::Vector3			GetScale() const { return m_trans.getScale(); }
+		LibMath::Transform			GetTransform() const{ return GetOwner()->GetLocalTransform(); }
+		LibMath::Quaternion			GetRotation() const { return GetOwner()->GetLocalTransform().getRotation(); }
+		LibMath::Vector3			GetPosition() const { return GetOwner()->GetLocalTransform().getPosition(); }
+		LibMath::Vector3			GetScale() const { return GetOwner()->GetLocalTransform().getScale(); }
 		std::vector<Force> const&	GetForces() const { return m_pendingForces; }
 		// must be called in fixed update
 		// force is ignored on a body that is not Dynamic
@@ -58,8 +60,6 @@ namespace Apex::Physic
 		void OnTriggerExit(RigidBodyComponent* otherActor);
 
 	private:
-		LibMath::Transform	m_trans;
-
 		BodyType			m_bodyType;
 		float				m_mass;
 
