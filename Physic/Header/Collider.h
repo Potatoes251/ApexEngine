@@ -5,6 +5,8 @@
 
 #include "PhysicMaterial.h"
 
+#include "Component.h"
+
 namespace Apex::Physic
 {
 	using PhysMatHandle = Resources::ResourceHandle<PhysicMaterial>;
@@ -16,7 +18,7 @@ namespace Apex::Physic
 		Mesh
 	};
 
-	class Collider
+	class Collider : public Apex::Component
 	{
 	public:
 		Collider(PhysMatHandle material, bool isTrigger) : m_material(material), m_isTrigger(isTrigger) {}
