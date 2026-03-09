@@ -152,8 +152,6 @@ void PhysicSystem::Update(float deltaTime_s)
 	SyncToPhysx();
 	m_scene->simulate(deltaTime_s);
 	m_scene->fetchResults(true);
-
-
 }
 
 void PhysicSystem::SyncFromPhysx()
@@ -442,7 +440,9 @@ void PhysicSystem::SyncToPhysx()
 {
 	for (PhysicActor& actor : m_rigidBodies)
 	{
-		if (actor.m_owner->GetType() == BodyType::Kinematic)
+		switch (actor.m_owner->GetType())
+		{
+		case BodyType::Kinematic:
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
 			LibMath::Vector3 pos = actor.m_owner->GetPosition();
@@ -451,7 +451,43 @@ void PhysicSystem::SyncToPhysx()
 			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
 
 			body->setKinematicTarget(target);
+			break;
 		}
+		case BodyType::Dynamic:
+		{
+			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
+			if (!body) return;
+			std::vector<Force> forces = actor.m_owner->GetForces();
+			for (Force force : forces)
+			{
+				ApplyForce(body, force);
+			}
+			actor.m_owner->ResetForces();
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
+void PhysicSystem::ApplyForce(physx::PxRigidDynamic* body, Force force)
+{
+	physx::PxVec3 pxForce(force.m_force[0], force.m_force[1], force.m_force[2]);
+	switch (force.m_type)
+	{
+	case ForceType::Force:
+		body->addForce(pxForce, physx::PxForceMode::eFORCE);
+		break;
+	case ForceType::Impulse:
+		body->addForce(pxForce, physx::PxForceMode::eIMPULSE);
+		break;
+	case ForceType::VelocityChange:
+		body->addForce(pxForce, physx::PxForceMode::eVELOCITY_CHANGE);
+		break;
+	case ForceType::Acceleration:
+		body->addForce(pxForce, physx::PxForceMode::eACCELERATION);
+		break;
 	}
 }
 

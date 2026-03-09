@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	//SoundHandle backgroundMusic = audio ? audio->Play2D("fragments of hope.ogg", { .m_loop = true, .m_volume = 1.f }) : INVALID_SOUND;
 
 	// Initialize Camera
-	Camera camera;
+	Camera camera(LibMath::Vector3(0.f, 0.f, 7.f));
 	window->SetCursorCaptured(true);
 
 	ResourceManager rm(threadPool);
@@ -112,12 +112,12 @@ int main(int argc, char* argv[])
 	BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f }, false, mat);
 	RigidBodyComponent body2 = RigidBodyComponent(0, BodyType::Static);
 
-	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex, true, mat);
+	MeshCollider meshCollider = MeshCollider(mesh, MeshColliderType::Convex, false, mat);
 	//MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle, false);
 
 	CapsuleCollider capsule(2.f, 2.f, false);
 
-	body.SetPosition({ 0.f, 10.f, 0.f });
+	body.SetPosition({ 0.f, 3.f, 0.f });
 	body2.SetPosition({ 0.f, 0.f, 0.f });
 	//body2.SetScale(LibMath::Vector3(0.001f));
 	//body2.SetRotation(LibMath::Quaternion(LibMath::Degree(-90), LibMath::Radian(0), LibMath::Radian(0)));
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 				{ front[0], front[1], front[2] }
 			);
 		}
-
+		
 		// Rendering
 		rhi->Clear(0.12f, 0.12f, 0.15f);
 
@@ -170,6 +170,7 @@ int main(int argc, char* argv[])
 		totalTime += deltaTime;
 		while (accumulator >= 1.f / 60.f)
 		{
+			body.AddForce({ {0,0,-1} });
 			physics.Update(1.f / 60.f);
 			accumulator -= 1.f / 60.f;
 		}

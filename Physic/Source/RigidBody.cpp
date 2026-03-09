@@ -24,6 +24,12 @@ RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& othe
 	return *this;
 }
 
+void RigidBodyComponent::ResetForces()
+{
+	m_pendingForces.clear();
+	m_pendingForces.shrink_to_fit();
+}
+
 void RigidBodyComponent::SetTransform(LibMath::Transform trans)
 {
 	m_trans = trans;

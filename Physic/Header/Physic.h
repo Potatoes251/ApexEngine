@@ -21,6 +21,7 @@ namespace Apex::Physic
 	class MeshCollider;
 	class CapsuleCollider;
 	class RigidBodyComponent;
+	struct Force;
 
 	struct PhysicActor
 	{
@@ -91,11 +92,12 @@ namespace Apex::Physic
 		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 
 		void	SyncToPhysx();
+		void	ApplyForce(physx::PxRigidDynamic* body, Force force);
 
-		physx::PxTriangleMesh*	CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
-		physx::PxConvexMesh*	CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxTriangleMesh*	CookTriangleMesh(Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxConvexMesh*	CookConvexMesh(Resources::ResourceHandle<Mesh> const& mesh);
 
-		std::unordered_map<std::string, Apex::Resources::ResourceEntry>			
+		std::unordered_map<std::string, Resources::ResourceEntry>
 										m_materialsMap;
 
 		std::vector<physx::PxMaterial*>	m_physxMaterials;
