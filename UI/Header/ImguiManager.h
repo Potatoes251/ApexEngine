@@ -63,6 +63,7 @@ namespace Apex::UserInterface
 
 		//Out of checkbox
 		void	DrawText2D(const std::string& text, float x, float y, float size, FontID id) override;
+		void    DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) override;
 
 	private:
 		GLFWwindow*		m_window = nullptr;

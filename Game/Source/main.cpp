@@ -94,8 +94,8 @@ int main(int argc, char* argv[])
 	//HUD
 	UIManager uiManager(window->NativeHandle());
 
-	uiManager.GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default ));
-
+	//uiManager.GetCanvas().AddElement(std::make_unique<UIText>(std::string("This is a test"), Vector2(0.f, 0.f), 100.f, UIAnchor::Center, FontID::Default ));
+	uiManager.GetCanvas().AddElement(std::make_unique<UIImage>(texture2, Vector2(0.f, 0.f), 1.f, Vector2(100.f, 100.f), UIAnchor::Center));
 
 	while (!mesh.IsReady() || 
 		//!mesh2.IsReady() || 
@@ -162,9 +162,6 @@ int main(int argc, char* argv[])
 		//	camera.GetProjectionMatrix(window->GetAspectRatio(), camera.m_fov),
 		//	camera.GetPosition(), totalTime);
 
-		// Draw UI
-		//uiManager.RenderCanvas();
-
 		accumulator += deltaTime;
 		totalTime += deltaTime;
 		while (accumulator >= 1.f / 60.f)
@@ -203,6 +200,9 @@ int main(int argc, char* argv[])
 		DebugRenderer::Get().DrawLines(rhi.get(), proj * view);
 
 		rm.ProcessGpuUploads();
+
+		// Draw UI
+		uiManager.RenderCanvas();
 
 		//Swap buffer
 		window->SwapBuffers();

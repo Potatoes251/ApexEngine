@@ -6,14 +6,14 @@ using namespace Apex::UserInterface;
 UIElement::UIElement(Vector2 position, float size, UIAnchor anchor) :
 	m_position(position), m_size(size), m_anchor(anchor) {}
 
-UIText::UIText(string text, Vector2 position, float size, UIAnchor anchor, FontID font) :
+UIText::UIText(const string& text, Vector2 position, float size, UIAnchor anchor, FontID font) :
 	UIElement(position, size, anchor), m_text(text), m_font(font) {}
 
 void UIText::Draw(IGUI& gui)
 {
-	Vector2 pixelPos = ApplyAnchor(m_position, m_anchor, gui.GetScreenSize());
+	Vector2 anchorPos = ApplyAnchor(m_position, m_anchor, gui.GetScreenSize());
 
-	gui.DrawText2D(m_text, pixelPos[0], pixelPos[1], m_size, m_font);
+	gui.DrawText2D(m_text, anchorPos[0], anchorPos[1], m_size, m_font);
 }
 
 Vector2 UIElement::ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screenSize)
@@ -56,8 +56,20 @@ Vector2 UIElement::ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screenSize)
 	return anchorOffset + Vector2(pos[0] * screenSize[0], pos[1] * screenSize[1]);
 }
 
-UIImage::UIImage(Texture* image, Vector2 position, float size, UIAnchor anchor) :
-	UIElement(position, size, anchor), m_image(image) {}
+UIImage::UIImage(const ResourceHandle<Texture>& image, Vector2 position, float size, Vector2 imageSize, UIAnchor anchor) :
+	UIElement(position, size, anchor), m_image(image), m_imageSize(imageSize) {}
+
+void UIImage::Draw(IGUI& gui)
+{
+	Vector2 anchorPos = ApplyAnchor(m_position, m_anchor, gui.GetScreenSize());
+
+	float	width = m_imageSize[0] * m_size;
+	float	height = m_imageSize[1] * m_size;
+
+	Vector2 bottomRight = Vector2(anchorPos[0] + width, anchorPos[1] + height);
+
+	gui.DrawImage2D(m_image->GetId(), anchorPos, bottomRight);
+}
 
 //Canvas
 void UICanvas::AddElement(unique_ptr<UIElement> element)
@@ -87,8 +99,9 @@ UICanvas& Apex::UserInterface::UIManager::GetCanvas()
 
 void UIManager::RenderCanvas()
 {
-	m_gui.get()->BeginFrame();
 	glDisable(GL_DEPTH_TEST);
+	m_gui.get()->BeginFrame();
+
 
 	m_canvas.Render(*m_gui);
 

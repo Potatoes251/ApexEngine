@@ -9,6 +9,7 @@ using LibMath::Vector2;
 
 struct GLFWwindow;
 
+
 namespace Apex::UserInterface
 {
     struct Color
@@ -62,6 +63,7 @@ namespace Apex::UserInterface
         virtual void    SameLine() = 0;
 
         virtual void    DrawText2D(const std::string& text, float x, float y, float size, FontID id) = 0;
+        virtual void    DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) = 0;
 	private:
 	};
 

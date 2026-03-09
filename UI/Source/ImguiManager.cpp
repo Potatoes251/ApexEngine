@@ -170,6 +170,13 @@ namespace Apex::UserInterface
         drawList->AddText(font, size, ImVec2(x, y),
             IM_COL32(255, 255, 255, 255), text.c_str());
     }
+    void ImGUIManager::DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner)
+    {
+        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+
+        drawList->AddImage(static_cast<ImTextureID>(textureId),
+            ImVec2(topLeftCorner[0], topLeftCorner[1]), ImVec2(bottomRightCorner[0], bottomRightCorner[1]));
+    }
 }
 
 
