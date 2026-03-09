@@ -4,6 +4,7 @@
 #include <PxPhysicsAPI.h>
 
 #include "LibMath/Vector/Vector3.h"
+#include "LibMath/Quaternion.h"
 
 #include "ResourceHandle.h"
 #include "Mesh.h"
@@ -29,6 +30,14 @@ namespace Apex::Physic
 		RigidBodyComponent* m_owner;
 	};
 
+	struct HitResult
+	{
+		RigidBodyComponent* m_body;
+		LibMath::Vector3	m_position;
+		LibMath::Vector3	m_normal;
+		float				m_distance;
+	};
+
 	class PhysicSystem
 	{
 	public:
@@ -41,6 +50,9 @@ namespace Apex::Physic
 		PhysMatHandle	CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness);
 		void			CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 		void			RemoveActor(RigidBodyComponent const& rigidbody);
+
+		bool			Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
+		bool			Raycast(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
 
 		// should be called inside a fixed update
 		void	Update(float deltaTime_s);
@@ -96,6 +108,11 @@ namespace Apex::Physic
 
 		physx::PxTriangleMesh*	CookTriangleMesh(Resources::ResourceHandle<Mesh> const& mesh);
 		physx::PxConvexMesh*	CookConvexMesh(Resources::ResourceHandle<Mesh> const& mesh);
+
+		static physx::PxVec3			ToPxVec(LibMath::Vector3 vec) { return { vec[0], vec[1], vec[2] }; }
+		static LibMath::Vector3			ToLibVec(physx::PxVec3 vec) { return { vec.x, vec.y, vec.z }; }
+		static LibMath::Quaternion		ToLibQuat(physx::PxQuat quat) { return { quat.x, quat.y, quat.z, quat.w }; }
+		static physx::PxQuat			ToPxQuat(LibMath::Quaternion quat) { return { quat[0], quat[1], quat[2], quat[3] }; }
 
 		std::unordered_map<std::string, Resources::ResourceEntry>
 										m_materialsMap;

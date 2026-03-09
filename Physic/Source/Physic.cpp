@@ -147,6 +147,45 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 	}
 }
 
+bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
+{
+	physx::PxRaycastBuffer hit;
+	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hit);
+
+	if (!result) return false;
+
+	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_distance = hit.block.distance;
+	hit_out.m_position = ToLibVec(hit.block.position);
+	hit_out.m_normal = ToLibVec(hit.block.normal);
+
+	return result;
+}
+
+bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
+{
+	hit_out.clear();
+	physx::PxRaycastHit hits[16];
+	physx::PxRaycastBuffer hitBuffer(hits, 16);
+
+	bool hitSomething = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
+	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
+	if (!result) return false;
+
+	for (physx::PxU32 i = 0; i < hitBuffer.getNbTouches(); ++i)
+	{
+		const physx::PxRaycastHit& h = hitBuffer.getTouch(i);
+		HitResult result;
+		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_distance = h.distance;
+		result.m_position = ToLibVec(h.position);
+		result.m_normal = ToLibVec(h.normal);
+
+		hit_out.push_back(result);
+	}
+	return true;
+}
+
 void PhysicSystem::Update(float deltaTime_s)
 {
 	SyncToPhysx();
@@ -162,8 +201,8 @@ void PhysicSystem::SyncFromPhysx()
 		{
 			physx::PxTransform trans = actor.m_actor->getGlobalPose();
 
-			actor.m_owner->SetPosition(LibMath::Vector3(trans.p.x, trans.p.y, trans.p.z));
-			actor.m_owner->SetRotation(LibMath::Quaternion(trans.q.x, trans.q.y, trans.q.z, trans.q.w));
+			actor.m_owner->SetPosition(ToLibVec(trans.p));
+			actor.m_owner->SetRotation(ToLibQuat(trans.q));
 		}
 	}
 }
@@ -213,8 +252,8 @@ void PhysicSystem::DrawTriangleMeshCollider32(
 {
 	DebugRenderer& debugRenderer = DebugRenderer::Get();
 
-	LibMath::Vector3 worldPos(worldPose.p.x, worldPose.p.y, worldPose.p.z);
-	LibMath::Quaternion worldRot(worldPose.q.x, worldPose.q.y, worldPose.q.z, worldPose.q.w);
+	LibMath::Vector3 worldPos = ToLibVec(worldPose.p);
+	LibMath::Quaternion worldRot = ToLibQuat(worldPose.q);
 
 	const physx::PxVec3* vertices = mesh->getVertices();
 	const physx::PxU32* indices = (const physx::PxU32*)(mesh->getTriangles());
@@ -226,9 +265,9 @@ void PhysicSystem::DrawTriangleMeshCollider32(
 		physx::PxU32 i1 = indices[3 * t + 1];
 		physx::PxU32 i2 = indices[3 * t + 2];
 
-		LibMath::Vector3 v0 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i0].x, vertices[i0].y, vertices[i0].z) * scale));
-		LibMath::Vector3 v1 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i1].x, vertices[i1].y, vertices[i1].z) * scale));
-		LibMath::Vector3 v2 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i2].x, vertices[i2].y, vertices[i2].z) * scale));
+		LibMath::Vector3 v0 = worldPos + (worldRot.rotate(ToLibVec(vertices[i0]) * scale));
+		LibMath::Vector3 v1 = worldPos + (worldRot.rotate(ToLibVec(vertices[i1]) * scale));
+		LibMath::Vector3 v2 = worldPos + (worldRot.rotate(ToLibVec(vertices[i2]) * scale));
 
 		debugRenderer.AddLine(v0, v1);
 		debugRenderer.AddLine(v1, v2);
@@ -241,8 +280,8 @@ void Apex::Physic::PhysicSystem::DrawTriangleMeshCollider16(
 {
 	DebugRenderer& debugRenderer = DebugRenderer::Get();
 
-	LibMath::Vector3 worldPos(worldPose.p.x, worldPose.p.y, worldPose.p.z);
-	LibMath::Quaternion worldRot(worldPose.q.x, worldPose.q.y, worldPose.q.z, worldPose.q.w);
+	LibMath::Vector3 worldPos = ToLibVec(worldPose.p);
+	LibMath::Quaternion worldRot = ToLibQuat(worldPose.q);
 
 	const physx::PxVec3* vertices = mesh->getVertices();
 	const physx::PxU16* indices = (const physx::PxU16*)(mesh->getTriangles());
@@ -254,9 +293,9 @@ void Apex::Physic::PhysicSystem::DrawTriangleMeshCollider16(
 		physx::PxU32 i1 = indices[3 * t + 1];
 		physx::PxU32 i2 = indices[3 * t + 2];
 
-		LibMath::Vector3 v0 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i0].x, vertices[i0].y, vertices[i0].z) * scale));
-		LibMath::Vector3 v1 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i1].x, vertices[i1].y, vertices[i1].z) * scale));
-		LibMath::Vector3 v2 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[i2].x, vertices[i2].y, vertices[i2].z) * scale));
+		LibMath::Vector3 v0 = worldPos + (worldRot.rotate(ToLibVec(vertices[i0]) * scale));
+		LibMath::Vector3 v1 = worldPos + (worldRot.rotate(ToLibVec(vertices[i1]) * scale));
+		LibMath::Vector3 v2 = worldPos + (worldRot.rotate(ToLibVec(vertices[i2]) * scale));
 
 		debugRenderer.AddLine(v0, v1);
 		debugRenderer.AddLine(v1, v2);
@@ -269,8 +308,8 @@ void PhysicSystem::DrawConvexMeshCollider(
 {
 	DebugRenderer& debugRenderer = DebugRenderer::Get();
 
-	LibMath::Vector3 worldPos(worldPose.p.x, worldPose.p.y, worldPose.p.z);
-	LibMath::Quaternion worldRot(worldPose.q.x, worldPose.q.y, worldPose.q.z, worldPose.q.w);
+	LibMath::Vector3 worldPos = ToLibVec(worldPose.p);
+	LibMath::Quaternion worldRot = ToLibQuat(worldPose.q);
 
 	const physx::PxU32 numVertices = mesh->getNbVertices();
 	const physx::PxVec3* vertices = mesh->getVertices();
@@ -285,8 +324,8 @@ void PhysicSystem::DrawConvexMeshCollider(
 			physx::PxU32 v0Idx = mesh->getIndexBuffer()[poly.mIndexBase + j];
 			physx::PxU32 v1Idx = mesh->getIndexBuffer()[poly.mIndexBase + ((j + 1) % poly.mNbVerts)];
 
-			LibMath::Vector3 v0 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[v0Idx].x, vertices[v0Idx].y, vertices[v0Idx].z) * scale));
-			LibMath::Vector3 v1 = worldPos + (worldRot.rotate(LibMath::Vector3(vertices[v1Idx].x, vertices[v1Idx].y, vertices[v1Idx].z) * scale));
+			LibMath::Vector3 v0 = worldPos + (worldRot.rotate(ToLibVec(vertices[v0Idx]) * scale));
+			LibMath::Vector3 v1 = worldPos + (worldRot.rotate(ToLibVec(vertices[v1Idx]) * scale));
 
 			debugRenderer.AddLine(v0, v1);
 		}
@@ -311,9 +350,7 @@ physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& colli
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
-	LibMath::Vector3 halfExtents = box.GetHalfExtents();
-
-	return m_physics->createShape(physx::PxBoxGeometry(physx::PxVec3(halfExtents[0], halfExtents[1], halfExtents[2])), *GetMaterial(box));
+	return m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
 }
 
 physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
@@ -337,7 +374,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 		{
 			LibMath::Vector3 scale = rigidBody.GetScale();
 			physx::PxMeshScale meshScale(
-				{ scale[0], scale[1], scale[2] },  // scaling
+				ToPxVec(scale),						// scaling
 				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
 			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
@@ -347,7 +384,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 	{
 		LibMath::Vector3 scale = rigidBody.GetScale();
 		physx::PxMeshScale meshScale(
-			{ scale[0], scale[1], scale[2] },	// scaling
+			ToPxVec(scale),						// scaling
 			physx::PxQuat(physx::PxIdentity)    // rotation
 		);
 
@@ -366,11 +403,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 
 void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
-	LibMath::Transform trans = rigidBody.GetTransform();
-	LibMath::Vector3 pos = trans.getPosition();
-	LibMath::Quaternion rot = trans.getRotation();
-
-	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
+	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()), ToPxQuat(rigidBody.GetRotation()));
 
 	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
 
@@ -391,11 +424,7 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 
 void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
-	LibMath::Transform trans = rigidBody.GetTransform();
-	LibMath::Vector3 pos = trans.getPosition();
-	LibMath::Quaternion rot = trans.getRotation();
-
-	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
+	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()), ToPxQuat(rigidBody.GetRotation()));
 
 	physx::PxRigidStatic* body = m_physics->createRigidStatic(transform);
 
@@ -414,9 +443,7 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 
 void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody)
 {
-	LibMath::Vector3 pos = rigidBody.GetPosition();
-
-	physx::PxTransform transform(physx::PxVec3(pos[0], pos[1], pos[2]));
+	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()));
 
 	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
 
@@ -445,10 +472,8 @@ void PhysicSystem::SyncToPhysx()
 		case BodyType::Kinematic:
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
-			LibMath::Vector3 pos = actor.m_owner->GetPosition();
-			LibMath::Quaternion rot = actor.m_owner->GetRotation();
 
-			physx::PxTransform target(physx::PxVec3(pos[0], pos[1], pos[2]), physx::PxQuat(rot[0], rot[1], rot[2], rot[3]));
+			physx::PxTransform target(ToPxVec(actor.m_owner->GetPosition()), ToPxQuat(actor.m_owner->GetRotation()));
 
 			body->setKinematicTarget(target);
 			break;
@@ -473,7 +498,7 @@ void PhysicSystem::SyncToPhysx()
 
 void PhysicSystem::ApplyForce(physx::PxRigidDynamic* body, Force force)
 {
-	physx::PxVec3 pxForce(force.m_force[0], force.m_force[1], force.m_force[2]);
+	physx::PxVec3 pxForce = ToPxVec(force.m_force);
 	switch (force.m_type)
 	{
 	case ForceType::Force:
@@ -506,22 +531,19 @@ void PhysicSystem::DrawColliders()
 			physx::PxGeometry const& geometry = shape->getGeometry();
 
 			physx::PxTransform worldPose = actor.m_actor->getGlobalPose() * shape->getLocalPose();
-			physx::PxVec3 pos = worldPose.p;
-			physx::PxQuat rot = worldPose.q;
 			switch (geometry.getType())
 			{
 			case physx::PxGeometryType::eBOX:
 			{
 				physx::PxBoxGeometry const& box = static_cast<physx::PxBoxGeometry const&>(geometry);
-				physx::PxVec3 halfExtents = box.halfExtents;
-				DebugRenderer::Get().AddBox({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, { halfExtents.x, halfExtents.y, halfExtents.z });
+				DebugRenderer::Get().AddBox(ToLibVec(worldPose.p), ToLibQuat(worldPose.q), ToLibVec(box.halfExtents));
 				break;
 			}
 			case physx::PxGeometryType::eCAPSULE:
 			{
 				physx::PxCapsuleGeometry const& capsule = static_cast<physx::PxCapsuleGeometry const&>(geometry);
 				LibMath::Quaternion fix(LibMath::Radian(0.f), LibMath::Radian(0.f), LibMath::Degree(90));
-				DebugRenderer::Get().AddCapsule({ pos.x, pos.y, pos.z }, LibMath::Quaternion{ rot.x, rot.y, rot.z, rot.w } * fix, capsule.radius, capsule.halfHeight);
+				DebugRenderer::Get().AddCapsule(ToLibVec(worldPose.p), ToLibQuat(worldPose.q) * fix, capsule.radius, capsule.halfHeight);
 				break;
 			}
 			case physx::PxGeometryType::eTRIANGLEMESH:
@@ -559,10 +581,7 @@ physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceH
 		return nullptr;
 	}
 
-	physx::PxDefaultMemoryInputData readBuffer(
-		writeBuffer.getData(),
-		writeBuffer.getSize()
-	);
+	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 
 	return m_physics->createTriangleMesh(readBuffer);
 }
@@ -588,10 +607,7 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 		return nullptr;
 	}
 
-	physx::PxDefaultMemoryInputData readBuffer(
-		writeBuffer.getData(),
-		writeBuffer.getSize()
-	);
+	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 
 	return m_physics->createConvexMesh(readBuffer);
 }
