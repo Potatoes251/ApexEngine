@@ -156,7 +156,7 @@ void Apex::Application::LoadScene()
 
     auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
     body.SetPosition({ 0,10,0 });
-    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex);    
+    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex, false);
     
     auto obj2 = m_scene->CreateObject();
 
@@ -167,7 +167,7 @@ void Apex::Application::LoadScene()
 
     auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
     body2.SetPosition({ 0,0,0 });
-    auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f });
+    auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f }, false);
 
     m_physics.CreateActor(collider, body);
     m_physics.CreateActor(collider2, body2);
