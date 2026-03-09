@@ -185,6 +185,99 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 	return true;
 }
 
+bool PhysicSystem::Sweep(
+	HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance)
+{
+	physx::PxTransform startPose(ToPxVec(position));
+
+	bool result = false;
+	physx::PxSweepBuffer hit;
+
+	switch (collider.GetType())
+	{
+	case ColliderType::Box:
+	{
+		BoxCollider const& boxCollider = static_cast<BoxCollider const&>(collider);
+		physx::PxBoxGeometry box(ToPxVec(boxCollider.GetHalfExtents()));
+		result = m_scene->sweep(box, startPose, ToPxVec(direction.normalize()), distance, hit);
+		break;
+	}
+	case ColliderType::Capsule:
+	{
+		CapsuleCollider const& capsuleCollider = static_cast<CapsuleCollider const&>(collider);
+		physx::PxCapsuleGeometry capsule(capsuleCollider.GetRadius(), capsuleCollider.GetHalfHeight());
+		result = m_scene->sweep(capsule, startPose, ToPxVec(direction.normalize()), distance, hit);
+		break;
+	}
+	case ColliderType::Mesh:
+		assert(false && "Sweeps with mesh collider are not allowed");
+		break;
+	default:
+		assert(false && "Unhandled collider type");
+		break;
+	}
+
+	if (!result) return false;
+	
+	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_distance = hit.block.distance;
+	hit_out.m_position = LibMath::Vector3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
+	hit_out.m_normal = LibMath::Vector3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
+	
+	return true;
+}
+
+bool PhysicSystem::Sweep(
+	std::vector<HitResult>& sweep_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance)
+{
+	sweep_out.clear();
+	physx::PxSweepHit sweeps[16];
+	physx::PxSweepBuffer sweepBuffer(sweeps, 16);
+
+	physx::PxTransform startPose(ToPxVec(position));
+
+	bool result = false;
+
+	switch (collider.GetType())
+	{
+	case ColliderType::Box:
+	{
+		BoxCollider const& boxCollider = static_cast<BoxCollider const&>(collider);
+		physx::PxBoxGeometry box(ToPxVec(boxCollider.GetHalfExtents()));
+		result = m_scene->sweep(box, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
+		break;
+	}
+	case ColliderType::Capsule:
+	{
+		CapsuleCollider const& capsuleCollider = static_cast<CapsuleCollider const&>(collider);
+		physx::PxCapsuleGeometry capsule(capsuleCollider.GetRadius(), capsuleCollider.GetHalfHeight());
+		result = m_scene->sweep(capsule, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
+		break;
+	}
+	case ColliderType::Mesh:
+		assert(false && "Sweeps with mesh collider are not allowed");
+		break;
+	default:
+		assert(false && "Unhandled collider type");
+		break;
+	}
+	if (!result) return false;
+
+	for (physx::PxU32 i = 0; i < sweepBuffer.getNbTouches(); ++i)
+	{
+		const physx::PxSweepHit& h = sweepBuffer.getTouch(i);
+		HitResult result;
+		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_distance = h.distance;
+		result.m_position = ToLibVec(h.position);
+		result.m_normal = ToLibVec(h.normal);
+
+		sweep_out.push_back(result);
+	}
+
+	return true;
+}
+
 void PhysicSystem::Update(float deltaTime_s)
 {
 	SyncToPhysx();

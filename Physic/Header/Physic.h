@@ -53,6 +53,8 @@ namespace Apex::Physic
 
 		bool			Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
 		bool			Raycast(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
+		bool			Sweep(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance);
+		bool			Sweep(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance);
 
 		// should be called inside a fixed update
 		void	Update(float deltaTime_s);

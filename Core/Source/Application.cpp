@@ -199,6 +199,10 @@ void Apex::Application::Tick()
     }
 
     SyncPhysicsToTransforms();
+    BoxCollider box({ 1,1,1 }, false);
+    std::vector<HitResult> hit;
+    if (m_physics.Sweep(hit, m_camera->GetPosition(), m_camera->GetFront(), box, 1000.f)) printf("hit at %f size : %zd\r", hit[0].m_distance, hit.size());
+    else printf("no hit\r");
 
     Render();
 
