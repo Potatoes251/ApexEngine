@@ -4,7 +4,7 @@
 #include <LibMath/Matrix/Matrix4.h>
 #include "LibMath/Transform.h"
 
-#include "../../Resources/Header/Component.h"
+#include "Component.h"
 #include "../../LowRenderer/Header/SceneGraph.h"
 
 #include <vector>
@@ -55,7 +55,9 @@ namespace Apex::Data
 				{
 					for (auto& comp : m_components)
 					{
-						if (T* casted = dynamic_cast<T*>(comp.get()))
+						T* casted = dynamic_cast<T*>(comp.get());
+
+						if (casted)
 							return casted;
 					}
 

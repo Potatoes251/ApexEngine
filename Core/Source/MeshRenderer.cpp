@@ -22,9 +22,6 @@ void Apex::Rendering::MeshRenderer::Render(const Matrix4& view,
     const Matrix4& projection,
     const Vector3& cameraPos)
 {
-    if (!m_mesh.IsReady() || !m_shader.IsReady() || !m_texture.IsReady())
-        return;
-
     m_shader->Use();
 
     Matrix4 model = GetOwner()->GetGlobalTransform();

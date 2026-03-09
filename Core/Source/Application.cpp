@@ -140,13 +140,6 @@ void Apex::Application::LoadScene()
     Apex::Resources::ResourceHandle<Texture> m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
     Apex::Resources::ResourceHandle<Texture> m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
 
-    while (!m_sphere.IsReady() ||
-        !m_cube.IsReady() ||
-        !m_texture.IsReady() ||
-        !m_texture2.IsReady() ||
-        !m_shader.IsReady())
-        m_resourceManager->ProcessGpuUploads();
-
     auto obj = m_scene->CreateObject();
 
     auto& renderer = obj->AddComponent<MeshRenderer>();
@@ -156,8 +149,7 @@ void Apex::Application::LoadScene()
 
     auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
     body.SetPosition({ 0,10,0 });
-    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex, false);
-    
+
     auto obj2 = m_scene->CreateObject();
 
     auto& renderer2 = obj2->AddComponent<MeshRenderer>();
@@ -167,7 +159,16 @@ void Apex::Application::LoadScene()
 
     auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
     body2.SetPosition({ 0,0,0 });
+
+    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex, false);
     auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f }, false);
+
+    while (!m_sphere.IsReady() ||
+        !m_cube.IsReady() ||
+        !m_texture.IsReady() ||
+        !m_texture2.IsReady() ||
+        !m_shader.IsReady())
+        m_resourceManager->ProcessGpuUploads();
 
     m_physics.CreateActor(collider, body);
     m_physics.CreateActor(collider2, body2);
