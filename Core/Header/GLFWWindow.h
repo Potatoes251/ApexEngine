@@ -29,6 +29,7 @@ namespace Apex::Windowing
 		void Clear() override;
 		void Close() override;
 		void Focus() override;
+		void Maximize() override;
 		void UpdateDeltaTime() override;
 		
 		// Properties

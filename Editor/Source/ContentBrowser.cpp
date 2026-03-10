@@ -180,7 +180,7 @@ namespace Apex::Editor
 		m_gui.TextDisabled("Tile Size:");
         m_gui.SameLine();
         m_gui.SetNextItemWidth(120.f);
-        m_gui.SliderFloat("##tilesize", &m_tileSize, 48.f, 160.f);
+        m_gui.SliderInt("##tilesize", &m_tileSize, 80, 160);
         
     }
 
@@ -405,12 +405,13 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawTileLabel(const AssetEntry& entry, LibMath::Vector2 pos)
     {
-        m_gui.SetCursorPos(LibMath::Vector2(pos[0], pos[1] + m_tileSize + 2.f));
-
         std::string name = entry.m_path.filename().string();
-        if (name.size() > 12)
-            name = name.substr(0, 11) + "~";
+        if (name.size() > 18)
+            name = name.substr(0, 17) + "...";
 
+        LibMath::Vector2 textSize = m_gui.GetDrawList()->CalculateTextSize(name.c_str());
+        float centeredX = pos[0] + (m_tileSize - textSize[0]) * 0.5f;
+        m_gui.SetCursorPos(LibMath::Vector2(centeredX, pos[1] + m_tileSize + 2.f));
         m_gui.TextDisabled(name);
     }
 

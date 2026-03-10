@@ -82,7 +82,7 @@ namespace Apex::Editor
 		char                       m_lastSearch[256] = {};
 
 		char   m_searchBuffer[256] = {};
-		float  m_tileSize = 80.f;
+		int    m_tileSize = 120;
 		bool   m_showTree = true;
 
 		AssetEntry* m_selected = nullptr;

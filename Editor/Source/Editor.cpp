@@ -11,7 +11,10 @@ namespace Apex::Editor
     {
         m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Editor", 1280, 720));
 
-        return m_window != nullptr;
+        if (!m_window) return false;
+
+        m_window->Maximize();
+        return true;
     }
 
     bool Editor::InitPanels(Apex::Application& app)

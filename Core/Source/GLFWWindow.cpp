@@ -75,16 +75,17 @@ namespace Apex::Windowing
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
-    void  GLFWWindow::MakeContextCurrent() { glfwMakeContextCurrent(m_window); }
-    bool  GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
-    void  GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
+    void GLFWWindow::MakeContextCurrent() { glfwMakeContextCurrent(m_window); }
+    bool GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
+    void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
     void GLFWWindow::Clear()
     {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    void  GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
-    void  GLFWWindow::Focus() { glfwFocusWindow(m_window); }
+    void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
+    void GLFWWindow::Focus() { glfwFocusWindow(m_window); }
+    void GLFWWindow::Maximize() { glfwMaximizeWindow(m_window); }
 
     void GLFWWindow::UpdateDeltaTime()
     {

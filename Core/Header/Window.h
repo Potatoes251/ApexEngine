@@ -53,6 +53,7 @@ namespace Apex::Windowing
 		virtual void Clear() = 0;
 		virtual void Close() = 0;
 		virtual void Focus() = 0;
+		virtual void Maximize() = 0;
 		virtual void UpdateDeltaTime() = 0;
 		
 		// Properties
