@@ -20,6 +20,8 @@ namespace Apex::Scripting
 
         int GetInstanceRef() const { return m_instanceRef; }
 
+        void Serialize(std::ostream& out) const override;
+
     protected:
         void OnStart() override;
         void OnUpdate(float deltaTime) override;

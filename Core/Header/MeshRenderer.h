@@ -27,6 +27,8 @@ namespace Apex::Rendering
             const LibMath::Matrix4& projection,
             const LibMath::Vector3& cameraPos);
 
+        void Serialize(std::ostream& out) const override;
+
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Shader> m_shader;

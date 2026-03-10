@@ -14,7 +14,7 @@ Mesh::~Mesh()
 void Mesh::LoadFromFile()
 {
 	MeshImporter importer;
-	importer.Import(m_name, *this);
+	importer.Import(m_path, *this);
 }
 
 void Mesh::UploadToGpu()

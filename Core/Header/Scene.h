@@ -26,6 +26,8 @@ namespace Apex::Rendering
 		void Render(const LibMath::Matrix4& view,
 			const LibMath::Matrix4& projection,
 			const LibMath::Vector3& cameraPosition);
+
+		void Save(const std::string& path);
 		
 	private:
 		std::vector<std::unique_ptr<Object>> m_objects;

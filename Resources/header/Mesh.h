@@ -11,7 +11,7 @@
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string name) : m_name(name) {}
+	Mesh(std::string path) : IResource(path) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 
@@ -28,7 +28,6 @@ public:
 	GLsizei GetIndexCount()  const { return m_indexCount; }
 
 private:
-	std::string m_name;
 
 	GLuint m_VAO = 0;
 	GLuint m_VBO = 0;

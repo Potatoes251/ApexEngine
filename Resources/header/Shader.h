@@ -11,7 +11,7 @@
 class Shader : public IResource
 {
 public:
-	Shader(std::string name) : m_name(name) {}
+	Shader(std::string path) : IResource(path) {}
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 
@@ -27,8 +27,6 @@ public:
 	void SetUniform(std::string const& name, LibMath::Matrix4 const& value);
 
 private:
-	std::string m_name;
-
 	GLuint m_shader = 0;
 };
 

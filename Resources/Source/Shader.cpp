@@ -12,7 +12,7 @@ void Shader::UploadToGpu()
 {
 	std::vector<std::string> files;
 
-	std::stringstream ss(m_name);
+	std::stringstream ss(m_path);
 	std::string item;
 
 	while (std::getline(ss, item, '|')) // split by '|'

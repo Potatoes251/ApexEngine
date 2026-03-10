@@ -15,3 +15,19 @@ BoxCollider& BoxCollider::operator=(BoxCollider const& other)
 
 	return *this;
 }
+
+void BoxCollider::Serialize(std::ostream& out) const
+{
+    auto size = m_halfExtents;
+
+    out << "      \"BoxCollider\": {\n";
+    out << "        \"halfExtents\": ["
+        << size[0] << ", "
+        << size[1] << ", "
+        << size[2] << "],\n";
+
+    out << "        \"isTrigger\": "
+        << (m_isTrigger ? "true" : "false") << "\n";
+
+    out << "      }";
+}

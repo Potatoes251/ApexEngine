@@ -12,7 +12,7 @@
 class Texture : public IResource
 {
 public:
-	Texture(std::string name) : m_path(name) {}
+	Texture(std::string path) : IResource(path) {}
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 
@@ -26,7 +26,6 @@ public:
 	void Bind(GLuint slot = 0);
 
 private:
-	std::string m_path;
 	GLuint		m_id		= 0;
 	int			m_channels	= 0;
 	int			m_width		= 0;

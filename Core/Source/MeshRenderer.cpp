@@ -39,3 +39,19 @@ void Apex::Rendering::MeshRenderer::Render(const Matrix4& view,
     m_shader->SetUniform("uUseTexture", 1);
     m_mesh->Draw();
 }
+
+void Apex::Rendering::MeshRenderer::Serialize(std::ostream& out) const
+{
+    out << "      \"MeshRenderer\": {\n";
+
+    if (m_mesh.IsValid() && m_mesh->GetPath().size())
+        out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
+
+    if (m_texture.IsValid() && m_texture->GetPath().size())
+        out << "        \"texture\": \"" << m_texture->GetPath() << "\",\n";
+
+    if (m_shader.IsValid() && m_shader->GetPath().size())
+        out << "        \"shader\": \"" << m_shader->GetPath() << "\"\n";
+
+    out << "      }";
+}

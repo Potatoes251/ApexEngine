@@ -1,6 +1,8 @@
 #ifndef COMPONENT
 #define COMPONENT
 
+#include <ostream>
+
 namespace Apex::Data { class Object; }
 
 namespace Apex
@@ -18,6 +20,7 @@ namespace Apex
         virtual void OnUpdate(float deltaTime) {}
         virtual void OnDestroy() {}
         virtual void OnFixedUpdate(float fixedDeltaTime) {}
+        virtual void Serialize(std::ostream& out) const {}
 
         void SetEnabled(bool enabled) { m_enabled = enabled; }
         bool IsEnabled() const { return m_enabled; }

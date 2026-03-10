@@ -61,10 +61,13 @@ bool Apex::Application::InitWindow()
 
     m_window->SetCursorCaptured(true);
 
-    m_window->SetKeyCallback([&](Key key, bool pressed)
+    m_window->SetKeyCallback([&](Key key, KeyAction action)
         {
-            if (key == Key::Escape && pressed)
+            if (key == Key::Escape && action == KeyAction::Press)
                 m_window->Close();
+
+            if (key == Key::P && action == KeyAction::Press)
+                m_scene->Save("../../../Assets/Scenes/test.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)
@@ -201,8 +204,6 @@ void Apex::Application::Tick()
     SyncPhysicsToTransforms();
     BoxCollider box({ 1,1,1 }, false);
     std::vector<HitResult> hit;
-    if (m_physics.Sweep(hit, m_camera->GetPosition(), m_camera->GetFront(), box, 1000.f)) printf("hit at %f size : %zd\r", hit[0].m_distance, hit.size());
-    else printf("no hit\r");
 
     Render();
 

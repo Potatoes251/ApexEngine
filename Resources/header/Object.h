@@ -64,6 +64,14 @@ namespace Apex::Data
 					return nullptr;
 				}
 
+				std::vector<Component*> GetComponents() const
+				{
+					std::vector<Component*> comps;
+					for (auto& c : m_components)
+						comps.push_back(c.get());
+					return comps;
+				}
+
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
