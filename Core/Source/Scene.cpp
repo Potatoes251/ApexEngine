@@ -85,7 +85,8 @@ namespace Apex::Rendering
 
 			file << "  {\n";
 			file << "    \"id\": " << obj->GetId() << ",\n";
-			file << "    \"parent\": " << parentId << ",\n";
+			file << "    \"parent\": " << (parentId == SIZE_MAX ? "null" : std::to_string(parentId)) << ",\n";
+			file << "    \"name\": \"" << obj->GetName() << "\",\n";
 			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
 			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "],\n";
 			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";

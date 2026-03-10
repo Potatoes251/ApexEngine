@@ -44,6 +44,8 @@ void Apex::Rendering::MeshRenderer::Serialize(std::ostream& out) const
 {
     out << "      \"MeshRenderer\": {\n";
 
+    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+
     if (m_mesh.IsValid() && m_mesh->GetPath().size())
         out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
 

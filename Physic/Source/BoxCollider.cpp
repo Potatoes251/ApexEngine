@@ -21,13 +21,13 @@ void BoxCollider::Serialize(std::ostream& out) const
     auto size = m_halfExtents;
 
     out << "      \"BoxCollider\": {\n";
+    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"halfExtents\": ["
         << size[0] << ", "
         << size[1] << ", "
         << size[2] << "],\n";
-
     out << "        \"isTrigger\": "
-        << (m_isTrigger ? "true" : "false") << "\n";
-
+        << (m_isTrigger ? "true" : "false") << ",\n";
+    out << "        \"material\": " << (m_material.IsValid() ? m_material->GetPath() : "null") << "\n";
     out << "      }";
 }

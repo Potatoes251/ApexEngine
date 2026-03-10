@@ -50,7 +50,7 @@ void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
 void RigidBodyComponent::Serialize(std::ostream& out) const
 {
 	out << "      \"RigidBody\": {\n";
-
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"type\": \"";
 
 	switch (m_bodyType)
@@ -61,8 +61,6 @@ void RigidBodyComponent::Serialize(std::ostream& out) const
 	}
 
 	out << "\",\n";
-
 	out << "        \"mass\": " << m_mass << "\n";
-
 	out << "      }";
 }
