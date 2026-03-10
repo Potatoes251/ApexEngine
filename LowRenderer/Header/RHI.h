@@ -64,7 +64,7 @@ namespace Apex::Rendering
 		virtual void			DeleteVAO(RHIVAOHandle vao) = 0;
 
 		// Buffers
-		virtual RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes) = 0;
+		virtual RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) = 0;
 		virtual void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) = 0;
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
@@ -87,8 +87,10 @@ namespace Apex::Rendering
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;
+		virtual void SetupVector3Layout() = 0;
 		virtual void DrawIndexed(GLsizei indexCount) = 0;
 		virtual void DrawArrays(GLsizei vertexCount) = 0;
+		virtual void DrawLineArrays(GLsizei vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
 	};
 

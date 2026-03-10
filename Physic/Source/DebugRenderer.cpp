@@ -4,10 +4,10 @@ using namespace Apex::Rendering;
 using namespace Apex::Resources;
 
 
-void DebugRenderer::Initialize(Apex::Resources::ResourceHandle<Shader> shader)
+void DebugRenderer::Initialize(Apex::Resources::ResourceHandle<Shader> shader, IRHI* rhi)
 {
 	assert(!m_instance && "DebugRenderer is already initialized!");
-	m_instance.reset(new DebugRenderer(shader));
+	m_instance.reset(new DebugRenderer(shader, rhi));
 }
 
 DebugRenderer& DebugRenderer::Get()
@@ -121,7 +121,7 @@ void DebugRenderer::AddLine(LibMath::Vector3 start, LibMath::Vector3 end)
 	m_lines.push_back(Line(start, end));
 }
 
-void DebugRenderer::DrawLines(IRHI* rhi, LibMath::Matrix4 viewProj)
+void DebugRenderer::DrawLines(LibMath::Matrix4 viewProj)
 {
 	if (m_lines.empty())
 		return;
@@ -131,14 +131,11 @@ void DebugRenderer::DrawLines(IRHI* rhi, LibMath::Matrix4 viewProj)
 	m_shader->SetUniform("uColor", { 1,0,0 });
 
 	// Upload to GPU
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_lines.size() * sizeof(Line), m_lines.data());
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	m_rhi->UpdateBuffer(m_vbo, m_lines.data(), m_lines.size() * sizeof(Line));
 
 	// Draw
-	glBindVertexArray(m_vao);
-	glDrawArrays(GL_LINES, 0, (GLsizei)(m_lines.size() * 2));
-	glBindVertexArray(0);
+	m_rhi->BindVAO(m_vao);
+	m_rhi->DrawLineArrays((m_lines.size() * 2));
 
 	// Clear for next frame
 	m_lines.clear();
@@ -146,20 +143,10 @@ void DebugRenderer::DrawLines(IRHI* rhi, LibMath::Matrix4 viewProj)
 }
 
 
-DebugRenderer::DebugRenderer(Apex::Resources::ResourceHandle<Shader> shader) : m_shader(shader)
+DebugRenderer::DebugRenderer(Apex::Resources::ResourceHandle<Shader> shader, IRHI* rhi) : m_shader(shader), m_rhi(rhi)
 {
-	glGenVertexArrays(1, &m_vao);
-	glGenBuffers(1, &m_vbo);
-
-	glBindVertexArray(m_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(LibMath::Vector3) * 250'000, nullptr, GL_DYNAMIC_DRAW); // reserve space for XXX vertices
-
-	// Position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LibMath::Vector3), (void*)0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	m_vao = m_rhi->CreateVAO();
+	m_rhi->BindVAO(m_vao);
+	m_vbo = m_rhi->CreateBuffer(BufferType::Vertex, m_lines.data(), sizeof(LibMath::Vector3) * 250'000, false);
+	m_rhi->SetupVector3Layout();
 }

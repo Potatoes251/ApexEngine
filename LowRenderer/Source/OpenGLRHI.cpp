@@ -55,12 +55,12 @@ namespace Apex::Rendering
 		}
 	}
 
-	RHIBufferHandle OpenGLRHI::CreateBuffer(BufferType type, const void* data, size_t sizeBytes) 
+	RHIBufferHandle OpenGLRHI::CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic) 
 	{
 		GLuint glBuffer;
 		glGenBuffers(1, &glBuffer);
 		glBindBuffer(GetGLBufferType(type), glBuffer);
-		glBufferData(GetGLBufferType(type), sizeBytes, data, GL_STATIC_DRAW);
+		glBufferData(GetGLBufferType(type), sizeBytes, data, isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
 		RHIBufferHandle buffer = NewHandle();
 		m_buffers[buffer] = glBuffer;
 		return buffer;
@@ -191,6 +191,12 @@ namespace Apex::Rendering
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
 	}
 
+	void OpenGLRHI::SetupVector3Layout()
+	{
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LibMath::Vector3), (void*)0);
+	}
+
 	// ── Draw ───────────────────────────────────────────────────────
 	void OpenGLRHI::DrawIndexed(GLsizei indexCount) 
 	{
@@ -200,6 +206,11 @@ namespace Apex::Rendering
 	void OpenGLRHI::DrawArrays(GLsizei vertexCount) 
 	{
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+	}
+
+	void OpenGLRHI::DrawLineArrays(GLsizei vertexCount)
+	{
+		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
 
 	void OpenGLRHI::SetDepthTest(bool enabled) 

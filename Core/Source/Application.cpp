@@ -94,7 +94,7 @@ bool Apex::Application::InitRHI()
 
 bool Apex::Application::InitRendering()
 {
-    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
+    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"), m_rhi.get());
 
     return true;
 }
@@ -107,8 +107,8 @@ bool Apex::Application::InitAudio()
     {
         m_audio->Preload("fragments of hope.ogg");
 
-        m_audio->Play2D("fragments of hope.ogg",
-            { .m_loop = true, .m_volume = 1.f });
+        //m_audio->Play2D("fragments of hope.ogg",
+        //    { .m_loop = true, .m_volume = 1.f });
     }
 
     return true;
@@ -255,7 +255,7 @@ void Apex::Application::Render()
     m_scene->Render(view, proj, m_camera->GetPosition());
 
     m_physics.DrawColliders();
-    DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);
+    DebugRenderer::Get().DrawLines(proj * view);
 
     m_resourceManager->ProcessGpuUploads();
 }

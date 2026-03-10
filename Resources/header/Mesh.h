@@ -11,6 +11,7 @@
 class Mesh : public IResource
 {
 public:
+	Mesh() = default;
 	Mesh(std::string name) : m_name(name) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;

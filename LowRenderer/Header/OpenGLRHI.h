@@ -23,7 +23,7 @@ namespace Apex::Rendering
 		void			BindVAO(RHIVAOHandle vao) override;
 		void			DeleteVAO(RHIVAOHandle vao) override;
 
-		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes) override;
+		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) override;
 		void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) override;
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
@@ -42,8 +42,10 @@ namespace Apex::Rendering
 		void SetUniformMat4(GLuint shader, const std::string& name, const LibMath::Matrix4& matrix) override;
 
 		void SetupVertexLayout() override;
+		void SetupVector3Layout() override;
 		void DrawIndexed(GLsizei indexCount) override;
 		void DrawArrays(GLsizei vertexCount) override;
+		void DrawLineArrays(GLsizei vertexCount) override;
 		void SetDepthTest(bool enabled) override;
 
 	private:
