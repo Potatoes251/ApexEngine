@@ -162,6 +162,16 @@ namespace Apex::UserInterface
 
         return Vector2(width, height);
     }
+    Vector2 ImGUIManager::GetPanelPos() 
+    { 
+        ImVec2 pos = ImGui::GetWindowPos();
+        return { pos.x, pos.y };
+    }
+    Vector2 ImGUIManager::GetPanelSize() 
+    { 
+        ImVec2 size = ImGui::GetWindowSize();
+        return { size.x, size.y };
+    }
     void ImGUIManager::EndPanel() { ImGui::End(); }
 
     void ImGUIManager::BeginChildPanel(const std::string& id,
@@ -234,7 +244,7 @@ namespace Apex::UserInterface
 
     void ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
     {
-        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         ImFont* font = m_fonts[static_cast<int>(id)];
 
@@ -245,10 +255,12 @@ namespace Apex::UserInterface
     }
     void ImGUIManager::DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner)
     {
-        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         drawList->AddImage(static_cast<ImTextureID>(textureId),
-            ImVec2(topLeftCorner[0], topLeftCorner[1]), ImVec2(bottomRightCorner[0], bottomRightCorner[1]));
+            ImVec2(topLeftCorner[0], topLeftCorner[1]),
+            ImVec2(bottomRightCorner[0], bottomRightCorner[1]), ImVec2(0, 1),
+            ImVec2(1, 0));
     }
 
     IDrawList* ImGUIManager::GetDrawList()

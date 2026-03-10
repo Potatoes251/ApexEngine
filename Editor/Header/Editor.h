@@ -37,6 +37,8 @@ namespace Apex::Editor
 		// One editor frame: make editor context current, render all panels,
 		void Render();
 
+		void Update();
+
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 

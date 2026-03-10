@@ -49,10 +49,16 @@ namespace Apex::Rendering
 
 		void SetupVertexLayout() override;
 		void SetupVector3Layout() override;
-		void DrawIndexed(int32_t indexCount) override;
-		void DrawArrays(int32_t vertexCount) override;
-		void DrawLineArrays(int32_t vertexCount) override;
+		void DrawIndexed(uint32_t indexCount) override;
+		void DrawArrays(uint32_t vertexCount) override;
+		void DrawLineArrays(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
+
+		uint32_t GetBuffer(RHIBufferHandle handle)  const;
+		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;
+		uint32_t GetVAO(RHIVAOHandle handle)		const;
+		uint32_t GetTexture(RHITextureHandle handle) const override;
+		uint32_t GetShader(RHIShaderHandle handle)  const;
 
 	private:
 		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
@@ -65,11 +71,6 @@ namespace Apex::Rendering
 
 		uint32_t NewHandle() { return m_nextHandle++; }
 
-		GLuint GetGLBuffer(RHIBufferHandle handle)  const;
-		GLuint GetGLFrameBuffer(RHIFrameBufferHandle handle)  const;
-		GLuint GetGLVAO(RHIVAOHandle handle)		const;
-		GLuint GetGLTexture(RHITextureHandle handle) const;
-		GLuint GetGLShader(RHIShaderHandle handle)  const;
 
 		static GLuint       CompileShader(const std::string& path, GLenum type);
 		static std::string  ReadFile(const std::string& path);

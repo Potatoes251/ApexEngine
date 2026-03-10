@@ -64,6 +64,7 @@ namespace Apex::Windowing
 
 		// Input
 		virtual bool			IsKeyPressed(Key key) const = 0;
+		virtual bool			IsMousButtonPressed(MouseButton key) const = 0;
 		virtual MousePosition	GetMousePosition() const = 0;
 		virtual void			SetCursorCaptured(bool captured) = 0;
 

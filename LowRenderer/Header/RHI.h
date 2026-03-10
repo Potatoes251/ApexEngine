@@ -93,10 +93,16 @@ namespace Apex::Rendering
 		// Draw
 		virtual void SetupVertexLayout() = 0;
 		virtual void SetupVector3Layout() = 0;
-		virtual void DrawIndexed(int32_t indexCount) = 0;
-		virtual void DrawArrays(int32_t vertexCount) = 0;
-		virtual void DrawLineArrays(int32_t vertexCount) = 0;
+		virtual void DrawIndexed(uint32_t indexCount) = 0;
+		virtual void DrawArrays(uint32_t vertexCount) = 0;
+		virtual void DrawLineArrays(uint32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
+
+		virtual uint32_t GetBuffer(RHIBufferHandle handle)  const = 0;
+		virtual uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const = 0;
+		virtual uint32_t GetVAO(RHIVAOHandle handle) const = 0;
+		virtual uint32_t GetTexture(RHITextureHandle handle) const = 0;
+		virtual uint32_t GetShader(RHIShaderHandle handle)  const = 0;
 	};
 
 	// Factory

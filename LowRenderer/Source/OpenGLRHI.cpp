@@ -35,11 +35,11 @@ namespace Apex::Rendering
 	}
 	void OpenGLRHI::BindVAO(RHIVAOHandle vao) 
 	{
-		glBindVertexArray(GetGLVAO(vao));
+		glBindVertexArray(GetVAO(vao));
 	}
 	void OpenGLRHI::DeleteVAO(RHIVAOHandle vao) 
 	{
-		RHIVAOHandle vaoToDelete = GetGLVAO(vao);
+		RHIVAOHandle vaoToDelete = GetVAO(vao);
 		glDeleteVertexArrays(1, &vaoToDelete);
 		m_vaos.erase(vao);
 	}
@@ -68,19 +68,19 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) 
 	{
-		GLuint glBuffer = GetGLBuffer(buffer);
+		GLuint glBuffer = GetBuffer(buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, glBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeBytes, data);
 	}
 
 	void OpenGLRHI::BindBuffer(RHIBufferHandle buffer, BufferType type) 
 	{
-		glBindBuffer(GetGLBufferType(type), GetGLBuffer(buffer));
+		glBindBuffer(GetGLBufferType(type), GetBuffer(buffer));
 	}
 
 	void OpenGLRHI::DeleteBuffer(RHIBufferHandle buffer) 
 	{
-		GLuint glBuffer = GetGLBuffer(buffer);
+		GLuint glBuffer = GetBuffer(buffer);
 		glDeleteBuffers(1, &glBuffer);
 		m_buffers.erase(buffer);
 	}
@@ -99,6 +99,11 @@ namespace Apex::Rendering
 		glBindTexture(GL_TEXTURE_2D, colorTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
 
 		// Depth
@@ -110,6 +115,7 @@ namespace Apex::Rendering
 
 		RHITextureHandle texture = NewHandle();
 		m_textures[texture] = colorTexture;
+		texture_out = texture;
 
 		RHIFrameBufferHandle fbo = NewHandle();
 		m_frameBuffers[fbo] = glFbo;
@@ -118,7 +124,7 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, GetGLFrameBuffer(buffer));
+		glBindFramebuffer(GL_FRAMEBUFFER, GetFrameBuffer(buffer));
 		glViewport(0, 0, viewportWidth, viewportHeight);
 	}
 
@@ -129,7 +135,7 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::DeleteFrameBuffer(RHIFrameBufferHandle buffer)
 	{
-		GLuint glBuffer = GetGLBuffer(buffer);
+		GLuint glBuffer = GetBuffer(buffer);
 		glDeleteFramebuffers(1, &glBuffer);
 		m_buffers.erase(buffer);
 	}
@@ -157,12 +163,12 @@ namespace Apex::Rendering
 	void OpenGLRHI::BindTexture(RHITextureHandle texture, uint32_t unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_2D, GetGLTexture(texture));
+		glBindTexture(GL_TEXTURE_2D, GetTexture(texture));
 	}
 
 	void OpenGLRHI::DeleteTexture(RHITextureHandle texture)
 	{
-		GLuint glTexture = GetGLTexture(texture);
+		GLuint glTexture = GetTexture(texture);
 		glDeleteTextures(1, &glTexture);
 		m_textures.erase(texture);
 	}
@@ -195,38 +201,38 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::BindShader(RHIShaderHandle shader)
 	{
-		glUseProgram(GetGLShader(shader));
+		glUseProgram(GetShader(shader));
 	}
 
 	void OpenGLRHI::DeleteShader(RHIShaderHandle shader)
 	{
-		glDeleteProgram(GetGLShader(shader));
+		glDeleteProgram(GetShader(shader));
 		m_shaders.erase(shader);
 	}
 
 	// ── Uniforms ─────────────────────────────────────────────────
 	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string& name, int value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
 		glUniform1i(location, value);
 	}
 
 	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
 		glUniform1f(location, value);
 	}
 
 	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
 		const LibMath::Vector3& vector = vec;
 		glUniform3f(location, vector[0], vector[1], vector[2]);
 	}
 
 	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix)
 	{
-		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
@@ -247,17 +253,17 @@ namespace Apex::Rendering
 	}
 
 	// ── Draw ───────────────────────────────────────────────────────
-	void OpenGLRHI::DrawIndexed(int32_t indexCount)
+	void OpenGLRHI::DrawIndexed(uint32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
 
-	void OpenGLRHI::DrawArrays(int32_t vertexCount)
+	void OpenGLRHI::DrawArrays(uint32_t vertexCount)
 	{
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
 
-	void OpenGLRHI::DrawLineArrays(GLsizei vertexCount)
+	void OpenGLRHI::DrawLineArrays(uint32_t vertexCount)
 	{
 		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
@@ -270,12 +276,13 @@ namespace Apex::Rendering
 			glDisable(GL_DEPTH_TEST);
 	}
 
+
 	// ── Helpers ───────────────────────────────────────────────────
-	GLuint OpenGLRHI::GetGLBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
-	GLuint OpenGLRHI::GetGLFrameBuffer(RHIFrameBufferHandle handle) const { return m_frameBuffers.at(handle); }
-	GLuint OpenGLRHI::GetGLTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
-	GLuint OpenGLRHI::GetGLShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
-	GLuint OpenGLRHI::GetGLVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }
+	uint32_t OpenGLRHI::GetBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
+	uint32_t OpenGLRHI::GetFrameBuffer(RHIFrameBufferHandle handle) const { return m_frameBuffers.at(handle); }
+	uint32_t OpenGLRHI::GetShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
+	uint32_t OpenGLRHI::GetTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
+	uint32_t OpenGLRHI::GetVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }
 
 	GLuint OpenGLRHI::CompileShader(const std::string& path, GLenum type)
 	{

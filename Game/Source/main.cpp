@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
         // Processes events for all windows — must be unconditional
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();
+        editor.Update();
         // Editor render — always runs while editor window is open.
         editor.Render();
         app->GetResourceManager()->ProcessGpuUploads();

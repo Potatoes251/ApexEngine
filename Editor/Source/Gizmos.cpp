@@ -71,11 +71,12 @@ void Gizmos::DrawTranslation(Data::Object* object)
     LibMath::Vector3 pos;
     float length = 1.0f;
     float thickness = 0.05f;
+    float handleScale = 2.f;
 
     // X axis (RED)
     {
         // cylinder
-        auto model = LibMath::Matrix4::createTransform(
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 },
             LibMath::Degree(-90),
@@ -90,7 +91,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
             pos + LibMath::Vector3(length, 0, 0),
             { 0,0,1 },
             LibMath::Degree(-90),
-            { thickness * 2, thickness * 2, thickness * 2 });
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
@@ -98,7 +99,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
     // Y axis (GREEN)
     {
-        auto model = LibMath::Matrix4::createTransform(
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, length * 0.5f, 0),
             { 1,0,0 },
             LibMath::Degree(0),
@@ -112,7 +113,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
             pos + LibMath::Vector3(0, length, 0),
             { 1,0,0 },
             LibMath::Degree(0),
-            { thickness * 2, thickness * 2, thickness * 2 });
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
@@ -120,7 +121,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
     // Z axis (BLUE)
     {
-        auto model = LibMath::Matrix4::createTransform(
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, 0, length * 0.5f),
             { 1,0,0 },
             LibMath::Degree(90),
@@ -134,7 +135,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
             pos + LibMath::Vector3(0, 0, length),
             { 1,0,0 },
             LibMath::Degree(90),
-            { thickness * 2, thickness * 2, thickness * 2 });
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
@@ -147,6 +148,79 @@ void Gizmos::DrawRotation(Data::Object* object)
 
 void Gizmos::DrawScale(Data::Object* object)
 {
+    //LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+    LibMath::Vector3 pos;
+    float length = 1.0f;
+    float thickness = 0.05f;
+    float handleScale = 2.f;
+
+    // X axis (RED)
+    {
+        // cylinder
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            { 0,0,1 },
+            LibMath::Degree(-90),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,0,0 });
+        m_cylinder.Draw();
+
+        // cone
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(length, 0, 0),
+            { 0,0,1 },
+            LibMath::Degree(-90),
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
+
+        m_shader->SetUniform("uModel", model);
+        m_cube.Draw();
+    }
+
+    // Y axis (GREEN)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            { 1,0,0 },
+            LibMath::Degree(0),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,1,0 });
+        m_cylinder.Draw();
+
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, length, 0),
+            { 1,0,0 },
+            LibMath::Degree(0),
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
+
+        m_shader->SetUniform("uModel", model);
+        m_cube.Draw();
+    }
+
+    // Z axis (BLUE)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            { 1,0,0 },
+            LibMath::Degree(90),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,0,1 });
+        m_cylinder.Draw();
+
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, length),
+            { 1,0,0 },
+            LibMath::Degree(90),
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
+
+        m_shader->SetUniform("uModel", model);
+        m_cube.Draw();
+    }
 }
 
 void Gizmos::CreateCube()

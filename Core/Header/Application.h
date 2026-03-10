@@ -48,6 +48,7 @@ namespace Apex
         void Tick();
         void LoadScene();
         void Shutdown();
+        void ProcessInput();
 
         Apex::Windowing::IWindow&   GetWindow() { return *m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -64,7 +65,6 @@ namespace Apex
         bool InitScene();
         bool InitUI();
         
-        void ProcessInput();
         void UpdateAudioListener();
         void Update();
         void SyncPhysicsToTransforms();

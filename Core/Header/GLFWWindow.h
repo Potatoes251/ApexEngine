@@ -40,6 +40,7 @@ namespace Apex::Windowing
 
 		// Input
 		bool			IsKeyPressed(Key key) const override;
+		bool			IsMousButtonPressed(MouseButton key) const override;
 		MousePosition	GetMousePosition() const override;
 		void			SetCursorCaptured(bool captured) override;
 

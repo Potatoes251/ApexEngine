@@ -30,7 +30,7 @@ namespace Apex::Editor
 	private:
 
 		Gizmos m_gizmo;
-		GizmoMode m_currentGizmoMode = GizmoMode::Translation;
+		GizmoMode m_currentGizmoMode = GizmoMode::Scale;
 		
 		Rendering::Camera m_camera;
 

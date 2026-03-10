@@ -93,6 +93,9 @@ namespace Apex::UserInterface
 
 		Vector2 GetScreenSize() override;
 
+        Vector2 GetPanelPos() override;
+        Vector2 GetPanelSize() override;
+
 		//In checkbox
 
         bool IsItemHovered() const override;

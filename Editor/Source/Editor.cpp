@@ -30,14 +30,21 @@ namespace Apex::Editor
             return false;
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
-        m_viewport = std::make_unique<Viewport>(
-            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
-            app.GetScene(), app.GetRhi(), m_gui.get());
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
                 if (m_audio && entry.m_type == AssetType::Sound)
                     m_audio->Play2D(entry.m_path.filename().string());
+            });
+
+        m_viewport = std::make_unique<Viewport>(
+            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
+            app.GetScene(), app.GetRhi(), m_gui.get());
+
+        m_window->SetMouseMoveCallback([&](double dx, double dy)
+            {
+                if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
+                    m_viewport->GetCamera().ProcessMouse(dx, dy);
             });
 
         m_window->MakeContextCurrent();
@@ -65,6 +72,20 @@ namespace Apex::Editor
         }
 
         m_window->SwapBuffers();
+    }
+
+    void Editor::Update()
+    {
+        m_window->UpdateDeltaTime();
+        m_viewport->GetCamera().ProcessKeyboard(
+            m_window->IsKeyPressed(Key::W),
+            m_window->IsKeyPressed(Key::S),
+            m_window->IsKeyPressed(Key::A),
+            m_window->IsKeyPressed(Key::D),
+            m_window->IsKeyPressed(Key::E),
+            m_window->IsKeyPressed(Key::Q),
+            m_window->GetDeltaTime()
+        );
     }
 
     void Editor::Shutdown()
