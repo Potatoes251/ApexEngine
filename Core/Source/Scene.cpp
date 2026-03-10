@@ -74,8 +74,18 @@ namespace Apex::Rendering
 			auto rot = transform.getRotation();
 			auto scale = transform.getScale();
 
+			Apex::SceneGraph::SceneNode* node = obj->GetSceneNode().get();
+
+			size_t parentId = SIZE_MAX;
+
+			if (node->GetParent())
+			{
+				parentId = node->GetParent()->GetObject()->GetId();
+			}
+
 			file << "  {\n";
 			file << "    \"id\": " << obj->GetId() << ",\n";
+			file << "    \"parent\": " << parentId << ",\n";
 			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
 			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "],\n";
 			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";

@@ -24,6 +24,7 @@ namespace Apex::SceneGraph
 
 				SceneNode*						GetParent() const;
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
+				Object*							GetObject() const;
 
 				void							AddChild(shared_ptr<SceneNode> child);
 				void							DestroyChild(SceneNode* child);

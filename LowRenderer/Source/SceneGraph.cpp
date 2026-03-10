@@ -19,6 +19,11 @@ const vector<shared_ptr<SceneNode>>& SceneNode::GetChildren() const
 	return m_children;
 }
 
+Object* Apex::SceneGraph::SceneNode::GetObject() const
+{
+	return m_object;
+}
+
 bool SceneNode::IsDescendantOf(SceneNode& otherNode)
 {
 	SceneNode* current = m_parent;
