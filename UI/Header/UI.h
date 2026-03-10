@@ -81,7 +81,7 @@ namespace Apex::UserInterface
 
         // Layout 
         virtual void Separator() = 0;
-        virtual void SameLine() = 0;
+        virtual void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) = 0;
         virtual void SetNextItemWidth(float width) = 0;
         virtual LibMath::Vector2 GetAvailableSize() const = 0;
         virtual LibMath::Vector2 GetCursorPos() const = 0;

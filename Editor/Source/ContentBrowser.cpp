@@ -31,11 +31,27 @@ namespace Apex::Editor
         {
         case AssetType::Mesh:    return PackColor(100, 180, 255);  // blue
         case AssetType::Texture: return PackColor(120, 230, 120);  // green
-        case AssetType::Sound:   return PackColor(255, 200, 80);   // amber
-        case AssetType::Level:   return PackColor(220, 120, 255);  // purple
+        case AssetType::Sound:   return PackColor(220, 120, 255);  // purple
+        case AssetType::Level:   return PackColor(255, 100, 100);  // red
         case AssetType::Folder:  return PackColor(255, 210, 100);  // gold
         default:                 return PackColor(160, 160, 160);  // grey
         }
+    }
+
+    AssetEntry ContentBrowser::ClassifyEntry(const fs::directory_entry& entry)
+    {
+        AssetEntry assetEntry;
+        assetEntry.m_path = entry.path();
+        assetEntry.m_isFolder = entry.is_directory();
+        if (assetEntry.m_isFolder)
+        {
+            assetEntry.m_type = AssetType::Folder;
+            return assetEntry;
+        }
+        std::string ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        assetEntry.m_type = ClassifyExtension(ext);
+        return assetEntry;
     }
 
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui, const fs::path& rootPath)
@@ -64,33 +80,45 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
-            AssetEntry assetEntry;
-            assetEntry.m_path = entry.path();
-            assetEntry.m_isFolder = entry.is_directory();
-
-            if (assetEntry.m_isFolder)
-            {
-                assetEntry.m_type = AssetType::Folder;
+            AssetEntry assetEntry = ClassifyEntry(entry);
+            if (assetEntry.m_isFolder) 
                 folders.push_back(assetEntry);
-            }
-            else
-            {
-                std::string ext = entry.path().extension().string();
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                assetEntry.m_type = ClassifyExtension(ext);
+            else               
                 files.push_back(assetEntry);
-            }
         }
-		// Sort folders and files separately, then concatenate (folders first).
+
         auto byName = [](const AssetEntry& a, const AssetEntry& b)
-            {
-                return a.m_path.filename() < b.m_path.filename();
-            };
+            { return a.m_path.filename() < b.m_path.filename(); };
+
         std::sort(folders.begin(), folders.end(), byName);
         std::sort(files.begin(), files.end(), byName);
 
         m_entries.insert(m_entries.end(), folders.begin(), folders.end());
         m_entries.insert(m_entries.end(), files.begin(), files.end());
+    }
+
+    void ContentBrowser::ScanSearch(const std::string& filter)
+    {
+        m_searchEntries.clear();
+
+        const fs::path& searchRoot = (m_currentPath == m_rootPath) ? m_rootPath : m_currentPath;
+
+        for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
+        {
+            if (entry.is_directory()) continue;
+
+            std::string name = entry.path().filename().string();
+            std::string low = name;
+            std::transform(low.begin(), low.end(), low.begin(), ::tolower);
+            if (low.find(filter) == std::string::npos) continue;
+
+            AssetEntry assetEntry = ClassifyEntry(entry);
+            m_searchEntries.push_back(assetEntry);
+        }
+
+        auto byName = [](const AssetEntry& a, const AssetEntry& b)
+            { return a.m_path.filename() < b.m_path.filename(); };
+        std::sort(m_searchEntries.begin(), m_searchEntries.end(), byName);
     }
 
     void ContentBrowser::Draw()
@@ -119,6 +147,9 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawToolbar()
     {
+        // Capture the Y of this toolbar line before drawing anything
+        float toolbarY = m_gui.GetCursorPos()[1];
+
         // Search box
         m_gui.SetNextItemWidth(200.f);
         m_gui.InputText("##cb_search", m_searchBuffer, sizeof(m_searchBuffer), "Search assets...");
@@ -146,14 +177,23 @@ namespace Apex::Editor
         }
 
         m_gui.SameLine();
+		m_gui.TextDisabled("Tile Size:");
+        m_gui.SameLine();
         m_gui.SetNextItemWidth(120.f);
-        m_gui.SliderFloat("Tile size", &m_tileSize, 48.f, 160.f);
+        m_gui.SliderFloat("##tilesize", &m_tileSize, 48.f, 160.f);
+        
     }
 
     void ContentBrowser::DrawBreadcrumb()
     {
+        // While searching, track the selected result's parent so the breadcrumb
+        // updates to e.g. "Assets / Sounds" when a sound result is selected.
+        fs::path displayPath = (m_searchBuffer[0] != '\0' && m_selected) ?
+             m_selected->m_path.parent_path() :
+             m_currentPath;
+
 		// Breadcrumb navigation: split current path relative to root and render each segment as a button.
-        fs::path relative = fs::relative(m_currentPath, m_rootPath.parent_path());
+        fs::path relative = fs::relative(displayPath, m_rootPath.parent_path());
         fs::path accumulated = m_rootPath.parent_path();
 
         bool first = true;
@@ -167,11 +207,12 @@ namespace Apex::Editor
                 m_gui.TextDisabled("/");
                 m_gui.SameLine();
             }
+            std::string label = first ? "Assets" : part.string();
             first = false;
 
             // Transparent button style for clickable path segment
             m_gui.PushColor(Apex::UserInterface::StyleColor::Button, { 0.f, 0.f, 0.f, 0.f });
-            if (m_gui.SmallButton(part.string()))
+            if (m_gui.SmallButton(label))
                 if (fs::is_directory(accumulated))
                     NavigateTo(accumulated);
             m_gui.PopColor();
@@ -221,26 +262,34 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawAssetGrid()
     {
+        bool searching = m_searchBuffer[0] != '\0';
+
+        if (searching)
+        {
+            std::string filter = m_searchBuffer;
+            std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
+            if (std::strncmp(m_searchBuffer, m_lastSearch, sizeof(m_searchBuffer)) != 0)
+            {
+                ScanSearch(filter);
+                std::strncpy(m_lastSearch, m_searchBuffer, sizeof(m_lastSearch));
+            }
+        }
+        else if (m_lastSearch[0] != '\0')
+        {
+            m_searchEntries.clear();
+            std::memset(m_lastSearch, 0, sizeof(m_lastSearch));
+        }
+
+        const std::vector<AssetEntry>& source = searching ? m_searchEntries : m_entries;
+
         LibMath::Vector2 availableSize = m_gui.GetAvailableSize();
         int columns = std::max(1, static_cast<int>(availableSize[0] / (m_tileSize + 16.f)));
         int col = 0;
 
-        for (auto& entry : m_entries)
+        for (auto& entry : const_cast<std::vector<AssetEntry>&>(source))
         {
-            // Search filter
-            if (m_searchBuffer[0] != '\0')
-            {
-                std::string name = entry.m_path.filename().string();
-                std::string filter = m_searchBuffer;
-                std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-                std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
-                if (name.find(filter) == std::string::npos)
-                    continue;
-            }
-
             if (col > 0 && col % columns != 0)
                 m_gui.SameLine();
-
             DrawTile(entry);
             col++;
         }

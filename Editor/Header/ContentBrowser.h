@@ -65,17 +65,21 @@ namespace Apex::Editor
 		// Internal navigation / scanning 
 		void NavigateTo(const fs::path& dir);
 		void ScanCurrentDirectory();
+		void ScanSearch(const std::string& filter);
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);
 		static const char* TypeLabel(AssetType type);
 		static uint32_t    TypeColor(AssetType type);   // returns PackColor value
+		static AssetEntry  ClassifyEntry(const fs::directory_entry& entry);
 
 		// State
 		Apex::UserInterface::IGUI& m_gui;
 		fs::path                   m_rootPath;
 		fs::path                   m_currentPath;
 		std::vector<AssetEntry>    m_entries;
+		std::vector<AssetEntry>    m_searchEntries;
+		char                       m_lastSearch[256] = {};
 
 		char   m_searchBuffer[256] = {};
 		float  m_tileSize = 80.f;

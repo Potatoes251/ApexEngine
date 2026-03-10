@@ -130,7 +130,7 @@ namespace Apex::UserInterface
     void ImGUIManager::PopColor() { ImGui::PopStyleColor(); }
 
     void ImGUIManager::Separator() { ImGui::Separator(); }
-    void ImGUIManager::SameLine() { ImGui::SameLine(); }
+    void ImGUIManager::SameLine(float offsetFromLeft, float spacing) { ImGui::SameLine(offsetFromLeft, spacing); }
     void ImGUIManager::SetNextItemWidth(float w) { ImGui::SetNextItemWidth(w); }
 
     LibMath::Vector2 ImGUIManager::GetAvailableSize() const

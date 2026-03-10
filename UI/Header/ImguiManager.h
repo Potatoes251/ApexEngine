@@ -53,7 +53,7 @@ namespace Apex::UserInterface
         void PopColor() override;
 
         void Separator() override;
-        void SameLine() override;
+        void SameLine(float offsetFromLeft, float spacing) override;
         void SetNextItemWidth(float width)  override;
         LibMath::Vector2 GetAvailableSize() const override;
         LibMath::Vector2 GetCursorPos()     const override;
