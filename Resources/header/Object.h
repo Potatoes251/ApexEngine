@@ -4,7 +4,7 @@
 #include <LibMath/Matrix/Matrix4.h>
 #include "LibMath/Transform.h"
 
-#include "../../Core/Header/Component.h"
+#include "Component.h"
 #include "../../LowRenderer/Header/SceneGraph.h"
 
 #include <vector>
@@ -40,7 +40,7 @@ namespace Apex::Data
 				template<typename T, typename... Args>
 				T& AddComponent(Args&&... args)
 				{
-					auto component = std::make_unique<T>(std::forward<Args>(args)...);
+					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
 
 					component->m_owner = this;
 
@@ -48,6 +48,20 @@ namespace Apex::Data
 					m_components.push_back(std::move(component));
 
 					return ref;
+				}
+
+				template<typename T>
+				T* GetComponent()
+				{
+					for (auto& comp : m_components)
+					{
+						T* casted = dynamic_cast<T*>(comp.get());
+
+						if (casted)
+							return casted;
+					}
+
+					return nullptr;
 				}
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }

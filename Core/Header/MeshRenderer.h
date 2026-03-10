@@ -16,13 +16,21 @@
 
 namespace Apex::Rendering
 {
-    struct MeshRenderer 
+    class MeshRenderer : public Apex::Component
     {
+    public:
+        void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
+        void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
+        void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
+
+        void Render(const LibMath::Matrix4& view,
+            const LibMath::Matrix4& projection,
+            const LibMath::Vector3& cameraPos);
+
+    private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Shader> m_shader;
         Apex::Resources::ResourceHandle<Texture> m_texture;
-
-        std::shared_ptr<Apex::Data::Object> object = std::make_shared<Apex::Data::Object>();
     };
 }
 

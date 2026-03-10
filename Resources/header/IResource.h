@@ -26,7 +26,7 @@ public:
     void            SetRhi(Apex::Rendering::IRHI* rhi) { m_rhi = rhi; }
 
 protected:
-    Apex::Rendering::IRHI* m_rhi;
+    Apex::Rendering::IRHI* m_rhi = nullptr;
     ResourceState   m_state = ResourceState::Unloaded;
 };
 

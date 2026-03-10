@@ -180,7 +180,7 @@ namespace Apex::Audio
     {
         if (m_engine)
         {
-			const std::string path = "../../Assets/Sounds/" + filePath;
+			const std::string path = "Assets/Sounds/" + filePath;
             m_engine->addSoundSourceFromFile(path.c_str());
         }
             
