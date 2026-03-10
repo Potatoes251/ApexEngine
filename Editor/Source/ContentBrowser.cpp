@@ -1,5 +1,7 @@
 #include "ContentBrowser.h"
 
+#include <iostream>
+
 namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
@@ -60,12 +62,16 @@ namespace Apex::Editor
         Refresh();
     }
 
-    void ContentBrowser::Refresh() { ScanCurrentDirectory(); }
+    void ContentBrowser::Refresh() 
+    { 
+        m_selectedPath.clear();
+        ScanCurrentDirectory(); 
+    }
 
     void ContentBrowser::NavigateTo(const fs::path& dir)
     {
         m_currentPath = fs::weakly_canonical(dir);
-        m_selected = nullptr;
+        m_selectedPath.clear();
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
     }
@@ -119,6 +125,21 @@ namespace Apex::Editor
         auto byName = [](const AssetEntry& a, const AssetEntry& b)
             { return a.m_path.filename() < b.m_path.filename(); };
         std::sort(m_searchEntries.begin(), m_searchEntries.end(), byName);
+    }
+
+    void ContentBrowser::MoveEntry(const fs::path& from, const fs::path& toDirectory)
+    {
+        if (from == toDirectory || from.parent_path() == toDirectory) return;
+
+        fs::path destination = toDirectory / from.filename();
+        
+        std::error_code error;
+        fs::rename(from, destination, error);
+        if (!error)
+        {
+            m_selectedPath.clear();
+            Refresh();
+        }
     }
 
     void ContentBrowser::Draw()
@@ -188,8 +209,8 @@ namespace Apex::Editor
     {
         // While searching, track the selected result's parent so the breadcrumb
         // updates to e.g. "Assets / Sounds" when a sound result is selected.
-        fs::path displayPath = (m_searchBuffer[0] != '\0' && m_selected) ?
-             m_selected->m_path.parent_path() :
+        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty()) ?
+             m_selectedPath.parent_path() :
              m_currentPath;
 
 		// Breadcrumb navigation: split current path relative to root and render each segment as a button.
@@ -212,7 +233,7 @@ namespace Apex::Editor
 
             // Transparent button style for clickable path segment
             m_gui.PushColor(Apex::UserInterface::StyleColor::Button, { 0.f, 0.f, 0.f, 0.f });
-            if (m_gui.SmallButton(label))
+            if (m_gui.SmallButton(part.string()))
                 if (fs::is_directory(accumulated))
                     NavigateTo(accumulated);
             m_gui.PopColor();
@@ -252,6 +273,14 @@ namespace Apex::Editor
             if (m_gui.IsItemClicked())
                 NavigateTo(entry.path());
 
+            if (m_gui.BeginDropTarget())
+            {
+                const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
+                if (data)
+                    MoveEntry(fs::path(static_cast<const char*>(data)), entry.path());
+                m_gui.EndDropTarget();
+            }
+
             if (open)
             {
                 DrawFolderTree(entry.path());
@@ -286,6 +315,8 @@ namespace Apex::Editor
         int columns = std::max(1, static_cast<int>(availableSize[0] / (m_tileSize + 16.f)));
         int col = 0;
 
+        m_pendingNavigate.clear();
+
         for (auto& entry : const_cast<std::vector<AssetEntry>&>(source))
         {
             if (col > 0 && col % columns != 0)
@@ -293,13 +324,18 @@ namespace Apex::Editor
             DrawTile(entry);
             col++;
         }
+
+        if (!m_pendingNavigate.empty())
+        {
+            NavigateTo(m_pendingNavigate);
+        }
     }
 
     void ContentBrowser::DrawTile(AssetEntry& entry)
     {
         m_gui.PushID(entry.m_path.string());
 
-        bool isSelected = (m_selected && m_selected->m_path == entry.m_path);
+        bool isSelected = (!m_selectedPath.empty() && m_selectedPath == entry.m_path);
         if (isSelected)
             m_gui.PushColor(Apex::UserInterface::StyleColor::ChildBackground,
                 { 0.26f, 0.42f, 0.60f, 0.5f });
@@ -363,14 +399,32 @@ namespace Apex::Editor
         m_gui.InvisibleButton("##btn", LibMath::Vector2(iconSize, iconSize));
 
         if (m_gui.IsItemClicked())
-            m_selected = &entry;
+            m_selectedPath = entry.m_path;
 
         if (m_gui.IsItemDoubleClicked())
         {
             if (entry.m_isFolder)
-                NavigateTo(entry.m_path);
+                m_pendingNavigate = entry.m_path;
             else if (m_onLoad)
                 m_onLoad(entry);
+        }
+
+        // Drag source — carry the full path as payload
+        if (m_gui.BeginDragSource())
+        {
+            std::string pathStr = entry.m_path.string();
+            m_gui.SetDragPayload("ASSET_PATH", pathStr.c_str(), pathStr.size() + 1);
+            m_gui.TextDisabled(entry.m_path.filename().string());
+            m_gui.EndDragSource();
+        }
+
+        // Drop target — accept other assets being dropped onto a folder tile
+        if (entry.m_isFolder && m_gui.BeginDropTarget())
+        {
+            const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
+            if (data)
+                MoveEntry(fs::path(static_cast<const char*>(data)), entry.m_path);
+            m_gui.EndDropTarget();
         }
 
         DrawContextMenu(entry);

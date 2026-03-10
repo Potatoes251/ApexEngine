@@ -225,6 +225,28 @@ namespace Apex::UserInterface
         return ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ToImGuiMouseButton(button)); 
     }
 
+    bool ImGUIManager::BeginDragSource()
+    {
+        return ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID);
+    }
+
+    void ImGUIManager::SetDragPayload(const char* type, const void* data, size_t size)
+    {
+        ImGui::SetDragDropPayload(type, data, size);
+    }
+
+    void ImGUIManager::EndDragSource() { ImGui::EndDragDropSource(); }
+
+    bool ImGUIManager::BeginDropTarget() { return ImGui::BeginDragDropTarget(); }
+
+    const void* ImGUIManager::AcceptDragPayload(const char* type)
+    {
+        const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type);
+        return payload ? payload->Data : nullptr;
+    }
+
+    void ImGUIManager::EndDropTarget() { ImGui::EndDragDropTarget(); }
+
     void ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
     {
         ImDrawList* drawList = ImGui::GetBackgroundDrawList();

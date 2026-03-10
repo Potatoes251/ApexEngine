@@ -95,6 +95,14 @@ namespace Apex::UserInterface
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
 
+		bool BeginDragSource() override;
+        void SetDragPayload(const char* type, const void* data, size_t size) override;
+		void EndDragSource() override;
+
+		bool BeginDropTarget() override;
+        const void* AcceptDragPayload(const char* type) override;
+		void EndDropTarget() override;
+
         void DrawText2D(const std::string& text, float x, float y,
                         float size, FontID id) override;
         IDrawList* GetDrawList();

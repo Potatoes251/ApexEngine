@@ -66,6 +66,7 @@ namespace Apex::Editor
 		void NavigateTo(const fs::path& dir);
 		void ScanCurrentDirectory();
 		void ScanSearch(const std::string& filter);
+		void MoveEntry(const fs::path& from, const fs::path& toDirectory);
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);
@@ -85,7 +86,8 @@ namespace Apex::Editor
 		int    m_tileSize = 120;
 		bool   m_showTree = true;
 
-		AssetEntry* m_selected = nullptr;
+		fs::path             m_selectedPath;
+		fs::path             m_pendingNavigate;
 		OnAssetLoadCallback  m_onLoad;
 	};
 }

@@ -140,6 +140,16 @@ namespace Apex::UserInterface
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
 
+        // Drag & Drop
+        // Call BeginDragSource after InvisibleButton/item — returns true if dragging.
+        virtual bool BeginDragSource() = 0;
+        virtual void SetDragPayload(const char* type, const void* data, size_t size) = 0;
+        virtual void EndDragSource() = 0;
+        // Call BeginDropTarget after any item — returns true if a drag is hovering.
+        virtual bool BeginDropTarget() = 0;
+        virtual const void* AcceptDragPayload(const char* type) = 0;
+        virtual void EndDropTarget() = 0;
+
         virtual void DrawText2D(const std::string& text, float x, float y, float size, FontID id) = 0;
 
         // Background draw list — for custom tile rendering inside panels.

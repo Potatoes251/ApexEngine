@@ -26,8 +26,6 @@ void Apex::Application::Run()
 
 bool Apex::Application::Init(Apex::Windowing::IWindow* shareContext)
 {
-    std::filesystem::current_path(std::filesystem::path(m_argv0).parent_path());
-
     std::cout << "Application Init\n";
 
     if (!InitResourceManager())     return false;
