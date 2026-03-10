@@ -154,7 +154,14 @@ namespace Apex::UserInterface
     {
         ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar);
     }
+    Vector2 ImGUIManager::GetScreenSize()
+    {
+        int width;
+        int height;
+        glfwGetWindowSize(m_window, &width, &height);
 
+        return Vector2(width, height);
+    }
     void ImGUIManager::EndPanel() { ImGui::End(); }
 
     void ImGUIManager::BeginChildPanel(const std::string& id,
@@ -235,6 +242,13 @@ namespace Apex::UserInterface
 
         drawList->AddText(font, size, ImVec2(x, y),
             IM_COL32(255, 255, 255, 255), text.c_str());
+    }
+    void ImGUIManager::DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner)
+    {
+        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+
+        drawList->AddImage(static_cast<ImTextureID>(textureId),
+            ImVec2(topLeftCorner[0], topLeftCorner[1]), ImVec2(bottomRightCorner[0], bottomRightCorner[1]));
     }
 
     IDrawList* ImGUIManager::GetDrawList()

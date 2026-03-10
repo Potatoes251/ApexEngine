@@ -3,8 +3,12 @@
 
 #include "IDrawList.h"
 #include <string>
+#include "LibMath/Vector/Vector2.h"
+
+using LibMath::Vector2;
 
 struct GLFWwindow;
+
 
 namespace Apex::UserInterface
 {
@@ -56,7 +60,7 @@ namespace Apex::UserInterface
 	class IGUI
 	{
 	public:
-        IGUI() = default;
+                 IGUI() = default;
 		virtual	~IGUI() = default;
 
         // Lifecycle
@@ -135,12 +139,15 @@ namespace Apex::UserInterface
         // Clickable invisible rectangle — used for custom tile/icon hitboxes.
         virtual bool InvisibleButton(const std::string& id, LibMath::Vector2 size) = 0;
         
+        virtual Vector2 GetScreenSize() = 0;
+
         // Query 
         virtual bool IsItemHovered() const = 0;
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
 
         virtual void DrawText2D(const std::string& text, float x, float y, float size, FontID id) = 0;
+        virtual void DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) = 0;
 
         // Background draw list — for custom tile rendering inside panels.
         // Lifetime: valid for the current frame only.
