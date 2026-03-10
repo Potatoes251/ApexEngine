@@ -39,7 +39,7 @@ namespace Apex::Editor
     }
 
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui, const fs::path& rootPath)
-        : m_gui(gui), m_rootPath(rootPath), m_currentPath(rootPath)
+        : m_gui(gui), m_rootPath(fs::weakly_canonical(rootPath)), m_currentPath(fs::weakly_canonical(rootPath))
     {
         Refresh();
     }
@@ -48,7 +48,7 @@ namespace Apex::Editor
 
     void ContentBrowser::NavigateTo(const fs::path& dir)
     {
-        m_currentPath = dir;
+        m_currentPath = fs::weakly_canonical(dir);
         m_selected = nullptr;
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
@@ -95,7 +95,7 @@ namespace Apex::Editor
 
     void ContentBrowser::Draw()
     {
-        m_gui.BeginPanel("Assets");
+        m_gui.BeginPanel("Content Browser");
 
         DrawToolbar();
         m_gui.Separator();
@@ -131,7 +131,11 @@ namespace Apex::Editor
         }
 
         m_gui.SameLine();
-        if (m_gui.SmallButton(m_showTree ? "Hide Tree" : "Show Tree"))
+        if (m_gui.SmallButton("Refresh"))
+            Refresh();
+
+        m_gui.SameLine();
+        if (m_gui.SmallButton(m_showTree ? "Hide Folder Tab" : "Show Folder Tab"))
             m_showTree = !m_showTree;
 
         if (m_currentPath != m_rootPath)
@@ -144,10 +148,6 @@ namespace Apex::Editor
         m_gui.SameLine();
         m_gui.SetNextItemWidth(120.f);
         m_gui.SliderFloat("Tile size", &m_tileSize, 48.f, 160.f);
-
-        m_gui.SameLine();
-        if (m_gui.SmallButton("Refresh"))
-            Refresh();
     }
 
     void ContentBrowser::DrawBreadcrumb()
