@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
 
     std::filesystem::path projectRoot = FindProjectRoot(exeDir);
     std::filesystem::current_path(projectRoot);
-    std::cout << "[main] working directory: " << projectRoot << "\n";
 
     Apex::Editor::Editor editor;
     if (!editor.InitWindow())

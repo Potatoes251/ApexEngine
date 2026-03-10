@@ -34,6 +34,11 @@ namespace Apex::Editor
                     m_audio->Play2D(entry.m_path.filename().string());
             });
 
+        m_window->SetExternalDropCallback(
+            [this](std::vector<std::filesystem::path> paths)
+            { OnExternalDrop(std::move(paths)); });
+
+
         return true;
     }
 
@@ -78,5 +83,23 @@ namespace Apex::Editor
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
+    }
+    void Editor::OnExternalDrop(std::vector<std::filesystem::path> paths)
+    {
+        if (!m_contentBrowser) return;
+
+        auto  mouse = m_window->GetMousePosition();
+        float mouseX = static_cast<float>(mouse.m_x);
+        float mouseY = static_cast<float>(mouse.m_y);
+
+        fs::path dest = m_contentBrowser->GetExternalDropDest(mouseX, mouseY);
+        if (!dest.empty())
+        {
+            m_contentBrowser->ImportFiles(std::move(paths), dest);
+            return;
+        }
+
+        if (m_contentBrowser->ContainsGridPoint(mouseX, mouseY))
+            m_contentBrowser->ImportFiles(std::move(paths));
     }
 }

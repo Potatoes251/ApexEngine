@@ -1,6 +1,7 @@
 ﻿#ifndef WINDOW
 #define WINDOW
 
+#include <filesystem>
 #include <functional>
 #include <string>
 
@@ -40,6 +41,7 @@ namespace Apex::Windowing
 	using MouseButtonCallback = std::function<void(MouseButton, bool)>;
 	using ScrollCallback = std::function<void(double xoffset, double yoffset)>;
 	using ResizeCallback = std::function<void(int width, int height)>;
+	using ExternalDropCallback = std::function<void(std::vector<std::filesystem::path>)>;
 
 	// ── Window interface ─────────────────────────────────────────
 	class IWindow
@@ -76,6 +78,10 @@ namespace Apex::Windowing
 
 		virtual void MakeContextCurrent() = 0;
 		virtual void* NativeHandle() const = 0;
+
+		// External drag-and-drop — fires when files are dropped onto the window
+		// from the OS file explorer. Works on Windows, macOS, and Linux via GLFW.
+		virtual void SetExternalDropCallback(ExternalDropCallback callback) = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────

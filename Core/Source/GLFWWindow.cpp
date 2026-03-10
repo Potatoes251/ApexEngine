@@ -64,6 +64,7 @@ namespace Apex::Windowing
         glfwSetMouseButtonCallback(m_window, GLFWMouseButtonCallback);
         glfwSetScrollCallback(m_window, GLFWScrollCallback);
         glfwSetFramebufferSizeCallback(m_window, GLFWResizeCallback);
+        glfwSetDropCallback(m_window, GLFWDropCallback);
 
         m_lastFrameTime = (float)glfwGetTime();
     }
@@ -155,6 +156,7 @@ namespace Apex::Windowing
 	void GLFWWindow::SetMouseButtonCallback(MouseButtonCallback callback) { m_mouseButtonCallback = callback; }
 	void GLFWWindow::SetScrollCallback(ScrollCallback callback) { m_scrollCallback = callback; }
 	void GLFWWindow::SetResizeCallback(ResizeCallback callback) { m_resizeCallback = callback; }
+	void GLFWWindow::SetExternalDropCallback(ExternalDropCallback callback) { m_dropCallback = callback; }
 
 	// ── GLFW static callback wrappers ─────────────────────────────
     void GLFWWindow::GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -209,6 +211,19 @@ namespace Apex::Windowing
                 self->m_resizeCallback(width, height);
         }
 	}
+
+    void GLFWWindow::GLFWDropCallback(GLFWwindow* window, int count, const char** paths)
+    {
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        if (!self || !self->m_dropCallback) return;
+
+        std::vector<std::filesystem::path> result;
+        result.reserve(count);
+        for (int i = 0; i < count; ++i)
+            result.emplace_back(paths[i]);
+
+        self->m_dropCallback(std::move(result));
+    }
 
     // ── Translation helpers ───────────────────────────────────────
     Key GLFWWindow::TranslateKey(int glfwKey)

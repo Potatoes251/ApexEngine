@@ -150,6 +150,18 @@ namespace Apex::UserInterface
 		ImGui::SetCursorScreenPos(ImVec2(pos[0], pos[1]));
     }
 
+    LibMath::Vector2 ImGUIManager::GetPanelPos() const
+    {
+        auto pos = ImGui::GetWindowPos();
+        return LibMath::Vector2(pos.x, pos.y);
+    }
+
+    LibMath::Vector2 ImGUIManager::GetPanelSize() const
+    {
+        auto size = ImGui::GetWindowSize();
+        return LibMath::Vector2(size.x, size.y);
+    }
+
     void ImGUIManager::BeginPanel(const std::string& title, bool* open)
     {
         ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar);

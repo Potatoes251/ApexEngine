@@ -142,6 +142,44 @@ namespace Apex::Editor
         }
     }
 
+    void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
+    {
+        const fs::path& destination = destDir.empty() ? m_currentPath : destDir;
+        bool anyChange = false;
+
+        for (const auto& src : sources)
+        {
+            std::error_code error;
+            fs::path target = destination / src.filename();
+
+            if (fs::is_directory(src))
+                fs::copy(src, target,
+                    fs::copy_options::recursive |
+                    fs::copy_options::skip_existing, error);
+            else
+                fs::copy_file(src, target,
+                    fs::copy_options::skip_existing, error);
+
+            if (error)
+                std::cerr << "[ContentBrowser] Import failed for "
+                << src << ": " << error.message() << "\n";
+            else
+                anyChange = true;
+        }
+
+        if (anyChange)
+        {
+            m_externalDropDest.clear();
+            Refresh();
+        } 
+    }
+
+    bool ContentBrowser::ContainsGridPoint(float x, float y) const
+    {
+        return x >= m_gridX && x <= m_gridX + m_gridWidth &&
+               y >= m_gridY && y <= m_gridY + m_gridHeight;
+    }
+
     void ContentBrowser::Draw()
     {
         m_gui.BeginPanel("Content Browser");
@@ -150,6 +188,8 @@ namespace Apex::Editor
         m_gui.Separator();
         DrawBreadcrumb();
         m_gui.Separator();
+
+        m_hoveredDestThisFrame.clear();
 
         if (m_showTree)
         {
@@ -160,10 +200,28 @@ namespace Apex::Editor
         }
 
         m_gui.BeginChildPanel("##cb_grid", 0.f, 0.f, false);
+        // Capture grid bounds for external drop hit-test
+        LibMath::Vector2 gridPos = m_gui.GetPanelPos();
+        LibMath::Vector2 gridSize = m_gui.GetPanelSize();
+        m_gridX = gridPos[0];  m_gridY = gridPos[1];
+        m_gridWidth = gridSize[0]; m_gridHeight = gridSize[1];
         DrawAssetGrid();
         m_gui.EndChildPanel();
 
+        if (!m_hoveredDestThisFrame.empty())
+            m_externalDropDest = m_hoveredDestThisFrame;
+
         m_gui.EndPanel();
+    }
+
+    fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
+    {
+        for (const auto& rect : m_breadcrumbRects)
+            if (mouseX >= rect.m_x && mouseX <= rect.m_x + rect.m_width && 
+                mouseY >= rect.m_y && mouseY <= rect.m_y + rect.m_height)
+                return rect.m_path;
+
+        return m_externalDropDest;
     }
 
     void ContentBrowser::DrawToolbar()
@@ -207,36 +265,70 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawBreadcrumb()
     {
-        // While searching, track the selected result's parent so the breadcrumb
-        // updates to e.g. "Assets / Sounds" when a sound result is selected.
-        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty()) ?
-             m_selectedPath.parent_path() :
-             m_currentPath;
+        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty()) ? 
+            m_selectedPath.parent_path() :
+            m_currentPath;
 
-		// Breadcrumb navigation: split current path relative to root and render each segment as a button.
         fs::path relative = fs::relative(displayPath, m_rootPath.parent_path());
         fs::path accumulated = m_rootPath.parent_path();
 
+        Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
+        constexpr uint32_t colNormal = 0xFFCCCCCC;
+        constexpr uint32_t colHovered = 0xFFFFFFFF;
+        constexpr float    padX = 4.f;
+
         bool first = true;
+        int  idx = 0;
+
+        m_breadcrumbRects.clear();
+
         for (const auto& part : relative)
         {
             accumulated /= part;
 
             if (!first)
             {
-                m_gui.SameLine();
+                m_gui.SameLine(0.f, 2.f);
                 m_gui.TextDisabled("/");
-                m_gui.SameLine();
+                m_gui.SameLine(0.f, 2.f);
             }
-            std::string label = first ? "Assets" : part.string();
+
             first = false;
 
-            // Transparent button style for clickable path segment
-            m_gui.PushColor(Apex::UserInterface::StyleColor::Button, { 0.f, 0.f, 0.f, 0.f });
-            if (m_gui.SmallButton(part.string()))
-                if (fs::is_directory(accumulated))
-                    NavigateTo(accumulated);
-            m_gui.PopColor();
+            LibMath::Vector2 textSize = drawList->CalculateTextSize(part.string());
+            float buttonWidth = textSize[0] + padX * 2.f;
+            float buttonHeight = textSize[1];
+
+            LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
+
+            if (fs::is_directory(accumulated))
+                m_breadcrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
+
+            m_gui.PushID(idx++);
+            bool clicked = m_gui.InvisibleButton("##bc", LibMath::Vector2(buttonWidth, buttonHeight));
+            bool hovered = m_gui.IsItemHovered();
+
+            uint32_t col = hovered ? colHovered : colNormal;
+            drawList->DrawText(LibMath::Vector2(buttonPos[0] + padX, buttonPos[1]), col, part.string());
+
+            if (clicked && fs::is_directory(accumulated))
+                NavigateTo(accumulated);
+
+            if (fs::is_directory(accumulated))
+            {
+                if (hovered)
+                    m_hoveredDestThisFrame = accumulated;
+
+                if (m_gui.BeginDropTarget())
+                {
+                    const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
+                    if (data)
+                        MoveEntry(fs::path(static_cast<const char*>(data)), accumulated);
+                    m_hoveredDestThisFrame = accumulated;
+                    m_gui.EndDropTarget();
+                }
+            }
+            m_gui.PopID();
         }
     }
 
@@ -248,7 +340,6 @@ namespace Apex::Editor
         {
             if (!entry.is_directory()) continue;
 
-            // Check for sub-folders to decide leaf flag
             bool hasSubDirs = false;
             for (const auto& sub : fs::directory_iterator(entry.path()))
             {
@@ -265,7 +356,6 @@ namespace Apex::Editor
             if (!hasSubDirs)                       flags = flags | TreeNodeFlags::Leaf;
             if (entry.path() == m_currentPath)     flags = flags | TreeNodeFlags::Selected;
 
-            // Gold color for folder names
             m_gui.PushColor(Apex::UserInterface::StyleColor::Text, { 1.f, 0.85f, 0.4f, 1.f });
             bool open = m_gui.BeginTreeNode(entry.path().filename().string(), flags);
             m_gui.PopColor();
@@ -273,11 +363,15 @@ namespace Apex::Editor
             if (m_gui.IsItemClicked())
                 NavigateTo(entry.path());
 
+            if (m_gui.IsItemHovered())
+                m_hoveredDestThisFrame = entry.path();
+
             if (m_gui.BeginDropTarget())
             {
                 const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
                 if (data)
                     MoveEntry(fs::path(static_cast<const char*>(data)), entry.path());
+                m_hoveredDestThisFrame = entry.path();
                 m_gui.EndDropTarget();
             }
 
@@ -391,8 +485,6 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawTileInteraction(AssetEntry& entry, LibMath::Vector2 pos, float iconSize)
     {
-        // Places an invisible button over the icon, handles click / double-click,
-        // shows the context menu, and triggers the tooltip.
         float pad = 6.f;
 
         m_gui.SetCursorPos(LibMath::Vector2(pos[0] + pad, pos[1] + pad));
@@ -409,7 +501,6 @@ namespace Apex::Editor
                 m_onLoad(entry);
         }
 
-        // Drag source — carry the full path as payload
         if (m_gui.BeginDragSource())
         {
             std::string pathStr = entry.m_path.string();
@@ -418,14 +509,16 @@ namespace Apex::Editor
             m_gui.EndDragSource();
         }
 
-        // Drop target — accept other assets being dropped onto a folder tile
         if (entry.m_isFolder && m_gui.BeginDropTarget())
         {
             const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
             if (data)
                 MoveEntry(fs::path(static_cast<const char*>(data)), entry.m_path);
+            m_hoveredDestThisFrame = entry.m_path;
             m_gui.EndDropTarget();
         }
+        else if (entry.m_isFolder && m_gui.IsItemHovered())
+            m_hoveredDestThisFrame = entry.m_path;
 
         DrawContextMenu(entry);
 

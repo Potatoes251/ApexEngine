@@ -58,6 +58,8 @@ namespace Apex::UserInterface
         LibMath::Vector2 GetAvailableSize() const override;
         LibMath::Vector2 GetCursorPos()     const override;
         void SetCursorPos(LibMath::Vector2 pos)   override;
+        LibMath::Vector2 GetPanelPos()      const override;
+        LibMath::Vector2 GetPanelSize()     const override;
 
         void BeginPanel(const std::string& title, bool* open) override;
         void EndPanel() override;

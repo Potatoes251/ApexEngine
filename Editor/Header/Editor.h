@@ -44,6 +44,7 @@ namespace Apex::Editor
 
 	private:
 		static const char* TypeToString(AssetType type);
+		void OnExternalDrop(std::vector<std::filesystem::path> paths);
 
 		Apex::Application* m_app = nullptr;
 		std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;

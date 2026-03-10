@@ -86,6 +86,8 @@ namespace Apex::UserInterface
         virtual LibMath::Vector2 GetAvailableSize() const = 0;
         virtual LibMath::Vector2 GetCursorPos() const = 0;
         virtual void SetCursorPos(LibMath::Vector2 pos) = 0;
+        virtual LibMath::Vector2 GetPanelPos()  const = 0;  // top-left of current panel in screen coords
+        virtual LibMath::Vector2 GetPanelSize() const = 0;  // size of current panel
 
         //  Panels & children 
         // BeginPanel / EndPanel - top-level named window
