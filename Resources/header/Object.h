@@ -2,12 +2,14 @@
 #define OBJECT
 
 #include <LibMath/Matrix/Matrix4.h>
+#include "LibMath/Transform.h"
 
-namespace Apex::SceneGraph { class SceneNode; }
+#include "Component.h"
+#include "../../LowRenderer/Header/SceneGraph.h"
 
-using std::shared_ptr;
-using LibMath::Matrix4;
-using Apex::SceneGraph::SceneNode;
+#include <vector>
+#include <memory>
+#include <utility>
 
 namespace Apex::Data
 {
@@ -15,20 +17,61 @@ namespace Apex::Data
 	{
 	public:
 		Object();
-		Object(const Matrix4& transform);
+		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other);
 		~Object() = default;
 
 				Object&		operator=(const Object& other) = delete;
-				Matrix4		GetTransform();
-		const	Matrix4		GetTransform() const;
-				void		SetTransform(const Matrix4& transform);
 
-		shared_ptr<SceneNode> GetNode() const { return m_owner; }
+				LibMath::Transform&		GetLocalTransform();
+		const	LibMath::Transform&		GetLocalTransform() const;
+				LibMath::Transform&		GetGlobalTransform();
+		const	LibMath::Transform&		GetGlobalTransform() const;
+
+				void		SetLocalTransform(const LibMath::Transform& transform);
+				void		SetGlobalTransform(const LibMath::Transform& transform);
+
+				void		Start();
+				void		Update(float deltaTime);
+
+				std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
+				Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
+
+				template<typename T, typename... Args>
+				T& AddComponent(Args&&... args)
+				{
+					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
+
+					component->m_owner = this;
+
+					T& ref = *component;
+					m_components.push_back(std::move(component));
+
+					return ref;
+				}
+
+				template<typename T>
+				T* GetComponent()
+				{
+					for (auto& comp : m_components)
+					{
+						T* casted = dynamic_cast<T*>(comp.get());
+
+						if (casted)
+							return casted;
+					}
+
+					return nullptr;
+				}
+
+		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
-		Matrix4					m_transform;
-		shared_ptr<SceneNode>	m_owner;
+		LibMath::Transform				m_localTransform;
+		LibMath::Transform				m_globalTransform;
+
+		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
+		std::vector<std::unique_ptr<Apex::Component>>	m_components;
 	};
 }
 

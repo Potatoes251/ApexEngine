@@ -15,8 +15,9 @@ namespace Apex::Windowing
 	class GLFWWindow final : public IWindow
 	{
 	public:
-
-		GLFWWindow(const std::string& title, int width, int height);
+		// shareContext: another GLFWwindow* whose GL context to share.
+		// Pass nullptr for the primary (game) window.
+		GLFWWindow(const std::string& title, int width, int height, GLFWwindow* shareContext = nullptr);
 		~GLFWWindow() override;
 		// Disable Copying (Rule of Three)
 		GLFWWindow(const GLFWWindow&) = delete;
@@ -24,10 +25,13 @@ namespace Apex::Windowing
 
 		// Lifecycle
 		bool ShouldClose() const override;
-		void PollEvents() override;
 		void SwapBuffers() override;
+		void Clear() override;
 		void Close() override;
-
+		void Focus() override;
+		void Maximize() override;
+		void UpdateDeltaTime() override;
+		
 		// Properties
 		int		GetWidth() const override;
 		int		GetHeight() const override;
@@ -46,11 +50,14 @@ namespace Apex::Windowing
 		void SetScrollCallback(ScrollCallback callback) override;
 		void SetResizeCallback(ResizeCallback callback) override;
 
+		void  MakeContextCurrent()   override;
+
 		// Native handle
 		void* NativeHandle() const override { return m_window; }
 
 	private:
 		GLFWwindow* m_window = nullptr;
+		bool        m_isPrimary = true;   // only primary calls glfwInit/Terminate
 		int			m_width = 0;
 		int			m_height = 0;
 		float		m_lastFrameTime = 0.0f;

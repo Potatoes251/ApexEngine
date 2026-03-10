@@ -8,6 +8,7 @@
 
 namespace Apex::UserInterface
 {
+    // Font Table
     const std::vector<FontInitializer> ImGUIManager::m_fontDefinitions = {
     { FontID::Small,   "Assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL   },
     { FontID::Default, "Assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
@@ -15,16 +16,46 @@ namespace Apex::UserInterface
     { FontID::Title,   "Assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE   },
     };
 
+    // Helpers: flag/enum translation 
+    int ImGUIManager::ToImGuiMouseButton(MouseButton button)
+    {
+        switch (button) 
+        {
+        case MouseButton::Left:   return ImGuiMouseButton_Left;
+        case MouseButton::Right:  return ImGuiMouseButton_Right;
+        case MouseButton::Middle: return ImGuiMouseButton_Middle;
+        }
+        return ImGuiMouseButton_Left;
+    }
+
+    int ImGUIManager::ToImGuiTreeFlags(TreeNodeFlags flags)
+    {
+        int out = 0;
+        if (flags & TreeNodeFlags::OpenOnArrow)    out |= ImGuiTreeNodeFlags_OpenOnArrow;
+        if (flags & TreeNodeFlags::Selected)       out |= ImGuiTreeNodeFlags_Selected;
+        if (flags & TreeNodeFlags::Leaf)           out |= ImGuiTreeNodeFlags_Leaf;
+        if (flags & TreeNodeFlags::SpanAvailWidth) out |= ImGuiTreeNodeFlags_SpanAvailWidth;
+        return out;
+    }
+
+    int ImGUIManager::ToImGuiCol(StyleColor target)
+    {
+        switch (target) 
+        {
+        case StyleColor::Text:    return ImGuiCol_Text;
+        case StyleColor::Button:  return ImGuiCol_Button;
+        case StyleColor::ChildBackground: return ImGuiCol_ChildBg;
+        }
+        return ImGuiCol_Text;
+    }
+
     IGUI* CreateGUI(void* nativeWindow)
     {
         return new ImGUIManager(static_cast<GLFWwindow*>(nativeWindow));
     }
 
     FontInitializer::FontInitializer(FontID id, const std::string& file, float fontSize) :
-        m_id(id), m_file(file), m_fontSize(fontSize) 
-    {
-    }
-
+        m_id(id), m_file(file), m_fontSize(fontSize) {}
 
     ImGUIManager::ImGUIManager(GLFWwindow* nativeWindow) :
         m_window(nativeWindow)
@@ -41,15 +72,10 @@ namespace Apex::UserInterface
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         ImGui::StyleColorsDark();
-
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
-
         LoadFonts();
     }
 
@@ -90,26 +116,44 @@ namespace Apex::UserInterface
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    bool ImGUIManager::WantCaptureMouse() const
+    bool ImGUIManager::WantCaptureMouse()    const { return ImGui::GetIO().WantCaptureMouse; }
+    bool ImGUIManager::WantCaptureKeyboard() const { return ImGui::GetIO().WantCaptureKeyboard; }
+
+    void ImGUIManager::PushID(const std::string& id) { ImGui::PushID(id.c_str()); }
+    void ImGUIManager::PushID(int id) { ImGui::PushID(id); }
+    void ImGUIManager::PopID() { ImGui::PopID(); }
+
+    void ImGUIManager::PushColor(StyleColor target, Color color)
     {
-        return ImGui::GetIO().WantCaptureMouse;
+        ImGui::PushStyleColor(ToImGuiCol(target), ImVec4(color.m_r, color.m_g, color.m_b, color.m_a));
+    }
+    void ImGUIManager::PopColor() { ImGui::PopStyleColor(); }
+
+    void ImGUIManager::Separator() { ImGui::Separator(); }
+    void ImGUIManager::SameLine(float offsetFromLeft, float spacing) { ImGui::SameLine(offsetFromLeft, spacing); }
+    void ImGUIManager::SetNextItemWidth(float w) { ImGui::SetNextItemWidth(w); }
+
+    LibMath::Vector2 ImGUIManager::GetAvailableSize() const
+    {
+        auto size = ImGui::GetContentRegionAvail();
+        return LibMath::Vector2(size.x, size.y);
     }
 
-    bool ImGUIManager::WantCaptureKeyboard() const
+    LibMath::Vector2 ImGUIManager::GetCursorPos() const
     {
-        return ImGui::GetIO().WantCaptureKeyboard;
+        auto position = ImGui::GetCursorScreenPos();
+        return LibMath::Vector2(position.x, position.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title)
+    void ImGUIManager::SetCursorPos(LibMath::Vector2 pos)
     {
-        ImGui::Begin(title.c_str());
+		ImGui::SetCursorScreenPos(ImVec2(pos[0], pos[1]));
     }
 
-    void ImGUIManager::EndPanel()
+    void ImGUIManager::BeginPanel(const std::string& title, bool* open)
     {
-        ImGui::End();
+        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar);
     }
-
     Vector2 ImGUIManager::GetScreenSize()
     {
         int width;
@@ -118,45 +162,74 @@ namespace Apex::UserInterface
 
         return Vector2(width, height);
     }
+    void ImGUIManager::EndPanel() { ImGui::End(); }
 
-    void ImGUIManager::Text(const std::string& text)
+    void ImGUIManager::BeginChildPanel(const std::string& id,
+        float width, float height, bool border)
     {
-        ImGui::TextUnformatted(text.c_str());
+        ImGui::BeginChild(id.c_str(), ImVec2(width, height), border);
     }
 
-    bool ImGUIManager::Button(const std::string& label)
+    void ImGUIManager::EndChildPanel() { ImGui::EndChild(); }
+
+    bool ImGUIManager::BeginTreeNode(const std::string& label, TreeNodeFlags flags)
     {
-        return ImGui::Button(label.c_str());
+        return ImGui::TreeNodeEx(label.c_str(), ToImGuiTreeFlags(flags));
     }
 
-    bool ImGUIManager::Checkbox(const std::string& label, bool* v)
+    void ImGUIManager::EndTreeNode() { ImGui::TreePop(); }
+
+    bool ImGUIManager::BeginContextMenu() { return ImGui::BeginPopupContextItem("##ctx"); }
+    void ImGUIManager::EndContextMenu() { ImGui::EndPopup(); }
+
+    bool ImGUIManager::MenuItem(const std::string& label, bool enabled)
     {
-        return ImGui::Checkbox(label.c_str(), v);
+        return ImGui::MenuItem(label.c_str(), nullptr, false, enabled);
     }
 
-    bool ImGUIManager::SliderFloat(const std::string& label, float* v, float min, float max)
+    void ImGUIManager::BeginTooltip() { ImGui::BeginTooltip(); }
+    void ImGUIManager::EndTooltip() { ImGui::EndTooltip(); }
+
+    void ImGUIManager::Text(const std::string& text) { ImGui::TextUnformatted(text.c_str()); }
+    void ImGUIManager::TextDisabled(const std::string& text) { ImGui::TextDisabled("%s", text.c_str()); }
+    void ImGUIManager::TextColored(Color color, const std::string& t)
     {
-        return ImGui::SliderFloat(label.c_str(), v, min, max);
+        ImGui::TextColored(ImVec4(color.m_r, color.m_g, color.m_b, color.m_a), "%s", t.c_str());
     }
 
-    bool ImGUIManager::SliderInt(const std::string& label, int* v, int min, int max)
+    bool ImGUIManager::Button(const std::string& label) { return ImGui::Button(label.c_str()); }
+    bool ImGUIManager::SmallButton(const std::string& label) { return ImGui::SmallButton(label.c_str()); }
+    bool ImGUIManager::Checkbox(const std::string& label, bool* value) { return ImGui::Checkbox(label.c_str(), value); }
+
+    bool ImGUIManager::SliderFloat(const std::string& label, float* value, float min, float max)
     {
-        return ImGui::SliderInt(label.c_str(), v, min, max);
+        return ImGui::SliderFloat(label.c_str(), value, min, max);
+    }
+    bool ImGUIManager::SliderInt(const std::string& label, int* value, int min, int max)
+    {
+        return ImGui::SliderInt(label.c_str(), value, min, max);
+    }
+    bool ImGUIManager::ColorEdit3(const std::string& label, float colors[3])
+    {
+        return ImGui::ColorEdit3(label.c_str(), colors);
     }
 
-    bool ImGUIManager::ColorEdit3(const std::string& label, float color[3])
+    bool ImGUIManager::InputText(const std::string& label, char* buffer,
+        size_t bufferSize, const std::string& hint)
     {
-        return ImGui::ColorEdit3(label.c_str(), color);
+        return ImGui::InputTextWithHint(label.c_str(), hint.c_str(), buffer, bufferSize);
     }
 
-    void ImGUIManager::Separator()
+    bool ImGUIManager::InvisibleButton(const std::string& id, LibMath::Vector2 size)
     {
-        ImGui::Separator();
+        return ImGui::InvisibleButton(id.c_str(), ImVec2(size[0], size[1]));
     }
 
-    void ImGUIManager::SameLine()
-    {
-        ImGui::SameLine();
+    bool ImGUIManager::IsItemHovered() const { return ImGui::IsItemHovered(); }
+    bool ImGUIManager::IsItemClicked(MouseButton button) const { return ImGui::IsItemClicked(ToImGuiMouseButton(button)); }
+    bool ImGUIManager::IsItemDoubleClicked(MouseButton button) const 
+    { 
+        return ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ToImGuiMouseButton(button)); 
     }
 
     void ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
@@ -176,6 +249,12 @@ namespace Apex::UserInterface
 
         drawList->AddImage(static_cast<ImTextureID>(textureId),
             ImVec2(topLeftCorner[0], topLeftCorner[1]), ImVec2(bottomRightCorner[0], bottomRightCorner[1]));
+    }
+
+    IDrawList* ImGUIManager::GetDrawList()
+    {
+        m_drawListWrapper.Reset(ImGui::GetWindowDrawList());
+        return &m_drawListWrapper;
     }
 }
 

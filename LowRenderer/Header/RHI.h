@@ -5,7 +5,6 @@
 // RHI.h — Render Hardware Interface
 // ============================================================
 
-#include <glad/glad.h>
 
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
@@ -15,12 +14,12 @@
 
 namespace Apex::Rendering
 {
-	using RHIBufferHandle = GLuint;
-	using RHIVAOHandle = GLuint;
-	using RHIShaderHandle = GLuint;
-	using RHITextureHandle = GLuint;
+	using RHIBufferHandle = uint32_t;
+	using RHIVAOHandle = uint32_t;
+	using RHIShaderHandle = uint32_t;
+	using RHITextureHandle = uint32_t;
 
-	constexpr GLuint RHI_INVALID = 0;
+	constexpr uint32_t RHI_INVALID = 0;
 
 	// ── Vertex layout ─────────────────────────────────────────────
 	struct Vertex
@@ -71,7 +70,7 @@ namespace Apex::Rendering
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
-		virtual void				BindTexture(RHITextureHandle texture, GLuint unit = 0) = 0;
+		virtual void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) = 0;
 		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
 
 		// Shaders
@@ -87,8 +86,8 @@ namespace Apex::Rendering
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;
-		virtual void DrawIndexed(GLsizei indexCount) = 0;
-		virtual void DrawArrays(GLsizei vertexCount) = 0;
+		virtual void DrawIndexed(int32_t indexCount) = 0;
+		virtual void DrawArrays(int32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
 	};
 

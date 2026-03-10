@@ -99,12 +99,9 @@ UICanvas& Apex::UserInterface::UIManager::GetCanvas()
 
 void UIManager::RenderCanvas()
 {
-	glDisable(GL_DEPTH_TEST);
 	m_gui.get()->BeginFrame();
-
 
 	m_canvas.Render(*m_gui);
 
 	m_gui.get()->EndFrame();
-	glEnable(GL_DEPTH_TEST);
 }
