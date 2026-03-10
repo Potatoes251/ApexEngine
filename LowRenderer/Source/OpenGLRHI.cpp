@@ -85,6 +85,55 @@ namespace Apex::Rendering
 		m_buffers.erase(buffer);
 	}
 
+	RHIFrameBufferHandle OpenGLRHI::CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out)
+	{
+		GLuint glFbo;
+		GLuint colorTexture;
+		GLuint depthTexture;
+
+		glGenFramebuffers(1, &glFbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, glFbo);
+
+		// Color texture
+		glGenTextures(1, &colorTexture);
+		glBindTexture(GL_TEXTURE_2D, colorTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+
+		// Depth
+		glGenTextures(1, &depthTexture);
+		glBindTexture(GL_TEXTURE_2D, depthTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+
+		RHITextureHandle texture = NewHandle();
+		m_textures[texture] = colorTexture;
+
+		RHIFrameBufferHandle fbo = NewHandle();
+		m_frameBuffers[fbo] = glFbo;
+		return fbo;
+	}
+
+	void OpenGLRHI::BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GetGLFrameBuffer(buffer));
+		glViewport(0, 0, viewportWidth, viewportHeight);
+	}
+
+	void OpenGLRHI::UnBindFrameBuffer()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void OpenGLRHI::DeleteFrameBuffer(RHIFrameBufferHandle buffer)
+	{
+		GLuint glBuffer = GetGLBuffer(buffer);
+		glDeleteFramebuffers(1, &glBuffer);
+		m_buffers.erase(buffer);
+	}
+
 	// ── Textures ─────────────────────────────────────────────────
 	RHITextureHandle OpenGLRHI::CreateTexture(const TextureDescription& desc)
 	{
@@ -223,6 +272,7 @@ namespace Apex::Rendering
 
 	// ── Helpers ───────────────────────────────────────────────────
 	GLuint OpenGLRHI::GetGLBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
+	GLuint OpenGLRHI::GetGLFrameBuffer(RHIFrameBufferHandle handle) const { return m_frameBuffers.at(handle); }
 	GLuint OpenGLRHI::GetGLTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
 	GLuint OpenGLRHI::GetGLShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
 	GLuint OpenGLRHI::GetGLVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }

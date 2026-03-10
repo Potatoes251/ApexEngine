@@ -283,6 +283,7 @@ void PhysicSystem::Update(float deltaTime_s)
 	SyncToPhysx();
 	m_scene->simulate(deltaTime_s);
 	m_scene->fetchResults(true);
+	SyncFromPhysx();
 }
 
 void PhysicSystem::SyncFromPhysx()

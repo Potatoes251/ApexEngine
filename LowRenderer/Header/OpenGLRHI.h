@@ -28,6 +28,11 @@ namespace Apex::Rendering
 		void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) override;
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
+		
+		RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) override;
+		void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) override;
+		void					UnBindFrameBuffer() override;
+		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
@@ -50,16 +55,18 @@ namespace Apex::Rendering
 		void SetDepthTest(bool enabled) override;
 
 	private:
-		std::unordered_map<RHIBufferHandle, GLuint>	 m_buffers;
-		std::unordered_map<RHIVAOHandle, GLuint>	 m_vaos;
-		std::unordered_map<RHITextureHandle, GLuint> m_textures;
-		std::unordered_map<RHIShaderHandle, GLuint>	 m_shaders;
+		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
+		std::unordered_map<RHIFrameBufferHandle, GLuint>	m_frameBuffers;
+		std::unordered_map<RHIVAOHandle, GLuint>			m_vaos;
+		std::unordered_map<RHITextureHandle, GLuint>		m_textures;
+		std::unordered_map<RHIShaderHandle, GLuint>			m_shaders;
 
 		uint32_t m_nextHandle = 1;
 
 		uint32_t NewHandle() { return m_nextHandle++; }
 
 		GLuint GetGLBuffer(RHIBufferHandle handle)  const;
+		GLuint GetGLFrameBuffer(RHIFrameBufferHandle handle)  const;
 		GLuint GetGLVAO(RHIVAOHandle handle)		const;
 		GLuint GetGLTexture(RHITextureHandle handle) const;
 		GLuint GetGLShader(RHIShaderHandle handle)  const;

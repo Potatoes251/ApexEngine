@@ -1,5 +1,8 @@
 #include "Editor.h"
 
+#include "Shader.h"
+#include "ResourceHandle.h"
+
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
 using namespace Apex::Audio;
@@ -27,12 +30,15 @@ namespace Apex::Editor
             return false;
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
+        m_viewport = std::make_unique<Viewport>(Resources::ResourceHandle<Shader>(nullptr), app.GetScene(), app.GetRhi(), m_gui.get());
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
                 if (m_audio && entry.m_type == AssetType::Sound)
                     m_audio->Play2D(entry.m_path.filename().string());
             });
+
+        m_window->MakeContextCurrent();
 
         return true;
     }
@@ -46,13 +52,13 @@ namespace Apex::Editor
     {
         if (!m_window) return;
 
-        m_window->MakeContextCurrent();
         m_window->Clear();
 
         if (m_gui && m_contentBrowser)
         {
             m_gui->BeginFrame();
             m_contentBrowser->Draw();
+            m_viewport->Draw();
             m_gui->EndFrame();
         }
 

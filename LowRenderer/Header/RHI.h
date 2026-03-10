@@ -14,6 +14,7 @@
 
 namespace Apex::Rendering
 {
+	using RHIFrameBufferHandle = uint32_t;
 	using RHIBufferHandle = uint32_t;
 	using RHIVAOHandle = uint32_t;
 	using RHIShaderHandle = uint32_t;
@@ -67,6 +68,11 @@ namespace Apex::Rendering
 		virtual void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) = 0;
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
+		
+		virtual RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) = 0;
+		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) = 0;
+		virtual void					UnBindFrameBuffer() = 0;
+		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;

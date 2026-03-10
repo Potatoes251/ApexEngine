@@ -24,19 +24,22 @@ void Apex::Application::Run()
     Shutdown();
 }
 
-bool Apex::Application::Init(Apex::Windowing::IWindow* shareContext)
+bool Apex::Application::Init(bool createWindow)
 {
     std::filesystem::current_path(std::filesystem::path(m_argv0).parent_path());
 
     std::cout << "Application Init\n";
 
-    if (!InitResourceManager())     return false;
-    if (!InitCamera())              return false;
-    if (!InitWindow(shareContext))  return false;
-    if (!InitRHI())                 return false;
-    if (!InitRendering())           return false;
-    if (!InitAudio())               return false;
-    if (!InitScene())               return false;
+    if (createWindow && !InitWindow()) return false;
+
+    if (!InitResourceManager()  
+    || !InitCamera()
+    || !InitRHI()  
+    || !InitRendering()
+    || !InitAudio()
+    || !InitScene())
+
+        return false;
 
     return true;
 }
@@ -53,9 +56,9 @@ bool Apex::Application::InitCamera()
     return true;
 }
 
-bool Apex::Application::InitWindow(Apex::Windowing::IWindow* shareContext)
+bool Apex::Application::InitWindow()
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, shareContext));
+    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, nullptr));
 
     if (!m_window)
         return false;
@@ -123,6 +126,8 @@ bool Apex::Application::InitScene()
 
 bool Apex::Application::InitUI()
 {
+    if (!m_window) return false;
+
     m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
 
     if (!m_uiManager)
@@ -201,10 +206,6 @@ void Apex::Application::Tick()
     }
 
     SyncPhysicsToTransforms();
-    BoxCollider box({ 1,1,1 }, false);
-    std::vector<HitResult> hit;
-    if (m_physics.Sweep(hit, m_camera->GetPosition(), m_camera->GetFront(), box, 1000.f)) printf("hit at %f size : %zd\r", hit[0].m_distance, hit.size());
-    else printf("no hit\r");
 
     Render();
 

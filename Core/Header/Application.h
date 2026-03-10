@@ -43,18 +43,20 @@ namespace Apex
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
-        bool Init(Apex::Windowing::IWindow* shareContext = nullptr);
+        bool Init(bool createWindow = true);
         void Run();
         void Tick();
         void LoadScene();
         void Shutdown();
 
         Apex::Windowing::IWindow& GetWindow() { return *m_window; }
+        Rendering::Scene*         GetScene() { return m_scene.get(); }
+        Rendering::IRHI*          GetRhi() { return m_rhi.get(); }
 
     private:
         bool InitResourceManager();
         bool InitCamera();
-        bool InitWindow(Apex::Windowing::IWindow* shareContext);
+        bool InitWindow();
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();

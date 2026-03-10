@@ -6,9 +6,12 @@ using namespace Apex::Rendering;
 
 Mesh::~Mesh()
 {
-	m_rhi->DeleteVAO(m_VAO);
-	m_rhi->DeleteBuffer(m_VBO);
-	m_rhi->DeleteBuffer(m_EBO);
+	if (m_rhi)
+	{
+		m_rhi->DeleteVAO(m_VAO);
+		m_rhi->DeleteBuffer(m_VBO);
+		m_rhi->DeleteBuffer(m_EBO);
+	}
 }
 
 void Mesh::LoadFromFile()

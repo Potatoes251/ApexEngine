@@ -20,9 +20,15 @@ namespace Apex::Editor
 	class Gizmos
 	{
 	public:
-		Gizmos(Resources::ResourceHandle<Shader> shader);
+		Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi);
+		Gizmos(Gizmos const&) = delete;
+		Gizmos& operator=(Gizmos const&) = delete;
+		~Gizmos();
+
 
 		void DrawGizmos(Data::Object* object, GizmoMode mode);
+
+		bool IsOnGizmo(LibMath::Vector2 pointOnScreen);
 
 	private:
 

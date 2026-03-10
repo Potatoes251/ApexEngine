@@ -11,6 +11,7 @@
 
 #include "Application.h"
 #include "ContentBrowser.h"
+#include "Viewport.h"
 
 namespace Apex::Editor
 {
@@ -51,6 +52,7 @@ namespace Apex::Editor
 		std::unique_ptr<Apex::Windowing::IWindow>  m_window;
 		std::unique_ptr<Apex::UserInterface::IGUI> m_gui;
 		std::unique_ptr<ContentBrowser>            m_contentBrowser;
+		std::unique_ptr<Viewport>				   m_viewport;
 	};
 }
 

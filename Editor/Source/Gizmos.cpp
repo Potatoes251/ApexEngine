@@ -9,12 +9,24 @@ using namespace Apex::Resources;
 using namespace Apex::Data;
 using namespace Apex::Rendering;
 
-Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader) : m_shader(shader)
+Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) : m_shader(shader)
 {
+    m_cube.SetRhi(rhi);
+    m_cone.SetRhi(rhi);
+    m_cylinder.SetRhi(rhi);
+    m_circle.SetRhi(rhi);
     CreateCube();
     CreateCone();
     CreateCircle();
     CreateCylinder();
+}
+
+Gizmos::~Gizmos()
+{
+    m_cube.SetRhi(nullptr);
+    m_cone.SetRhi(nullptr);
+    m_cylinder.SetRhi(nullptr);
+    m_circle.SetRhi(nullptr);
 }
 
 void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode)
@@ -36,6 +48,11 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode)
 		assert(false && "Unhandled gizmo mode");
 		break;
 	}
+}
+
+bool Gizmos::IsOnGizmo(LibMath::Vector2 pointOnScreen)
+{
+    return false;
 }
 
 void Gizmos::DrawTranslation(Data::Object* object)
@@ -209,7 +226,7 @@ void Gizmos::CreateCircle()
 
     for (int i = 0; i < segments; i++)
     {
-        float angle = (float)i / segments * 2.0f * 3.14159265f;
+        float angle = (float)i / segments * g_twoPi;
         float x = cos(angle) * radius;
         float z = sin(angle) * radius;
 

@@ -34,7 +34,7 @@ private:
 	uint32_t m_VAO = 0;
 	uint32_t m_VBO = 0;
 	uint32_t m_EBO = 0;
-	int32_t	m_indexCount = 0;
+	uint32_t m_indexCount = 0;
 };
 
 
