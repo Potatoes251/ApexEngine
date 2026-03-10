@@ -26,7 +26,7 @@ namespace Apex::Editor
 		~Gizmos();
 
 
-		void DrawGizmos(Data::Object* object, GizmoMode mode);
+		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj);
 
 		bool IsOnGizmo(LibMath::Vector2 pointOnScreen);
 

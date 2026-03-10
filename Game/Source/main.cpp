@@ -22,7 +22,8 @@ int main(int argc, char* argv[])
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();
         // Editor render — always runs while editor window is open.
-        editor.Render(); 
+        editor.Render();
+        app->GetResourceManager()->ProcessGpuUploads();
     }
 
     editor.Shutdown();

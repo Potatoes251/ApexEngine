@@ -49,9 +49,10 @@ namespace Apex
         void LoadScene();
         void Shutdown();
 
-        Apex::Windowing::IWindow& GetWindow() { return *m_window; }
-        Rendering::Scene*         GetScene() { return m_scene.get(); }
-        Rendering::IRHI*          GetRhi() { return m_rhi.get(); }
+        Apex::Windowing::IWindow&   GetWindow() { return *m_window; }
+        Rendering::Scene*           GetScene() { return m_scene.get(); }
+        Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
+        Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
 
     private:
         bool InitResourceManager();

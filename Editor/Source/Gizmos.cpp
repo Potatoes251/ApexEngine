@@ -19,6 +19,10 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     CreateCone();
     CreateCircle();
     CreateCylinder();
+    m_cube.UploadToGpu();
+    m_cone.UploadToGpu();
+    m_cylinder.UploadToGpu();
+    m_circle.UploadToGpu();
 }
 
 Gizmos::~Gizmos()
@@ -27,11 +31,17 @@ Gizmos::~Gizmos()
     m_cone.SetRhi(nullptr);
     m_cylinder.SetRhi(nullptr);
     m_circle.SetRhi(nullptr);
+    m_shader->SetRhi(nullptr);
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode)
+void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj)
 {
-    if (!object) return;
+    //if (!object) return;
+
+    if (!m_shader.IsReady()) return;
+
+    m_shader->Use();
+    m_shader->SetUniform("uViewProj", viewProj);
 
 	switch (mode)
 	{
@@ -57,6 +67,78 @@ bool Gizmos::IsOnGizmo(LibMath::Vector2 pointOnScreen)
 
 void Gizmos::DrawTranslation(Data::Object* object)
 {
+    //LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+    LibMath::Vector3 pos;
+    float length = 1.0f;
+    float thickness = 0.05f;
+
+    // X axis (RED)
+    {
+        // cylinder
+        auto model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            { 0,0,1 },
+            LibMath::Degree(-90),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,0,0 });
+        m_cylinder.Draw();
+
+        // cone
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(length, 0, 0),
+            { 0,0,1 },
+            LibMath::Degree(-90),
+            { thickness * 2, thickness * 2, thickness * 2 });
+
+        m_shader->SetUniform("uModel", model);
+        m_cone.Draw();
+    }
+
+    // Y axis (GREEN)
+    {
+        auto model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            { 1,0,0 },
+            LibMath::Degree(0),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,1,0 });
+        m_cylinder.Draw();
+
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, length, 0),
+            { 1,0,0 },
+            LibMath::Degree(0),
+            { thickness * 2, thickness * 2, thickness * 2 });
+
+        m_shader->SetUniform("uModel", model);
+        m_cone.Draw();
+    }
+
+    // Z axis (BLUE)
+    {
+        auto model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            { 1,0,0 },
+            LibMath::Degree(90),
+            { thickness, length, thickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,0,1 });
+        m_cylinder.Draw();
+
+        model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, length),
+            { 1,0,0 },
+            LibMath::Degree(90),
+            { thickness * 2, thickness * 2, thickness * 2 });
+
+        m_shader->SetUniform("uModel", model);
+        m_cone.Draw();
+    }
 }
 
 void Gizmos::DrawRotation(Data::Object* object)

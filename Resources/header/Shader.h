@@ -13,7 +13,7 @@ public:
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 
-	~Shader() { m_rhi->DeleteShader(m_shader); }
+	~Shader() { if (m_rhi) m_rhi->DeleteShader(m_shader); }
 
 	void UploadToGpu() override;
 

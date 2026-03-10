@@ -133,7 +133,7 @@ bool Apex::Application::InitUI()
     if (!m_uiManager)
         return false;
 
-    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default));
+    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, FontID::Default));
 
     return true;
 }

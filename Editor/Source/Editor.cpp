@@ -30,7 +30,9 @@ namespace Apex::Editor
             return false;
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
-        m_viewport = std::make_unique<Viewport>(Resources::ResourceHandle<Shader>(nullptr), app.GetScene(), app.GetRhi(), m_gui.get());
+        m_viewport = std::make_unique<Viewport>(
+            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
+            app.GetScene(), app.GetRhi(), m_gui.get());
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
@@ -69,6 +71,7 @@ namespace Apex::Editor
     {
         // Panels before IGUI backend, IGUI before window/GL context.
         m_contentBrowser.reset();
+        m_viewport.reset();
         m_gui.reset();
         m_window.reset();
     }

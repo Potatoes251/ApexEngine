@@ -19,9 +19,12 @@ void Viewport::Update()
 
 void Viewport::Draw()
 {
+	LibMath::Matrix4 view = m_camera.GetViewMatrix();
+	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);
+
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-	m_currentScene->Render(m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(m_width / m_height), m_camera.GetPosition());
-	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode);
+	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view);
+	m_currentScene->Render(view, proj, m_camera.GetPosition());
 
 	m_rhi->UnBindFrameBuffer();
 }
