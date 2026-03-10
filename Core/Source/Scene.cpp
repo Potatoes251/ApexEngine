@@ -75,6 +75,7 @@ namespace Apex::Rendering
 			auto scale = transform.getScale();
 
 			file << "  {\n";
+			file << "    \"id\": " << obj->GetId() << ",\n";
 			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
 			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "],\n";
 			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";

@@ -67,7 +67,7 @@ bool Apex::Application::InitWindow()
                 m_window->Close();
 
             if (key == Key::P && action == KeyAction::Press)
-                m_scene->Save("../../../Assets/Scenes/test.level");
+                m_scene->Save("../../../Assets/Scenes/scene.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)

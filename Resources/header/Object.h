@@ -21,6 +21,9 @@ namespace Apex::Data
 		Object(const Object& other);
 		~Object() = default;
 
+				size_t		GetId() const { return m_id; }
+				void		SetId(size_t id) { m_id = id; }
+
 				Object&		operator=(const Object& other) = delete;
 
 				LibMath::Transform&		GetLocalTransform();
@@ -75,6 +78,9 @@ namespace Apex::Data
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
+		size_t	m_id;
+		static size_t m_nextId;
+
 		LibMath::Transform				m_localTransform;
 		LibMath::Transform				m_globalTransform;
 

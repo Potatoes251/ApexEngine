@@ -5,20 +5,24 @@ using namespace Apex::Data;
 using namespace LibMath;
 using namespace Apex::SceneGraph;
 	
+size_t Apex::Data::Object::m_nextId = 0;
+
 Apex::Data::Object::Object() :
 	m_localTransform(Transform()), m_globalTransform(Transform())
 {
 	m_owner = std::make_shared<SceneNode>(this);
+	m_id = m_nextId++;
 }
 
 Object::Object(const Transform& localTransform, const Transform& globalTransform) :
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
+	m_id = m_nextId++;
 }
 
 Object::Object(const Object& other) :
-	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform) {}
+	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform), m_id(m_nextId++) {}
 
 void Object::SetLocalTransform(const Transform& transform)
 {
