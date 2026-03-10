@@ -26,15 +26,15 @@ public:
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<unsigned int>				m_indices;
 
-	GLsizei GetIndexCount()  const { return m_indexCount; }
+	int32_t GetIndexCount()  const { return m_indexCount; }
 
 private:
 	std::string m_name;
 
-	GLuint m_VAO = 0;
-	GLuint m_VBO = 0;
-	GLuint m_EBO = 0;
-	GLsizei m_indexCount = 0;
+	uint32_t m_VAO = 0;
+	uint32_t m_VBO = 0;
+	uint32_t m_EBO = 0;
+	int32_t	m_indexCount = 0;
 };
 
 
