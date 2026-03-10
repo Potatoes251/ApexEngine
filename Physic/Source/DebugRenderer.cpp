@@ -1,5 +1,7 @@
 #include "DebugRenderer.h"
 
+#include <glad/glad.h>
+
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
 

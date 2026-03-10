@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-#include <glad/glad.h>
-
 class Shader : public IResource
 {
 public:
@@ -29,7 +27,7 @@ public:
 private:
 	std::string m_name;
 
-	GLuint m_shader = 0;
+	uint32_t m_shader = 0;
 };
 
 
