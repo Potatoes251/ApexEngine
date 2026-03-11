@@ -92,6 +92,7 @@ bool Apex::Application::InitRHI()
         return false;
 
     m_resourceManager->SetRHI(m_rhi.get());
+    m_rhi->SetClearColor(0.12f, 0.12f, 0.15f);
 
     return true;
 }
@@ -250,7 +251,7 @@ void Apex::Application::SyncPhysicsToTransforms()
 
 void Apex::Application::Render()
 {
-    m_rhi->Clear(0.12f, 0.12f, 0.15f);
+    m_rhi->Clear();
 
     LibMath::Matrix4 view = m_camera->GetViewMatrix();
     LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());

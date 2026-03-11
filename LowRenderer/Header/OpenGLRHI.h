@@ -18,7 +18,8 @@ namespace Apex::Rendering
 		OpenGLRHI& operator=(const OpenGLRHI&) = delete;
 
 		void Initialize() override;
-		void Clear(float r, float g, float b, float a = 1.f) override;
+		void SetClearColor(float r, float g, float b, float a = 1.f) override;
+		void Clear() override;
 
 		RHIVAOHandle	CreateVAO() override;
 		void			BindVAO(RHIVAOHandle vao) override;
@@ -52,6 +53,7 @@ namespace Apex::Rendering
 		void DrawIndexed(uint32_t indexCount) override;
 		void DrawArrays(uint32_t vertexCount) override;
 		void DrawLineArrays(uint32_t vertexCount) override;
+		void DrawLineLoop(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
 
 		uint32_t GetBuffer(RHIBufferHandle handle)  const;

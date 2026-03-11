@@ -34,11 +34,13 @@ Gizmos::~Gizmos()
     m_shader->SetRhi(nullptr);
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj)
+void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos)
 {
-    //if (!object) return;
+    if (!object || !m_shader.IsReady()) return;
 
-    if (!m_shader.IsReady()) return;
+    float distance = viewPos.distanceFrom(object->GetGlobalTransform().getPosition());
+    // adjust the value to have a correct size
+    distance *= .1f;
 
     m_shader->Use();
     m_shader->SetUniform("uViewProj", viewProj);
@@ -46,13 +48,13 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	switch (mode)
 	{
 	case GizmoMode::Translation:
-		DrawTranslation(object);
+		DrawTranslation(object, distance);
 		break;
 	case GizmoMode::Rotation:
-		DrawRotation(object);
+		DrawRotation(object, distance);
 		break;
 	case GizmoMode::Scale:
-		DrawScale(object);
+		DrawScale(object, distance);
 		break;
 	default:
 		assert(false && "Unhandled gizmo mode");
@@ -65,17 +67,16 @@ bool Gizmos::IsOnGizmo(LibMath::Vector2 pointOnScreen)
     return false;
 }
 
-void Gizmos::DrawTranslation(Data::Object* object)
+void Gizmos::DrawTranslation(Data::Object* object, float distance)
 {
-    //LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
-    LibMath::Vector3 pos;
-    float length = 1.0f;
-    float thickness = 0.05f;
+    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+
+    float length = 1.0f * distance;
+    float thickness = 0.05f * distance;
     float handleScale = 2.f;
 
     // X axis (RED)
     {
-        // cylinder
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 },
@@ -86,7 +87,6 @@ void Gizmos::DrawTranslation(Data::Object* object)
         m_shader->SetUniform("uColor", { 1,0,0 });
         m_cylinder.Draw();
 
-        // cone
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length, 0, 0),
             { 0,0,1 },
@@ -142,21 +142,58 @@ void Gizmos::DrawTranslation(Data::Object* object)
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object)
+void Gizmos::DrawRotation(Data::Object* object, float distance)
 {
+    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+
+    // X axis (RED)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos,
+            { 0,0,1 },
+            LibMath::Degree(90),
+            LibMath::Vector3( 1, 1, 1 ) * distance);
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,0,0 });
+        m_circle.DrawLineLoop();
+    }
+    // Y axis (GREEN)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos,
+            { 0,1,0 },
+            LibMath::Degree(0),
+            LibMath::Vector3(1, 1, 1) * distance);
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,1,0 });
+        m_circle.DrawLineLoop();
+    }
+    // Z axis (BLUE)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos,
+            { 1,0,0 },
+            LibMath::Degree(-90),
+            LibMath::Vector3(1, 1, 1) * distance);
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,0,1 });
+        m_circle.DrawLineLoop();
+    }
 }
 
-void Gizmos::DrawScale(Data::Object* object)
+void Gizmos::DrawScale(Data::Object* object, float distance)
 {
-    //LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
-    LibMath::Vector3 pos;
-    float length = 1.0f;
-    float thickness = 0.05f;
+    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+
+    float length = 1.0f * distance;
+    float thickness = 0.05f * distance;
     float handleScale = 2.f;
 
     // X axis (RED)
     {
-        // cylinder
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 },
@@ -167,7 +204,6 @@ void Gizmos::DrawScale(Data::Object* object)
         m_shader->SetUniform("uColor", { 1,0,0 });
         m_cylinder.Draw();
 
-        // cone
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length, 0, 0),
             { 0,0,1 },

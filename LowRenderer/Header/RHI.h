@@ -56,7 +56,8 @@ namespace Apex::Rendering
 		virtual ~IRHI() = default;
 
 		virtual void Initialize() = 0;
-		virtual void Clear(float r, float g, float b, float a = 1.f) = 0;
+		virtual void SetClearColor(float r, float g, float b, float a = 1.f) = 0;
+		virtual void Clear() = 0;
 
 		// VAO
 		virtual RHIVAOHandle	CreateVAO() = 0;
@@ -96,6 +97,7 @@ namespace Apex::Rendering
 		virtual void DrawIndexed(uint32_t indexCount) = 0;
 		virtual void DrawArrays(uint32_t vertexCount) = 0;
 		virtual void DrawLineArrays(uint32_t vertexCount) = 0;
+		virtual void DrawLineLoop(uint32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
 
 		virtual uint32_t GetBuffer(RHIBufferHandle handle)  const = 0;

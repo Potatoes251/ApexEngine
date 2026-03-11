@@ -27,6 +27,8 @@ namespace Apex::Rendering
 			const LibMath::Matrix4& projection,
 			const LibMath::Vector3& cameraPosition);
 		
+		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
+
 	private:
 		std::vector<std::unique_ptr<Object>> m_objects;
 	};

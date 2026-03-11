@@ -26,15 +26,15 @@ namespace Apex::Editor
 		~Gizmos();
 
 
-		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj);
+		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos);
 
 		bool IsOnGizmo(LibMath::Vector2 pointOnScreen);
 
 	private:
 
-		void DrawTranslation(Data::Object* object);
-		void DrawRotation(Data::Object* object);
-		void DrawScale(Data::Object* object);
+		void DrawTranslation(Data::Object* object, float distance);
+		void DrawRotation(Data::Object* object, float distance);
+		void DrawScale(Data::Object* object, float distance);
 
 		// load basic shape
 		void CreateCube();

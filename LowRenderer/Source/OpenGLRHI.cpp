@@ -18,9 +18,13 @@ namespace Apex::Rendering
 	{
 		glEnable(GL_DEPTH_TEST);
 	}
-	void OpenGLRHI::Clear(float r, float g, float b, float a)
+	void OpenGLRHI::SetClearColor(float r, float g, float b, float a)
 	{
 		glClearColor(r, g, b, a);
+
+	}
+	void OpenGLRHI::Clear()
+	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -266,6 +270,11 @@ namespace Apex::Rendering
 	void OpenGLRHI::DrawLineArrays(uint32_t vertexCount)
 	{
 		glDrawArrays(GL_LINES, 0, vertexCount);
+	}
+
+	void OpenGLRHI::DrawLineLoop(uint32_t vertexCount)
+	{
+		glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
 	}
 
 	void OpenGLRHI::SetDepthTest(bool enabled) 

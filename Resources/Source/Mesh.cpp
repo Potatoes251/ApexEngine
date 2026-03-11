@@ -49,3 +49,9 @@ void Mesh::Draw() const
 	m_rhi->BindVAO(m_VAO);
 	m_rhi->DrawIndexed(m_indexCount);
 }
+
+void Mesh::DrawLineLoop() const
+{
+	m_rhi->BindVAO(m_VAO);
+	m_rhi->DrawLineLoop(m_vertices.size());
+}

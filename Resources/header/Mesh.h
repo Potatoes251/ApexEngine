@@ -22,6 +22,7 @@ public:
 	void UploadToGpu() override;
 
 	void Draw() const;
+	void DrawLineLoop() const;
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<unsigned int>				m_indices;
