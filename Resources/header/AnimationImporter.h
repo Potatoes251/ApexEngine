@@ -4,6 +4,7 @@
 #include <string>
 #include "Animation.h"
 #include <fbxsdk.h>
+#include <mutex>
 
 using std::string; 
 
@@ -14,6 +15,9 @@ public:
 	~AnimationImporter() = default;
 
 	void Import(string path, Animation& animation);
+	void ProcessNode(FbxNode* node, Animation& animation, FbxTime start, double frameCount);
+
+	static FbxManager* m_manager;
 
 private:
 };
