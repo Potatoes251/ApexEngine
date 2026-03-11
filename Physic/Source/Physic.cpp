@@ -697,7 +697,7 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 	physx::PxCookingParams params(scale);
 
 	physx::PxDefaultMemoryOutputStream writeBuffer;
-
+	std::cout << "vertices: " << mesh->m_vertices.size() << std::endl;
 	if (!PxCookConvexMesh(params, meshDesc, writeBuffer))
 	{
 		assert(false && "Convex mesh cooking failed");

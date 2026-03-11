@@ -34,7 +34,7 @@ void MeshCollider::Serialize(std::ostream& out) const
     out << "        \"isTrigger\": "
         << (m_isTrigger ? "true" : "false") << ",\n";
 
-    out << "        \"material\": " << (m_material.IsValid() ? m_material->GetPath() : "null") << "\n";
+    out << "        \"material\": " << (m_material.IsValid() ? "\"" + m_material->GetPath() + "\"" : "null") << "\n";
 
     out << "      }";
 }

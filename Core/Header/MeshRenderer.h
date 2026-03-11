@@ -23,6 +23,10 @@ namespace Apex::Rendering
         void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
         void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
 
+        Apex::Resources::ResourceHandle<Mesh>& GetMesh();
+        Apex::Resources::ResourceHandle<Texture>& GetTexture();
+        Apex::Resources::ResourceHandle<Shader>& GetShader();
+
         void Render(const LibMath::Matrix4& view,
             const LibMath::Matrix4& projection,
             const LibMath::Vector3& cameraPos);

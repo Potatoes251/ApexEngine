@@ -134,17 +134,17 @@ void SceneNode::Destroy()
 	m_children.clear();	//all descandantes are also Destroyed
 }
 
-void SceneNode::SetParent(SceneNode& newParent)
+void SceneNode::SetParent(SceneNode* newParent)
 {
-	if (m_parent == &newParent	||	//No move to origine place
-		&newParent == this		||	//No move to itself
-		IsDescendantOf(newParent))	//No loop descendance
+	if (m_parent == newParent	||	//No move to origine place
+		newParent == this		||	//No move to itself
+		IsDescendantOf(*newParent))	//No loop descendance
 	{
 		return;
 	}
 
 	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
-	newParent.AddChild(self);
+	newParent->AddChild(self);
 	MarkDirty();
 }
 

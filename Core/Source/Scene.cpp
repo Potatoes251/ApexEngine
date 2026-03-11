@@ -24,6 +24,11 @@ namespace Apex::Rendering
 		m_objects.push_back(std::move(obj));
 		return ptr;
 	}
+
+	const std::vector<std::unique_ptr<Object>>& Scene::GetObjects() const
+	{
+		return m_objects;
+	}
 	
 	void Scene::Update(float deltaTime)
 	{
@@ -88,7 +93,7 @@ namespace Apex::Rendering
 			file << "    \"parent\": " << (parentId == SIZE_MAX ? "null" : std::to_string(parentId)) << ",\n";
 			file << "    \"name\": \"" << obj->GetName() << "\",\n";
 			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
-			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "],\n";
+			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "," << rot[3] << "],\n";
 			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";
 
 			file << "    \"components\": {\n";

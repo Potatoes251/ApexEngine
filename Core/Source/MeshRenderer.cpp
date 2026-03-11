@@ -18,6 +18,21 @@ void Apex::Rendering::MeshRenderer::SetShader(ResourceHandle<Shader>& shader)
     m_shader = shader;
 }
 
+Apex::Resources::ResourceHandle<Mesh>& Apex::Rendering::MeshRenderer::GetMesh()
+{
+    return m_mesh;
+}
+
+Apex::Resources::ResourceHandle<Texture>& Apex::Rendering::MeshRenderer::GetTexture()
+{
+    return m_texture;
+}
+
+Apex::Resources::ResourceHandle<Shader>& Apex::Rendering::MeshRenderer::GetShader()
+{
+    return m_shader;
+}
+
 void Apex::Rendering::MeshRenderer::Render(const Matrix4& view,
     const Matrix4& projection,
     const Vector3& cameraPos)

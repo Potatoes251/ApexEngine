@@ -2,6 +2,8 @@
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
 
+#include "SceneLoader.h"
+
 #include <chrono>
 #include <iostream>
 
@@ -12,6 +14,7 @@ using namespace Apex::Audio;
 using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
+using namespace Apex::Serialization;
 
 void Apex::Application::Run()
 {
@@ -137,44 +140,51 @@ bool Apex::Application::InitUI()
 
 void Apex::Application::LoadScene()
 {
-    Apex::Resources::ResourceHandle<Shader> m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
-    Apex::Resources::ResourceHandle<Mesh> m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
-    Apex::Resources::ResourceHandle<Mesh> m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    Apex::Resources::ResourceHandle<Texture> m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
-    Apex::Resources::ResourceHandle<Texture> m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
+    SceneLoader loader(*m_resourceManager.get());
+    loader.LoadScene(*m_scene, "../../../Assets/Scenes/scene.level");
 
-    auto obj = m_scene->CreateObject();
+    bool ready = false;
 
-    auto& renderer = obj->AddComponent<MeshRenderer>();
-    renderer.SetMesh(m_sphere);
-    renderer.SetTexture(m_texture);
-    renderer.SetShader(m_shader);
+    while (!ready)
+    {
+        ready = true;
 
-    auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
-    body.SetPosition({ 0,10,0 });
+        for (auto& objPtr : m_scene->GetObjects())
+        {
+            Object* obj = objPtr.get();
 
-    auto obj2 = m_scene->CreateObject();
+            if (auto* renderer = obj->GetComponent<MeshRenderer>())
+            {
+                if (!renderer->GetMesh().IsReady())
+                    ready = false;
 
-    auto& renderer2 = obj2->AddComponent<MeshRenderer>();
-    renderer2.SetMesh(m_cube);
-    renderer2.SetTexture(m_texture2);
-    renderer2.SetShader(m_shader);
+                if (!renderer->GetTexture().IsReady())
+                    ready = false;
 
-    auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
-    body2.SetPosition({ 0,0,0 });
+                if (!renderer->GetShader().IsReady())
+                    ready = false;
+            }
 
-    auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex, false);
-    auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f }, false);
+            if (auto* collider = obj->GetComponent<MeshCollider>())
+            {
+                if (!collider->GetMesh().IsReady())
+                    ready = false;
+            }
+        }
 
-    while (!m_sphere.IsReady() ||
-        !m_cube.IsReady() ||
-        !m_texture.IsReady() ||
-        !m_texture2.IsReady() ||
-        !m_shader.IsReady())
         m_resourceManager->ProcessGpuUploads();
+    }
 
-    m_physics.CreateActor(collider, body);
-    m_physics.CreateActor(collider2, body2);
+    for (auto& objPtr : m_scene->GetObjects())
+    {
+        Object* obj = objPtr.get();
+
+        auto* body = obj->GetComponent<RigidBodyComponent>();
+        auto* collider = obj->GetComponent<Collider>();
+
+        if (body && collider)
+            m_physics.CreateActor(*collider, *body);
+    }
 }
 
 void Apex::Application::Shutdown()
