@@ -47,6 +47,15 @@ namespace Apex::Editor
                     m_viewport->GetCamera().ProcessMouse(dx, dy);
             });
 
+        m_window->SetMouseButtonCallback([&](Windowing::MouseButton button, bool press)
+            {
+                if (button == Windowing::MouseButton::Left && press)
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseClick(pos.m_x, pos.m_y);
+                }
+            });
+
         m_window->MakeContextCurrent();
 
         return true;

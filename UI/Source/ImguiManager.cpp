@@ -235,6 +235,7 @@ namespace Apex::UserInterface
         return ImGui::InvisibleButton(id.c_str(), ImVec2(size[0], size[1]));
     }
 
+    bool ImGUIManager::IsWindowHovered() const { return ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows); }
     bool ImGUIManager::IsItemHovered() const { return ImGui::IsItemHovered(); }
     bool ImGUIManager::IsItemClicked(MouseButton button) const { return ImGui::IsItemClicked(ToImGuiMouseButton(button)); }
     bool ImGUIManager::IsItemDoubleClicked(MouseButton button) const 

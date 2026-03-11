@@ -34,6 +34,7 @@ namespace Apex::Rendering
 		void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) override;
 		void					UnBindFrameBuffer() override;
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
+		int						GetPixelData(int x, int y) override;
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;

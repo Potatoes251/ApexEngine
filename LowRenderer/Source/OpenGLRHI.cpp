@@ -101,7 +101,7 @@ namespace Apex::Rendering
 		// Color texture
 		glGenTextures(1, &colorTexture);
 		glBindTexture(GL_TEXTURE_2D, colorTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -142,6 +142,14 @@ namespace Apex::Rendering
 		GLuint glBuffer = GetBuffer(buffer);
 		glDeleteFramebuffers(1, &glBuffer);
 		m_buffers.erase(buffer);
+	}
+
+	int OpenGLRHI::GetPixelData(int x, int y)
+	{
+		GLubyte pixel[4];
+		glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+		return (int(pixel[0]) << 16) | (int(pixel[1]) << 8) | int(pixel[2]);
 	}
 
 	// ── Textures ─────────────────────────────────────────────────

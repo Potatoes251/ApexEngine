@@ -3,6 +3,7 @@
 
 #include "MeshRenderer.h"
 #include "RHI.h"
+#include "RenderPassInfo.h"
 
 #include "ResourceManager.h"
 #include "Object.h"
@@ -23,9 +24,7 @@ namespace Apex::Rendering
 		Object* CreateObject();
 
 		void Update(float deltaTime);
-		void Render(const LibMath::Matrix4& view,
-			const LibMath::Matrix4& projection,
-			const LibMath::Vector3& cameraPosition);
+		void Render(RenderPassInfo passInfo);
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 

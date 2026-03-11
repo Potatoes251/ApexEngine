@@ -74,6 +74,7 @@ namespace Apex::Rendering
 		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) = 0;
 		virtual void					UnBindFrameBuffer() = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
+		virtual int						GetPixelData(int x, int y) = 0;
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;

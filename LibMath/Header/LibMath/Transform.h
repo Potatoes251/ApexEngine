@@ -28,6 +28,9 @@ namespace LibMath
 
 		operator Matrix4() const;
 
+		// parent * child
+		Transform operator*(Transform const& other) const;
+
 	private:
 		Quaternion m_rotation = Quaternion(0, 0, 0, 1);
 		Vector3 m_position = Vector3(0);

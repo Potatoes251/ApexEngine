@@ -98,6 +98,7 @@ namespace Apex::UserInterface
 
 		//In checkbox
 
+        bool IsWindowHovered() const override;
         bool IsItemHovered() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;

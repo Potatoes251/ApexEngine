@@ -145,6 +145,7 @@ namespace Apex::UserInterface
         virtual Vector2 GetPanelSize() = 0;
 
         // Query 
+        virtual bool IsWindowHovered() const = 0;
         virtual bool IsItemHovered() const = 0;
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;

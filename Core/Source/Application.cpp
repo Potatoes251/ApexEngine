@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
+#include "RenderPassInfo.h"
 
 #include <chrono>
 #include <iostream>
@@ -253,10 +254,14 @@ void Apex::Application::Render()
 {
     m_rhi->Clear();
 
+    RenderPassInfo pass;
+    pass.m_aspectRatio = m_window->GetAspectRatio();
+    pass.m_camera = m_camera.get();
+
+    m_scene->Render(pass);
+
     LibMath::Matrix4 view = m_camera->GetViewMatrix();
     LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
-
-    m_scene->Render(view, proj, m_camera->GetPosition());
 
     m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(proj * view);

@@ -25,12 +25,14 @@ namespace Apex::Editor
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
 		void				Update();
+		void				OnMouseClick(int mouseX, int mouseY);
 		void				Draw();
 
 	private:
+		int					GetMousePixelInFbo(int mouseX, int mouseY);
 
 		Gizmos m_gizmo;
-		GizmoMode m_currentGizmoMode = GizmoMode::Scale;
+		GizmoMode m_currentGizmoMode = GizmoMode::Translation;
 		
 		Rendering::Camera m_camera;
 
@@ -40,11 +42,18 @@ namespace Apex::Editor
 		Rendering::Scene* m_currentScene = nullptr;
 		Rendering::IRHI* m_rhi = nullptr;
 
+		LibMath::Vector2 m_panelPos;
+		LibMath::Vector2 m_panelSize;
+
+		Resources::ResourceHandle<Shader> m_shader;
+
 		Rendering::RHIFrameBufferHandle m_fbo;
-		Rendering::RHITextureHandle m_texture;
+		Rendering::RHITextureHandle m_textureFbo;
 
 		float m_width = 1280;
 		float m_height = 720;
+
+		bool m_isHovered = false;
 	};
 }
 
