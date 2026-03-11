@@ -170,7 +170,8 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             }
             else 
             {
-                auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger);
+                std::string matPath = parser.ParseString();
+                auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger, GetPhysMatHandle(matPath));
                 comp.SetEnabled(enabled);
             }
         }
@@ -203,7 +204,8 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             }
             else
             {
-                auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger);
+                std::string matPath = parser.ParseString();
+                auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, GetPhysMatHandle(matPath));
                 comp.SetEnabled(enabled);
             }
         }
@@ -260,6 +262,16 @@ Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetSha
     if (!handle.IsValid())
     {
         handle = m_resourceManager.CreateAsync<Shader>(path);
+    }
+    return handle;
+}
+
+Apex::Resources::ResourceHandle<PhysicMaterial> Apex::Serialization::SceneLoader::GetPhysMatHandle(const std::string& path)
+{
+    auto handle = m_resourceManager.Get<PhysicMaterial>(path);
+    if (!handle.IsValid())
+    {
+        handle = m_resourceManager.CreateAsync<PhysicMaterial>(path);
     }
     return handle;
 }

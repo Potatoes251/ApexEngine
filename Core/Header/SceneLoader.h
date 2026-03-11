@@ -35,6 +35,7 @@ namespace Apex::Serialization
         Apex::Resources::ResourceHandle<Mesh> GetMeshHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Texture> GetTextureHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);
+        Apex::Resources::ResourceHandle<PhysicMaterial> GetPhysMatHandle(const std::string& path);
     };
 }
 
