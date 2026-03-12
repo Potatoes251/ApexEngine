@@ -8,34 +8,54 @@
 namespace Apex::Windowing 
 {
 	// ── Factory ─────────────────────────────────────────────────
-	IWindow* CreateWindow(const std::string& title, int width, int height)
+	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext)
 	{
-		return new GLFWWindow(title, width, height);
+        GLFWwindow* share = shareContext ?
+             static_cast<GLFWwindow*>(shareContext->NativeHandle()) :
+             nullptr;
+        return new GLFWWindow(title, width, height, share);
 	}
 
-    // ── Constructor ──────────────────────────────────────────────
-    GLFWWindow::GLFWWindow(const std::string& title, int width, int height)
-        : m_width(width), m_height(height)
+    void PollAllEvents()
     {
-        if (!glfwInit())
-			std::cout << "Failed to initialize GLFW" << std::endl;
+        glfwPollEvents();
+    }
+
+    void MakeContextCurrent(IWindow& window)
+    {
+        glfwMakeContextCurrent(static_cast<GLFWwindow*>(window.NativeHandle()));
+    }
+
+    // ── Constructor ──────────────────────────────────────────────
+    GLFWWindow::GLFWWindow(const std::string& title, int width, int height, GLFWwindow* shareContext)
+        : m_width(width), m_height(height), m_isPrimary(shareContext == nullptr)
+    {
+        if (m_isPrimary)
+        {
+            if (!glfwInit())
+                std::cout << "Failed to initialize GLFW" << std::endl;
+        }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, shareContext);
         if (!m_window) 
         {
-            glfwTerminate();
+            if (m_isPrimary) glfwTerminate();
             std::cout << "Failed to create GLFW window" << std::endl;
+            return;
         }
 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1);
 
-        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-			std::cout << "Failed to initialize GLAD" << std::endl;
+        if (m_isPrimary)
+        {
+            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+                std::cout << "Failed to initialize GLAD" << std::endl;
+        }
 
         // Store pointer for static callbacks
         glfwSetWindowUserPointer(m_window, this);
@@ -50,22 +70,29 @@ namespace Apex::Windowing
 
     GLFWWindow::~GLFWWindow() 
     {
-        if (m_window) glfwDestroyWindow(m_window);
-        glfwTerminate();
+        if (m_window)     glfwDestroyWindow(m_window);
+        if (m_isPrimary)  glfwTerminate();
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
-    bool  GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
-    void  GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
-    void  GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
+    void GLFWWindow::MakeContextCurrent() { glfwMakeContextCurrent(m_window); }
+    bool GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
+    void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
+    void GLFWWindow::Clear()
+    {
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+    void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
+    void GLFWWindow::Focus() { glfwFocusWindow(m_window); }
+    void GLFWWindow::Maximize() { glfwMaximizeWindow(m_window); }
 
-    void GLFWWindow::PollEvents() 
+    void GLFWWindow::UpdateDeltaTime()
     {
         float currentTime = (float)glfwGetTime();
         m_deltaTime = currentTime - m_lastFrameTime;
         m_lastFrameTime = currentTime;
-        glfwPollEvents();
-	}
+    }
 
 	// ── Properties ───────────────────────────────────────────────
 	int GLFWWindow::GetWidth() const { return m_width; }

@@ -3,30 +3,27 @@
 
 #include "IResource.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <string>
 #include <vector>
 
 class Texture : public IResource
 {
 public:
-	Texture(std::string path) : IResource(path) {}
+	Texture(std::string name) : IResource(name) {}
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 
 	~Texture() { m_rhi->DeleteTexture(m_id); }
 
-	GLuint GetId() const { return m_id; }
+	uint32_t GetId() const { return m_id; }
 
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
-	void Bind(GLuint slot = 0);
+	void Bind(uint32_t slot = 0);
 
 private:
-	GLuint		m_id		= 0;
+	uint32_t	m_id		= 0;
 	int			m_channels	= 0;
 	int			m_width		= 0;
 	int			m_height	= 0;

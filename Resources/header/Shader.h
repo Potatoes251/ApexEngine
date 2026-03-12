@@ -6,12 +6,10 @@
 #include <string>
 #include <vector>
 
-#include <glad/glad.h>
-
 class Shader : public IResource
 {
 public:
-	Shader(std::string path) : IResource(path) {}
+	Shader(std::string name) : IResource(name) {}
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 
@@ -27,7 +25,9 @@ public:
 	void SetUniform(std::string const& name, LibMath::Matrix4 const& value);
 
 private:
-	GLuint m_shader = 0;
+	std::string m_name;
+
+	uint32_t m_shader = 0;
 };
 
 

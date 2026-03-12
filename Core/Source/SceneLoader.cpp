@@ -122,6 +122,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto a = GetMeshHandle(mesh);
             auto b = GetTextureHandle(texture);
             auto c = GetShaderHandle(shader);
+            
             comp.SetMesh(a);
             comp.SetTexture(b);
             comp.SetShader(c);

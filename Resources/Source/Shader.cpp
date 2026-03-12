@@ -19,6 +19,7 @@ void Shader::UploadToGpu()
 	{
 		files.push_back(item);
 	}
+
 	if (files.size() != 2)
 	{
 		m_shader = RHI_INVALID;
