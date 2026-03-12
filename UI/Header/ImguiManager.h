@@ -44,6 +44,8 @@ namespace Apex::UserInterface
 
         bool WantCaptureMouse() const override;
         bool WantCaptureKeyboard() const override;
+        bool IsKeyPressed(UIKey key) const override;
+        bool IsPanelFocused() const override;
 
         void PushID(const std::string& id) override;
         void PushID(int id) override;
@@ -99,6 +101,7 @@ namespace Apex::UserInterface
         bool IsItemHovered() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
+        bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
 
 		bool BeginDragSource() override;
         void SetDragPayload(const char* type, const void* data, size_t size) override;

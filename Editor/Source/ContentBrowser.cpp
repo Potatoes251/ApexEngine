@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using namespace Apex::UserInterface;
+
 namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
@@ -152,6 +154,20 @@ namespace Apex::Editor
         m_gui.OpenPopup("##add_menu");
     }
 
+    void ContentBrowser::DeleteSelected()
+    {
+        if (m_selectedPath.empty()) return;
+
+        std::error_code error;
+        if (fs::is_directory(m_selectedPath))
+            fs::remove_all(m_selectedPath, error);
+        else
+            fs::remove(m_selectedPath, error);
+
+        m_selectedPath.clear();
+        Refresh();
+    }
+
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
     {
         const fs::path& destination = destDir.empty() ? m_currentPath : destDir;
@@ -221,6 +237,15 @@ namespace Apex::Editor
 
         if (!m_hoveredDestThisFrame.empty())
             m_externalDropDest = m_hoveredDestThisFrame;
+
+        if (!m_selectedPath.empty() && m_gui.IsPanelFocused())
+        {
+            if (m_gui.IsKeyPressed(UIKey::Delete) ||
+                m_gui.IsKeyPressed(UIKey::Backspace))
+            {
+                DeleteSelected();
+            }
+        }
 
         m_gui.EndPanel();
     }

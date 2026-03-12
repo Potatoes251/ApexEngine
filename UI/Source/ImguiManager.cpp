@@ -49,6 +49,28 @@ namespace Apex::UserInterface
         return ImGuiCol_Text;
     }
 
+    static ImGuiKey ToImGuiKey(UIKey key)
+    {
+        switch (key)
+        {
+        case UIKey::Delete:    return ImGuiKey_Delete;
+        case UIKey::Backspace: return ImGuiKey_Backspace;
+        case UIKey::Enter:     return ImGuiKey_Enter;
+        case UIKey::Escape:    return ImGuiKey_Escape;
+        case UIKey::Tab:       return ImGuiKey_Tab;
+        case UIKey::Space:     return ImGuiKey_Space;
+        case UIKey::A:         return ImGuiKey_A;
+        case UIKey::C:         return ImGuiKey_C;
+        case UIKey::V:         return ImGuiKey_V;
+        case UIKey::X:         return ImGuiKey_X;
+        case UIKey::Z:         return ImGuiKey_Z;
+        case UIKey::Y:         return ImGuiKey_Y;
+        case UIKey::F2:        return ImGuiKey_F2;
+        case UIKey::F5:        return ImGuiKey_F5;
+        default:               return ImGuiKey_None;
+        }
+    }
+
     IGUI* CreateGUI(void* nativeWindow)
     {
         return new ImGUIManager(static_cast<GLFWwindow*>(nativeWindow));
@@ -118,6 +140,16 @@ namespace Apex::UserInterface
 
     bool ImGUIManager::WantCaptureMouse()    const { return ImGui::GetIO().WantCaptureMouse; }
     bool ImGUIManager::WantCaptureKeyboard() const { return ImGui::GetIO().WantCaptureKeyboard; }
+
+    bool ImGUIManager::IsKeyPressed(UIKey key) const
+    {
+        return ImGui::IsKeyPressed(ToImGuiKey(key));
+    }
+
+    bool ImGUIManager::IsPanelFocused() const
+    {
+        return ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+    }
 
     void ImGUIManager::PushID(const std::string& id) { ImGui::PushID(id.c_str()); }
     void ImGUIManager::PushID(int id) { ImGui::PushID(id); }
@@ -239,6 +271,11 @@ namespace Apex::UserInterface
     bool ImGUIManager::IsItemDoubleClicked(MouseButton button) const 
     { 
         return ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ToImGuiMouseButton(button)); 
+    }
+
+    bool ImGUIManager::IsMouseReleased(MouseButton button) const
+    {
+        return ImGui::IsMouseReleased(ToImGuiMouseButton(button));
     }
 
     bool ImGUIManager::BeginDragSource()

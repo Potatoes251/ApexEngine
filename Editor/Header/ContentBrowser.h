@@ -84,6 +84,7 @@ namespace Apex::Editor
 		void ScanSearch(const std::string& filter);
 		void MoveEntry(const fs::path& from, const fs::path& toDirectory);
 		void OnAddButtonClicked();
+		void DeleteSelected();
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);

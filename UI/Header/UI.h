@@ -53,6 +53,21 @@ namespace Apex::UserInterface
     // Style color targets
     enum class StyleColor { Text, Button, ChildBackground };
 
+    // Keys usable in UI panels (ImGui-layer input, not gameplay input).
+    // Add entries here as new shortcuts are needed.
+    enum class UIKey
+    {
+        Delete,
+        Backspace,
+        Enter,
+        Escape,
+        Tab,
+        Space,
+        A, C, V, X, Z, Y,    // common editing shortcuts
+        F2,                  // rename
+        F5,                  // refresh
+    };
+
 	class IGUI
 	{
 	public:
@@ -69,6 +84,8 @@ namespace Apex::UserInterface
         // Input Passthrough
         virtual bool WantCaptureMouse()    const = 0;
         virtual bool WantCaptureKeyboard() const = 0;
+        virtual bool IsKeyPressed(UIKey key) const = 0;
+        virtual bool IsPanelFocused() const = 0;
 
         // ID stack (for list items, tiles…)
         virtual void PushID(const std::string& id) = 0;
@@ -146,6 +163,7 @@ namespace Apex::UserInterface
         virtual bool IsItemHovered() const = 0;
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
+        virtual bool IsMouseReleased(MouseButton button = MouseButton::Left) const = 0;
 
         // Drag & Drop
         // Call BeginDragSource after InvisibleButton/item — returns true if dragging.
