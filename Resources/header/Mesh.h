@@ -4,9 +4,14 @@
 #include "IResource.h"
 
 #include "LibMath/Vector.h"
+#include "LibMath/Matrix/Matrix4.h"
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+
+using LibMath::Matrix4;
+using std::unordered_map;
 
 class Mesh : public IResource
 {
@@ -26,6 +31,9 @@ public:
 	std::vector<unsigned int>				m_indices;
 
 	GLsizei GetIndexCount()  const { return m_indexCount; }
+
+	std::vector<Matrix4>			m_bones;		//offsetMatrix | inverse bind pose
+ 	unordered_map<std::string, int> m_boneMap;
 
 private:
 	std::string m_name;

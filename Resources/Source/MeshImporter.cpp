@@ -133,3 +133,89 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
         }
     }
 }
+
+void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
+{
+    int skinCount = fbxMesh->GetDeformerCount(FbxDeformer::eSkin);
+
+    for (int i = 0; i < skinCount; i++)
+    {
+        FbxSkin* skin = static_cast<FbxSkin*>(fbxMesh->GetDeformer(i, FbxDeformer::eSkin));
+
+        int clusterCount = skin->GetClusterCount();
+
+        for (int j = 0; j < clusterCount; j++)
+        {
+            FbxCluster* cluster = skin->GetCluster(j);
+            FbxNode*    boneNode = cluster->GetLink();
+
+            if (!boneNode) continue;
+
+            std::string boneName = boneNode->GetName();
+
+            int boneIndex = 0;
+
+            if (mesh.m_boneMap.find(boneName) == mesh.m_boneMap.end())
+            {
+                boneIndex = static_cast<int>(mesh.m_bones.size());
+
+                mesh.m_boneMap[boneName] = boneIndex;
+
+                Matrix4     bone;
+
+                FbxAMatrix  offsetMatrix;
+                cluster->GetTransformLinkMatrix(offsetMatrix);
+
+                bone = ConvertFBXMatrix(offsetMatrix);
+
+                mesh.m_bones.push_back(bone);
+            }
+            else
+            {
+                boneIndex = mesh.m_boneMap[boneName];
+            }
+
+            int*    controlPointIndices = cluster->GetControlPointIndices();
+            double* weights             = cluster->GetControlPointWeights();
+            int     indexCount          = cluster->GetControlPointIndicesCount();
+
+            for (int k = 0; k < indexCount; k++)
+            {
+                int     ctrlIndex = controlPointIndices[k];
+                double  weight = weights[k];
+
+                AddBoneWeight(mesh, ctrlIndex, boneIndex, static_cast<float>(weight));
+            }
+        }
+    }
+}
+
+void MeshImporter::AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight)
+{
+    Apex::Rendering::Vertex& vertex = mesh.m_vertices[vertexID];
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (vertex.m_weights[i] == 0.0f)
+        {
+            vertex.m_boneIDs[i] = boneID;
+            vertex.m_weights[i] = weight;
+            return;
+        }
+    }
+}
+
+Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
+{
+    Matrix4 result;
+
+    for (int row = 0; row < 4; row++)
+    {
+        for (int col = 0; col < 4; col++)
+        {
+            result[row][col] = static_cast<float>(mat.Get(row, col));
+        }
+    }
+
+    return result;
+}
