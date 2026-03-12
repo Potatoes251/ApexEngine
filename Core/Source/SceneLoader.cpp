@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <cassert>
 
 using namespace Apex::Serialization;
 using namespace Apex::Physic;
@@ -16,7 +17,7 @@ using namespace Apex::Physic;
 void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& path)
 {
     std::ifstream file(path);
-    if (!file) throw std::runtime_error("Cannot open scene file");
+    assert(file && "Cannot open scene file");
 
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -25,19 +26,35 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
     SerialParser parser(text);
 
     parser.Expect('{');
-    parser.ParseString(); // "objects"
-    parser.Expect(':');
-    parser.Expect('[');
 
-    while (!parser.Peek(']'))
+    while (!parser.Peek('}'))
     {
-        ParseObject(scene, parser);
+        std::string category = parser.ParseString();
+        parser.Expect(':');
+
+        if (category == "materials")
+        {
+            ParseMaterials(parser);
+        }
+        else if (category == "objects")
+        {
+            parser.Expect('[');
+
+            while (!parser.Peek(']'))
+            {
+                ParseObject(scene, parser);
+
+                if (parser.Peek(','))
+                    parser.Expect(',');
+            }
+
+            parser.Expect(']');
+        }
 
         if (parser.Peek(','))
             parser.Expect(',');
     }
 
-    parser.Expect(']');
     parser.Expect('}');
 }
 
@@ -164,46 +181,15 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
 
-            auto material = PhysMatHandle();
+            PhysMatHandle material;
 
             if (!parser.Match("null"))
             {
-                parser.Expect('{');
+                size_t id = parser.ParseInt();
+                auto it = m_materials.find(id);
+                assert(it != m_materials.end() && "Material id not found");
 
-                size_t id = SIZE_MAX;
-                float staticFriction = 0.5f;
-                float dynamicFriction = 0.5f;
-                float bounciness = 0.f;
-
-                while (!parser.Peek('}'))
-                {
-                    std::string key = parser.ParseString();
-                    parser.Expect(':');
-
-                    if (key == "id")
-                    {
-                        id = parser.ParseInt();
-                    }
-                    else if (key == "static friction")
-                    {
-                        staticFriction = parser.ParseFloat();
-                    }
-                    else if (key == "dynamic friction")
-                    {
-                        dynamicFriction = parser.ParseFloat();
-                    }
-                    else if (key == "bounciness")
-                    {
-                        bounciness = parser.ParseFloat();
-                    }
-
-                    if (parser.Peek(','))
-                        parser.Expect(',');
-                }
-
-                parser.Expect('}');
-
-                material = m_physics.CreateMaterial(std::to_string(id), staticFriction, dynamicFriction, bounciness);
+                material = it->second;
             }
 
             auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger, material);
@@ -231,46 +217,15 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
 
-            auto material = PhysMatHandle();
+            PhysMatHandle material;
 
             if (!parser.Match("null"))
             {
-                parser.Expect('{');
+                size_t id = parser.ParseInt();
+                auto it = m_materials.find(id);
+                assert(it != m_materials.end() && "Material id not found");
 
-                size_t id = SIZE_MAX;
-                float staticFriction = 0.5f;
-                float dynamicFriction = 0.5f;
-                float bounciness = 0.f;
-
-                while (!parser.Peek('}'))
-                {
-                    std::string key = parser.ParseString();
-                    parser.Expect(':');
-
-                    if (key == "id")
-                    {
-                        id = parser.ParseInt();
-                    }
-                    else if (key == "static friction")
-                    {
-                        staticFriction = parser.ParseFloat();
-                    }
-                    else if (key == "dynamic friction")
-                    {
-                        dynamicFriction = parser.ParseFloat();
-                    }
-                    else if (key == "bounciness")
-                    {
-                        bounciness = parser.ParseFloat();
-                    }
-
-                    if (parser.Peek(','))
-                        parser.Expect(',');
-                }
-
-                parser.Expect('}');
-
-                material = m_physics.CreateMaterial(std::to_string(id), staticFriction, dynamicFriction, bounciness);
+                material = it->second;
             }
 
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
@@ -286,13 +241,66 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
     parser.Expect('}'); // "components" category end
 }
 
+void SceneLoader::ParseMaterials(SerialParser& parser)
+{
+    parser.Expect('[');
+
+    while (!parser.Peek(']'))
+    {
+        parser.Expect('{');
+
+        size_t id = 0;
+        float staticFriction = 0.5f;
+        float dynamicFriction = 0.5f;
+        float bounciness = 0.f;
+
+        while (!parser.Peek('}'))
+        {
+            std::string key = parser.ParseString();
+            parser.Expect(':');
+
+            if (key == "id")
+                id = parser.ParseInt();
+
+            else if (key == "static friction")
+                staticFriction = parser.ParseFloat();
+
+            else if (key == "dynamic friction")
+                dynamicFriction = parser.ParseFloat();
+
+            else if (key == "bounciness")
+                bounciness = parser.ParseFloat();
+
+            if (parser.Peek(','))
+                parser.Expect(',');
+        }
+
+        parser.Expect('}');
+
+        auto material = m_physics.CreateMaterial(
+            std::to_string(id),
+            staticFriction,
+            dynamicFriction,
+            bounciness
+        );
+
+        m_materials[id] = material;
+
+        if (parser.Peek(','))
+            parser.Expect(',');
+    }
+
+    parser.Expect(']');
+}
+
 Apex::Physic::BodyType SceneLoader::StringToBodyType(const std::string& str)
 {
     if (str == "Static")   return Apex::Physic::BodyType::Static;
     if (str == "Dynamic")  return Apex::Physic::BodyType::Dynamic;
     if (str == "Kinematic") return Apex::Physic::BodyType::Kinematic;
 
-    throw std::runtime_error("Invalid BodyType string: " + str);
+    assert(false && "Invalid BodyType string");
+    return Apex::Physic::BodyType::Static; // fallback
 }
 
 Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::string& str)
@@ -300,35 +308,24 @@ Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::
     if (str == "Convex") return Apex::Physic::MeshColliderType::Convex;
     if (str == "Triangle")   return Apex::Physic::MeshColliderType::Triangle;
 
-    throw std::runtime_error("Invalid MeshColliderType string: " + str);
+    assert(false && "Invalid MeshColliderType string");
+    return Apex::Physic::MeshColliderType::Convex; // fallback
 }
 
 Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.Get<Mesh>(path);
-    if (!handle.IsValid())
-    {
-        handle = m_resourceManager.CreateAsync<Mesh>(path);
-    }
+    auto handle = m_resourceManager.CreateAsync<Mesh>(path);
     return handle;
 }
 
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.Get<Texture>(path);
-    if (!handle.IsValid())
-    {
-        handle = m_resourceManager.CreateAsync<Texture>(path);
-    }
+    auto handle = m_resourceManager.CreateAsync<Texture>(path);
     return handle;
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.Get<Shader>(path);
-    if (!handle.IsValid())
-    {
-        handle = m_resourceManager.CreateAsync<Shader>(path);
-    }
+    auto handle = m_resourceManager.CreateAsync<Shader>(path);
     return handle;
 }

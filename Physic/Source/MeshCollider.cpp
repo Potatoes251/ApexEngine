@@ -38,11 +38,7 @@ void MeshCollider::Serialize(std::ostream& out) const
     
     if (m_material.IsValid())
     {
-        out << "{\n" <<
-            "          \"id\": " << m_material->GetId() << ", \n" <<
-            "          \"static friction\": " << m_material->GetStaticFriction() << ", \n" <<
-            "          \"dynamic friction\": " << m_material->GetDynamicFriction() << ", \n" <<
-            "          \"bounciness\": " << m_material->GetBounciness() << "\n" << "          }\n";
+        out << m_material->GetId() << "\n";
     }  
     else
     {

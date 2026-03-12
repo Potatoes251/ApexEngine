@@ -1,4 +1,12 @@
 {
+"materials": [
+  {
+    "id": 0,
+    "static friction": 0.500000,
+    "dynamic friction": 0.500000,
+    "bounciness": 1.000000
+  }
+],
 "objects": [
   {
     "id": 0,
@@ -24,12 +32,7 @@
         "mesh": "Assets/Meshes/sphere.obj",
         "type": "Convex",
         "isTrigger": false,
-        "material": {
-          "id": 0, 
-          "static friction": 0.500000, 
-          "dynamic friction": 0.500000, 
-          "bounciness": 0.200000
-          }
+        "material": 0
       }
     }
   },

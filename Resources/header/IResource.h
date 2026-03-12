@@ -23,7 +23,7 @@ public:
     // Perform GPU part
     virtual void UploadToGpu() {}
 
-    virtual const std::string& GetPath() const { return m_path; }
+    const std::string& GetPath() const { return m_path; }
 
     ResourceState   GetState() const { return m_state; }
     void            SetState(ResourceState state) { m_state = state; }

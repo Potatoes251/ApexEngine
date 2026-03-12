@@ -12,6 +12,8 @@
 #include "Physic.h"
 
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 class Scene;
 
@@ -27,9 +29,11 @@ namespace Apex::Serialization
     private:
         Apex::Resources::ResourceManager& m_resourceManager;
         Apex::Physic::PhysicSystem& m_physics;
+        std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
 
         Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
+        void ParseMaterials(SerialParser& parser);
 
         Apex::Physic::BodyType StringToBodyType(const std::string& str);
         Apex::Physic::MeshColliderType StringToMeshColliderType(const std::string& str);

@@ -147,6 +147,11 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 	}
 }
 
+const std::unordered_map<std::string, ResourceEntry>& PhysicSystem::GetMaterials() const
+{
+	return m_materialsMap;
+}
+
 bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
 {
 	physx::PxRaycastBuffer hit;

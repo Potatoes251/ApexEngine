@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include "Shader.h"
 
-#include "../../Physic/Header/Rigidbody.h"
+#include "Rigidbody.h"
 #include "BoxCollider.h"
 
 #include <fstream>
@@ -48,18 +48,13 @@ namespace Apex::Rendering
 		}
 	}
 
-	void Scene::Save(const std::string& path)
+	void Scene::Save(const std::string& path, Apex::Physic::PhysicSystem& phys)
 	{
 		std::ofstream file(path);
 
 		if (!file)
 		{
-			std::cout << "File failed to open\n";
-		}
-
-		if (!file.is_open())
-		{
-			std::cout << "Failed to save scene\n";
+			std::cout << "Failed to open file\n";
 			return;
 		}
 
@@ -67,6 +62,35 @@ namespace Apex::Rendering
 		file << std::setprecision(6);
 
 		file << "{\n";
+
+		file << "\"materials\": [\n";
+
+		auto& materials = phys.GetMaterials();
+
+		bool first = true;
+
+		for (auto const& [name, entry] : materials)
+		{
+			auto* material = dynamic_cast<PhysicMaterial*>(entry.m_resource.get());
+			if (!material)
+				continue;
+
+			if (!first)
+				file << ",\n";
+
+			first = false;
+
+			file <<
+				"  {\n"
+				"    \"id\": " << material->GetId() << ",\n"
+				"    \"static friction\": " << material->GetStaticFriction() << ",\n"
+				"    \"dynamic friction\": " << material->GetDynamicFriction() << ",\n"
+				"    \"bounciness\": " << material->GetBounciness() << "\n"
+				"  }";
+		}
+
+		file << "\n],\n";
+
 		file << "\"objects\": [\n";
 
 		for (size_t i = 0; i < m_objects.size(); i++)
@@ -98,15 +122,15 @@ namespace Apex::Rendering
 
 			file << "    \"components\": {\n";
 
-			bool first = true;
+			bool firstComponent = true;
 
 			for (auto* component : obj->GetComponents())
 			{
-				if (!first)
+				if (!firstComponent)
 					file << ",\n";
 
 				component->Serialize(file);
-				first = false;
+				firstComponent = false;
 			}
 
 			file << "\n    }\n";
