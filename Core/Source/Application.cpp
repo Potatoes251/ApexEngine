@@ -140,7 +140,7 @@ bool Apex::Application::InitUI()
 
 void Apex::Application::LoadScene()
 {
-    SceneLoader loader(*m_resourceManager.get());
+    SceneLoader loader(*m_resourceManager.get(), m_physics);
     loader.LoadScene(*m_scene, "../../../Assets/Scenes/scene.level");
 
     bool ready = false;

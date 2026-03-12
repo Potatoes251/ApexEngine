@@ -163,17 +163,50 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
 
-            if (parser.Match("null")) 
+            auto material = PhysMatHandle();
+
+            if (!parser.Match("null"))
             {
-                auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger);
-                comp.SetEnabled(enabled);
+                parser.Expect('{');
+
+                size_t id = SIZE_MAX;
+                float staticFriction = 0.5f;
+                float dynamicFriction = 0.5f;
+                float bounciness = 0.f;
+
+                while (!parser.Peek('}'))
+                {
+                    std::string key = parser.ParseString();
+                    parser.Expect(':');
+
+                    if (key == "id")
+                    {
+                        id = parser.ParseInt();
+                    }
+                    else if (key == "static friction")
+                    {
+                        staticFriction = parser.ParseFloat();
+                    }
+                    else if (key == "dynamic friction")
+                    {
+                        dynamicFriction = parser.ParseFloat();
+                    }
+                    else if (key == "bounciness")
+                    {
+                        bounciness = parser.ParseFloat();
+                    }
+
+                    if (parser.Peek(','))
+                        parser.Expect(',');
+                }
+
+                parser.Expect('}');
+
+                material = m_physics.CreateMaterial(std::to_string(id), staticFriction, dynamicFriction, bounciness);
             }
-            else 
-            {
-                std::string matPath = parser.ParseString();
-                auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger, GetPhysMatHandle(matPath));
-                comp.SetEnabled(enabled);
-            }
+
+            auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger, material);
+            comp.SetEnabled(enabled);
         }
 
         else if (compName == "BoxCollider")
@@ -197,17 +230,50 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
 
-            if (parser.Match("null"))
+            auto material = PhysMatHandle();
+
+            if (!parser.Match("null"))
             {
-                auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger);
-                comp.SetEnabled(enabled);
+                parser.Expect('{');
+
+                size_t id = SIZE_MAX;
+                float staticFriction = 0.5f;
+                float dynamicFriction = 0.5f;
+                float bounciness = 0.f;
+
+                while (!parser.Peek('}'))
+                {
+                    std::string key = parser.ParseString();
+                    parser.Expect(':');
+
+                    if (key == "id")
+                    {
+                        id = parser.ParseInt();
+                    }
+                    else if (key == "static friction")
+                    {
+                        staticFriction = parser.ParseFloat();
+                    }
+                    else if (key == "dynamic friction")
+                    {
+                        dynamicFriction = parser.ParseFloat();
+                    }
+                    else if (key == "bounciness")
+                    {
+                        bounciness = parser.ParseFloat();
+                    }
+
+                    if (parser.Peek(','))
+                        parser.Expect(',');
+                }
+
+                parser.Expect('}');
+
+                material = m_physics.CreateMaterial(std::to_string(id), staticFriction, dynamicFriction, bounciness);
             }
-            else
-            {
-                std::string matPath = parser.ParseString();
-                auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, GetPhysMatHandle(matPath));
-                comp.SetEnabled(enabled);
-            }
+
+            auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
+            comp.SetEnabled(enabled);
         }
 
         parser.Expect('}'); // component end
@@ -262,16 +328,6 @@ Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetSha
     if (!handle.IsValid())
     {
         handle = m_resourceManager.CreateAsync<Shader>(path);
-    }
-    return handle;
-}
-
-Apex::Resources::ResourceHandle<PhysicMaterial> Apex::Serialization::SceneLoader::GetPhysMatHandle(const std::string& path)
-{
-    auto handle = m_resourceManager.Get<PhysicMaterial>(path);
-    if (!handle.IsValid())
-    {
-        handle = m_resourceManager.CreateAsync<PhysicMaterial>(path);
     }
     return handle;
 }

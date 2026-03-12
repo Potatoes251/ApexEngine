@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "Physic.h"
 
 #include <string>
 
@@ -19,12 +20,13 @@ namespace Apex::Serialization
     class SceneLoader
     {
     public:
-        SceneLoader(Apex::Resources::ResourceManager& resMgr) : m_resourceManager(resMgr) {}
+        SceneLoader(Apex::Resources::ResourceManager& resMgr, Apex::Physic::PhysicSystem& physics) : m_resourceManager(resMgr), m_physics(physics) {}
 
         void LoadScene(Apex::Rendering::Scene& scene, const std::string& path);
 
     private:
         Apex::Resources::ResourceManager& m_resourceManager;
+        Apex::Physic::PhysicSystem& m_physics;
 
         Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
@@ -35,7 +37,6 @@ namespace Apex::Serialization
         Apex::Resources::ResourceHandle<Mesh> GetMeshHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Texture> GetTextureHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);
-        Apex::Resources::ResourceHandle<PhysicMaterial> GetPhysMatHandle(const std::string& path);
     };
 }
 
