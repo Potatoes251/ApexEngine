@@ -192,6 +192,10 @@ namespace Apex::UserInterface
         return ImGui::MenuItem(label.c_str(), nullptr, false, enabled);
     }
 
+    void ImGUIManager::OpenPopup(const std::string& id) { ImGui::OpenPopup(id.c_str()); }
+    bool ImGUIManager::BeginPopup(const std::string& id) { return ImGui::BeginPopup(id.c_str()); }
+    void ImGUIManager::EndPopup() { ImGui::EndPopup(); }
+
     void ImGUIManager::BeginTooltip() { ImGui::BeginTooltip(); }
     void ImGUIManager::EndTooltip() { ImGui::EndTooltip(); }
 

@@ -57,6 +57,9 @@ namespace Apex::Windowing
 
 		void SetExternalDropCallback(ExternalDropCallback callback) override;
 
+		std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) override;
+		std::filesystem::path OpenFolderDialog() override;
+
 
 	private:
 		GLFWwindow* m_window = nullptr;

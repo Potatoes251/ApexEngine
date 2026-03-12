@@ -116,6 +116,11 @@ namespace Apex::UserInterface
         virtual bool MenuItem(const std::string& label,
                               bool enabled = true) = 0;
 
+        // Popup
+        virtual void OpenPopup(const std::string& id) = 0;
+        virtual bool BeginPopup(const std::string& id) = 0;
+        virtual void EndPopup() = 0;
+
         // Tooltip 
         virtual void BeginTooltip() = 0;
         virtual void EndTooltip() = 0;

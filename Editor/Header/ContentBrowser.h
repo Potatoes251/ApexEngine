@@ -7,6 +7,7 @@
 // ============================================================
 
 #include "UI.h"
+#include "Window.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +36,9 @@ namespace Apex::Editor
 	public:
 		// gui      — IGUI reference owned by the Application.
 		// rootPath — assets root directory (e.g. "Assets/").
-		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, const fs::path& rootPath);
+		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, 
+								Apex::Windowing::IWindow& window, 
+								const fs::path& rootPath);
 		~ContentBrowser() = default;
 		ContentBrowser(const ContentBrowser&) = delete;
 		ContentBrowser& operator=(const ContentBrowser&) = delete;
@@ -67,6 +70,7 @@ namespace Apex::Editor
 		void DrawBreadcrumb();
 		void DrawFolderTree(const fs::path& dir);
 		void DrawAssetGrid();
+		void DrawAddPopup();
 		void DrawTile(AssetEntry& entry);
 		void DrawTileIcon(const AssetEntry& entry, LibMath::Vector2 pos);
 		void DrawTileInteraction(AssetEntry& entry, LibMath::Vector2 pos, float iconSize);
@@ -79,6 +83,7 @@ namespace Apex::Editor
 		void ScanCurrentDirectory();
 		void ScanSearch(const std::string& filter);
 		void MoveEntry(const fs::path& from, const fs::path& toDirectory);
+		void OnAddButtonClicked();
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);
@@ -88,6 +93,7 @@ namespace Apex::Editor
 
 		// State
 		Apex::UserInterface::IGUI& m_gui;
+		Apex::Windowing::IWindow&  m_window;
 		fs::path                   m_rootPath;
 		fs::path                   m_currentPath;
 		std::vector<AssetEntry>    m_entries;

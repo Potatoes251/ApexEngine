@@ -56,8 +56,13 @@ namespace Apex::Editor
         return assetEntry;
     }
 
-    ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui, const fs::path& rootPath)
-        : m_gui(gui), m_rootPath(fs::weakly_canonical(rootPath)), m_currentPath(fs::weakly_canonical(rootPath))
+    ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui,
+                                   Apex::Windowing::IWindow& window,
+                                   const fs::path& rootPath)
+        : m_gui(gui),
+        m_window(window),
+        m_rootPath(fs::weakly_canonical(rootPath)),
+        m_currentPath(fs::weakly_canonical(rootPath))
     {
         Refresh();
     }
@@ -142,6 +147,11 @@ namespace Apex::Editor
         }
     }
 
+    void ContentBrowser::OnAddButtonClicked()
+    {
+        m_gui.OpenPopup("##add_menu");
+    }
+
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
     {
         const fs::path& destination = destDir.empty() ? m_currentPath : destDir;
@@ -188,6 +198,7 @@ namespace Apex::Editor
         m_gui.Separator();
         DrawBreadcrumb();
         m_gui.Separator();
+        DrawAddPopup();
 
         m_hoveredDestThisFrame.clear();
 
@@ -226,10 +237,10 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawToolbar()
     {
-        // Capture the Y of this toolbar line before drawing anything
-        float toolbarY = m_gui.GetCursorPos()[1];
+        if (m_gui.SmallButton("+ Add"))
+            OnAddButtonClicked();
+        m_gui.SameLine();
 
-        // Search box
         m_gui.SetNextItemWidth(200.f);
         m_gui.InputText("##cb_search", m_searchBuffer, sizeof(m_searchBuffer), "Search assets...");
 
@@ -423,6 +434,27 @@ namespace Apex::Editor
         {
             NavigateTo(m_pendingNavigate);
         }
+    }
+
+    void ContentBrowser::DrawAddPopup()
+    {
+        if (!m_gui.BeginPopup("##add_menu")) return;
+
+        if (m_gui.MenuItem("Import Files..."))
+        {
+            auto paths = m_window.OpenFileDialog(true);
+            if (!paths.empty())
+                ImportFiles(std::move(paths));
+        }
+
+        if (m_gui.MenuItem("Import Folder..."))
+        {
+            auto folder = m_window.OpenFolderDialog();
+            if (!folder.empty())
+                ImportFiles({ folder });
+        }
+
+        m_gui.EndPopup();
     }
 
     void ContentBrowser::DrawTile(AssetEntry& entry)

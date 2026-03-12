@@ -74,8 +74,11 @@ namespace Apex::UserInterface
 
         bool BeginContextMenu() override;
         void EndContextMenu() override;
-        bool MenuItem(const std::string& label,
-            bool enabled)                override;
+        bool MenuItem(const std::string& label, bool enabled) override;
+
+        void OpenPopup(const std::string& id) override;
+        bool BeginPopup(const std::string& id) override;
+        void EndPopup() override;
 
         void BeginTooltip() override;
         void EndTooltip() override;

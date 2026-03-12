@@ -26,7 +26,7 @@ namespace Apex::Editor
         if (!m_gui)
             return false;
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {

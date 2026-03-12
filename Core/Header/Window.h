@@ -82,6 +82,12 @@ namespace Apex::Windowing
 		// External drag-and-drop — fires when files are dropped onto the window
 		// from the OS file explorer. Works on Windows, macOS, and Linux via GLFW.
 		virtual void SetExternalDropCallback(ExternalDropCallback callback) = 0;
+
+		// Opens a native OS file picker dialog parented to this window.
+		// Returns the selected paths, or an empty vector if cancelled.
+		// allowMultiple: let the user select more than one file at once.
+		virtual std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) = 0;
+		virtual std::filesystem::path OpenFolderDialog() = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────

@@ -1,9 +1,17 @@
 ﻿#include "GLFWWindow.h"
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <commdlg.h>
+#include <shlobj.h>
+// windows.h defines CreateWindow as a macro which conflicts with our IWindow* CreateWindow
+#undef CreateWindow
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <iostream>
+
 
 namespace Apex::Windowing 
 {
@@ -157,6 +165,64 @@ namespace Apex::Windowing
 	void GLFWWindow::SetScrollCallback(ScrollCallback callback) { m_scrollCallback = callback; }
 	void GLFWWindow::SetResizeCallback(ResizeCallback callback) { m_resizeCallback = callback; }
 	void GLFWWindow::SetExternalDropCallback(ExternalDropCallback callback) { m_dropCallback = callback; }
+
+    std::vector<std::filesystem::path> GLFWWindow::OpenFileDialog(bool allowMultiple)
+    {
+        std::vector<std::filesystem::path> result;
+
+        constexpr int BUFFER = 32768;
+        std::wstring buffer(BUFFER, L'\0');
+
+        OPENFILENAMEW openFileName = {};
+        openFileName.lStructSize = sizeof(openFileName);
+        openFileName.hwndOwner = GetActiveWindow();
+        openFileName.lpstrFile = buffer.data();
+        openFileName.nMaxFile = BUFFER;
+        openFileName.lpstrTitle = L"Import Assets";
+        openFileName.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_EXPLORER;
+        if (allowMultiple)
+            openFileName.Flags |= OFN_ALLOWMULTISELECT;
+
+        if (!GetOpenFileNameW(&openFileName))
+            return result; // cancelled
+
+        // Multi-select: buffer is "dir\0file1\0file2\0\0"
+        // Single file:  buffer is just the full path
+        const wchar_t* path = buffer.data();
+        std::filesystem::path dir(path);
+        path += dir.native().size() + 1;
+
+        if (*path == L'\0')
+        {
+            // Single selection — dir is actually the full path
+            result.push_back(dir);
+        }
+        else
+        {
+            while (*path != L'\0')
+            {
+                result.push_back(dir / path);
+                path += std::wcslen(path) + 1;
+            }
+        }
+        return result;
+    }
+
+    std::filesystem::path GLFWWindow::OpenFolderDialog()
+    {
+        BROWSEINFOW browseInfo = {};
+        browseInfo.hwndOwner = GetActiveWindow();
+        browseInfo.lpszTitle = L"Select Folder to Import";
+        browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+
+        PIDLIST_ABSOLUTE pIDList = SHBrowseForFolderW(&browseInfo);
+        if (!pIDList) return {};
+
+        wchar_t buffer[MAX_PATH];
+        SHGetPathFromIDListW(pIDList, buffer);
+        CoTaskMemFree(pIDList);
+        return std::filesystem::path(buffer);
+    }
 
 	// ── GLFW static callback wrappers ─────────────────────────────
     void GLFWWindow::GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
