@@ -10,7 +10,6 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* s
 	: m_gizmo(shader, rhi), m_currentScene(scene), m_rhi(rhi), m_gui(gui)
 {
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
-    m_selectedObject = m_currentScene->GetObjectAt(0);
 	m_shader = shader;
 }
 
@@ -33,10 +32,13 @@ void Viewport::OnMouseClick(int mouseX, int mouseY)
 	picking.m_useModelShader = false;
 	picking.m_shader = m_shader;
 
+	m_shader->Use();
 	m_currentScene->Render(picking);
 
-	printf("id is %d\r", GetMousePixelInFbo(mouseX, mouseY));
-	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo(mouseX, mouseY));
+	int id = GetMousePixelInFbo(mouseX, mouseY);
+
+	printf("id is %d\n", id);
+	m_selectedObject = m_currentScene->GetObjectAt(id);
 
 	m_rhi->UnBindFrameBuffer();
 }
