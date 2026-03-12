@@ -2,7 +2,7 @@
 #define SCENE_LOADER
 
 #include "Object.h"
-#include "SerialParser.h"
+#include "SerializationParser.h"
 #include "Scene.h"
 #include "Rigidbody.h"
 #include "MeshCollider.h"
