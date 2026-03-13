@@ -32,7 +32,7 @@ namespace Apex::Editor
 		int					GetMousePixelInFbo(int mouseX, int mouseY);
 
 		Gizmos m_gizmo;
-		GizmoMode m_currentGizmoMode = GizmoMode::Translation;
+		GizmoMode m_currentGizmoMode = GizmoMode::Rotation;
 		
 		Rendering::Camera m_camera;
 

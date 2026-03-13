@@ -2,6 +2,9 @@
 
 #include "Object.h"
 
+#include "LibMath/Colision.h"
+#include "LibMath/Colision3D.h"
+
 #include <cassert>
 
 using namespace Apex::Editor;
@@ -38,9 +41,9 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 {
     if (!object || !m_shader.IsReady()) return;
 
-    float distance = viewPos.distanceFrom(object->GetGlobalTransform().getPosition());
+    m_distanceToCamera = viewPos.distanceFrom(object->GetGlobalTransform().getPosition());
     // adjust the value to have a correct size
-    distance *= .1f;
+    m_distanceToCamera *= .1f;
 
     m_shader->Use();
     m_shader->SetUniform("uViewProj", viewProj);
@@ -48,13 +51,13 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	switch (mode)
 	{
 	case GizmoMode::Translation:
-		DrawTranslation(object, distance);
+		DrawTranslation(object);
 		break;
 	case GizmoMode::Rotation:
-		DrawRotation(object, distance);
+		DrawRotation(object);
 		break;
 	case GizmoMode::Scale:
-		DrawScale(object, distance);
+		DrawScale(object);
 		break;
 	default:
 		assert(false && "Unhandled gizmo mode");
@@ -62,17 +65,28 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	}
 }
 
-bool Gizmos::IsOnGizmo(LibMath::Vector2 pointOnScreen)
+Axis Gizmos::IsOnGizmo(
+    LibMath::Vector2 mousePosOnScreen, GizmoMode mode, LibMath::Vector3 worldPos, 
+    LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize, float distanceToCamera)
 {
-    return false;
+    switch (mode)
+    {
+    case GizmoMode::Translation:    return IsOnTranslation(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
+    case GizmoMode::Rotation:       return IsOnRotation(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
+    case GizmoMode::Scale:          return IsOnScale(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
+    default:
+        assert(false && "Unhandled gizmo mode");
+        break;
+    }
+    return Axis::None;
 }
 
-void Gizmos::DrawTranslation(Data::Object* object, float distance)
+void Gizmos::DrawTranslation(Data::Object* object)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
-    float length = 1.0f * distance;
-    float thickness = 0.05f * distance;
+    float length = 1.0f * m_distanceToCamera;
+    float thickness = 0.05f * m_distanceToCamera;
     float handleScale = 2.f;
 
     // X axis (RED)
@@ -142,7 +156,7 @@ void Gizmos::DrawTranslation(Data::Object* object, float distance)
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object, float distance)
+void Gizmos::DrawRotation(Data::Object* object)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
@@ -152,7 +166,7 @@ void Gizmos::DrawRotation(Data::Object* object, float distance)
             pos,
             { 0,0,1 },
             LibMath::Degree(90),
-            LibMath::Vector3( 1, 1, 1 ) * distance);
+            LibMath::Vector3( 1, 1, 1 ) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
         m_shader->SetUniform("uColor", { 1,0,0 });
@@ -164,7 +178,7 @@ void Gizmos::DrawRotation(Data::Object* object, float distance)
             pos,
             { 0,1,0 },
             LibMath::Degree(0),
-            LibMath::Vector3(1, 1, 1) * distance);
+            LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
         m_shader->SetUniform("uColor", { 0,1,0 });
@@ -176,7 +190,7 @@ void Gizmos::DrawRotation(Data::Object* object, float distance)
             pos,
             { 1,0,0 },
             LibMath::Degree(-90),
-            LibMath::Vector3(1, 1, 1) * distance);
+            LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
         m_shader->SetUniform("uColor", { 0,0,1 });
@@ -184,12 +198,12 @@ void Gizmos::DrawRotation(Data::Object* object, float distance)
     }
 }
 
-void Gizmos::DrawScale(Data::Object* object, float distance)
+void Gizmos::DrawScale(Data::Object* object)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
-    float length = 1.0f * distance;
-    float thickness = 0.05f * distance;
+    float length = 1.0f * m_distanceToCamera;
+    float thickness = 0.05f *m_distanceToCamera;
     float handleScale = 2.f;
 
     // X axis (RED)
@@ -257,6 +271,118 @@ void Gizmos::DrawScale(Data::Object* object, float distance)
         m_shader->SetUniform("uModel", model);
         m_cube.Draw();
     }
+}
+
+Axis Gizmos::IsOnTranslation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+{
+    float axisLength = 1.0f * m_distanceToCamera;
+    float mouseRadius = 15.0f * m_distanceToCamera;
+
+    LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
+    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
+
+    const LibMath::Vector3 axes[3] = {
+        {axisLength, 0, 0},
+        {0, axisLength, 0},
+        {0, 0, axisLength}
+    };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        LibMath::Vector2 endPos = GetScreenPos(worldPos + axes[i], viewProj, panelOffset, panelSize);
+        LibMath::Line2D line(LibMath::Point2D(screenCenter[0], screenCenter[1]),
+            LibMath::Point2D(endPos[0], endPos[1]));
+
+        if (LibMath::colisionLineCircle(line, mouse))
+        {
+            return static_cast<Axis>(i);
+        }
+    }
+
+    return Axis::None;
+}
+
+Axis Gizmos::IsOnRotation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+{
+    float axisLength = 1.0f * m_distanceToCamera;
+
+    float tolerance = 0.15f * axisLength;
+
+    LibMath::Line3D ray = ScreenToWorldRay(mousePosOnScreen, viewProj, panelOffset, panelSize);
+
+    LibMath::Vector3 hit;
+
+    const LibMath::Vector3 axes[3] = {
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+    };
+
+    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
+    LibMath::Circle mouseCircle(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), 15.0f * m_distanceToCamera);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        LibMath::Plane plane(axes[i], -worldPos[i]);
+
+        printf("%f\n", std::fabs((ray.getDirection().dot(axes[i]))));
+        // circle is almost a line
+        if (std::fabs((ray.getDirection().dot(axes[i]))) < 0.05f)
+        {
+            LibMath::Vector3 tangent;
+
+            if (i == 0) tangent = { 0,1,0 };
+            if (i == 1) tangent = { 1,0,0 };
+            if (i == 2) tangent = { 1,0,0 };
+            // Use simple 2D line-circle collision instead
+            LibMath::Vector2 startPos = GetScreenPos(worldPos - tangent * axisLength, viewProj, panelOffset, panelSize);
+            LibMath::Vector2 endPos = GetScreenPos(worldPos + tangent * axisLength, viewProj, panelOffset, panelSize);
+            LibMath::Line2D axisLine(LibMath::Point2D(startPos[0], startPos[1]), LibMath::Point2D(endPos[0], endPos[1]));
+
+            if (LibMath::colisionLineCircle(axisLine, mouseCircle))
+                return static_cast<Axis>(i);
+            continue;
+        }
+
+        if (LibMath::intersectionRayPlane(ray, plane, hit))
+        {
+            if (std::fabs(hit.distanceFrom(worldPos) - axisLength) < tolerance)
+            {
+                return static_cast<Axis>(i);
+            }
+        }
+    }
+
+    return Axis::None;
+}
+
+Axis Apex::Editor::Gizmos::IsOnScale(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+{
+    float axisLength = 1.0f * m_distanceToCamera;
+    float mouseRadius = 15.0f * m_distanceToCamera;
+
+    LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
+    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
+
+    const LibMath::Vector3 axes[3] = {
+        {axisLength, 0, 0},
+        {0, axisLength, 0},
+        {0, 0, axisLength}
+    };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        LibMath::Vector2 endPos = GetScreenPos(worldPos + axes[i], viewProj, panelOffset, panelSize);
+        LibMath::Line2D line(LibMath::Point2D(screenCenter[0], screenCenter[1]),
+            LibMath::Point2D(endPos[0], endPos[1]));
+
+        if (LibMath::colisionLineCircle(line, mouse))
+        {
+            return static_cast<Axis>(i);
+        }
+    }
+
+    return Axis::None;
 }
 
 void Gizmos::CreateCube()
@@ -428,4 +554,56 @@ void Gizmos::CreateCircle()
         m_circle.m_indices.push_back(i);
         m_circle.m_indices.push_back((i + 1) % segments);
     }
+}
+
+
+LibMath::Vector2 Gizmos::GetScreenPos(
+    LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+{
+    LibMath::Vector4 clip = viewProj * LibMath::Vector4(worldPos, 1.0f);
+
+    if (clip[3] <= 0.00001f)
+        return LibMath::Vector2(-10000.f);
+
+    LibMath::Vector3 ndc;
+    ndc[0] = clip[0] / clip[3];
+    ndc[1] = clip[1] / clip[3];
+    ndc[2] = clip[2] / clip[3];
+
+    LibMath::Vector2 screen;
+    screen[0] = (ndc[0] * 0.5f + 0.5f) * panelSize[0];
+    screen[1] = (1.0f - (ndc[1] * 0.5f + 0.5f)) * panelSize[1];
+
+    return screen + panelOffset;
+}
+
+LibMath::Line3D Gizmos::ScreenToWorldRay(
+    LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+{
+    // 1. Adjust mouse for viewport
+    float mx = mousePosOnScreen[0] - panelOffset[0];
+    float my = mousePosOnScreen[1] - panelOffset[1];
+
+    // 2. NDC
+    float x_ndc = (mx / panelSize[0]) * 2.0f - 1.0f;
+    float y_ndc = 1.0f - (my / panelSize[1]) * 2.0f;
+
+    // 3. Clip-space near/far
+    LibMath::Vector4 nearNDC(x_ndc, y_ndc, -1.0f, 1.0f);
+    LibMath::Vector4 farNDC(x_ndc, y_ndc, 1.0f, 1.0f);
+
+    // 4. Transform to world
+    LibMath::Matrix4 invVP = viewProj;
+    invVP.inverse();
+
+    LibMath::Vector4 nearWorld = invVP * nearNDC;
+    LibMath::Vector4 farWorld = invVP * farNDC;
+    nearWorld /= nearWorld[3];
+    farWorld /= farWorld[3];
+
+    // 5. Build ray
+    LibMath::Point3D origin(nearWorld[0], nearWorld[1], nearWorld[2]);
+    LibMath::Vector3 dir = (LibMath::Vector3(farWorld) - LibMath::Vector3(nearWorld)).normalized();
+
+    return LibMath::Line3D(origin, dir);
 }

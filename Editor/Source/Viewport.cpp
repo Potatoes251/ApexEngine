@@ -22,11 +22,42 @@ void Viewport::OnMouseClick(int mouseX, int mouseY)
 {
 	if (!m_isHovered || !m_shader.IsReady()) return;
 
+	float aspectRatio = m_width / m_height;
+
+
+	if (m_selectedObject)
+	{
+		float distance = m_camera.GetPosition().distanceFrom(m_selectedObject->GetGlobalTransform().getPosition());
+		// adjust the value to have a correct size
+		distance *= .1f;
+		Axis axis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode,
+			m_selectedObject->GetGlobalTransform().getPosition(),
+			m_camera.GetProjectionMatrix(aspectRatio) * m_camera.GetViewMatrix(),
+			m_panelPos, m_panelSize, distance);
+		switch (axis)
+		{
+		case Axis::X:
+			printf("x axis\n");
+			break;
+		case Axis::Y:
+			printf("y axis\n");
+			break;
+		case Axis::Z:
+			printf("z axis\n");
+			break;
+		case Axis::None:
+			printf("no axis\n");
+			break;
+		default:
+			break;
+		}
+	}
+
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
 	m_rhi->Clear();
 
 	RenderPassInfo picking;
-	picking.m_aspectRatio = m_width / m_height;
+	picking.m_aspectRatio = aspectRatio;
 	picking.m_camera = &m_camera;
 	picking.m_useIdAsColor = true;
 	picking.m_useModelShader = false;
@@ -37,14 +68,13 @@ void Viewport::OnMouseClick(int mouseX, int mouseY)
 
 	int id = GetMousePixelInFbo(mouseX, mouseY);
 
-	printf("id is %d\n", id);
 	m_selectedObject = m_currentScene->GetObjectAt(id);
 
 	m_rhi->UnBindFrameBuffer();
 }
 
 void Viewport::Draw()
-{
+{	
 	float aspectRatio = m_width / m_height;
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
