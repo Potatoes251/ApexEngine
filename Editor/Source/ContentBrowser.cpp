@@ -71,14 +71,12 @@ namespace Apex::Editor
 
     void ContentBrowser::Refresh() 
     { 
-        m_selectedPath.clear();
         ScanCurrentDirectory(); 
     }
 
     void ContentBrowser::NavigateTo(const fs::path& dir)
     {
         m_currentPath = fs::weakly_canonical(dir);
-        m_selectedPath.clear();
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
     }
@@ -164,8 +162,89 @@ namespace Apex::Editor
         else
             fs::remove(m_selectedPath, error);
 
+        // If we just deleted the current directory or one of its ancestors,
+        // navigate up to the closest existing parent.
+        if (m_currentPath == m_selectedPath ||
+            m_currentPath.string().rfind(m_selectedPath.string(), 0) == 0)
+        {
+            fs::path parent = m_selectedPath.parent_path();
+            if (!fs::exists(parent) || parent == m_selectedPath)
+                parent = m_rootPath;
+            NavigateTo(parent);
+        }
+
         m_selectedPath.clear();
         Refresh();
+    }
+
+    void ContentBrowser::DuplicateEntry(const AssetEntry& entry)
+    {
+        fs::path src = entry.m_path;
+        fs::path stem = src.stem().string();
+        fs::path ext = src.extension();
+        fs::path dest = src.parent_path() / (stem.string() + "_copy" + ext.string());
+
+        int n = 2;
+        while (fs::exists(dest))
+            dest = src.parent_path() / (stem.string() + "_copy" + std::to_string(n++) + ext.string());
+
+        std::error_code error;
+        fs::copy_file(src, dest, fs::copy_options::skip_existing, error);
+        Refresh();
+    }
+
+    void ContentBrowser::RevealInExplorer(const fs::path& path)
+    {
+        std::system(("explorer /select,\"" + path.string() + "\"").c_str());
+    }
+
+    void ContentBrowser::BeginRename(const fs::path& path)
+    {
+        m_renamingPath = path;
+        m_renameFocusPending = true;
+
+        // Pre-fill with stem only — extension is re-attached in CommitRename
+        std::string stem = path.stem().string();
+        std::strncpy(m_renameBuffer, stem.c_str(), sizeof(m_renameBuffer) - 1);
+        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+    }
+
+    void ContentBrowser::CommitRename()
+    {
+        if (m_renamingPath.empty()) return;
+
+        std::string newStem(m_renameBuffer);
+        if (!newStem.empty() && newStem != m_renamingPath.stem().string())
+        {
+            // Re-attach the original extension so the user can never change it
+            fs::path dest = m_renamingPath.parent_path() / (newStem + m_renamingPath.extension().string());
+            std::error_code error;
+            fs::rename(m_renamingPath, dest, error);
+
+            if (m_selectedPath == m_renamingPath)
+                m_selectedPath = dest;
+
+            Refresh();
+        }
+
+        m_renamingPath.clear();
+    }
+
+    void ContentBrowser::CreateFolder()
+    {
+        // Find a unique name
+        fs::path base = m_currentPath / "New Folder";
+        fs::path target = base;
+        int n = 2;
+        while (fs::exists(target))
+            target = m_currentPath / ("New Folder " + std::to_string(n++));
+
+        std::error_code error;
+        fs::create_directory(target, error);
+        Refresh();
+
+        // Immediately enter rename mode on the new folder
+        BeginRename(target);
     }
 
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
@@ -238,13 +317,19 @@ namespace Apex::Editor
         if (!m_hoveredDestThisFrame.empty())
             m_externalDropDest = m_hoveredDestThisFrame;
 
-        if (!m_selectedPath.empty() && m_gui.IsPanelFocused())
+        if (!m_selectedPath.empty() && m_renamingPath.empty())
         {
-            if (m_gui.IsKeyPressed(UIKey::Delete) ||
-                m_gui.IsKeyPressed(UIKey::Backspace))
+            if (m_gui.IsKeyPressed(UIKey::Delete))
             {
                 DeleteSelected();
             }
+        }
+
+        if (m_gui.IsWindowHovered() && !m_gui.IsAnyItemHovered() &&
+            (m_gui.IsMouseReleased(MouseButton::Left) || m_gui.IsMouseReleased(MouseButton::Right)))
+        {
+            m_selectedPath.clear();
+            m_renamingPath.clear();
         }
 
         m_gui.EndPanel();
@@ -301,70 +386,30 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawBreadcrumb()
     {
-        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty()) ? 
-            m_selectedPath.parent_path() :
-            m_currentPath;
+        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty())
+            ? m_selectedPath.parent_path() : m_currentPath;
 
         fs::path relative = fs::relative(displayPath, m_rootPath.parent_path());
         fs::path accumulated = m_rootPath.parent_path();
 
-        Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
-        constexpr uint32_t colNormal = 0xFFCCCCCC;
-        constexpr uint32_t colHovered = 0xFFFFFFFF;
-        constexpr float    padX = 4.f;
+        m_breadcrumbRects.clear();
 
         bool first = true;
         int  idx = 0;
-
-        m_breadcrumbRects.clear();
-
         for (const auto& part : relative)
         {
             accumulated /= part;
 
-            if (!first)
-            {
-                m_gui.SameLine(0.f, 2.f);
-                m_gui.TextDisabled("/");
-                m_gui.SameLine(0.f, 2.f);
+            if (!first) 
+            { 
+                m_gui.SameLine(0.f, 2.f); 
+                m_gui.TextDisabled("/"); 
+                m_gui.SameLine(0.f, 2.f); 
             }
 
             first = false;
 
-            LibMath::Vector2 textSize = drawList->CalculateTextSize(part.string());
-            float buttonWidth = textSize[0] + padX * 2.f;
-            float buttonHeight = textSize[1];
-
-            LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
-
-            if (fs::is_directory(accumulated))
-                m_breadcrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
-
-            m_gui.PushID(idx++);
-            bool clicked = m_gui.InvisibleButton("##bc", LibMath::Vector2(buttonWidth, buttonHeight));
-            bool hovered = m_gui.IsItemHovered();
-
-            uint32_t col = hovered ? colHovered : colNormal;
-            drawList->DrawText(LibMath::Vector2(buttonPos[0] + padX, buttonPos[1]), col, part.string());
-
-            if (clicked && fs::is_directory(accumulated))
-                NavigateTo(accumulated);
-
-            if (fs::is_directory(accumulated))
-            {
-                if (hovered)
-                    m_hoveredDestThisFrame = accumulated;
-
-                if (m_gui.BeginDropTarget())
-                {
-                    const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
-                    if (data)
-                        MoveEntry(fs::path(static_cast<const char*>(data)), accumulated);
-                    m_hoveredDestThisFrame = accumulated;
-                    m_gui.EndDropTarget();
-                }
-            }
-            m_gui.PopID();
+            DrawBreadcrumbPart(accumulated, part.string(), idx++);
         }
     }
 
@@ -392,12 +437,29 @@ namespace Apex::Editor
             if (!hasSubDirs)                       flags = flags | TreeNodeFlags::Leaf;
             if (entry.path() == m_currentPath)     flags = flags | TreeNodeFlags::Selected;
 
+            bool isRenaming = (m_renamingPath == entry.path());
+
             m_gui.PushColor(Apex::UserInterface::StyleColor::Text, { 1.f, 0.85f, 0.4f, 1.f });
-            bool open = m_gui.BeginTreeNode(entry.path().filename().string(), flags);
+
+            std::string nodeLabel = isRenaming ? "##renaming_" + entry.path().string() : entry.path().filename().string();
+
+            bool open = m_gui.BeginTreeNode(nodeLabel, flags);
             m_gui.PopColor();
 
-            if (m_gui.IsItemClicked())
+            if (isRenaming)
+                DrawTreeNodeRename();
+           
+            if (!isRenaming && m_gui.IsItemClicked())
+            {
+                m_selectedPath = entry.path();
                 NavigateTo(entry.path());
+            }
+
+            if (!isRenaming && m_gui.IsItemDoubleClicked())
+                BeginRename(entry.path());
+                
+            if (!isRenaming && m_gui.IsItemHovered() && m_gui.IsMouseReleased(MouseButton::Right))
+                m_selectedPath = entry.path();
 
             if (m_gui.IsItemHovered())
                 m_hoveredDestThisFrame = entry.path();
@@ -410,6 +472,9 @@ namespace Apex::Editor
                 m_hoveredDestThisFrame = entry.path();
                 m_gui.EndDropTarget();
             }
+
+            AssetEntry assetEntry = ClassifyEntry(entry);
+            DrawEntryContextMenu(assetEntry);
 
             if (open)
             {
@@ -456,14 +521,23 @@ namespace Apex::Editor
         }
 
         if (!m_pendingNavigate.empty())
-        {
             NavigateTo(m_pendingNavigate);
-        }
+
+        // Right-click on empty grid background
+        DrawGridContextMenu();
+
+        // F2 — rename selected entry
+        if (!m_selectedPath.empty() && m_gui.IsKeyPressed(UIKey::F2))
+            BeginRename(m_selectedPath);
+        
     }
 
     void ContentBrowser::DrawAddPopup()
     {
         if (!m_gui.BeginPopup("##add_menu")) return;
+
+        if (m_gui.MenuItem("New Folder"))
+            CreateFolder();
 
         if (m_gui.MenuItem("Import Files..."))
         {
@@ -498,7 +572,11 @@ namespace Apex::Editor
 
         DrawTileIcon(entry, pos);
         DrawTileInteraction(entry, pos, iconSize);
-        DrawTileLabel(entry, pos);
+        // Show rename input instead of the static label while renaming this entry
+        if (m_renamingPath == entry.m_path)
+            DrawRenameInline(entry, pos);
+        else
+            DrawTileLabel(entry, pos);
 
         m_gui.EndChildPanel();
 
@@ -547,7 +625,8 @@ namespace Apex::Editor
         m_gui.SetCursorPos(LibMath::Vector2(pos[0] + pad, pos[1] + pad));
         m_gui.InvisibleButton("##btn", LibMath::Vector2(iconSize, iconSize));
 
-        if (m_gui.IsItemClicked())
+        if (m_gui.IsItemClicked() ||
+            (m_gui.IsItemHovered() && m_gui.IsMouseReleased(MouseButton::Right)))
             m_selectedPath = entry.m_path;
 
         if (m_gui.IsItemDoubleClicked())
@@ -577,7 +656,7 @@ namespace Apex::Editor
         else if (entry.m_isFolder && m_gui.IsItemHovered())
             m_hoveredDestThisFrame = entry.m_path;
 
-        DrawContextMenu(entry);
+        DrawEntryContextMenu(entry);
 
         if (m_gui.IsItemHovered())
             DrawTileTooltip(entry, TypeColor(entry.m_type));
@@ -609,42 +688,174 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawTileLabel(const AssetEntry& entry, LibMath::Vector2 pos)
     {
-        std::string name = entry.m_path.filename().string();
+        // Show stem only
+        std::string name = entry.m_isFolder ? entry.m_path.filename().string() : entry.m_path.stem().string();
+
         if (name.size() > 18)
             name = name.substr(0, 17) + "...";
 
         LibMath::Vector2 textSize = m_gui.GetDrawList()->CalculateTextSize(name.c_str());
         float centeredX = pos[0] + (m_tileSize - textSize[0]) * 0.5f;
-        m_gui.SetCursorPos(LibMath::Vector2(centeredX, pos[1] + m_tileSize + 2.f));
-        m_gui.TextDisabled(name);
+        float labelY = pos[1] + m_tileSize + 2.f;
+
+        // Invisible button over the label area so we can detect double-click
+        m_gui.SetCursorPos(LibMath::Vector2(centeredX, labelY));
+        m_gui.InvisibleButton("##label", textSize);
+        if (m_gui.IsItemDoubleClicked())
+            BeginRename(entry.m_path);
+
+        // Draw the text on top of the button
+        m_gui.GetDrawList()->DrawText(LibMath::Vector2(centeredX, labelY), 0xFFAAAAAA, name);
     }
 
-    void ContentBrowser::DrawContextMenu(const AssetEntry& entry)
+    void ContentBrowser::DrawEntryContextMenu(const AssetEntry& entry)
     {
-        if (!m_gui.BeginContextMenu()) return;
+        if (!m_gui.BeginContextMenu("##ctx_" + entry.m_path.string())) return;
 
         m_gui.TextDisabled(entry.m_path.filename().string());
         m_gui.Separator();
 
-        if (!entry.m_isFolder && m_gui.MenuItem("Load"))
-            if (m_onLoad) m_onLoad(entry);
-
-        if (m_gui.MenuItem("Reveal in Explorer"))
+        if (entry.m_isFolder)
         {
-			// Note: this is Windows-specific. 
-            std::system(("explorer /select,\"" + entry.m_path.string() + "\"").c_str());
+            if (m_gui.MenuItem("Open")) NavigateTo(entry.m_path);
+        }
+        else if (m_gui.MenuItem("Load") && m_onLoad)
+        {
+            m_onLoad(entry);
+        }
+               
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("Rename"))                          BeginRename(entry.m_path);
+        if (!entry.m_isFolder && m_gui.MenuItem("Duplicate"))  DuplicateEntry(entry);
+        if (m_gui.MenuItem("Copy Path"))                       m_gui.SetClipboardText(entry.m_path.string());
+
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("Reveal in Explorer"))  RevealInExplorer(entry.m_path);
+
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("Delete")) { m_selectedPath = entry.m_path; DeleteSelected(); }
+
+        m_gui.EndContextMenu();
+    }
+
+    void ContentBrowser::DrawGridContextMenu()
+    {
+        if (!m_gui.BeginGridContextMenu()) return;
+
+        m_gui.TextDisabled("Actions");
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("New Folder"))
+            CreateFolder();
+
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("Import Files..."))
+        {
+            auto paths = m_window.OpenFileDialog(true);
+            if (!paths.empty())
+                ImportFiles(std::move(paths));
+        }
+
+        if (m_gui.MenuItem("Import Folder..."))
+        {
+            auto folder = m_window.OpenFolderDialog();
+            if (!folder.empty())
+                ImportFiles({ folder });
         }
 
         m_gui.Separator();
-        if (m_gui.MenuItem("Delete"))
-        {
-            std::error_code ec;
-            if (entry.m_isFolder) fs::remove_all(entry.m_path, ec);
-            else                  fs::remove(entry.m_path, ec);
+
+        if (m_gui.MenuItem("Refresh"))
             Refresh();
+
+        if (m_gui.MenuItem("Reveal in Explorer"))
+        {
+            std::system(("explorer \"" + m_currentPath.string() + "\"").c_str());
         }
 
         m_gui.EndContextMenu();
+    }
+
+    void ContentBrowser::DrawRenameInline(AssetEntry& entry, LibMath::Vector2 pos)
+    {
+        if (m_renamingPath != entry.m_path) return;
+
+        if (m_renameFocusPending)
+        {
+            m_gui.SetKeyboardFocusHere();
+            m_renameFocusPending = false;
+        }
+
+        m_gui.SetCursorPos(LibMath::Vector2(pos[0], pos[1] + m_tileSize + 2.f));
+        m_gui.SetNextItemWidth(m_tileSize);
+        m_gui.InputText("##rename", m_renameBuffer, sizeof(m_renameBuffer));
+
+        if (m_gui.IsKeyPressed(UIKey::Enter))
+            CommitRename();
+        else if (m_gui.IsKeyPressed(UIKey::Escape))
+            m_renamingPath.clear();
+    }
+
+    void ContentBrowser::DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx)
+    {
+        Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
+        constexpr uint32_t colNormal = 0xFFCCCCCC;
+        constexpr uint32_t colHovered = 0xFFFFFFFF;
+        constexpr float    padX = 4.f;
+
+        LibMath::Vector2 textSize = drawList->CalculateTextSize(label);
+        float buttonWidth = textSize[0] + padX * 2.f;
+        float buttonHeight = textSize[1];
+
+        LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
+
+        if (fs::is_directory(accumulated))
+            m_breadcrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
+
+        m_gui.PushID(idx);
+        bool clicked = m_gui.InvisibleButton("##bc", LibMath::Vector2(buttonWidth, buttonHeight));
+        bool hovered = m_gui.IsItemHovered();
+        m_gui.PopID();
+
+        drawList->DrawText(LibMath::Vector2(buttonPos[0] + padX, buttonPos[1]),
+            hovered ? colHovered : colNormal, label);
+
+        if (!fs::is_directory(accumulated)) return;
+
+        if (clicked) NavigateTo(accumulated);
+        if (hovered) m_hoveredDestThisFrame = accumulated;
+
+        if (m_gui.BeginDropTarget())
+        {
+            const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
+            if (data)
+                MoveEntry(fs::path(static_cast<const char*>(data)), accumulated);
+            m_hoveredDestThisFrame = accumulated;
+            m_gui.EndDropTarget();
+        }
+    }
+
+    void ContentBrowser::DrawTreeNodeRename()
+    {
+        if (m_renameFocusPending)
+        {
+            m_gui.SetKeyboardFocusHere();
+            m_renameFocusPending = false;
+        }
+
+        float rowHeight = m_gui.GetItemRectSize()[1];
+        m_gui.SameLine(0.f, 0.f);
+        m_gui.SetNextItemWidth(-1.f);
+        m_gui.PushStyleVariable(StyleVariable::FramePadding, 0.f, (rowHeight - m_gui.GetTextLineHeight()) * 0.5f);
+        m_gui.InputText("##tree_rename", m_renameBuffer, sizeof(m_renameBuffer));
+        m_gui.PopStyleVariable();
+
+        if (m_gui.IsKeyPressed(UIKey::Enter))  CommitRename();
+        else if (m_gui.IsKeyPressed(UIKey::Escape)) m_renamingPath.clear();
     }
 
 }

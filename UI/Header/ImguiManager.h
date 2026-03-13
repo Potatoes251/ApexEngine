@@ -53,6 +53,9 @@ namespace Apex::UserInterface
 
         void PushColor(StyleColor target, Color color) override;
         void PopColor() override;
+        void PushStyleVariable(StyleVariable var, float x, float y = 0.f) override;
+        void PopStyleVariable() override;
+        float GetTextLineHeight() const override;
 
         void Separator() override;
         void SameLine(float offsetFromLeft, float spacing) override;
@@ -74,9 +77,13 @@ namespace Apex::UserInterface
                           TreeNodeFlags flags) override;
         void EndTreeNode() override;
 
-        bool BeginContextMenu() override;
+        bool BeginContextMenu(const std::string& id = "##ctx") override;
+        bool BeginGridContextMenu() override;
         void EndContextMenu() override;
         bool MenuItem(const std::string& label, bool enabled) override;
+
+        void SetKeyboardFocusHere() override;
+        void SetClipboardText(const std::string& text) override;
 
         void OpenPopup(const std::string& id) override;
         bool BeginPopup(const std::string& id) override;
@@ -99,9 +106,14 @@ namespace Apex::UserInterface
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;
 
         bool IsItemHovered() const override;
+        LibMath::Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
         bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
+        bool IsWindowHovered() const override;
+        bool IsAnyItemHovered() const override;
+        bool IsDragDropActive() const override;
+        const char* GetDragDropPayloadType() const override;
 
 		bool BeginDragSource() override;
         void SetDragPayload(const char* type, const void* data, size_t size) override;

@@ -53,6 +53,9 @@ namespace Apex::UserInterface
     // Style color targets
     enum class StyleColor { Text, Button, ChildBackground };
 
+    // Style variables that can be temporarily overridden
+    enum class StyleVariable { FramePadding, ItemSpacing, WindowPadding };
+
     // Keys usable in UI panels (ImGui-layer input, not gameplay input).
     // Add entries here as new shortcuts are needed.
     enum class UIKey
@@ -95,6 +98,9 @@ namespace Apex::UserInterface
         // Style 
         virtual void PushColor(StyleColor target, Color color) = 0;
         virtual void PopColor() = 0;
+        virtual void PushStyleVariable(StyleVariable var, float x, float y = 0.f) = 0;
+        virtual void PopStyleVariable() = 0;
+        virtual float GetTextLineHeight() const = 0;
 
         // Layout 
         virtual void Separator() = 0;
@@ -128,10 +134,16 @@ namespace Apex::UserInterface
         // Context menu 
         // Must be called right after the widget it relates to.
         // Returns true if the menu is open (caller must call EndContextMenu if so).
-        virtual bool BeginContextMenu() = 0;
+        virtual bool BeginContextMenu(const std::string& id = "##ctx") = 0;
+        virtual bool BeginGridContextMenu() = 0;  // right-click on empty window background
         virtual void EndContextMenu() = 0;
         virtual bool MenuItem(const std::string& label,
                               bool enabled = true) = 0;
+
+        // Focus
+        // Call before an InputText to auto-focus it on the next frame.
+        virtual void SetKeyboardFocusHere() = 0;
+        virtual void SetClipboardText(const std::string& text) = 0;
 
         // Popup
         virtual void OpenPopup(const std::string& id) = 0;
@@ -161,9 +173,14 @@ namespace Apex::UserInterface
         
         // Query 
         virtual bool IsItemHovered() const = 0;
+        virtual LibMath::Vector2 GetItemRectSize()  const = 0;
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsMouseReleased(MouseButton button = MouseButton::Left) const = 0;
+        virtual bool IsWindowHovered() const = 0;
+        virtual bool IsAnyItemHovered()   const = 0;
+        virtual bool IsDragDropActive() const = 0;
+        virtual const char* GetDragDropPayloadType() const = 0;
 
         // Drag & Drop
         // Call BeginDragSource after InvisibleButton/item — returns true if dragging.

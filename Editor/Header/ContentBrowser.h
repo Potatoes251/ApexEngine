@@ -76,7 +76,11 @@ namespace Apex::Editor
 		void DrawTileInteraction(AssetEntry& entry, LibMath::Vector2 pos, float iconSize);
 		void DrawTileTooltip(const AssetEntry& entry, uint32_t color);
 		void DrawTileLabel(const AssetEntry& entry, LibMath::Vector2 pos);
-		void DrawContextMenu(const AssetEntry& entry);
+		void DrawEntryContextMenu(const AssetEntry& entry);
+		void DrawGridContextMenu();
+		void DrawRenameInline(AssetEntry& entry, LibMath::Vector2 pos);
+		void DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx);
+		void DrawTreeNodeRename();
 
 		// Internal navigation / scanning 
 		void NavigateTo(const fs::path& dir);
@@ -85,6 +89,11 @@ namespace Apex::Editor
 		void MoveEntry(const fs::path& from, const fs::path& toDirectory);
 		void OnAddButtonClicked();
 		void DeleteSelected();
+		void DuplicateEntry(const AssetEntry& entry);
+		void RevealInExplorer(const fs::path& path);
+		void BeginRename(const fs::path& path);
+		void CommitRename();
+		void CreateFolder();
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);
@@ -108,6 +117,11 @@ namespace Apex::Editor
 		fs::path             m_selectedPath;
 		fs::path             m_pendingNavigate;
 		OnAssetLoadCallback  m_onLoad;
+
+		// Rename state — active when m_renamingPath is non-empty
+		fs::path m_renamingPath;
+		char     m_renameBuffer[256] = {};
+		bool     m_renameFocusPending = false;
 
 		// Asset grid child panel bounds — updated every frame in DrawAssetGrid()
 		float m_gridX = 0.f, m_gridY = 0.f;
