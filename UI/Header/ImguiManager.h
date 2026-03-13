@@ -15,9 +15,9 @@ namespace Apex::UserInterface
 {
 	namespace  FontSize
 	{
-		constexpr 	float	SMALL = 14.0f;
-		constexpr 	float	DEFAULT = 18.0f;
-		constexpr 	float	LARGE = 28.0f;
+		constexpr 	float	SMALL = 16.0f;
+		constexpr 	float	DEFAULT = 22.0f;
+		constexpr 	float	LARGE = 30.0f;
 		constexpr 	float	TITLE = 36.0f;
 	};
 
