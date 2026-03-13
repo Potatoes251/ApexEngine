@@ -55,6 +55,8 @@ namespace Apex::UserInterface
         void PopColor() override;
         void PushStyleVariable(StyleVariable var, float x, float y = 0.f) override;
         void PopStyleVariable() override;
+        void PushFont(FontID id) override;
+        void PopFont() override;
         float GetTextLineHeight() const override;
 
         void Separator() override;

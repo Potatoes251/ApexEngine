@@ -69,6 +69,10 @@ namespace Apex::Editor
 		void DrawToolbar();
 		void DrawBreadcrumb();
 		void DrawFolderTree(const fs::path& dir);
+		void DrawFolderTreeEntry(const fs::directory_entry& entry);
+		bool DrawTreeNode(const fs::path& path, bool isRenaming);
+		void HandleTreeNodeInput(const fs::path& path, bool isRenaming);
+		Apex::UserInterface::TreeNodeFlags BuildTreeNodeFlags(const fs::path& path) const;
 		void DrawAssetGrid();
 		void DrawAddPopup();
 		void DrawTile(const AssetEntry& entry);

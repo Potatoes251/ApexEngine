@@ -174,10 +174,24 @@ namespace Apex::UserInterface
         case StyleVariable::WindowPadding: 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(x, y)); 
             break;
+        case StyleVariable::IndentSpacing: 
+            ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, x);            
+            break;
         }
     }
 
     void ImGUIManager::PopStyleVariable() { ImGui::PopStyleVar(); }
+
+    void ImGUIManager::PushFont(FontID id)
+    {
+        int idx = static_cast<int>(id);
+        if (idx >= 0 && idx < static_cast<int>(m_fonts.size()) && m_fonts[idx])
+            ImGui::PushFont(m_fonts[idx]);
+        else
+            ImGui::PushFont(nullptr); // falls back to default
+    }
+
+    void ImGUIManager::PopFont() { ImGui::PopFont(); }
 
     float ImGUIManager::GetTextLineHeight() const { return ImGui::GetTextLineHeight(); }
 

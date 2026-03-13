@@ -58,7 +58,7 @@ namespace Apex::UserInterface
     enum class StyleColor { Text, Button, ChildBackground };
 
     // Style variables that can be temporarily overridden
-    enum class StyleVariable { FramePadding, ItemSpacing, WindowPadding };
+    enum class StyleVariable { FramePadding, ItemSpacing, WindowPadding, IndentSpacing };
 
     // Keys usable in UI panels (ImGui-layer input, not gameplay input).
     // Add entries here as new shortcuts are needed.
@@ -104,6 +104,8 @@ namespace Apex::UserInterface
         virtual void PopColor() = 0;
         virtual void PushStyleVariable(StyleVariable var, float x, float y = 0.f) = 0;
         virtual void PopStyleVariable() = 0;
+        virtual void PushFont(FontID id) = 0;
+        virtual void PopFont() = 0;
         virtual float GetTextLineHeight() const = 0;
 
         // Layout 
