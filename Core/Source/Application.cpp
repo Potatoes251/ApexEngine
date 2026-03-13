@@ -184,7 +184,7 @@ void Apex::Application::LoadScene()
     //m_physics.CreateActor(collider2, body2);
 
     SceneLoader loader(*m_resourceManager.get(), m_physics);
-    loader.LoadScene(*m_scene, "../../../Assets/Scenes/scene.level");
+    loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;
 
