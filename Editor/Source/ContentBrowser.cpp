@@ -287,7 +287,9 @@ namespace Apex::Editor
 
     void ContentBrowser::Draw()
     {
+        m_gui.PushFont(FontID::Default);
         m_gui.BeginPanel("Content Browser");
+        m_gui.PopFont();
 
         DrawToolbar();
         m_gui.Separator();
@@ -299,7 +301,7 @@ namespace Apex::Editor
 
         if (m_showTree)
         {
-            m_gui.BeginChildPanel("##cb_tree", 200.f, 0.f, true);
+            m_gui.BeginChildPanel("##cb_tree", 240.f, 0.f, true);
             DrawFolderTree(m_rootPath);
             m_gui.EndChildPanel();
             m_gui.SameLine();
@@ -347,32 +349,35 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawToolbar()
     {
-        if (m_gui.SmallButton("+ Add"))
+        // Give every toolbar button a comfortable height
+        m_gui.PushStyleVariable(StyleVariable::FramePadding, 8.f, 5.f);
+
+        if (m_gui.Button("+ Add"))
             OnAddButtonClicked();
         m_gui.SameLine();
 
-        m_gui.SetNextItemWidth(200.f);
+        m_gui.SetNextItemWidth(220.f);
         m_gui.InputText("##cb_search", m_searchBuffer, sizeof(m_searchBuffer), "Search assets...");
 
         if (m_searchBuffer[0] != '\0')
         {
             m_gui.SameLine();
-            if (m_gui.SmallButton("x"))
+            if (m_gui.Button("x"))
                 std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         }
 
         m_gui.SameLine();
-        if (m_gui.SmallButton("Refresh"))
+        if (m_gui.Button("Refresh"))
             Refresh();
 
         m_gui.SameLine();
-        if (m_gui.SmallButton(m_showTree ? "Hide Folder Tab" : "Show Folder Tab"))
+        if (m_gui.Button(m_showTree ? "Hide Folder Tab" : "Show Folder Tab"))
             m_showTree = !m_showTree;
 
         if (m_currentPath != m_rootPath)
         {
             m_gui.SameLine();
-            if (m_gui.SmallButton("<- Back"))
+            if (m_gui.Button("<- Back"))
                 NavigateTo(m_currentPath.parent_path());
         }
 
@@ -382,6 +387,7 @@ namespace Apex::Editor
         m_gui.SetNextItemWidth(120.f);
         m_gui.SliderInt("##tilesize", &m_tileSize, 80, 160);
         
+        m_gui.PopStyleVariable();
     }
 
     void ContentBrowser::DrawBreadcrumb()
@@ -417,71 +423,88 @@ namespace Apex::Editor
     {
         if (!fs::exists(dir)) return;
 
+        m_gui.PushStyleVariable(StyleVariable::FramePadding, 4.f, 5.f);
+        m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 6.f, 6.f);
+        m_gui.PushStyleVariable(StyleVariable::IndentSpacing, 18.f);
+        m_gui.PushFont(FontID::Default);
+
         for (const auto& entry : fs::directory_iterator(dir))
+            if (entry.is_directory()) DrawFolderTreeEntry(entry);
+
+        m_gui.PopFont();
+        m_gui.PopStyleVariable(); // IndentSpacing
+        m_gui.PopStyleVariable(); // ItemSpacing
+        m_gui.PopStyleVariable(); // FramePadding
+    }
+
+    void ContentBrowser::DrawFolderTreeEntry(const fs::directory_entry& entry)
+    {
+        const fs::path& path = entry.path();
+        bool isRenaming = (m_renamingPath == path);
+
+        bool open = DrawTreeNode(path, isRenaming);
+        HandleTreeNodeInput(path, isRenaming);
+
+        AssetEntry assetEntry = ClassifyEntry(entry);
+        DrawEntryContextMenu(assetEntry);
+
+        if (open) { DrawFolderTree(path); m_gui.EndTreeNode(); }
+    }
+
+    bool ContentBrowser::DrawTreeNode(const fs::path& path, bool isRenaming)
+    {
+        auto flags = BuildTreeNodeFlags(path);
+        std::string label = isRenaming ? "##renaming_" + path.string() : path.filename().string();
+
+        m_gui.PushColor(Apex::UserInterface::StyleColor::Text, { 1.f, 0.85f, 0.4f, 1.f });
+        bool open = m_gui.BeginTreeNode(label, flags);
+        m_gui.PopColor();
+        return open;
+    }
+
+    void ContentBrowser::HandleTreeNodeInput(const fs::path& path, bool isRenaming)
+    {
+        if (isRenaming) { DrawTreeNodeRename(); return; }
+
+        if (m_gui.IsItemClicked())
         {
-            if (!entry.is_directory()) continue;
+            m_selectedPath = path;
+            NavigateTo(path);
+        }
+        if (m_gui.IsItemDoubleClicked()) BeginRename(path);
+        if (m_gui.IsItemHovered() && m_gui.IsMouseReleased(MouseButton::Right))
+            m_selectedPath = path;
+        if (m_gui.IsItemHovered())
+            m_hoveredDestThisFrame = path;
 
-            bool hasSubDirs = false;
-            for (const auto& sub : fs::directory_iterator(entry.path()))
+        if (m_gui.BeginDropTarget())
+        {
+            const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
+            if (data)
+                MoveEntry(fs::path(static_cast<const char*>(data)), path);
+            m_hoveredDestThisFrame = path;
+            m_gui.EndDropTarget();
+        }
+    }
+
+    Apex::UserInterface::TreeNodeFlags ContentBrowser::BuildTreeNodeFlags(const fs::path& path) const
+    {
+        using Apex::UserInterface::TreeNodeFlags;
+        bool hasSubDirs = false;
+        for (const auto& sub : fs::directory_iterator(path))
+        {
+            if (sub.is_directory())
             {
-                if (sub.is_directory())
-                {
-                    hasSubDirs = true;
-                    break;
-                }
-            }
-                
-            using Apex::UserInterface::TreeNodeFlags;
-            TreeNodeFlags flags = TreeNodeFlags::OpenOnArrow | TreeNodeFlags::SpanAvailWidth;
-
-            if (!hasSubDirs)                       flags = flags | TreeNodeFlags::Leaf;
-            if (entry.path() == m_currentPath)     flags = flags | TreeNodeFlags::Selected;
-
-            bool isRenaming = (m_renamingPath == entry.path());
-
-            m_gui.PushColor(Apex::UserInterface::StyleColor::Text, { 1.f, 0.85f, 0.4f, 1.f });
-
-            std::string nodeLabel = isRenaming ? "##renaming_" + entry.path().string() : entry.path().filename().string();
-
-            bool open = m_gui.BeginTreeNode(nodeLabel, flags);
-            m_gui.PopColor();
-
-            if (isRenaming)
-                DrawTreeNodeRename();
-           
-            if (!isRenaming && m_gui.IsItemClicked())
-            {
-                m_selectedPath = entry.path();
-                NavigateTo(entry.path());
-            }
-
-            if (!isRenaming && m_gui.IsItemDoubleClicked())
-                BeginRename(entry.path());
-                
-            if (!isRenaming && m_gui.IsItemHovered() && m_gui.IsMouseReleased(MouseButton::Right))
-                m_selectedPath = entry.path();
-
-            if (m_gui.IsItemHovered())
-                m_hoveredDestThisFrame = entry.path();
-
-            if (m_gui.BeginDropTarget())
-            {
-                const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
-                if (data)
-                    MoveEntry(fs::path(static_cast<const char*>(data)), entry.path());
-                m_hoveredDestThisFrame = entry.path();
-                m_gui.EndDropTarget();
-            }
-
-            AssetEntry assetEntry = ClassifyEntry(entry);
-            DrawEntryContextMenu(assetEntry);
-
-            if (open)
-            {
-                DrawFolderTree(entry.path());
-                m_gui.EndTreeNode();
+                hasSubDirs = true;
+                break;
             }
         }
+            
+        TreeNodeFlags flags = TreeNodeFlags::OpenOnArrow | TreeNodeFlags::SpanAvailWidth;
+        if (!hasSubDirs)         flags = flags | TreeNodeFlags::Leaf;
+        if (path == m_currentPath) flags = flags | TreeNodeFlags::Selected;
+
+        return flags;
     }
 
     void ContentBrowser::DrawAssetGrid()
@@ -536,6 +559,10 @@ namespace Apex::Editor
     {
         if (!m_gui.BeginPopup("##add_menu")) return;
 
+        m_gui.PushStyleVariable(StyleVariable::WindowPadding, 10.f, 8.f);
+        m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 10.f, 8.f);
+        m_gui.PushFont(FontID::Default);
+
         if (m_gui.MenuItem("New Folder"))
             CreateFolder();
 
@@ -553,6 +580,10 @@ namespace Apex::Editor
                 ImportFiles({ folder });
         }
 
+        m_gui.PopFont();
+        m_gui.PopStyleVariable();
+        m_gui.PopStyleVariable();
+
         m_gui.EndPopup();
     }
 
@@ -565,7 +596,7 @@ namespace Apex::Editor
             m_gui.PushColor(Apex::UserInterface::StyleColor::ChildBackground,
                 { 0.26f, 0.42f, 0.60f, 0.5f });
 
-        m_gui.BeginChildPanel("##tile", m_tileSize, m_tileSize + 22.f, false);
+        m_gui.BeginChildPanel("##tile", m_tileSize, m_tileSize + 26.f, false);
 
         LibMath::Vector2 pos = m_gui.GetCursorPos();
         float iconSize = m_tileSize - 6.f * 2.f;
@@ -696,7 +727,7 @@ namespace Apex::Editor
 
         LibMath::Vector2 textSize = m_gui.GetDrawList()->CalculateTextSize(name.c_str());
         float centeredX = pos[0] + (m_tileSize - textSize[0]) * 0.5f;
-        float labelY = pos[1] + m_tileSize + 2.f;
+        float labelY = pos[1] + m_tileSize + 4.f;
 
         // Invisible button over the label area so we can detect double-click
         m_gui.SetCursorPos(LibMath::Vector2(centeredX, labelY));
@@ -711,6 +742,11 @@ namespace Apex::Editor
     void ContentBrowser::DrawEntryContextMenu(const AssetEntry& entry)
     {
         if (!m_gui.BeginContextMenu("##ctx_" + entry.m_path.string())) return;
+
+        m_gui.PushStyleVariable(StyleVariable::WindowPadding, 10.f, 8.f);
+        m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 10.f, 8.f);
+
+        m_gui.PushFont(FontID::Default);
 
         m_gui.TextDisabled(entry.m_path.filename().string());
         m_gui.Separator();
@@ -738,12 +774,20 @@ namespace Apex::Editor
 
         if (m_gui.MenuItem("Delete")) { m_selectedPath = entry.m_path; DeleteSelected(); }
 
+        m_gui.PopFont();
+        m_gui.PopStyleVariable();
+        m_gui.PopStyleVariable();
+
         m_gui.EndContextMenu();
     }
 
     void ContentBrowser::DrawGridContextMenu()
     {
         if (!m_gui.BeginGridContextMenu()) return;
+
+        m_gui.PushStyleVariable(StyleVariable::WindowPadding, 10.f, 8.f);
+        m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 10.f, 8.f);
+        m_gui.PushFont(FontID::Default);
 
         m_gui.TextDisabled("Actions");
         m_gui.Separator();
@@ -777,6 +821,10 @@ namespace Apex::Editor
             std::system(("explorer \"" + m_currentPath.string() + "\"").c_str());
         }
 
+        m_gui.PopFont();
+        m_gui.PopStyleVariable();
+        m_gui.PopStyleVariable();
+
         m_gui.EndContextMenu();
     }
 
@@ -805,11 +853,12 @@ namespace Apex::Editor
         Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
         constexpr uint32_t colNormal = 0xFFCCCCCC;
         constexpr uint32_t colHovered = 0xFFFFFFFF;
-        constexpr float    padX = 4.f;
+        constexpr float    padX = 6.f;
+        constexpr float    padY = 3.f;
 
         LibMath::Vector2 textSize = drawList->CalculateTextSize(label);
         float buttonWidth = textSize[0] + padX * 2.f;
-        float buttonHeight = textSize[1];
+        float buttonHeight = textSize[1] + padY * 2.f;
 
         LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
 
