@@ -55,6 +55,12 @@ namespace Apex::Windowing
 		// Native handle
 		void* NativeHandle() const override { return m_window; }
 
+		void SetExternalDropCallback(ExternalDropCallback callback) override;
+
+		std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) override;
+		std::filesystem::path OpenFolderDialog() override;
+
+
 	private:
 		GLFWwindow* m_window = nullptr;
 		bool        m_isPrimary = true;   // only primary calls glfwInit/Terminate
@@ -67,11 +73,12 @@ namespace Apex::Windowing
 		double		m_lastMouseY = 0.0;
 		bool 		m_firstMouseMove = true;
 
-		KeyCallback			m_keyCallback;
-		MouseMoveCallback	m_mouseMoveCallback;
-		MouseButtonCallback m_mouseButtonCallback;
-		ScrollCallback		m_scrollCallback;
-		ResizeCallback		m_resizeCallback;
+		KeyCallback			 m_keyCallback;
+		MouseMoveCallback	 m_mouseMoveCallback;
+		MouseButtonCallback  m_mouseButtonCallback;
+		ScrollCallback		 m_scrollCallback;
+		ResizeCallback		 m_resizeCallback;
+		ExternalDropCallback m_dropCallback;
 
 		// GLFW static callback wrappers
 		static void	GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -79,6 +86,7 @@ namespace Apex::Windowing
 		static void	GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 		static void	GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 		static void	GLFWResizeCallback(GLFWwindow* window, int width, int height);
+		static void GLFWDropCallback(GLFWwindow* window, int count, const char** paths);
 
 		static Key TranslateKey(int glfwKey);
 		static MouseButton TranslateMouseButton(int glfwButton);

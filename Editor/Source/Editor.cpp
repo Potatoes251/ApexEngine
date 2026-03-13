@@ -26,13 +26,18 @@ namespace Apex::Editor
         if (!m_gui)
             return false;
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
                 if (m_audio && entry.m_type == AssetType::Sound)
                     m_audio->Play2D(entry.m_path.filename().string());
             });
+
+        m_window->SetExternalDropCallback(
+            [this](std::vector<std::filesystem::path> paths)
+            { OnExternalDrop(std::move(paths)); });
+
 
         return true;
     }
@@ -78,5 +83,23 @@ namespace Apex::Editor
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
+    }
+    void Editor::OnExternalDrop(std::vector<std::filesystem::path> paths)
+    {
+        if (!m_contentBrowser) return;
+
+        auto  mouse = m_window->GetMousePosition();
+        float mouseX = static_cast<float>(mouse.m_x);
+        float mouseY = static_cast<float>(mouse.m_y);
+
+        fs::path dest = m_contentBrowser->GetExternalDropDest(mouseX, mouseY);
+        if (!dest.empty())
+        {
+            m_contentBrowser->ImportFiles(std::move(paths), dest);
+            return;
+        }
+
+        if (m_contentBrowser->ContainsGridPoint(mouseX, mouseY))
+            m_contentBrowser->ImportFiles(std::move(paths));
     }
 }
