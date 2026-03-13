@@ -351,6 +351,7 @@ namespace Apex::Editor
     {
         // Give every toolbar button a comfortable height
         m_gui.PushStyleVariable(StyleVariable::FramePadding, 8.f, 5.f);
+        m_gui.PushFont(FontID::Default);
 
         if (m_gui.Button("+ Add"))
             OnAddButtonClicked();
@@ -387,6 +388,7 @@ namespace Apex::Editor
         m_gui.SetNextItemWidth(120.f);
         m_gui.SliderInt("##tilesize", &m_tileSize, 80, 160);
         
+        m_gui.PopFont();
         m_gui.PopStyleVariable();
     }
 
@@ -399,6 +401,8 @@ namespace Apex::Editor
         fs::path accumulated = m_rootPath.parent_path();
 
         m_breadcrumbRects.clear();
+
+        m_gui.PushFont(FontID::Default);
 
         bool first = true;
         int  idx = 0;
@@ -417,6 +421,8 @@ namespace Apex::Editor
 
             DrawBreadcrumbPart(accumulated, part.string(), idx++);
         }
+
+        m_gui.PopFont();
     }
 
     void ContentBrowser::DrawFolderTree(const fs::path& dir)
