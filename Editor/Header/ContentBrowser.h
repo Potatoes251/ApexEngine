@@ -71,14 +71,14 @@ namespace Apex::Editor
 		void DrawFolderTree(const fs::path& dir);
 		void DrawAssetGrid();
 		void DrawAddPopup();
-		void DrawTile(AssetEntry& entry);
+		void DrawTile(const AssetEntry& entry);
 		void DrawTileIcon(const AssetEntry& entry, LibMath::Vector2 pos);
-		void DrawTileInteraction(AssetEntry& entry, LibMath::Vector2 pos, float iconSize);
+		void DrawTileInteraction(const AssetEntry& entry, LibMath::Vector2 pos, float iconSize);
 		void DrawTileTooltip(const AssetEntry& entry, uint32_t color);
 		void DrawTileLabel(const AssetEntry& entry, LibMath::Vector2 pos);
 		void DrawEntryContextMenu(const AssetEntry& entry);
 		void DrawGridContextMenu();
-		void DrawRenameInline(AssetEntry& entry, LibMath::Vector2 pos);
+		void DrawRenameInline(const AssetEntry& entry, LibMath::Vector2 pos);
 		void DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx);
 		void DrawTreeNodeRename();
 

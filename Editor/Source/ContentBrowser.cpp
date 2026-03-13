@@ -512,7 +512,7 @@ namespace Apex::Editor
 
         m_pendingNavigate.clear();
 
-        for (auto& entry : const_cast<std::vector<AssetEntry>&>(source))
+        for (const auto& entry : source)
         {
             if (col > 0 && col % columns != 0)
                 m_gui.SameLine();
@@ -556,7 +556,7 @@ namespace Apex::Editor
         m_gui.EndPopup();
     }
 
-    void ContentBrowser::DrawTile(AssetEntry& entry)
+    void ContentBrowser::DrawTile(const AssetEntry& entry)
     {
         m_gui.PushID(entry.m_path.string());
 
@@ -618,7 +618,7 @@ namespace Apex::Editor
     }
 
 
-    void ContentBrowser::DrawTileInteraction(AssetEntry& entry, LibMath::Vector2 pos, float iconSize)
+    void ContentBrowser::DrawTileInteraction(const AssetEntry& entry, LibMath::Vector2 pos, float iconSize)
     {
         float pad = 6.f;
 
@@ -780,7 +780,7 @@ namespace Apex::Editor
         m_gui.EndContextMenu();
     }
 
-    void ContentBrowser::DrawRenameInline(AssetEntry& entry, LibMath::Vector2 pos)
+    void ContentBrowser::DrawRenameInline(const AssetEntry& entry, LibMath::Vector2 pos)
     {
         if (m_renamingPath != entry.m_path) return;
 
