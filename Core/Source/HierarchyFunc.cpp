@@ -51,7 +51,7 @@ int Apex::Hierarchy::Lua_SetParent(lua_State* L)
     if (!childNode || !parentNode)
         return 0;
 
-    childNode->SetParent(*parentNode);
+    childNode->SetParent(parentNode);
 
     return 0;
 }

@@ -17,10 +17,10 @@ int main(int argc, char* argv[])
 
     while (!editor.GetWindow().ShouldClose())
     {
-        // Processes events for all windows — must be unconditional
+        // Processes events for all windows ï¿½ must be unconditional
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();
-        // Game tick — only while the game window is still open.
+        // Game tick ï¿½ only while the game window is still open.
         if (app && !app->GetWindow().ShouldClose())
         {
             app->Tick(); // context switched inside Tick()
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
             editor.GetWindow().Focus();
         }
 
-        // Editor render — always runs while editor window is open.
+        // Editor render ï¿½ always runs while editor window is open.
         editor.Render(); 
     }
 

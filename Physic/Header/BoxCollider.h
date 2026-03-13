@@ -21,6 +21,8 @@ namespace Apex::Physic
 
 		LibMath::Vector3 GetHalfExtents() const { return m_halfExtents; }
 
+		void Serialize(std::ostream& out) const override;
+
 	private:
 		LibMath::Vector3 m_halfExtents;
 	};
