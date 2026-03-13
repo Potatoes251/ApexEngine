@@ -58,7 +58,7 @@ namespace Apex::UserInterface
         float GetTextLineHeight() const override;
 
         void Separator() override;
-        void SameLine(float offsetFromLeft, float spacing) override;
+        void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) override;
         void SetNextItemWidth(float width)  override;
         LibMath::Vector2 GetAvailableSize() const override;
         LibMath::Vector2 GetCursorPos()     const override;
@@ -105,6 +105,10 @@ namespace Apex::UserInterface
                        const std::string& hint) override;
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;
 
+		Vector2 GetScreenSize() override;
+
+		//In checkbox
+
         bool IsItemHovered() const override;
         LibMath::Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
@@ -123,8 +127,9 @@ namespace Apex::UserInterface
         const void* AcceptDragPayload(const char* type) override;
 		void EndDropTarget() override;
 
-        void DrawText2D(const std::string& text, float x, float y,
-                        float size, FontID id) override;
+		//Out of checkbox
+		void	DrawText2D(const std::string& text, float x, float y, float size, FontID id) override;
+		void    DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) override;
         IDrawList* GetDrawList();
 
 	private:

@@ -59,6 +59,8 @@ namespace Apex::Physic
 		void OnTriggerEnter(RigidBodyComponent* otherActor);
 		void OnTriggerExit(RigidBodyComponent* otherActor);
 
+		void Serialize(std::ostream& out) const override;
+
 	private:
 		BodyType			m_bodyType;
 		float				m_mass;

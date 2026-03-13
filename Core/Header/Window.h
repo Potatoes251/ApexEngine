@@ -16,10 +16,17 @@ namespace Apex::Windowing
 	// ── Input types ──────────────────────────────────────────────
 	enum class Key
 	{
-		W, A, S, D, Q, E,
+		W, A, S, D, Q, E, P,
 		Up, Down, Left, Right,
 		Escape, Space,
 		Unknown
+	};
+
+	enum class KeyAction
+	{
+		Press,
+		Release,
+		Repeat
 	};
 
 	enum class MouseButton
@@ -36,7 +43,7 @@ namespace Apex::Windowing
 	};
 
 	// ── Callbacks ─────────────────────────────────────────────────
-	using KeyCallback = std::function<void(Key, bool)>;
+	using KeyCallback = std::function<void(Key, KeyAction)>;
 	using MouseMoveCallback = std::function<void(double dx, double dy)>;
 	using MouseButtonCallback = std::function<void(MouseButton, bool)>;
 	using ScrollCallback = std::function<void(double xoffset, double yoffset)>;

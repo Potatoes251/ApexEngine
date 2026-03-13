@@ -21,7 +21,13 @@ namespace Apex::Data
 		Object(const Object& other);
 		~Object() = default;
 
-				Object&		operator=(const Object& other) = delete;
+				size_t			GetId() const { return m_id; }
+				void			SetId(size_t id) { m_id = id; }
+
+				std::string&	GetName() { return m_name; }
+				void			SetName(std::string name) { m_name = name; }
+
+				Object&			operator=(const Object& other) = delete;
 
 				LibMath::Transform&		GetLocalTransform();
 		const	LibMath::Transform&		GetLocalTransform() const;
@@ -64,9 +70,21 @@ namespace Apex::Data
 					return nullptr;
 				}
 
+				std::vector<Component*> GetComponents() const
+				{
+					std::vector<Component*> comps;
+					for (auto& c : m_components)
+						comps.push_back(c.get());
+					return comps;
+				}
+
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
+		size_t			m_id;
+		static size_t	m_nextId;
+		std::string		m_name;
+
 		LibMath::Transform				m_localTransform;
 		LibMath::Transform				m_globalTransform;
 

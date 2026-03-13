@@ -46,3 +46,21 @@ void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
 {
 	printf("OnTriggerExit\n");
 }
+
+void RigidBodyComponent::Serialize(std::ostream& out) const
+{
+	out << "      \"RigidBody\": {\n";
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+	out << "        \"type\": \"";
+
+	switch (m_bodyType)
+	{
+	case BodyType::Static: out << "Static"; break;
+	case BodyType::Dynamic: out << "Dynamic"; break;
+	case BodyType::Kinematic: out << "Kinematic"; break;
+	}
+
+	out << "\",\n";
+	out << "        \"mass\": " << m_mass << "\n";
+	out << "      }";
+}

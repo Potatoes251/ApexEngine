@@ -133,6 +133,9 @@ namespace Apex::Windowing
         case Key::E:      
             glfwKey = GLFW_KEY_E;      
             break;
+        case Key::P:
+            glfwKey = GLFW_KEY_P;
+            break;
         case Key::Escape: 
             glfwKey = GLFW_KEY_ESCAPE; 
             break;
@@ -228,8 +231,27 @@ namespace Apex::Windowing
     void GLFWWindow::GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
-        if (self && self->m_keyCallback)
-            self->m_keyCallback(TranslateKey(key), action != GLFW_RELEASE);
+        if (!self || !self->m_keyCallback)
+            return;
+
+        KeyAction keyAction;
+
+        switch (action)
+        {
+        case GLFW_PRESS:
+            keyAction = KeyAction::Press;
+            break;
+        case GLFW_RELEASE:
+            keyAction = KeyAction::Release;
+            break;
+        case GLFW_REPEAT:
+            keyAction = KeyAction::Repeat;
+            break;
+        default:
+            return;
+        }
+
+        self->m_keyCallback(TranslateKey(key), keyAction);
 	}
 
     void GLFWWindow::GLFWCursorCallback(GLFWwindow* window, double xpos, double ypos)
@@ -302,6 +324,7 @@ namespace Apex::Windowing
         case GLFW_KEY_D:      return Key::D;
         case GLFW_KEY_Q:      return Key::Q;
         case GLFW_KEY_E:      return Key::E;
+        case GLFW_KEY_P:      return Key::P;
         case GLFW_KEY_UP:     return Key::Up;
         case GLFW_KEY_DOWN:   return Key::Down;
         case GLFW_KEY_LEFT:   return Key::Left;

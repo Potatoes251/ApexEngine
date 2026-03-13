@@ -9,7 +9,7 @@
 class Texture : public IResource
 {
 public:
-	Texture(std::string name) : m_path(name) {}
+	Texture(std::string name) : IResource(name) {}
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 
@@ -23,7 +23,6 @@ public:
 	void Bind(uint32_t slot = 0);
 
 private:
-	std::string m_path;
 	uint32_t	m_id		= 0;
 	int			m_channels	= 0;
 	int			m_width		= 0;

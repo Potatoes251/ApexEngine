@@ -11,7 +11,7 @@
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string name) : m_name(name) {}
+	Mesh(std::string path) : IResource(path) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 
@@ -28,7 +28,6 @@ public:
 	int32_t GetIndexCount()  const { return m_indexCount; }
 
 private:
-	std::string m_name;
 
 	uint32_t m_VAO = 0;
 	uint32_t m_VBO = 0;
@@ -37,4 +36,4 @@ private:
 };
 
 
-#endif // !MESH
+#endif // !MESH	

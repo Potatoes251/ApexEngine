@@ -2,7 +2,7 @@
 #define GLFW_WINDOW
 
 // ================================================================================
-// GLFWWindow.h — INTERNAL header. Do NOT include outside windowing implementation.
+// GLFWWindow.h ï¿½ INTERNAL header. Do NOT include outside windowing implementation.
 // ================================================================================
 
 #include "Window.h"
