@@ -1,7 +1,6 @@
 ﻿#include "MeshImporter.h"
 
-// includes Vertex
-#include "RHI.h"
+#include "Vertex.h"
 
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.

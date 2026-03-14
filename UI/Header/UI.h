@@ -155,6 +155,11 @@ namespace Apex::UserInterface
         virtual void OpenPopup(const std::string& id) = 0;
         virtual bool BeginPopup(const std::string& id) = 0;
         virtual void EndPopup() = 0;
+        // Modal stays open until CloseCurrentPopup() is called.
+        // Pass size {0,0} to let ImGui auto-size.
+        virtual bool BeginPopupModal(const std::string& title, LibMath::Vector2 size = {}) = 0;
+        virtual void CloseCurrentPopup() = 0;
+        virtual void SetNextWindowSize(LibMath::Vector2 size) = 0;
 
         // Tooltip 
         virtual void BeginTooltip() = 0;
@@ -189,6 +194,10 @@ namespace Apex::UserInterface
         virtual bool IsAnyItemHovered()   const = 0;
         virtual bool IsDragDropActive() const = 0;
         virtual const char* GetDragDropPayloadType() const = 0;
+        virtual bool IsMouseDown(MouseButton button = MouseButton::Left) const = 0;
+        virtual LibMath::Vector2 GetMouseDelta() const = 0;  // pixels moved since last frame
+        virtual float GetMouseWheelDelta() const = 0;  // scroll ticks this frame
+        virtual LibMath::Vector2 GetMousePos() const = 0;  // screen-space cursor position
 
         // Drag & Drop
         // Call BeginDragSource after InvisibleButton/item — returns true if dragging.

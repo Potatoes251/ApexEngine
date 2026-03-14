@@ -276,6 +276,20 @@ namespace Apex::UserInterface
     bool ImGUIManager::BeginPopup(const std::string& id) { return ImGui::BeginPopup(id.c_str()); }
     void ImGUIManager::EndPopup() { ImGui::EndPopup(); }
 
+    bool ImGUIManager::BeginPopupModal(const std::string& title, LibMath::Vector2 size)
+    {
+        if (size[0] > 0.f || size[1] > 0.f)
+            ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Appearing);
+        return ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+    }
+
+    void ImGUIManager::CloseCurrentPopup() { ImGui::CloseCurrentPopup(); }
+
+    void ImGUIManager::SetNextWindowSize(LibMath::Vector2 size)
+    {
+        ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Appearing);
+    }
+
     void ImGUIManager::BeginTooltip() { ImGui::BeginTooltip(); }
     void ImGUIManager::EndTooltip() { ImGui::EndTooltip(); }
 
@@ -352,6 +366,28 @@ namespace Apex::UserInterface
     {
         const ImGuiPayload* payload = ImGui::GetDragDropPayload();
         return payload ? payload->DataType : nullptr;
+    }
+
+    bool ImGUIManager::IsMouseDown(MouseButton button) const
+    {
+        return ImGui::IsMouseDown(static_cast<int>(button));
+    }
+
+    LibMath::Vector2 ImGUIManager::GetMouseDelta() const
+    {
+        ImVec2 delta = ImGui::GetIO().MouseDelta;
+        return LibMath::Vector2(delta.x, delta.y);
+    }
+
+    float ImGUIManager::GetMouseWheelDelta() const
+    {
+        return ImGui::GetIO().MouseWheel;
+    }
+
+    LibMath::Vector2 ImGUIManager::GetMousePos() const
+    {
+        ImVec2 pos = ImGui::GetMousePos();
+        return LibMath::Vector2(pos.x, pos.y);
     }
 
     bool ImGUIManager::BeginDragSource()

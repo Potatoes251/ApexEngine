@@ -90,6 +90,9 @@ namespace Apex::UserInterface
         void OpenPopup(const std::string& id) override;
         bool BeginPopup(const std::string& id) override;
         void EndPopup() override;
+        bool BeginPopupModal(const std::string& title, LibMath::Vector2 size = {}) override;
+        void CloseCurrentPopup() override;
+        void SetNextWindowSize(LibMath::Vector2 size) override;
 
         void BeginTooltip() override;
         void EndTooltip() override;
@@ -120,6 +123,10 @@ namespace Apex::UserInterface
         bool IsAnyItemHovered() const override;
         bool IsDragDropActive() const override;
         const char* GetDragDropPayloadType() const override;
+        bool IsMouseDown(MouseButton button = MouseButton::Left) const override;
+        LibMath::Vector2 GetMouseDelta() const override;
+        float GetMouseWheelDelta() const override;
+        LibMath::Vector2 GetMousePos() const override;
 
 		bool BeginDragSource() override;
         void SetDragPayload(const char* type, const void* data, size_t size) override;
