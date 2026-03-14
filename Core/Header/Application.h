@@ -50,6 +50,7 @@ namespace Apex
         void Shutdown();
 
         Apex::Windowing::IWindow& GetWindow() { return *m_window; }
+        Apex::Rendering::Scene& GetScene() { return *m_scene; }
 
     private:
         bool InitResourceManager();

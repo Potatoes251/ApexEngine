@@ -56,6 +56,17 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
     }
 
     parser.Expect('}');
+
+    for (auto& [childId, parentId] : parentLinks)
+    {
+        auto child = objectsById[childId];
+        auto parent = objectsById[parentId];
+
+        if (child && parent)
+        {
+            child->GetSceneNodeRaw()->SetParent(parent->GetSceneNodeRaw());
+        }
+    }
 }
 
 Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& parser)
@@ -66,15 +77,25 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
 
     // id
     parser.ParseString(); parser.Expect(':');
-    obj->SetId(parser.ParseInt());
+    size_t id = parser.ParseInt();
+    obj->SetId(id);
+
+    objectsById[id] = obj;
     parser.Expect(',');
 
     // parent
     parser.ParseString(); parser.Expect(':');
+
     if (parser.Match("null"))
-        obj->GetSceneNode()->SetParent(nullptr);
+    {
+        // root object
+    }
     else
-        obj->GetSceneNode()->SetParent(nullptr);
+    {
+        size_t parentId = parser.ParseInt();
+        parentLinks.emplace_back(id, parentId);
+    }
+
     parser.Expect(',');
 
     // name

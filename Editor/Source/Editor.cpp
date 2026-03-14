@@ -38,6 +38,7 @@ namespace Apex::Editor
             [this](std::vector<std::filesystem::path> paths)
             { OnExternalDrop(std::move(paths)); });
 
+        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene());
 
         return true;
     }
@@ -54,12 +55,17 @@ namespace Apex::Editor
         m_window->MakeContextCurrent();
         m_window->Clear();
 
-        if (m_gui && m_contentBrowser)
-        {
-            m_gui->BeginFrame();
+        if (!m_gui) return;
+
+        m_gui->BeginFrame();
+
+        if (m_contentBrowser)
             m_contentBrowser->Draw();
-            m_gui->EndFrame();
-        }
+
+        if (m_hierarchy)
+            m_hierarchy->Draw();
+
+        m_gui->EndFrame();
 
         m_window->SwapBuffers();
     }

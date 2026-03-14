@@ -203,7 +203,7 @@ namespace Apex::Editor
         m_renamingPath = path;
         m_renameFocusPending = true;
 
-        // Pre-fill with stem only — extension is re-attached in CommitRename
+        // Pre-fill with stem only - extension is re-attached in CommitRename
         std::string stem = path.stem().string();
         std::strncpy(m_renameBuffer, stem.c_str(), sizeof(m_renameBuffer) - 1);
         m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
@@ -555,7 +555,7 @@ namespace Apex::Editor
         // Right-click on empty grid background
         DrawGridContextMenu();
 
-        // F2 — rename selected entry
+        // F2 - rename selected entry
         if (!m_selectedPath.empty() && m_gui.IsKeyPressed(UIKey::F2))
             BeginRename(m_selectedPath);
         
