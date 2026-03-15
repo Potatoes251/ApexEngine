@@ -1,5 +1,11 @@
 #include "Viewport.h"
+
 #include <LibMath/Arithmetic.h>
+#include <LibMath/Colision3D.h>
+
+#include "Scene.h"
+#include "RHI.h"
+#include "UI.h"
 
 using namespace Apex::Data;
 
@@ -13,12 +19,7 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* s
 	m_shader = shader;
 }
 
-void Viewport::Update()
-{
-
-}
-
-void Viewport::OnMouseClick(int mouseX, int mouseY)
+void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
 	if (!m_isHovered || !m_shader.IsReady()) return;
 
@@ -27,29 +28,20 @@ void Viewport::OnMouseClick(int mouseX, int mouseY)
 
 	if (m_selectedObject)
 	{
-		float distance = m_camera.GetPosition().distanceFrom(m_selectedObject->GetGlobalTransform().getPosition());
-		// adjust the value to have a correct size
-		distance *= .1f;
-		Axis axis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode,
+		LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(aspectRatio)* m_camera.GetViewMatrix();
+		m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode,
 			m_selectedObject->GetGlobalTransform().getPosition(),
-			m_camera.GetProjectionMatrix(aspectRatio) * m_camera.GetViewMatrix(),
-			m_panelPos, m_panelSize, distance);
-		switch (axis)
+			viewProj,
+			m_panelPos, m_panelSize);
+
+		if (m_selectedAxis != Axis::None)
 		{
-		case Axis::X:
-			printf("x axis\n");
-			break;
-		case Axis::Y:
-			printf("y axis\n");
-			break;
-		case Axis::Z:
-			printf("z axis\n");
-			break;
-		case Axis::None:
-			printf("no axis\n");
-			break;
-		default:
-			break;
+			m_initialTransform = m_selectedObject->GetGlobalTransform();
+			ComputePlane();
+			LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
+			LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint);
+			m_startingPoint = m_selectedObject->GetGlobalTransform().getPosition() +
+				GetAxis() * ((m_startingPoint - m_selectedObject->GetGlobalTransform().getPosition()).dot(GetAxis()));
 		}
 	}
 
@@ -66,11 +58,32 @@ void Viewport::OnMouseClick(int mouseX, int mouseY)
 	m_shader->Use();
 	m_currentScene->Render(picking);
 
-	int id = GetMousePixelInFbo(mouseX, mouseY);
-
-	m_selectedObject = m_currentScene->GetObjectAt(id);
+	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo((float)mouseX, (float)mouseY));
 
 	m_rhi->UnBindFrameBuffer();
+}
+
+void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
+{
+	m_selectedAxis = Axis::None;
+}
+
+void Viewport::OnMouseMove(double mouseX, double mouseY)
+{
+	if (m_selectedAxis == Axis::None || !m_selectedObject) return;
+
+	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) * m_camera.GetViewMatrix();
+	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
+
+	LibMath::Vector3 hit;
+
+	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, hit)) return;
+
+	LibMath::Vector3 delta = hit - m_startingPoint;
+
+	float movement = delta.dot(GetAxis());
+
+	m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + GetAxis() * movement);
 }
 
 void Viewport::Draw()
@@ -104,7 +117,7 @@ void Viewport::Draw()
 	m_gui->EndPanel();
 }
 
-int Viewport::GetMousePixelInFbo(int mouseX, int mouseY)
+int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 {
 	// relative to panel top-left
 	float localX = mouseX - m_panelPos[0];
@@ -121,5 +134,31 @@ int Viewport::GetMousePixelInFbo(int mouseX, int mouseY)
 	float fboY = localY * scaleY;
 	fboY = m_height - fboY;
 
-	return m_rhi->GetPixelData(fboX, fboY);
+	return m_rhi->GetPixelData((int)fboX, (int)fboY);
+}
+
+LibMath::Vector3 Viewport::GetAxis()
+{
+	switch (m_selectedAxis)
+	{
+	case Axis::X:		return { 1, 0, 0 };
+	case Axis::Y:		return { 0, 1, 0 };
+	case Axis::Z:		return { 0, 0, 1 };
+	case Axis::None:	return { 0, 0, 0 };
+	default:			return { 0, 0, 0 };
+	}
+}
+
+void Viewport::ComputePlane()
+{
+	if (m_selectedAxis == Axis::None || !m_selectedObject) return;
+
+	LibMath::Vector3 axis = GetAxis();
+
+	LibMath::Vector3 planeNormal = m_camera.GetFront() - axis * m_camera.GetFront().dot(axis);
+
+	if (planeNormal.magnitudeSquared() < g_epsilon)
+		planeNormal = axis.cross(m_camera.GetRight());
+
+	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
 }

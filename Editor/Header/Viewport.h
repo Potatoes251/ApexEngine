@@ -2,17 +2,21 @@
 #define VIEWPORT
 
 
+#include "LibMath/Geometry3D.h"
+#include "LibMath/Transform.h"
+
 #include "Shader.h"
 #include "ResourceHandle.h"
 
 #include "Gizmos.h"
 
-#include "Scene.h"
 #include "Camera.h"
-#include "RHI.h"
-#include "UI.h"
 
 namespace Apex::Data { class Object; }
+
+namespace Apex::UserInterface { class IGUI; }
+namespace Apex::Rendering { class IRHI; }
+namespace Apex::Rendering { class Scene; }
 
 namespace Apex::Editor
 {
@@ -24,36 +28,48 @@ namespace Apex::Editor
 		Viewport& operator=(Viewport const&) = delete;
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
-		void				Update();
-		void				OnMouseClick(int mouseX, int mouseY);
+		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
+		void				OnMouseClick(double mouseX, double mouseY);
+		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
+		void				OnMouseMove(double mouseX, double mouseY);
 		void				Draw();
 
 	private:
-		int					GetMousePixelInFbo(int mouseX, int mouseY);
+		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
-		Gizmos m_gizmo;
-		GizmoMode m_currentGizmoMode = GizmoMode::Rotation;
+		LibMath::Vector3	GetAxis();
+		void				ComputePlane();
+
+		Gizmos		m_gizmo;
+		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
+		Axis		m_selectedAxis = Axis::None;
 		
-		Rendering::Camera m_camera;
 
-		Apex::UserInterface::IGUI* m_gui = nullptr;
-		
-		Data::Object* m_selectedObject = nullptr;
-		Rendering::Scene* m_currentScene = nullptr;
-		Rendering::IRHI* m_rhi = nullptr;
+		Resources::ResourceHandle<Shader>	m_shader;
+		Rendering::RHIFrameBufferHandle		m_fbo;
+		Rendering::RHITextureHandle			m_textureFbo;
 
-		LibMath::Vector2 m_panelPos;
-		LibMath::Vector2 m_panelSize;
 
-		Resources::ResourceHandle<Shader> m_shader;
+		Rendering::Camera		m_camera;
 
-		Rendering::RHIFrameBufferHandle m_fbo;
-		Rendering::RHITextureHandle m_textureFbo;
+		UserInterface::IGUI*	m_gui = nullptr;
+		Rendering::IRHI*		m_rhi = nullptr;
+		Rendering::Scene*		m_currentScene = nullptr;
+		Data::Object*			m_selectedObject = nullptr;
 
-		float m_width = 1280;
-		float m_height = 720;
+		LibMath::Vector2		m_panelPos;
+		LibMath::Vector2		m_panelSize;
 
-		bool m_isHovered = false;
+		// used for changing the object's transform with gizmos
+		LibMath::Transform		m_initialTransform;
+		LibMath::Plane			m_axisPlane;
+		LibMath::Vector3		m_startingPoint;
+
+
+		float	m_width = 1280;
+		float	m_height = 720;
+
+		bool	m_isHovered = false;
 	};
 }
 

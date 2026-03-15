@@ -30,11 +30,11 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
 
 Gizmos::~Gizmos()
 {
-    m_cube.SetRhi(nullptr);
-    m_cone.SetRhi(nullptr);
-    m_cylinder.SetRhi(nullptr);
-    m_circle.SetRhi(nullptr);
-    m_shader->SetRhi(nullptr);
+    //m_cube.SetRhi(nullptr);
+    //m_cone.SetRhi(nullptr);
+    //m_cylinder.SetRhi(nullptr);
+    //m_circle.SetRhi(nullptr);
+    //m_shader->SetRhi(nullptr);
 }
 
 void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos)
@@ -67,7 +67,7 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 
 Axis Gizmos::IsOnGizmo(
     LibMath::Vector2 mousePosOnScreen, GizmoMode mode, LibMath::Vector3 worldPos, 
-    LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize, float distanceToCamera)
+    LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
     switch (mode)
     {
@@ -87,14 +87,13 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
-    float handleScale = 2.f;
+    constexpr float handleScale = 2.f;
 
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length * 0.5f, 0, 0),
-            { 0,0,1 },
-            LibMath::Degree(-90),
+            { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -103,20 +102,17 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length, 0, 0),
-            { 0,0,1 },
-            LibMath::Degree(-90),
+            { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
     }
-
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, length * 0.5f, 0),
-            { 1,0,0 },
-            LibMath::Degree(0),
+            { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -125,20 +121,17 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, length, 0),
-            { 1,0,0 },
-            LibMath::Degree(0),
+            { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
     }
-
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, 0, length * 0.5f),
-            { 1,0,0 },
-            LibMath::Degree(90),
+            { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -147,8 +140,7 @@ void Gizmos::DrawTranslation(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, 0, length),
-            { 1,0,0 },
-            LibMath::Degree(90),
+            { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
@@ -164,8 +156,7 @@ void Gizmos::DrawRotation(Data::Object* object)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos,
-            { 0,0,1 },
-            LibMath::Degree(90),
+            { 0,0,1 }, LibMath::Degree(90),
             LibMath::Vector3( 1, 1, 1 ) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
@@ -176,8 +167,7 @@ void Gizmos::DrawRotation(Data::Object* object)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos,
-            { 0,1,0 },
-            LibMath::Degree(0),
+            { 0,1,0 }, LibMath::Degree(0),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
@@ -188,8 +178,7 @@ void Gizmos::DrawRotation(Data::Object* object)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos,
-            { 1,0,0 },
-            LibMath::Degree(-90),
+            { 1,0,0 }, LibMath::Degree(-90),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
         m_shader->SetUniform("uModel", model);
@@ -203,15 +192,14 @@ void Gizmos::DrawScale(Data::Object* object)
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
     float length = 1.0f * m_distanceToCamera;
-    float thickness = 0.05f *m_distanceToCamera;
-    float handleScale = 2.f;
+    float thickness = 0.05f * m_distanceToCamera;
+    constexpr float handleScale = 2.f;
 
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length * 0.5f, 0, 0),
-            { 0,0,1 },
-            LibMath::Degree(-90),
+            { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -220,20 +208,17 @@ void Gizmos::DrawScale(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(length, 0, 0),
-            { 0,0,1 },
-            LibMath::Degree(-90),
+            { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cube.Draw();
     }
-
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, length * 0.5f, 0),
-            { 1,0,0 },
-            LibMath::Degree(0),
+            { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -242,20 +227,17 @@ void Gizmos::DrawScale(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, length, 0),
-            { 1,0,0 },
-            LibMath::Degree(0),
+            { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
         m_cube.Draw();
     }
-
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, 0, length * 0.5f),
-            { 1,0,0 },
-            LibMath::Degree(90),
+            { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
         m_shader->SetUniform("uModel", model);
@@ -264,8 +246,7 @@ void Gizmos::DrawScale(Data::Object* object)
 
         model = LibMath::Matrix4::createTransform(
             pos + LibMath::Vector3(0, 0, length),
-            { 1,0,0 },
-            LibMath::Degree(90),
+            { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", model);
@@ -273,7 +254,9 @@ void Gizmos::DrawScale(Data::Object* object)
     }
 }
 
-Axis Gizmos::IsOnTranslation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+Axis Gizmos::IsOnTranslation(
+    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
     float axisLength = 1.0f * m_distanceToCamera;
     float mouseRadius = 15.0f * m_distanceToCamera;
@@ -302,7 +285,9 @@ Axis Gizmos::IsOnTranslation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3
     return Axis::None;
 }
 
-Axis Gizmos::IsOnRotation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+Axis Gizmos::IsOnRotation(
+    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
     float axisLength = 1.0f * m_distanceToCamera;
 
@@ -356,7 +341,9 @@ Axis Gizmos::IsOnRotation(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 wo
     return Axis::None;
 }
 
-Axis Apex::Editor::Gizmos::IsOnScale(LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+Axis Gizmos::IsOnScale(
+    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
     float axisLength = 1.0f * m_distanceToCamera;
     float mouseRadius = 15.0f * m_distanceToCamera;
@@ -477,7 +464,6 @@ void Gizmos::CreateCylinder()
     // Top and bottom center vertices
     constexpr unsigned int topCenter = 0;
     constexpr unsigned int bottomCenter = 1;
-
     m_cylinder.m_vertices.push_back({ {0,  halfHeight, 0}, {0,0,0}, {0,0} });
     m_cylinder.m_vertices.push_back({ {0, -halfHeight, 0}, {0,0,0}, {0,0} });
 
@@ -491,12 +477,11 @@ void Gizmos::CreateCylinder()
 
         // top vertex
         m_cylinder.m_vertices.push_back({ {x,  halfHeight, z}, {0,0,0}, {0,0} });
-
         // bottom vertex
         m_cylinder.m_vertices.push_back({ {x, -halfHeight, z}, {0,0,0}, {0,0} });
     }
 
-    // ----- Side triangles -----
+    // Side triangles
     for (int i = 0; i < segments; i++)
     {
         unsigned int top0 = 2 + i * 2;
@@ -513,8 +498,7 @@ void Gizmos::CreateCylinder()
         m_cylinder.m_indices.push_back(bot0);
         m_cylinder.m_indices.push_back(bot1);
     }
-
-    // ----- Top cap -----
+    // Top cap
     for (int i = 0; i < segments; i++)
     {
         unsigned int current = 2 + i * 2;
@@ -524,8 +508,7 @@ void Gizmos::CreateCylinder()
         m_cylinder.m_indices.push_back(next);
         m_cylinder.m_indices.push_back(current);
     }
-
-    // ----- Bottom cap -----
+    // Bottom cap
     for (int i = 0; i < segments; i++)
     {
         unsigned int current = 3 + i * 2;
@@ -557,7 +540,7 @@ void Gizmos::CreateCircle()
 }
 
 
-LibMath::Vector2 Gizmos::GetScreenPos(
+LibMath::Vector2 Apex::Editor::GetScreenPos(
     LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
 {
     LibMath::Vector4 clip = viewProj * LibMath::Vector4(worldPos, 1.0f);
@@ -577,7 +560,7 @@ LibMath::Vector2 Gizmos::GetScreenPos(
     return screen + panelOffset;
 }
 
-LibMath::Line3D Gizmos::ScreenToWorldRay(
+LibMath::Line3D Apex::Editor::ScreenToWorldRay(
     LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
 {
     // 1. Adjust mouse for viewport

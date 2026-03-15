@@ -1,6 +1,6 @@
 #include "Editor.h"
 
-int main(int argc, char* argv[])
+int main(int /*argc*/, char* argv[])
 {
     Apex::Editor::Editor editor;
     if (!editor.InitWindow())

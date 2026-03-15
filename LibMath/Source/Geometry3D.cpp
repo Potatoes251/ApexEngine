@@ -197,7 +197,7 @@ LibMath::Plane::Plane() :
 {}
 
 LibMath::Plane::Plane(Vector3 normal, float distance) :
-	m_normal(normal),
+	m_normal(normal.normalize()),
 	m_distance(distance)
 {}
 

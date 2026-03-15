@@ -41,10 +41,15 @@ namespace Apex::Editor
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get());
 
-        m_window->SetMouseMoveCallback([&](double dx, double dy)
+        m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
             {
                 if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
-                    m_viewport->GetCamera().ProcessMouse(dx, dy);
+                    m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
+                else
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseMove(pos.m_x, pos.m_y);
+                }
             });
 
         m_window->SetMouseButtonCallback([&](Windowing::MouseButton button, bool press)
@@ -53,6 +58,11 @@ namespace Apex::Editor
                 {
                     Windowing::MousePosition pos = m_window->GetMousePosition();
                     m_viewport->OnMouseClick(pos.m_x, pos.m_y);
+                }
+                if (button == Windowing::MouseButton::Left && !press)
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseRelease(pos.m_x, pos.m_y);
                 }
             });
 

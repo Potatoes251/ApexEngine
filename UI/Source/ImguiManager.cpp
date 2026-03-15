@@ -152,7 +152,7 @@ namespace Apex::UserInterface
 
     void ImGUIManager::BeginPanel(const std::string& title, bool* open)
     {
-        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
     }
     Vector2 ImGUIManager::GetScreenSize()
     {

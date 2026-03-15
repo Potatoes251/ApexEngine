@@ -4,15 +4,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(EXE_NAME Game)
+project(${EXE_NAME} LANGUAGES C CXX)
+
 if (MSVC)
     add_compile_options(/W4)
     add_compile_options(/wd4505)
-    add_compile_options(/WX)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
-
-set(EXE_NAME Game)
-project(${EXE_NAME} LANGUAGES C CXX)
 
 # Collect assets
 file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS

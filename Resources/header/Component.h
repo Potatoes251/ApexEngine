@@ -15,9 +15,9 @@ namespace Apex
         Component& operator=(const Component&) = delete;
 
         virtual void OnStart() {}
-        virtual void OnUpdate(float deltaTime) {}
+        virtual void OnUpdate(float /*deltaTime*/) {}
         virtual void OnDestroy() {}
-        virtual void OnFixedUpdate(float fixedDeltaTime) {}
+        virtual void OnFixedUpdate(float /*fixedDeltaTime*/) {}
 
         void SetEnabled(bool enabled) { m_enabled = enabled; }
         bool IsEnabled() const { return m_enabled; }

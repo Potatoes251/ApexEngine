@@ -14,7 +14,7 @@ namespace Apex::Scripting
         Behaviour& operator=(const Behaviour&) = delete;
 
         virtual void Start() {}
-        virtual void Update(float dt) {}
+        virtual void Update(float /*dt*/) {}
     };
 }
 
