@@ -206,6 +206,11 @@ namespace Apex::UserInterface
         // Background draw list — for custom tile rendering inside panels.
         // Lifetime: valid for the current frame only.
         virtual IDrawList* GetDrawList() = 0;
+
+        virtual Vector2 GetMousePos() const = 0;
+
+        virtual Vector2 GetItemRectMin() const = 0;
+        virtual Vector2 GetItemRectMax() const = 0;
 	private:
 	};
 

@@ -1,6 +1,6 @@
 #pragma once
 // ============================================================
-// IDrawList.h — Backend-agnostic immediate draw interface.
+// IDrawList.h ï¿½ Backend-agnostic immediate draw interface.
 // Used by editor panels to draw custom geometry inside ImGui
 // windows without depending on ImGui directly.
 // ============================================================
@@ -19,6 +19,7 @@ namespace Apex::UserInterface
         virtual void DrawText(LibMath::Vector2 pos, uint32_t color,
             const std::string& text) = 0;
         virtual LibMath::Vector2 CalculateTextSize(const std::string& text) = 0;
+        virtual void AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness = 1.f) = 0;
     };
 
 } // namespace Apex::UserInterface

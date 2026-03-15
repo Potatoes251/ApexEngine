@@ -400,6 +400,23 @@ namespace Apex::UserInterface
         m_drawListWrapper.Reset(ImGui::GetWindowDrawList());
         return &m_drawListWrapper;
     }
+    Vector2 ImGUIManager::GetMousePos() const
+    {
+        ImVec2 p = ImGui::GetMousePos();
+        return { p.x, p.y };
+    }
+
+    Vector2 ImGUIManager::GetItemRectMin() const
+    {
+        ImVec2 v = ImGui::GetItemRectMin();
+        return { v.x, v.y };
+    }
+
+    Vector2 ImGUIManager::GetItemRectMax() const
+    {
+        ImVec2 v = ImGui::GetItemRectMax();
+        return { v.x, v.y };
+    }
 }
 
 

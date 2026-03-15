@@ -21,6 +21,8 @@ namespace Apex::Editor
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
 
+		void DrawInsertLine(float y);
+
 	private:
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;

@@ -33,4 +33,13 @@ namespace Apex::UserInterface
 		ImVec2 size = ImGui::CalcTextSize(text.c_str());
 		return LibMath::Vector2(size.x, size.y);
 	}
+	void ImDrawListWrapper::AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness)
+	{
+		m_drawList->AddLine(
+			ImVec2(p1[0], p1[1]),
+			ImVec2(p2[0], p2[1]),
+			color,
+			thickness
+		);
+	}
 } // namespace Apex::UserInterface
