@@ -87,114 +87,12 @@ void Hierarchy::Draw()
 void Hierarchy::DrawNode(SceneNode* node)
 {
     Object* obj = node->GetObject();
-    bool hasChildren = !node->GetChildren().empty();
+    bool open = DrawTreeNode(obj, node->GetChildren().empty());
 
-    TreeNodeFlags flags = TreeNodeFlags::SpanAvailWidth;
-
-    if (!hasChildren)
-        flags = flags | TreeNodeFlags::Leaf;
-
-    if (obj == m_selected)
-        flags = flags | TreeNodeFlags::Selected;
-
-    std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
-    bool open = m_gui.BeginTreeNode(label.c_str(), flags);
-
-    if (m_gui.IsItemClicked())
-        m_selected = obj;
-
-    if (m_gui.BeginContextMenu(std::to_string(obj->GetId()).c_str()))
-    {
-        if (m_gui.MenuItem("Create Child"))
-        {
-            m_pendingParent = node;
-        }
-
-        if (!m_gui.IsDragDropActive() && m_gui.MenuItem("Delete"))
-        {
-                m_pendingDelete = obj;
-        }
-
-        m_gui.EndPopup();
-    }
-
-    if (m_gui.BeginDragSource())
-    {
-        SceneNode* payload = node;
-        m_gui.SetDragPayload("SCENE_NODE", &payload, sizeof(SceneNode*));
-        m_gui.Text(obj->GetName());
-        m_gui.EndDragSource();
-    }
-
-    if (m_gui.BeginDropTarget())
-    {
-        if (m_gui.IsDragDropActive() &&
-            strcmp(m_gui.GetDragDropPayloadType(), "SCENE_NODE") == 0)
-        {
-            Vector2 size = m_gui.GetItemRectSize();
-            Vector2 min = m_gui.GetItemRectMin();
-            Vector2 max = m_gui.GetItemRectMax();
-
-            float itemTop = min[1];
-            float itemBottom = max[1];
-
-            float mouseY = m_gui.GetMousePos()[1];
-            float threshold = size[1] * 0.25f;
-
-            if (mouseY < itemTop + threshold)
-            {
-                DrawInsertLine(itemTop);
-            }
-            else if (mouseY > itemBottom - threshold)
-            {
-                DrawInsertLine(itemBottom);
-            }
-        }
-
-        if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
-        {
-            SceneNode* dragged = *(SceneNode**)data;
-
-            if (dragged != node)
-            {
-                Vector2 min = m_gui.GetItemRectMin();
-                Vector2 max = m_gui.GetItemRectMax();
-
-                float itemTop = min[1];
-                float itemBottom = max[1];
-                float height = itemBottom - itemTop;
-
-                float mouseY = m_gui.GetMousePos()[1];
-                float threshold = height * 0.25f;
-
-                if (mouseY < itemTop + threshold)
-                {
-                    m_pendingReparent = dragged;
-                    m_pendingTarget = node;
-                    m_pendingOp = PendingOp::Before;
-                }
-                else if (mouseY > itemBottom - threshold)
-                {
-                    m_pendingReparent = dragged;
-                    m_pendingTarget = node;
-                    m_pendingOp = PendingOp::After;
-                }
-                else
-                {
-                    if (!node->IsDescendantOf(*dragged))
-                    {
-                        m_pendingReparent = dragged;
-                        m_pendingTarget = node;
-                        m_pendingOp = PendingOp::Parent;
-                    }
-                }
-            }
-
-
-        }
-
-        m_gui.EndDropTarget();
-    }
+    HandleSelection(obj);
+    HandleContextMenu(node);
+    HandleDragSource(node);
+    HandleDropTarget(node);
 
     if (open)
     {
@@ -203,6 +101,113 @@ void Hierarchy::DrawNode(SceneNode* node)
 
         m_gui.EndTreeNode();
     }
+}
+
+bool Hierarchy::DrawTreeNode(Object* obj, bool isLeaf)
+{
+    TreeNodeFlags flags = TreeNodeFlags::SpanAvailWidth;
+    if (isLeaf) flags = flags | TreeNodeFlags::Leaf;
+    if (obj == m_selected) flags = flags | TreeNodeFlags::Selected;
+
+    std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
+    return m_gui.BeginTreeNode(label.c_str(), flags);
+}
+
+void Hierarchy::HandleSelection(Object* obj)
+{
+    if (m_gui.IsItemClicked())
+        m_selected = obj;
+}
+
+void Hierarchy::HandleContextMenu(SceneNode* node)
+{
+    Object* obj = node->GetObject();
+    if (!m_gui.BeginContextMenu(std::to_string(obj->GetId()).c_str()))
+        return;
+
+    if (m_gui.MenuItem("Create Child"))
+        m_pendingParent = node;
+
+    if (!m_gui.IsDragDropActive() && m_gui.MenuItem("Delete"))
+        m_pendingDelete = obj;
+
+    m_gui.EndPopup();
+}
+
+void Hierarchy::HandleDragSource(SceneNode* node)
+{
+    if (!m_gui.BeginDragSource()) return;
+
+    SceneNode* payload = node;
+    m_gui.SetDragPayload("SCENE_NODE", &payload, sizeof(SceneNode*));
+    m_gui.Text(node->GetObject()->GetName());
+    m_gui.EndDragSource();
+}
+
+void Hierarchy::HandleDropTarget(SceneNode* node)
+{
+    if (!m_gui.BeginDropTarget()) return;
+
+    HandleInsertLine(node);
+    HandleAcceptDrop(node);
+
+    m_gui.EndDropTarget();
+}
+
+void Hierarchy::HandleInsertLine(SceneNode* node)
+{
+    if (!m_gui.IsDragDropActive() ||
+        strcmp(m_gui.GetDragDropPayloadType(), "SCENE_NODE") != 0)
+        return;
+
+    Vector2 size = m_gui.GetItemRectSize();
+    Vector2 min = m_gui.GetItemRectMin();
+    Vector2 max = m_gui.GetItemRectMax();
+
+    float itemTop = min[1];
+    float itemBottom = max[1];
+    float mouseY = m_gui.GetMousePos()[1];
+    float threshold = size[1] * 0.25f;
+
+    if (mouseY < itemTop + threshold)
+        DrawInsertLine(itemTop);
+    else if (mouseY > itemBottom - threshold)
+        DrawInsertLine(itemBottom);
+}
+
+void Hierarchy::HandleAcceptDrop(SceneNode* node)
+{
+    if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
+    {
+        SceneNode* dragged = *(SceneNode**)data;
+        if (dragged == node) return;
+
+        Vector2 min = m_gui.GetItemRectMin();
+        Vector2 max = m_gui.GetItemRectMax();
+        float itemTop = min[1], itemBottom = max[1], height = itemBottom - itemTop;
+        float mouseY = m_gui.GetMousePos()[1];
+        float threshold = height * 0.25f;
+
+        if (mouseY < itemTop + threshold)
+        {
+            SetPending(dragged, node, PendingOp::Before);
+        }
+        else if (mouseY > itemBottom - threshold)
+        {
+            SetPending(dragged, node, PendingOp::After);
+        }
+        else if (!node->IsDescendantOf(*dragged))
+        {
+            SetPending(dragged, node, PendingOp::Parent);
+        }
+    }
+}
+
+void Hierarchy::SetPending(SceneNode* dragged, SceneNode* target, PendingOp op)
+{
+    m_pendingReparent = dragged;
+    m_pendingTarget = target;
+    m_pendingOp = op;
 }
 
 void Hierarchy::ApplyPendingOp()

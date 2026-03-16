@@ -72,7 +72,7 @@ namespace Apex::Editor
         DrawToolbar();
         m_gui.Separator();
 
-        // Left: viewport | Right: details � side by side
+        // Left: viewport | Right: details - side by side
         float totalHeight = m_gui.GetAvailableSize()[1];
 
         m_gui.BeginChildPanel("##te_viewport", -DETAILS_WIDTH, totalHeight, false);
@@ -616,7 +616,7 @@ namespace Apex::Editor
         if (static_cast<int>(str.size()) <= maxChars)
             return str;
 
-        // Keep the tail � the filename and nearest parent dirs are most useful
+        // Keep the tail - the filename and nearest parent dirs are most useful
         std::string tail = str.substr(str.size() - (maxChars - 3));
 
         // Snap forward to the next path separator so we don't cut mid-component
@@ -696,7 +696,7 @@ namespace Apex::Editor
             << std::setw(2) << (int)b << std::setw(2) << (int)a;
         m_gui.SetClipboardText(hex.str());
     }
-
+    
     void TextureEditor::DrawZoomLabel(LibMath::Vector2 panelPos,
         LibMath::Vector2 panelSize)
     {

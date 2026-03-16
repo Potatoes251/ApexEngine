@@ -18,7 +18,6 @@ namespace Apex::Editor
 		Parent
 	};
 
-
 	class Hierarchy
 	{
 	public:
@@ -29,6 +28,17 @@ namespace Apex::Editor
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
+
+		bool DrawTreeNode(Apex::Data::Object* obj, bool isLeaf);
+
+		void HandleSelection(Apex::Data::Object* obj);
+		void HandleContextMenu(Apex::SceneGraph::SceneNode* node);
+		void HandleDragSource(Apex::SceneGraph::SceneNode* node);
+		void HandleDropTarget(Apex::SceneGraph::SceneNode* node);
+		void HandleInsertLine(Apex::SceneGraph::SceneNode* node);
+		void HandleAcceptDrop(Apex::SceneGraph::SceneNode* node);
+
+		void SetPending(Apex::SceneGraph::SceneNode* dragged, Apex::SceneGraph::SceneNode* target, PendingOp op);
 
 		void DrawInsertLine(float y);
 

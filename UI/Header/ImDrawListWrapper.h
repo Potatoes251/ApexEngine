@@ -1,6 +1,6 @@
 #pragma once
 // ============================================================
-// ImDrawListWrapper.h � INTERNAL.
+// ImDrawListWrapper.h - INTERNAL.
 // Concrete IDrawList backed by ImDrawList.
 // ============================================================
 #include "IDrawList.h"

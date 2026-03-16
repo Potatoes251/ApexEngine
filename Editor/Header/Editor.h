@@ -4,7 +4,7 @@
 // ============================================================
 // Editor.h - Top-level editor layer.
 // Owns its own window, IGUI backend, and all editor panels.
-// The game window stays alive independently � closing the
+// The game window stays alive independently - closing the
 // editor window quits the process, closing the game window
 // only stops the game tick.
 // ============================================================
