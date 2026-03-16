@@ -37,11 +37,14 @@ namespace Apex::Editor
 	private:
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
+		bool				IsOnGizmo(double mouseX, double mouseY);
+
 		LibMath::Vector3	GetAxis();
 		void				ComputePlane();
+		void				ComputePlaneRotation();
 
 		Gizmos		m_gizmo;
-		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
+		GizmoMode	m_currentGizmoMode = GizmoMode::Rotation;
 		Axis		m_selectedAxis = Axis::None;
 		
 

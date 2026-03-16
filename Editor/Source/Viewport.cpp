@@ -23,33 +23,13 @@ void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
 	if (!m_isHovered || !m_shader.IsReady()) return;
 
-	float aspectRatio = m_width / m_height;
-
-
-	if (m_selectedObject)
-	{
-		LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(aspectRatio)* m_camera.GetViewMatrix();
-		m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode,
-			m_selectedObject->GetGlobalTransform().getPosition(),
-			viewProj,
-			m_panelPos, m_panelSize);
-
-		if (m_selectedAxis != Axis::None)
-		{
-			m_initialTransform = m_selectedObject->GetGlobalTransform();
-			ComputePlane();
-			LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
-			LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint);
-			m_startingPoint = m_selectedObject->GetGlobalTransform().getPosition() +
-				GetAxis() * ((m_startingPoint - m_selectedObject->GetGlobalTransform().getPosition()).dot(GetAxis()));
-		}
-	}
+	if (IsOnGizmo(mouseX, mouseY)) return;
 
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
 	m_rhi->Clear();
 
 	RenderPassInfo picking;
-	picking.m_aspectRatio = aspectRatio;
+	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_useIdAsColor = true;
 	picking.m_useModelShader = false;
@@ -83,7 +63,33 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 	float movement = delta.dot(GetAxis());
 
-	m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + GetAxis() * movement);
+	LibMath::Vector3 center = m_initialTransform.getPosition();
+
+	LibMath::Vector3 startVec = (m_startingPoint - center).normalize();
+	LibMath::Vector3 currentVec = (hit - center).normalize();
+
+	float angle = atan2(
+		GetAxis().dot(startVec.cross(currentVec)), // signed rotation around axis
+		startVec.dot(currentVec)               // cosine of angle
+	);
+
+	switch (m_currentGizmoMode)
+	{
+	case Apex::Editor::GizmoMode::Translation:
+		m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + GetAxis() * movement);
+		break;
+	case Apex::Editor::GizmoMode::Rotation:
+	{
+		LibMath::Quaternion delta = LibMath::Quaternion(LibMath::Radian(angle), GetAxis());
+		m_selectedObject->GetGlobalTransform().setRotation(delta * m_initialTransform.getRotation());
+	}		break;
+	case Apex::Editor::GizmoMode::Scale:
+		m_selectedObject->GetGlobalTransform().setScale(m_initialTransform.getScale() + GetAxis() * movement);
+		break;
+	default:
+		assert(false && "Unhandled gizmo mode");
+		break;
+	}
 }
 
 void Viewport::Draw()
@@ -137,6 +143,32 @@ int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 	return m_rhi->GetPixelData((int)fboX, (int)fboY);
 }
 
+bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
+{
+	if (!m_selectedObject) return false;
+
+	LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
+	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) * m_camera.GetViewMatrix();
+	m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode, center, viewProj, m_panelPos, m_panelSize);
+
+	if (m_selectedAxis == Axis::None) return false;
+
+	m_initialTransform = m_selectedObject->GetGlobalTransform();
+
+	if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
+	else ComputePlaneRotation();
+
+	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
+	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint)) return false;
+	
+	if (m_currentGizmoMode != GizmoMode::Rotation)
+	{
+		m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
+	}
+	
+	return true;
+}
+
 LibMath::Vector3 Viewport::GetAxis()
 {
 	switch (m_selectedAxis)
@@ -159,6 +191,15 @@ void Viewport::ComputePlane()
 
 	if (planeNormal.magnitudeSquared() < g_epsilon)
 		planeNormal = axis.cross(m_camera.GetRight());
+
+	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
+}
+
+void Viewport::ComputePlaneRotation()
+{
+	if (m_selectedAxis == Axis::None || !m_selectedObject) return;
+
+	LibMath::Vector3 planeNormal = GetAxis();
 
 	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
 }

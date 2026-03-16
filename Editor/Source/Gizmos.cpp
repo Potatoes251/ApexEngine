@@ -310,7 +310,6 @@ Axis Gizmos::IsOnRotation(
     {
         LibMath::Plane plane(axes[i], -worldPos[i]);
 
-        printf("%f\n", std::fabs((ray.getDirection().dot(axes[i]))));
         // circle is almost a line
         if (std::fabs((ray.getDirection().dot(axes[i]))) < 0.05f)
         {
