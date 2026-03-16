@@ -194,7 +194,7 @@ bool	LibMath::collisionRayPrism(Line3D ray, Prism prism)
 		float minBound = minPoint[i];
 		float maxBound = maxPoint[i];
 
-		if (std::abs(dir) < 1e-6f)
+		if (std::abs(dir) < g_epsilon)
 		{
 			// Ray is parallel to slab. No hit if origin not within slab
 			if (origin < minBound || origin > maxBound)
@@ -232,6 +232,22 @@ bool	LibMath::collisionRayPrism(Line3D ray, Prism prism)
 	return true;
 }
 
+bool	LibMath::intersectionRayPlane(Line3D ray, Plane plane, Vector3& outputPoint)
+{
+	float denom = plane.getNormal().dot(ray.getDirection());
+
+	if (std::abs(denom) < g_epsilon) // ray is parallel
+		return false;
+
+	float t = (plane.getPointOnPlane() - ray.getCenter()).dot(plane.getNormal()) / denom;
+
+	if (t < 0) // intersection behind ray origin
+		return false;
+
+	outputPoint = ray.getCenter() + ray.getDirection() * t;
+	return true;
+}
+
 bool	LibMath::intersectionRayPrism(Line3D ray, Prism prism, Vector3& outputPoint)
 {
 	Point3D halfSize(prism.extentX(), prism.extentY(), prism.extentZ());
@@ -251,7 +267,7 @@ bool	LibMath::intersectionRayPrism(Line3D ray, Prism prism, Vector3& outputPoint
 		float minBound = minPoint[i];
 		float maxBound = maxPoint[i];
 
-		if (std::abs(dir) < 1e-6f)
+		if (std::abs(dir) < g_epsilon)
 		{
 			// Ray is parallel to slab. No hit if origin not within slab
 			if (origin < minBound || origin > maxBound)

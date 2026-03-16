@@ -59,19 +59,18 @@ namespace Apex::Rendering
 			obj->Update(deltaTime);
 	}
 
-	void Scene::Render(const LibMath::Matrix4& view, const LibMath::Matrix4& projection, const LibMath::Vector3& cameraPosition)
+	void Scene::Render(RenderPassInfo passInfo)
 	{
 		for (auto& obj : m_objects)
 		{
+			passInfo.m_id++;
 			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
 			if (!renderer)
 				continue;
 
-			renderer->Render(view, projection, cameraPosition);
+			renderer->Render(passInfo);
 		}
 	}
-
-#include <algorithm>
 
 	void Scene::InsertBefore(Object* dragged, Object* target)
 	{

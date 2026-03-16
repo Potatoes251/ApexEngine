@@ -9,7 +9,7 @@ namespace Apex::Rendering
 	class Camera
 	{
 	public:
-		Camera(LibMath::Vector3 position = LibMath::Vector3(0.f, 0.f, 3.f));
+		Camera(LibMath::Vector3 position = LibMath::Vector3(0.f, 0.f, 10.f));
 		~Camera() = default;
 		Camera(const Camera&) = delete;
 		Camera& operator=(const Camera&) = delete;
@@ -20,6 +20,8 @@ namespace Apex::Rendering
 											 float near = 0.1f, float far = 100.f) const;
 		LibMath::Vector3 GetPosition() const { return m_position; }
 		LibMath::Vector3 GetFront() const { return m_front; }
+		LibMath::Vector3 GetRight() const { return m_right; }
+		LibMath::Vector3 GetUp() const { return m_up; }
 
 		// Input processing
 		void ProcessKeyboard(bool moveForward, bool moveBackward,

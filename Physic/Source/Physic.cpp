@@ -173,8 +173,8 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 	physx::PxRaycastHit hits[16];
 	physx::PxRaycastBuffer hitBuffer(hits, 16);
 
-	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
-	if (!result) return false;
+	bool success = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hitBuffer);
+	if (!success) return false;
 
 	for (physx::PxU32 i = 0; i < hitBuffer.getNbTouches(); ++i)
 	{
@@ -241,7 +241,7 @@ bool PhysicSystem::Sweep(
 
 	physx::PxTransform startPose(ToPxVec(position));
 
-	bool result = false;
+	bool success = false;
 
 	switch (collider.GetType())
 	{
@@ -249,14 +249,14 @@ bool PhysicSystem::Sweep(
 	{
 		BoxCollider const& boxCollider = static_cast<BoxCollider const&>(collider);
 		physx::PxBoxGeometry box(ToPxVec(boxCollider.GetHalfExtents()));
-		result = m_scene->sweep(box, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
+		success = m_scene->sweep(box, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
 		break;
 	}
 	case ColliderType::Capsule:
 	{
 		CapsuleCollider const& capsuleCollider = static_cast<CapsuleCollider const&>(collider);
 		physx::PxCapsuleGeometry capsule(capsuleCollider.GetRadius(), capsuleCollider.GetHalfHeight());
-		result = m_scene->sweep(capsule, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
+		success = m_scene->sweep(capsule, startPose, ToPxVec(direction.normalize()), distance, sweepBuffer);
 		break;
 	}
 	case ColliderType::Mesh:
@@ -266,7 +266,7 @@ bool PhysicSystem::Sweep(
 		assert(false && "Unhandled collider type");
 		break;
 	}
-	if (!result) return false;
+	if (!success) return false;
 
 	for (physx::PxU32 i = 0; i < sweepBuffer.getNbTouches(); ++i)
 	{
@@ -288,6 +288,7 @@ void PhysicSystem::Update(float deltaTime_s)
 	SyncToPhysx();
 	m_scene->simulate(deltaTime_s);
 	m_scene->fetchResults(true);
+	SyncFromPhysx();
 }
 
 void PhysicSystem::SyncFromPhysx()
@@ -338,8 +339,8 @@ void PhysicSystem::DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* 
 	break;
 	case physx::PxGeometryType::eCONVEXMESH:
 	{
-		physx::PxConvexMeshGeometry const& geom = static_cast<physx::PxConvexMeshGeometry const&>(shape->getGeometry());
-		physx::PxConvexMesh const* mesh = geom.convexMesh;
+		physx::PxConvexMeshGeometry const& convexGeom = static_cast<physx::PxConvexMeshGeometry const&>(shape->getGeometry());
+		physx::PxConvexMesh const* mesh = convexGeom.convexMesh;
 		if (!mesh) return;
 
 		DrawConvexMeshCollider(mesh, worldPose, scale);
@@ -414,7 +415,6 @@ void PhysicSystem::DrawConvexMeshCollider(
 	LibMath::Vector3 worldPos = ToLibVec(worldPose.p);
 	LibMath::Quaternion worldRot = ToLibQuat(worldPose.q);
 
-	const physx::PxU32 numVertices = mesh->getNbVertices();
 	const physx::PxVec3* vertices = mesh->getVertices();
 
 	for (physx::PxU32 i = 0; i < mesh->getNbPolygons(); ++i)
@@ -718,25 +718,25 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 
 // SimulationCallback
 
-void PhysicSystem::SimulationCallback::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
+void PhysicSystem::SimulationCallback::onConstraintBreak(physx::PxConstraintInfo* /*constraints*/, physx::PxU32 /*count*/)
 {
 }
 
-void PhysicSystem::SimulationCallback::onWake(physx::PxActor** actors, physx::PxU32 count)
+void PhysicSystem::SimulationCallback::onWake(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
 {
 }
 
-void PhysicSystem::SimulationCallback::onSleep(physx::PxActor** actors, physx::PxU32 count)
+void PhysicSystem::SimulationCallback::onSleep(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
 {
 }
 
-void PhysicSystem::SimulationCallback::onContact(physx::PxContactPairHeader const& pairHeader, physx::PxContactPair const* pairs, physx::PxU32 nbPairs)
+void PhysicSystem::SimulationCallback::onContact(physx::PxContactPairHeader const& /*pairHeader*/, physx::PxContactPair const* /*pairs*/, physx::PxU32 /*nbPairs*/)
 {
 }
 
 void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 {
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < count; i++)
 	{
 		RigidBodyComponent* otherbody = static_cast<RigidBodyComponent*>(pairs[i].otherActor->userData);
 		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(pairs[i].triggerActor->userData);
@@ -755,6 +755,6 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 	}
 }
 
-void PhysicSystem::SimulationCallback::onAdvance(physx::PxRigidBody const* const* bodyBuffer, physx::PxTransform const* poseBuffer, physx::PxU32 const count)
+void PhysicSystem::SimulationCallback::onAdvance(physx::PxRigidBody const* const* /*bodyBuffer*/, physx::PxTransform const* /*poseBuffer*/, physx::PxU32 const /*count*/)
 {
 }

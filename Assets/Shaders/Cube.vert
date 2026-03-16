@@ -5,8 +5,7 @@ layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aTexCoord;
 
 uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
+uniform mat4 uViewProj;
 
 out vec3 vFragPos;
 out vec3 vNormal;
@@ -19,5 +18,5 @@ void main()
     // Normal matrix: transpose of inverse of upper-left 3x3 of model
     vNormal        = mat3(transpose(inverse(uModel))) * aNormal;
     vTexCoord      = aTexCoord;
-    gl_Position    = uProjection * uView * worldPos;
+    gl_Position    = uViewProj * worldPos;
 }

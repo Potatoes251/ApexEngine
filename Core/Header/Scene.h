@@ -3,6 +3,7 @@
 
 #include "MeshRenderer.h"
 #include "RHI.h"
+#include "RenderPassInfo.h"
 
 #include "ResourceManager.h"
 #include "Object.h"
@@ -28,15 +29,14 @@ namespace Apex::Rendering
 		void DestroyObject(Object* obj);
 
 		void Update(float deltaTime);
-		void Render(const LibMath::Matrix4& view,
-			const LibMath::Matrix4& projection,
-			const LibMath::Vector3& cameraPosition);
+		void Render(RenderPassInfo passInfo);
+		
+		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
 		void InsertBefore(Object* dragged, Object* target);
 		void InsertAfter(Object* dragged, Object* target);
 
 		void Save(const std::string& path, Apex::Physic::PhysicSystem& phys);
-		
 	private:
 		std::vector<std::unique_ptr<Object>> m_objects;
 	};

@@ -5,6 +5,7 @@
 // RHI.h — Render Hardware Interface
 // ============================================================
 
+#include "Vertex.h"
 
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
@@ -14,20 +15,13 @@
 
 namespace Apex::Rendering
 {
+	using RHIFrameBufferHandle = uint32_t;
 	using RHIBufferHandle = uint32_t;
 	using RHIVAOHandle = uint32_t;
 	using RHIShaderHandle = uint32_t;
 	using RHITextureHandle = uint32_t;
 
 	constexpr uint32_t RHI_INVALID = 0;
-
-	// ── Vertex layout ─────────────────────────────────────────────
-	struct Vertex
-	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_normal;
-		LibMath::Vector2 m_uv;
-	};
 
 	enum class BufferType
 	{
@@ -55,7 +49,8 @@ namespace Apex::Rendering
 		virtual ~IRHI() = default;
 
 		virtual void Initialize() = 0;
-		virtual void Clear(float r, float g, float b, float a = 1.f) = 0;
+		virtual void SetClearColor(float r, float g, float b, float a = 1.f) = 0;
+		virtual void Clear() = 0;
 
 		// VAO
 		virtual RHIVAOHandle	CreateVAO() = 0;
@@ -63,10 +58,16 @@ namespace Apex::Rendering
 		virtual void			DeleteVAO(RHIVAOHandle vao) = 0;
 
 		// Buffers
-		virtual RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes) = 0;
+		virtual RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) = 0;
 		virtual void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) = 0;
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
+		
+		virtual RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) = 0;
+		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) = 0;
+		virtual void					UnBindFrameBuffer() = 0;
+		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
+		virtual int						GetPixelData(int x, int y) = 0;
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
@@ -86,9 +87,18 @@ namespace Apex::Rendering
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;
-		virtual void DrawIndexed(int32_t indexCount) = 0;
-		virtual void DrawArrays(int32_t vertexCount) = 0;
+		virtual void SetupVector3Layout() = 0;
+		virtual void DrawIndexed(uint32_t indexCount) = 0;
+		virtual void DrawArrays(uint32_t vertexCount) = 0;
+		virtual void DrawLineArrays(uint32_t vertexCount) = 0;
+		virtual void DrawLineLoop(uint32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
+
+		virtual uint32_t GetBuffer(RHIBufferHandle handle)  const = 0;
+		virtual uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const = 0;
+		virtual uint32_t GetVAO(RHIVAOHandle handle) const = 0;
+		virtual uint32_t GetTexture(RHITextureHandle handle) const = 0;
+		virtual uint32_t GetShader(RHIShaderHandle handle)  const = 0;
 	};
 
 	// Factory

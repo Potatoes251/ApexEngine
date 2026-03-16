@@ -148,6 +148,26 @@ namespace Apex::Windowing
         return glfwGetKey(m_window, glfwKey) == GLFW_PRESS;
 	}
 
+    bool GLFWWindow::IsMousButtonPressed(MouseButton key) const
+    {
+        int glfwKey = GLFW_KEY_UNKNOWN;
+        switch (key)
+        {
+        case MouseButton::Left:
+            glfwKey = GLFW_MOUSE_BUTTON_LEFT;
+            break;
+        case MouseButton::Middle:
+            glfwKey = GLFW_MOUSE_BUTTON_MIDDLE;
+            break;
+        case MouseButton::Right:
+            glfwKey = GLFW_MOUSE_BUTTON_RIGHT;
+            break;
+        default:
+            break;
+        }
+        return glfwGetMouseButton(m_window, glfwKey) == GLFW_PRESS;
+    }
+
     MousePosition GLFWWindow::GetMousePosition() const
     {
         double x, y;

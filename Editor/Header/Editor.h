@@ -2,7 +2,7 @@
 #define EDITOR
 
 // ============================================================
-// Editor.h � Top-level editor layer.
+// Editor.h - Top-level editor layer.
 // Owns its own window, IGUI backend, and all editor panels.
 // The game window stays alive independently � closing the
 // editor window quits the process, closing the game window
@@ -12,6 +12,8 @@
 #include "Application.h"
 #include "ContentBrowser.h"
 #include "Hierarchy.h"
+#include "Viewport.h"
+#include "TextureEditor.h"
 
 namespace Apex::Editor
 {
@@ -37,6 +39,8 @@ namespace Apex::Editor
 		// One editor frame: make editor context current, render all panels,
 		void Render();
 
+		void Update();
+
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
@@ -47,6 +51,9 @@ namespace Apex::Editor
 		static const char* TypeToString(AssetType type);
 		void OnExternalDrop(std::vector<std::filesystem::path> paths);
 
+		// Opens a new TextureEditor for path, or focuses the existing one
+		void OpenTextureEditor(const std::filesystem::path& path);
+
 		Apex::Application* m_app = nullptr;
 		std::unique_ptr<Apex::Audio::IAudioEngine>	m_audio;
 
@@ -54,6 +61,8 @@ namespace Apex::Editor
 		std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
 		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		std::unique_ptr<Hierarchy>					m_hierarchy;
+		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
+		std::unique_ptr<Viewport>				   m_viewport;
 	};
 }
 

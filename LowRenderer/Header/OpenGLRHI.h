@@ -18,16 +18,23 @@ namespace Apex::Rendering
 		OpenGLRHI& operator=(const OpenGLRHI&) = delete;
 
 		void Initialize() override;
-		void Clear(float r, float g, float b, float a = 1.f) override;
+		void SetClearColor(float r, float g, float b, float a = 1.f) override;
+		void Clear() override;
 
 		RHIVAOHandle	CreateVAO() override;
 		void			BindVAO(RHIVAOHandle vao) override;
 		void			DeleteVAO(RHIVAOHandle vao) override;
 
-		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes) override;
+		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) override;
 		void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) override;
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
+		
+		RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) override;
+		void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) override;
+		void					UnBindFrameBuffer() override;
+		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
+		int						GetPixelData(int x, int y) override;
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
@@ -43,24 +50,30 @@ namespace Apex::Rendering
 		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) override;
 
 		void SetupVertexLayout() override;
-		void DrawIndexed(int32_t indexCount) override;
-		void DrawArrays(int32_t vertexCount) override;
+		void SetupVector3Layout() override;
+		void DrawIndexed(uint32_t indexCount) override;
+		void DrawArrays(uint32_t vertexCount) override;
+		void DrawLineArrays(uint32_t vertexCount) override;
+		void DrawLineLoop(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
 
+		uint32_t GetBuffer(RHIBufferHandle handle)  const;
+		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;
+		uint32_t GetVAO(RHIVAOHandle handle)		const;
+		uint32_t GetTexture(RHITextureHandle handle) const override;
+		uint32_t GetShader(RHIShaderHandle handle)  const;
+
 	private:
-		std::unordered_map<RHIBufferHandle, GLuint>	 m_buffers;
-		std::unordered_map<RHIVAOHandle, GLuint>	 m_vaos;
-		std::unordered_map<RHITextureHandle, GLuint> m_textures;
-		std::unordered_map<RHIShaderHandle, GLuint>	 m_shaders;
+		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
+		std::unordered_map<RHIFrameBufferHandle, GLuint>	m_frameBuffers;
+		std::unordered_map<RHIVAOHandle, GLuint>			m_vaos;
+		std::unordered_map<RHITextureHandle, GLuint>		m_textures;
+		std::unordered_map<RHIShaderHandle, GLuint>			m_shaders;
 
 		uint32_t m_nextHandle = 1;
 
 		uint32_t NewHandle() { return m_nextHandle++; }
 
-		GLuint GetGLBuffer(RHIBufferHandle handle)  const;
-		GLuint GetGLVAO(RHIVAOHandle handle)		const;
-		GLuint GetGLTexture(RHITextureHandle handle) const;
-		GLuint GetGLShader(RHIShaderHandle handle)  const;
 
 		static GLuint       CompileShader(const std::string& path, GLenum type);
 		static std::string  ReadFile(const std::string& path);
