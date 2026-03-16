@@ -21,7 +21,6 @@ void Hierarchy::Draw()
         if (m_gui.MenuItem("Create Empty"))
         {
             Object* obj = m_scene.CreateObject();
-            obj->SetName("Object");
 
             m_selected = obj;
         }
@@ -40,7 +39,6 @@ void Hierarchy::Draw()
     if (m_pendingParent)
     {
         Object* newObj = m_scene.CreateObject();
-        newObj->SetName("Object");
 
         m_pendingParent->AddChild(newObj->GetSceneNode());
 
