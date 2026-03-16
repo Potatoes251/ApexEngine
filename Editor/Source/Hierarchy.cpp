@@ -17,12 +17,16 @@ void Hierarchy::Draw()
     m_gui.PushFont(FontID::Default);
     m_gui.BeginPanel("Hierarchy");
 
-    if (m_gui.BeginGridContextMenu())
+    if (m_gui.Button(" + Add "))
     {
-        if (m_gui.MenuItem("Create Empty"))
+        m_gui.OpenPopup("AddObject");
+    }
+
+    if (m_gui.BeginPopup("AddObject"))
+    {
+        if (m_gui.MenuItem("Empty"))
         {
             Object* obj = m_scene.CreateObject();
-
             m_selected = obj;
         }
 
