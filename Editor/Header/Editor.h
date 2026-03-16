@@ -11,6 +11,7 @@
 
 #include "Application.h"
 #include "ContentBrowser.h"
+#include "TextureEditor.h"
 
 namespace Apex::Editor
 {
@@ -46,12 +47,17 @@ namespace Apex::Editor
 		static const char* TypeToString(AssetType type);
 		void OnExternalDrop(std::vector<std::filesystem::path> paths);
 
+		// Opens a new TextureEditor for path, or focuses the existing one
+		void OpenTextureEditor(const std::filesystem::path& path);
+
 		Apex::Application* m_app = nullptr;
 		std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;
 
 		std::unique_ptr<Apex::Windowing::IWindow>  m_window;
 		std::unique_ptr<Apex::UserInterface::IGUI> m_gui;
 		std::unique_ptr<ContentBrowser>            m_contentBrowser;
+		// One TextureEditor per open texture — grows on open, shrinks on close
+		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
 	};
 }
 
