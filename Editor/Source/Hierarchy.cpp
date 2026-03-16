@@ -14,6 +14,7 @@ Hierarchy::Hierarchy(IGUI& gui,
 
 void Hierarchy::Draw()
 {
+    m_gui.PushFont(FontID::Default);
     m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.BeginGridContextMenu())
@@ -64,6 +65,8 @@ void Hierarchy::Draw()
     }
 
     m_gui.EndPanel();
+
+    m_gui.PopFont();
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
