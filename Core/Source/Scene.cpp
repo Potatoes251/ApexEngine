@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 using namespace Apex::Physic;
 
@@ -28,6 +29,28 @@ namespace Apex::Rendering
 	const std::vector<std::unique_ptr<Object>>& Scene::GetObjects() const
 	{
 		return m_objects;
+	}
+
+	void Scene::DestroyObject(Object* obj)
+	{
+		if (!obj)
+			return;
+
+		Apex::SceneGraph::SceneNode* node = obj->GetSceneNodeRaw();
+
+		if (node && node->GetParent())
+			node->GetParent()->DestroyChild(node);
+
+		auto it = std::find_if(
+			m_objects.begin(),
+			m_objects.end(),
+			[&](const std::unique_ptr<Object>& ptr)
+			{
+				return ptr.get() == obj;
+			});
+
+		if (it != m_objects.end())
+			m_objects.erase(it);
 	}
 	
 	void Scene::Update(float deltaTime)
@@ -47,6 +70,50 @@ namespace Apex::Rendering
 
 			renderer->Render(passInfo);
 		}
+	}
+
+	void Scene::InsertBefore(Object* dragged, Object* target)
+	{
+		if (!dragged || !target || dragged == target)
+			return;
+
+		auto& objs = m_objects;
+
+		auto itDragged = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == dragged; });
+
+		auto itTarget = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == target; });
+
+		if (itDragged == objs.end() || itTarget == objs.end())
+			return;
+
+		if (itDragged < itTarget)
+			std::rotate(itDragged, itDragged + 1, itTarget);
+		else
+			std::rotate(itTarget, itDragged, itDragged + 1);
+	}
+
+	void Scene::InsertAfter(Object* dragged, Object* target)
+	{
+		if (!dragged || !target || dragged == target)
+			return;
+
+		auto& objs = m_objects;
+
+		auto itDragged = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == dragged; });
+
+		auto itTarget = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == target; });
+
+		if (itDragged == objs.end() || itTarget == objs.end())
+			return;
+
+		if (itDragged < itTarget)
+			std::rotate(itDragged, itDragged + 1, itTarget + 1);
+		else
+			std::rotate(itTarget + 1, itDragged, itDragged + 1);
 	}
 
 	void Scene::Save(const std::string& path, Apex::Physic::PhysicSystem& phys)

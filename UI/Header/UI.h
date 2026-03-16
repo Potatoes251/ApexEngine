@@ -131,7 +131,8 @@ namespace Apex::UserInterface
         //  Panels & children 
         // BeginPanel / EndPanel - top-level named window
         virtual void BeginPanel(const std::string& title,
-                                bool* open = nullptr) = 0;
+                                bool* open = nullptr,
+                                bool noMove = false) = 0;
         virtual void EndPanel() = 0;
 
         // BeginChildPanel / EndChildPanel - scrollable sub-region
@@ -235,6 +236,9 @@ namespace Apex::UserInterface
         // Background draw list — for custom tile rendering inside panels.
         // Lifetime: valid for the current frame only.
         virtual IDrawList* GetDrawList() = 0;
+
+        virtual Vector2 GetItemRectMin() const = 0;
+        virtual Vector2 GetItemRectMax() const = 0;
 	private:
 	};
 

@@ -33,8 +33,12 @@ namespace Apex::SceneGraph
 				void							Destroy();
 				void							SetParent(SceneNode* newParent);
 				void							MarkDirty();
+				
+				bool							IsDescendantOf(SceneNode& otherNode);
+
+				void							InsertBefore(SceneNode* other);
+				void							InsertAfter(SceneNode* other);
 	private:
-		bool	IsDescendantOf(SceneNode& otherNode);
 
 		bool							m_dirty = true;
 

@@ -2,7 +2,7 @@
 #define TEXTURE_VIEWER
 
 // ============================================================
-// TextureViewer.h — Floating popup that previews a texture
+// TextureViewer.h - Floating popup that previews a texture
 // asset with dimensions, channels and file size info.
 // ============================================================
 #include "UI.h"
@@ -97,7 +97,7 @@ namespace Apex::Editor
 		// Viewport state
 		float              m_zoom = 1.f;
 		LibMath::Vector2   m_panOffset = { 0.f, 0.f };  // pixels panned from center
-		bool			   m_showR = true;  // channel mask — each toggles independently
+		bool			   m_showR = true;  // channel mask - each toggles independently
 		bool               m_showG = true;
 		bool               m_showB = true;
 		bool               m_showA = true;
@@ -116,7 +116,7 @@ namespace Apex::Editor
 		static constexpr float CHECKER_TILE_SIZE = 16.f;
 		// Details panel width
 		static constexpr float DETAILS_WIDTH = 400.f;
-		// Label column width — all labels snap to this offset so widgets align
+		// Label column width - all labels snap to this offset so widgets align
 		static constexpr float LABEL_COLUMN_WIDTH = 150.f;
 	};
 }

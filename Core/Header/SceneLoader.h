@@ -31,6 +31,9 @@ namespace Apex::Serialization
         Apex::Physic::PhysicSystem& m_physics;
         std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
 
+        std::unordered_map<size_t, Apex::Data::Object*> objectsById;
+        std::vector<std::pair<size_t, size_t>> parentLinks;
+
         Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
         void ParseMaterials(SerialParser& parser);

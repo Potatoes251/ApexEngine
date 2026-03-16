@@ -2,15 +2,16 @@
 #define EDITOR
 
 // ============================================================
-// Editor.h — Top-level editor layer.
+// Editor.h - Top-level editor layer.
 // Owns its own window, IGUI backend, and all editor panels.
-// The game window stays alive independently — closing the
+// The game window stays alive independently - closing the
 // editor window quits the process, closing the game window
 // only stops the game tick.
 // ============================================================
 
 #include "Application.h"
 #include "ContentBrowser.h"
+#include "Hierarchy.h"
 #include "Viewport.h"
 #include "TextureEditor.h"
 
@@ -54,12 +55,12 @@ namespace Apex::Editor
 		void OpenTextureEditor(const std::filesystem::path& path);
 
 		Apex::Application* m_app = nullptr;
-		std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;
+		std::unique_ptr<Apex::Audio::IAudioEngine>	m_audio;
 
-		std::unique_ptr<Apex::Windowing::IWindow>  m_window;
-		std::unique_ptr<Apex::UserInterface::IGUI> m_gui;
-		std::unique_ptr<ContentBrowser>            m_contentBrowser;
-		// One TextureEditor per open texture — grows on open, shrinks on close
+		std::unique_ptr<Apex::Windowing::IWindow>	m_window;
+		std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
+		std::unique_ptr<ContentBrowser>				m_contentBrowser;
+		std::unique_ptr<Hierarchy>					m_hierarchy;
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
 		std::unique_ptr<Viewport>				   m_viewport;
 	};
