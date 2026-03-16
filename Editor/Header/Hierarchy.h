@@ -10,6 +10,15 @@
 
 namespace Apex::Editor
 {
+	enum class PendingOp
+	{
+		None,
+		Before,
+		After,
+		Parent
+	};
+
+
 	class Hierarchy
 	{
 	public:
@@ -23,6 +32,8 @@ namespace Apex::Editor
 
 		void DrawInsertLine(float y);
 
+		void ApplyPendingOp();
+
 		void DestroyObject(Object* obj);
 
 	private:
@@ -32,6 +43,11 @@ namespace Apex::Editor
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;
 		Apex::Data::Object* m_pendingDelete = nullptr;
+
+		Apex::SceneGraph::SceneNode* m_pendingReparent = nullptr;
+		Apex::SceneGraph::SceneNode* m_pendingTarget = nullptr;
+
+		PendingOp m_pendingOp = PendingOp::None;
 	};
 }
 

@@ -57,20 +57,31 @@ void Hierarchy::Draw()
         m_pendingDelete = nullptr;
     }
 
+    Vector2 size = m_gui.GetAvailableSize();
+
+    m_gui.InvisibleButton("HierarchyDropArea", size);
+
     if (m_gui.BeginDropTarget())
     {
         if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
         {
             SceneNode* dragged = *(SceneNode**)data;
-            dragged->SetParent(nullptr);
+
+            if (m_pendingOp == PendingOp::None)
+            {
+                m_pendingReparent = dragged;
+                m_pendingTarget = nullptr;
+                m_pendingOp = PendingOp::Parent;
+            }
         }
 
         m_gui.EndDropTarget();
     }
 
     m_gui.EndPanel();
-
     m_gui.PopFont();
+
+    ApplyPendingOp();
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -144,22 +155,42 @@ void Hierarchy::DrawNode(SceneNode* node)
         {
             SceneNode* dragged = *(SceneNode**)data;
 
-            Vector2 min = m_gui.GetItemRectMin();
-            Vector2 max = m_gui.GetItemRectMax();
+            if (dragged != node)
+            {
+                Vector2 min = m_gui.GetItemRectMin();
+                Vector2 max = m_gui.GetItemRectMax();
 
-            float itemTop = min[1];
-            float itemBottom = max[1];
-            float height = itemBottom - itemTop;
+                float itemTop = min[1];
+                float itemBottom = max[1];
+                float height = itemBottom - itemTop;
 
-            float mouseY = m_gui.GetMousePos()[1];
-            float threshold = height * 0.25f;
+                float mouseY = m_gui.GetMousePos()[1];
+                float threshold = height * 0.25f;
 
-            if (mouseY < itemTop + threshold)
-                dragged->InsertBefore(node);
-            else if (mouseY > itemBottom - threshold)
-                dragged->InsertAfter(node);
-            else
-                dragged->SetParent(node);
+                if (mouseY < itemTop + threshold)
+                {
+                    m_pendingReparent = dragged;
+                    m_pendingTarget = node;
+                    m_pendingOp = PendingOp::Before;
+                }
+                else if (mouseY > itemBottom - threshold)
+                {
+                    m_pendingReparent = dragged;
+                    m_pendingTarget = node;
+                    m_pendingOp = PendingOp::After;
+                }
+                else
+                {
+                    if (!node->IsDescendantOf(*dragged))
+                    {
+                        m_pendingReparent = dragged;
+                        m_pendingTarget = node;
+                        m_pendingOp = PendingOp::Parent;
+                    }
+                }
+            }
+
+
         }
 
         m_gui.EndDropTarget();
@@ -172,6 +203,42 @@ void Hierarchy::DrawNode(SceneNode* node)
 
         m_gui.EndTreeNode();
     }
+}
+
+void Hierarchy::ApplyPendingOp()
+{
+    if (m_pendingOp == PendingOp::None)
+        return;
+
+    if (m_pendingOp == PendingOp::Before)
+    {
+        if (m_pendingReparent->GetParent())
+            m_pendingReparent->SetParent(nullptr);
+
+        m_scene.InsertBefore(
+            m_pendingReparent->GetObject(),
+            m_pendingTarget->GetObject());
+    }
+    else if (m_pendingOp == PendingOp::After)
+    {
+        if (m_pendingReparent->GetParent())
+            m_pendingReparent->SetParent(nullptr);
+
+        m_scene.InsertAfter(
+            m_pendingReparent->GetObject(),
+            m_pendingTarget->GetObject());
+    }
+    else if (m_pendingOp == PendingOp::Parent)
+    {
+        if (m_pendingTarget)
+            m_pendingReparent->SetParent(m_pendingTarget);
+        else
+            m_pendingReparent->SetParent(nullptr);
+    }
+
+    m_pendingOp = PendingOp::None;
+    m_pendingReparent = nullptr;
+    m_pendingTarget = nullptr;
 }
 
 void Hierarchy::DrawInsertLine(float y)

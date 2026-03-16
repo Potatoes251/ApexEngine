@@ -143,6 +143,13 @@ void SceneNode::SetParent(SceneNode* newParent)
 		return;
 	}
 
+	if (!newParent)
+	{
+		m_parent->DetachChild(this);
+		m_parent = nullptr;
+		return;
+	}
+
 	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
 	newParent->AddChild(self);
 	MarkDirty();

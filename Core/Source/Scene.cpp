@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 using namespace Apex::Physic;
 
@@ -68,6 +69,52 @@ namespace Apex::Rendering
 
 			renderer->Render(view, projection, cameraPosition);
 		}
+	}
+
+#include <algorithm>
+
+	void Scene::InsertBefore(Object* dragged, Object* target)
+	{
+		if (!dragged || !target || dragged == target)
+			return;
+
+		auto& objs = m_objects;
+
+		auto itDragged = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == dragged; });
+
+		auto itTarget = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == target; });
+
+		if (itDragged == objs.end() || itTarget == objs.end())
+			return;
+
+		if (itDragged < itTarget)
+			std::rotate(itDragged, itDragged + 1, itTarget);
+		else
+			std::rotate(itTarget, itDragged, itDragged + 1);
+	}
+
+	void Scene::InsertAfter(Object* dragged, Object* target)
+	{
+		if (!dragged || !target || dragged == target)
+			return;
+
+		auto& objs = m_objects;
+
+		auto itDragged = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == dragged; });
+
+		auto itTarget = std::find_if(objs.begin(), objs.end(),
+			[&](auto& o) { return o.get() == target; });
+
+		if (itDragged == objs.end() || itTarget == objs.end())
+			return;
+
+		if (itDragged < itTarget)
+			std::rotate(itDragged, itDragged + 1, itTarget + 1);
+		else
+			std::rotate(itTarget + 1, itDragged, itDragged + 1);
 	}
 
 	void Scene::Save(const std::string& path, Apex::Physic::PhysicSystem& phys)

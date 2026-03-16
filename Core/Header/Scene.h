@@ -32,6 +32,9 @@ namespace Apex::Rendering
 			const LibMath::Matrix4& projection,
 			const LibMath::Vector3& cameraPosition);
 
+		void InsertBefore(Object* dragged, Object* target);
+		void InsertAfter(Object* dragged, Object* target);
+
 		void Save(const std::string& path, Apex::Physic::PhysicSystem& phys);
 		
 	private:
