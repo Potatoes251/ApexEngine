@@ -16,12 +16,36 @@ void Hierarchy::Draw()
 {
     m_gui.BeginPanel("Hierarchy");
 
+    if (m_gui.BeginGridContextMenu())
+    {
+        if (m_gui.MenuItem("Create Empty"))
+        {
+            Object* obj = m_scene.CreateObject();
+            obj->SetName("Object");
+
+            m_selected = obj;
+        }
+
+        m_gui.EndPopup();
+    }
+
     for (auto& obj : m_scene.GetObjects())
     {
         SceneNode* node = obj->GetSceneNodeRaw();
 
         if (node && node->GetParent() == nullptr)
             DrawNode(node);
+    }
+
+    if (m_pendingParent)
+    {
+        Object* newObj = m_scene.CreateObject();
+        newObj->SetName("Object");
+
+        m_pendingParent->AddChild(newObj->GetSceneNode());
+
+        m_selected = newObj;
+        m_pendingParent = nullptr;
     }
 
     if (m_gui.BeginDropTarget())
@@ -51,11 +75,27 @@ void Hierarchy::DrawNode(SceneNode* node)
     if (obj == m_selected)
         flags = flags | TreeNodeFlags::Selected;
 
-    bool open = m_gui.BeginTreeNode(obj->GetName(), flags);
+    std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
+    bool open = m_gui.BeginTreeNode(label.c_str(), flags);
 
     // selection
     if (m_gui.IsItemClicked())
         m_selected = obj;
+
+    if (m_gui.BeginContextMenu(std::to_string(obj->GetId()).c_str()))
+    {
+        if (m_gui.MenuItem("Create Child"))
+        {
+            m_pendingParent = node;
+        }
+
+        //if (m_gui.MenuItem("Delete"))
+        //{
+        //    DestroyObject(obj);
+        //}
+
+        m_gui.EndPopup();
+    }
 
     //
     // DRAG SOURCE

@@ -28,6 +28,7 @@ namespace Apex::Editor
 		Apex::Rendering::Scene& m_scene;
 
 		Apex::Data::Object* m_selected = nullptr;
+		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;
 	};
 }
 
