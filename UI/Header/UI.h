@@ -120,6 +120,7 @@ namespace Apex::UserInterface
         virtual void Separator() = 0;
         virtual void VerticalSeparator() = 0;
         virtual void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) = 0;
+        virtual void NewLine() = 0;
         virtual void AlignTextToFramePadding() = 0;  
         virtual void SetNextItemWidth(float width) = 0;
         virtual LibMath::Vector2 GetAvailableSize() const = 0;

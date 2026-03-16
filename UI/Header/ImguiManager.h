@@ -62,6 +62,7 @@ namespace Apex::UserInterface
         void Separator() override;
         void VerticalSeparator() override;
         void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) override;
+        void NewLine() override;
         void AlignTextToFramePadding()  override;
         void SetNextItemWidth(float width)  override;
         LibMath::Vector2 GetAvailableSize() const override;

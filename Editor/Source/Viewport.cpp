@@ -80,7 +80,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		float angle = atan2(axis.dot(startVec.cross(currentVec)), startVec.dot(currentVec));
 
-		if (m_rotateSnap && m_rotateSnap > 0.f) Snap(angle, m_rotateSnap);
+		if (m_isRotationSnapping && m_rotateSnap > 0.f) Snap(angle, m_rotateSnap);
 
 		LibMath::Quaternion delta(LibMath::Radian(angle), axis);
 
@@ -142,10 +142,25 @@ void Viewport::Draw()
 
 	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
 	m_gui->SameLine();
+	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->SliderFloat("Translate value", &m_translateSnap, 0.1f, 100.f);
+	m_gui->SameLine();
 	if (m_gui->Button("Rotate"))	m_currentGizmoMode = GizmoMode::Rotation;
 	m_gui->SameLine();
+	m_gui->Checkbox("Rotate Snapping", &m_isRotationSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->SliderFloat("Rotate value", &m_rotateSnap, .1f, g_Pi / 2);
+	m_gui->SameLine();
 	if (m_gui->Button("Scale"))		m_currentGizmoMode = GizmoMode::Scale;
-
+	m_gui->SameLine();
+	m_gui->Checkbox("Scale Snapping", &m_isScaleSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->SliderFloat("Scale value", &m_scaleSnap, 0.1f, 10.f);
+	
 	m_gui->EndPanel();
 }
 

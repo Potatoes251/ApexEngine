@@ -215,6 +215,7 @@ namespace Apex::UserInterface
     void ImGUIManager::Separator() { ImGui::Separator(); }
     void ImGUIManager::VerticalSeparator() { ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); }
     void ImGUIManager::SameLine(float offsetFromLeft, float spacing) { ImGui::SameLine(offsetFromLeft, spacing); }
+    void ImGUIManager::NewLine() { ImGui::NewLine(); }
     void ImGUIManager::AlignTextToFramePadding() { ImGui::AlignTextToFramePadding(); }
     void ImGUIManager::SetNextItemWidth(float w) { ImGui::SetNextItemWidth(w); }
 
