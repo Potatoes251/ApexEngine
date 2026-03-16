@@ -21,26 +21,7 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* s
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
-	if (!m_isHovered || !m_shader.IsReady()) return;
-
-	if (IsOnGizmo(mouseX, mouseY)) return;
-
-	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-	m_rhi->Clear();
-
-	RenderPassInfo picking;
-	picking.m_aspectRatio = m_width / m_height;
-	picking.m_camera = &m_camera;
-	picking.m_useIdAsColor = true;
-	picking.m_useModelShader = false;
-	picking.m_shader = m_shader;
-
-	m_shader->Use();
-	m_currentScene->Render(picking);
-
-	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo((float)mouseX, (float)mouseY));
-
-	m_rhi->UnBindFrameBuffer();
+	PerformPicking({ (float)mouseX, (float)mouseY });
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
@@ -55,58 +36,77 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 	const LibMath::Vector3 axis = GetAxis();
 
-	LibMath::Matrix4 viewProj =
-		m_camera.GetProjectionMatrix(m_width / m_height) *
-		m_camera.GetViewMatrix();
+	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) *m_camera.GetViewMatrix();
 
 	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX, (float)mouseY }, viewProj, m_panelPos, m_panelSize);
 
 	LibMath::Vector3 hit;
-	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, hit))
-		return;
+	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, hit)) return;
 
-	LibMath::Vector3 deltaMove = hit - m_startingPoint;
-	float movement = deltaMove.dot(axis);
+	LibMath::Vector3 delta = hit - m_startingPoint;
+	LibMath::Vector3 movementVec;
+
+	if (IsAxisSingle())
+	{
+		float movement = delta.dot(axis);
+		movementVec = axis * movement;
+	}
+	else if (IsAxisPlane())
+	{
+		movementVec = delta; // already lies on the plane
+	}
+	else if (IsAxisFree())
+	{
+		movementVec = delta;
+	}
 
 	switch (m_currentGizmoMode)
 	{
 	case GizmoMode::Translation:
 	{
-		if (m_isTranslationSnapping) Snap(movement);
+		if (m_isTranslationSnapping) Snap(movementVec);
 
-		LibMath::Vector3 pos = m_initialTransform.getPosition() + axis * movement;
-		m_selectedObject->GetGlobalTransform().setPosition(pos);
+		m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
 		break;
 	}
 
 	case GizmoMode::Rotation:
 	{
+		assert(IsAxisSingle() && "Rotation are only allowed around a single axis");
 		LibMath::Vector3 center = m_initialTransform.getPosition();
 
 		LibMath::Vector3 startVec = (m_startingPoint - center).normalize();
 		LibMath::Vector3 currentVec = (hit - center).normalize();
 
-		float angle = atan2( axis.dot(startVec.cross(currentVec)), startVec.dot(currentVec));
+		float angle = atan2(axis.dot(startVec.cross(currentVec)), startVec.dot(currentVec));
 
-		if (m_rotateSnap) angle = Snap(angle);
+		if (m_rotateSnap && m_rotateSnap > 0.f) Snap(angle, m_rotateSnap);
 
 		LibMath::Quaternion delta(LibMath::Radian(angle), axis);
 
 		m_selectedObject->GetGlobalTransform().setRotation(delta * m_initialTransform.getRotation());
 		break;
 	}
-
 	case GizmoMode::Scale:
 	{
-		if (m_isScaleSnapping) Snap(movement);
-
-		LibMath::Vector3 scale = m_initialTransform.getScale() + axis * movement;
-		m_selectedObject->GetGlobalTransform().setScale(scale);
+		if (m_isScaleSnapping) Snap(movementVec);
+		LibMath::Vector3 scaleDelta;
+		if (IsAxisSingle())
+		{
+			float movement = delta.dot(axis);
+			scaleDelta = axis * movement;
+		}
+		else if (IsAxisFree())
+		{
+			float movement = delta.dot(m_camera.GetRight()) + delta.dot(m_camera.GetUp());
+			scaleDelta = { movement, movement, movement };
+		}
+		m_selectedObject->GetGlobalTransform().setScale(m_initialTransform.getScale() + scaleDelta);
 		break;
 	}
-
 	default:
 		assert(false && "Unhandled gizmo mode");
+		break;
 	}
 }
 
@@ -128,7 +128,6 @@ void Viewport::Draw()
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
-	m_isHovered = m_gui->IsWindowHovered();
 
 	m_currentScene->Render(pass);
     m_rhi->SetDepthTest(false);
@@ -136,7 +135,16 @@ void Viewport::Draw()
     m_rhi->SetDepthTest(true);
     m_rhi->UnBindFrameBuffer();
 
+
 	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
+
+	m_gui->SetCursorPos(m_panelPos + LibMath::Vector2(10, 35));
+
+	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
+	m_gui->SameLine();
+	if (m_gui->Button("Rotate"))	m_currentGizmoMode = GizmoMode::Rotation;
+	m_gui->SameLine();
+	if (m_gui->Button("Scale"))		m_currentGizmoMode = GizmoMode::Scale;
 
 	m_gui->EndPanel();
 }
@@ -183,8 +191,31 @@ bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
 	{
 		m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
 	}
-	
 	return true;
+}
+
+void Viewport::PerformPicking(LibMath::Vector2 mousePos)
+{
+	if (!m_shader.IsReady()) return;
+
+	if (IsOnGizmo(mousePos[0], mousePos[1])) return;
+
+	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
+	m_rhi->Clear();
+
+	RenderPassInfo picking;
+	picking.m_aspectRatio = m_width / m_height;
+	picking.m_camera = &m_camera;
+	picking.m_useIdAsColor = true;
+	picking.m_useModelShader = false;
+	picking.m_shader = m_shader;
+
+	m_shader->Use();
+	m_currentScene->Render(picking);
+
+	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1]));
+
+	m_rhi->UnBindFrameBuffer();
 }
 
 LibMath::Vector3 Viewport::GetAxis()
@@ -194,6 +225,15 @@ LibMath::Vector3 Viewport::GetAxis()
 	case Axis::X:		return { 1, 0, 0 };
 	case Axis::Y:		return { 0, 1, 0 };
 	case Axis::Z:		return { 0, 0, 1 };
+	case Axis::None:	return { 0, 0, 0 };
+	default:			return { 0, 0, 0 };
+	}
+}
+
+LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()
+{
+	switch (m_selectedAxis)
+	{
 	case Axis::XY:		return { 0, 0, 1 };
 	case Axis::XZ:		return { 0, 1, 0 };
 	case Axis::YZ:		return { 1, 0, 0 };
@@ -203,26 +243,44 @@ LibMath::Vector3 Viewport::GetAxis()
 	}
 }
 
-bool Apex::Editor::Viewport::IsSingleAxis() const
+bool Apex::Editor::Viewport::IsAxisSingle() const
 {
 	return m_selectedAxis == Axis::X || m_selectedAxis == Axis::Y || m_selectedAxis == Axis::Z;
 }
 
-bool Apex::Editor::Viewport::IsPlaneAxis() const
+bool Apex::Editor::Viewport::IsAxisPlane() const
 {
 	return m_selectedAxis == Axis::XY || m_selectedAxis == Axis::XZ || m_selectedAxis == Axis::YZ;
+}
+
+bool Apex::Editor::Viewport::IsAxisFree() const
+{
+	return m_selectedAxis == Axis::XYZ;
 }
 
 void Viewport::ComputePlane()
 {
 	if (m_selectedAxis == Axis::None || !m_selectedObject) return;
 
-	LibMath::Vector3 axis = GetAxis();
+	LibMath::Vector3 planeNormal;
 
-	LibMath::Vector3 planeNormal = m_camera.GetFront() - axis * m_camera.GetFront().dot(axis);
+	if (IsAxisSingle())
+	{
+		LibMath::Vector3 axis = GetAxis();
 
-	if (planeNormal.magnitudeSquared() < g_epsilon)
-		planeNormal = axis.cross(m_camera.GetRight());
+		planeNormal = m_camera.GetFront() - axis * m_camera.GetFront().dot(axis);
+
+		if (planeNormal.magnitudeSquared() < g_epsilon)
+			planeNormal = axis.cross(m_camera.GetRight());
+	}
+	else if (IsAxisPlane())
+	{
+		planeNormal = GetAxisPlane(); // fixed plane
+	}
+	else if (IsAxisFree())
+	{
+		planeNormal = m_camera.GetFront();
+	}
 
 	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
 }
@@ -236,30 +294,40 @@ void Viewport::ComputePlaneRotation()
 	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
 }
 
-float Viewport::Snap(float rotationAngle) const
+void Viewport::Snap(float& value, float snapValue) const
+{
+	value = round(value / snapValue) * snapValue;
+}
+
+void Viewport::Snap(LibMath::Vector3& value) const
 {
 	switch (m_currentGizmoMode)
 	{
 	case Apex::Editor::GizmoMode::Translation:
-		if (m_translateSnap > 0.0f) 
+		if (m_translateSnap > 0.0f)
 		{
-			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+			Snap(value[0], m_translateSnap);
+			Snap(value[1], m_translateSnap);
+			Snap(value[2], m_translateSnap);
 		}
 		break;
 	case Apex::Editor::GizmoMode::Rotation:
 		if (m_rotateSnap > 0.0f)
 		{
-			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+			Snap(value[0], m_rotateSnap);
+			Snap(value[1], m_rotateSnap);
+			Snap(value[2], m_rotateSnap);
 		}
 		break;
 	case Apex::Editor::GizmoMode::Scale:
 		if (m_scaleSnap > 0.0f)
 		{
-			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+			Snap(value[0], m_scaleSnap);
+			Snap(value[1], m_scaleSnap);
+			Snap(value[2], m_scaleSnap);
 		}
 		break;
 	default:
 		break;
 	}
-	return rotationAngle;
 }

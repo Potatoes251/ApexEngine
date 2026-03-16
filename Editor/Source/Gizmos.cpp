@@ -146,6 +146,39 @@ void Gizmos::DrawTranslation(Data::Object* object)
         m_shader->SetUniform("uModel", model);
         m_cone.Draw();
     }
+    float planeSize = 0.25f * m_distanceToCamera;
+    float planeOffset = planeSize * 0.5f;
+    float planeThickness = 0.02f * m_distanceToCamera;
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(planeOffset, planeOffset, 0),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeSize, planeSize, planeThickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,1,0 }); // yellow
+        m_cube.Draw();
+    }
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(planeOffset, 0, planeOffset),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeSize, planeThickness, planeSize });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,0,1 }); // magenta
+        m_cube.Draw();
+    }
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, planeOffset, planeOffset),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeThickness, planeSize, planeSize });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,1,1 }); // cyan
+        m_cube.Draw();
+    }
 }
 
 void Gizmos::DrawRotation(Data::Object* object)
@@ -265,10 +298,56 @@ void Gizmos::DrawScale(Data::Object* object)
     }
 }
 
+bool PointInQuad(LibMath::Vector2 p,
+    LibMath::Vector2 a,
+    LibMath::Vector2 b,
+    LibMath::Vector2 c)
+{
+    LibMath::Vector2 ab = b - a;
+    LibMath::Vector2 ac = c - a;
+    LibMath::Vector2 ap = p - a;
+
+    float d1 = ap.dotProduct(ab);
+    float d2 = ap.dotProduct(ac);
+
+    return d1 >= 0 && d2 >= 0 &&
+        d1 <= ab.dotProduct(ab) &&
+        d2 <= ac.dotProduct(ac);
+}
+
 Axis Gizmos::IsOnTranslation(
     LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
     LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
+    const float planeSize = 0.25f * m_distanceToCamera * 1.2f;
+    const float planeOffset = planeSize * 0.5f;
+
+    struct PlaneAxes
+    {
+        LibMath::Vector3 a;
+        LibMath::Vector3 b;
+        Axis axis;
+    };
+
+    PlaneAxes planes[3] =
+    {
+        { {1,0,0}, {0,1,0}, Axis::XY },
+        { {1,0,0}, {0,0,1}, Axis::XZ },
+        { {0,1,0}, {0,0,1}, Axis::YZ }
+    };
+
+    for (const PlaneAxes& p : planes)
+    {
+        LibMath::Vector3 base = worldPos + (p.a + p.b) * planeOffset;
+
+        LibMath::Vector2 p0 = GetScreenPos(base, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 px = GetScreenPos(base + p.a * planeSize, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 py = GetScreenPos(base + p.b * planeSize, viewProj, panelOffset, panelSize);
+
+        if (PointInQuad(mousePosOnScreen, p0, px, py))
+            return p.axis;
+    }
+
     float axisLength = 1.0f * m_distanceToCamera;
     float mouseRadius = 15.0f * m_distanceToCamera;
 
@@ -276,9 +355,9 @@ Axis Gizmos::IsOnTranslation(
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
 
     const LibMath::Vector3 axes[3] = {
-        {axisLength, 0, 0},
-        {0, axisLength, 0},
-        {0, 0, axisLength}
+    { axisLength, 0, 0 },
+    { 0, axisLength, 0 },
+    { 0, 0, axisLength }
     };
 
     for (int i = 0; i < 3; ++i)

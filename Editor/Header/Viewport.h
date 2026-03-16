@@ -38,16 +38,20 @@ namespace Apex::Editor
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
 		bool				IsOnGizmo(double mouseX, double mouseY);
+		void				PerformPicking(LibMath::Vector2 mousePos);
 
 		LibMath::Vector3	GetAxis();
-		bool				IsSingleAxis() const;
-		bool				IsPlaneAxis() const;
+		LibMath::Vector3	GetAxisPlane();
+		bool				IsAxisSingle() const;
+		bool				IsAxisPlane() const;
+		bool				IsAxisFree() const;
 		void				ComputePlane();
 		void				ComputePlaneRotation();
-		float				Snap(float rotationAngle = 0) const;
+		void				Snap(float& value, float snapValue) const;
+		void				Snap(LibMath::Vector3& value) const;
 
 		Gizmos		m_gizmo;
-		GizmoMode	m_currentGizmoMode = GizmoMode::Scale;
+		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
 		Axis		m_selectedAxis = Axis::None;
 		
 
@@ -76,10 +80,9 @@ namespace Apex::Editor
 		float	m_height = 720;
 
 		float	m_translateSnap = 1.f;
-		float	m_rotateSnap = .2f;
+		float	m_rotateSnap = 2.f;
 		float	m_scaleSnap = 1.f;
 
-		bool	m_isHovered = false;
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
 		bool	m_isScaleSnapping = true;

@@ -18,12 +18,13 @@ namespace Apex::Editor
 		Scale
 	};
 
+	// DO NOT CHANGE ORDER
 	enum class Axis
 	{
-		None,
 		X, Y, Z,
 		XY, XZ, YZ,
 		XYZ,
+		None,
 	};
 
 	class Gizmos
@@ -73,8 +74,10 @@ namespace Apex::Editor
 		float m_distanceToCamera = 0.f;
 	};
 
-	LibMath::Vector2	GetScreenPos(LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
-	LibMath::Line3D		ScreenToWorldRay(LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
+	LibMath::Vector2	GetScreenPos(
+		LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
+	LibMath::Line3D		ScreenToWorldRay(
+		LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
 }
 
 
