@@ -68,28 +68,30 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	LibMath::Vector3 startVec = (m_startingPoint - center).normalize();
 	LibMath::Vector3 currentVec = (hit - center).normalize();
 
-	float angle = atan2(
-		GetAxis().dot(startVec.cross(currentVec)), // signed rotation around axis
-		startVec.dot(currentVec)               // cosine of angle
-	);
+	float angle = atan2(GetAxis().dot(startVec.cross(currentVec)), startVec.dot(currentVec));
 
 	switch (m_currentGizmoMode)
 	{
 	case Apex::Editor::GizmoMode::Translation:
 		m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + GetAxis() * movement);
+		if (m_isTranslationSnapping) Snap();
 		break;
 	case Apex::Editor::GizmoMode::Rotation:
 	{
-		LibMath::Quaternion delta = LibMath::Quaternion(LibMath::Radian(angle), GetAxis());
+		if (m_rotateSnap) angle = Snap(angle);
+ 		LibMath::Quaternion delta = LibMath::Quaternion(LibMath::Radian(angle), GetAxis());
 		m_selectedObject->GetGlobalTransform().setRotation(delta * m_initialTransform.getRotation());
-	}		break;
+	}		
+		break;
 	case Apex::Editor::GizmoMode::Scale:
 		m_selectedObject->GetGlobalTransform().setScale(m_initialTransform.getScale() + GetAxis() * movement);
+		if (m_isScaleSnapping) Snap();
 		break;
 	default:
 		assert(false && "Unhandled gizmo mode");
 		break;
 	}
+
 }
 
 void Viewport::Draw()
@@ -202,4 +204,44 @@ void Viewport::ComputePlaneRotation()
 	LibMath::Vector3 planeNormal = GetAxis();
 
 	m_axisPlane = LibMath::Plane(planeNormal, -planeNormal.dot(m_selectedObject->GetGlobalTransform().getPosition()));
+}
+
+float Viewport::Snap(float rotationAngle)
+{
+	switch (m_currentGizmoMode)
+	{
+	case Apex::Editor::GizmoMode::Translation:
+		if (m_translateSnap > 0.0f) 
+		{
+			LibMath::Vector3 start = m_initialTransform.getPosition();
+			LibMath::Vector3 delta = m_selectedObject->GetGlobalTransform().getPosition() - start;
+			if (m_selectedAxis == Axis::X) delta[0] = round(delta[0] / m_translateSnap) * m_translateSnap;
+			if (m_selectedAxis == Axis::Y) delta[1] = round(delta[1] / m_translateSnap) * m_translateSnap;
+			if (m_selectedAxis == Axis::Z) delta[2] = round(delta[2] / m_translateSnap) * m_translateSnap;
+
+			m_selectedObject->GetGlobalTransform().setPosition(start + delta);
+		}
+		break;
+	case Apex::Editor::GizmoMode::Rotation:
+		if (m_rotateSnap > 0.0f)
+		{
+			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+		}
+		break;
+	case Apex::Editor::GizmoMode::Scale:
+		if (m_scaleSnap > 0.0f)
+		{
+			LibMath::Vector3 start = m_initialTransform.getScale();
+			LibMath::Vector3 delta = m_selectedObject->GetGlobalTransform().getScale() - start;
+			if (m_selectedAxis == Axis::X) delta[0] = round(delta[0] / m_scaleSnap) * m_scaleSnap;
+			if (m_selectedAxis == Axis::Y) delta[1] = round(delta[1] / m_scaleSnap) * m_scaleSnap;
+			if (m_selectedAxis == Axis::Z) delta[2] = round(delta[2] / m_scaleSnap) * m_scaleSnap;
+
+			m_selectedObject->GetGlobalTransform().setScale(start + delta);
+		}
+		break;
+	default:
+		break;
+	}
+	return rotationAngle;
 }

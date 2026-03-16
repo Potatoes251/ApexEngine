@@ -42,6 +42,7 @@ namespace Apex::Editor
 		LibMath::Vector3	GetAxis();
 		void				ComputePlane();
 		void				ComputePlaneRotation();
+		float				Snap(float rotationAngle = 0);
 
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Rotation;
@@ -72,7 +73,14 @@ namespace Apex::Editor
 		float	m_width = 1280;
 		float	m_height = 720;
 
+		float	m_translateSnap = 1.f;
+		float	m_rotateSnap = .2f;
+		float	m_scaleSnap = 1.f;
+
 		bool	m_isHovered = false;
+		bool	m_isTranslationSnapping = true;
+		bool	m_isRotationSnapping = true;
+		bool	m_isScaleSnapping = true;
 	};
 }
 
