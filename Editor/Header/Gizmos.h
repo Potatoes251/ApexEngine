@@ -20,10 +20,10 @@ namespace Apex::Editor
 
 	enum class Axis
 	{
-		X,
-		Y,
-		Z,
-		None
+		None,
+		X, Y, Z,
+		XY, XZ, YZ,
+		XYZ,
 	};
 
 	class Gizmos

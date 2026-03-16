@@ -195,6 +195,17 @@ void Gizmos::DrawScale(Data::Object* object)
     float thickness = 0.05f * m_distanceToCamera;
     constexpr float handleScale = 2.f;
 
+    // central part (WHITE)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, 0),
+            { 1,0,0 }, LibMath::Degree(0),
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,1,1 });
+        m_cube.Draw();
+    }
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
@@ -349,6 +360,11 @@ Axis Gizmos::IsOnScale(
 
     LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
+
+    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1]}, mouse));
+    {
+        return Axis::XYZ;
+    }
 
     const LibMath::Vector3 axes[3] = {
         {axisLength, 0, 0},

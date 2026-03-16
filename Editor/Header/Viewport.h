@@ -40,12 +40,14 @@ namespace Apex::Editor
 		bool				IsOnGizmo(double mouseX, double mouseY);
 
 		LibMath::Vector3	GetAxis();
+		bool				IsSingleAxis() const;
+		bool				IsPlaneAxis() const;
 		void				ComputePlane();
 		void				ComputePlaneRotation();
-		float				Snap(float rotationAngle = 0);
+		float				Snap(float rotationAngle = 0) const;
 
 		Gizmos		m_gizmo;
-		GizmoMode	m_currentGizmoMode = GizmoMode::Rotation;
+		GizmoMode	m_currentGizmoMode = GizmoMode::Scale;
 		Axis		m_selectedAxis = Axis::None;
 		
 
