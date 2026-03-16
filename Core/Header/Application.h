@@ -54,6 +54,7 @@ namespace Apex
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
+        Apex::Physic::PhysicSystem* GetPhysicsSystem() { return &m_physics; }
 
     private:
         bool InitResourceManager();

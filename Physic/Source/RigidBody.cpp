@@ -8,6 +8,30 @@ RigidBodyComponent::RigidBodyComponent(float mass, BodyType type)
 	m_bodyType = type;
 }
 
+RigidBodyComponent::RigidBodyComponent(RigidBodyComponent const& other)
+{
+	m_mass = other.m_mass;
+	m_bodyType = other.m_bodyType;
+	m_pendingForces = other.m_pendingForces;
+}
+
+RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& other)
+{
+	if (this != &other)
+	{
+		m_mass = other.m_mass;
+		m_bodyType = other.m_bodyType;
+		m_pendingForces = other.m_pendingForces;
+	}
+	return *this;
+}
+
+std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
+{
+	auto clone = std::make_unique<RigidBodyComponent>(*this);
+	return clone;
+}
+
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();

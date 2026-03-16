@@ -29,7 +29,7 @@ namespace Apex::Physic
 		ForceType			m_type = ForceType::Force;
 	};
 
-	class RigidBodyComponent : public Component
+	class RigidBodyComponent : public Apex::Component
 	{
 	public:
 		RigidBodyComponent(float mass, BodyType type = BodyType::Dynamic);
@@ -37,6 +37,8 @@ namespace Apex::Physic
 		RigidBodyComponent& operator=(RigidBodyComponent const& other);
 
 		~RigidBodyComponent() = default;
+
+		std::unique_ptr<Apex::Component>	Clone() const override;
 
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }

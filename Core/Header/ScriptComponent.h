@@ -16,6 +16,8 @@ namespace Apex::Scripting
         ScriptComponent(LuaManager& lua) : m_lua(lua) {};
         ~ScriptComponent();
 
+        std::unique_ptr<Component> Clone() const override;
+
         void SetScript(const std::string& path);
 
         int GetInstanceRef() const { return m_instanceRef; }
