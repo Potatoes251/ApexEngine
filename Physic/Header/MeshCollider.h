@@ -30,6 +30,8 @@ namespace Apex::Physic
 
 		Resources::ResourceHandle<Mesh> SetMeshColliderType(MeshColliderType type) { m_type = type; }
 
+		void Serialize(std::ostream& out) const override;
+
 	private:
 		Resources::ResourceHandle<Mesh> m_mesh;
 		MeshColliderType m_type;

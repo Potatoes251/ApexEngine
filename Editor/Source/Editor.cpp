@@ -29,7 +29,7 @@ namespace Apex::Editor
         if (!m_gui)
             return false;
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, "Assets/");
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
@@ -68,6 +68,18 @@ namespace Apex::Editor
 
         m_window->MakeContextCurrent();
 
+        m_contentBrowser->SetOnAssetLoad([this](const AssetEntry& entry)
+            {
+                switch (entry.m_type)
+                {
+                case AssetType::Texture:
+                    OpenTextureEditor(entry.m_path);
+                    break;
+                default:
+                    break;
+                }
+            });
+
         return true;
     }
 
@@ -86,6 +98,15 @@ namespace Apex::Editor
         {
             m_gui->BeginFrame();
             m_contentBrowser->Draw();
+            // Draw all open texture editors, then remove any that were closed
+            for (auto& textureEditor : m_textureEditors)
+                textureEditor->Draw();
+            m_textureEditors.erase(
+                std::remove_if(m_textureEditors.begin(), m_textureEditors.end(),
+                    [](const std::unique_ptr<TextureEditor>& textureEditor)
+                    { return !textureEditor->IsOpen(); }),
+                m_textureEditors.end());
+
             m_viewport->Draw();
             m_gui->EndFrame();
         }
@@ -109,7 +130,7 @@ namespace Apex::Editor
 
     void Editor::Shutdown()
     {
-        // Panels before IGUI backend, IGUI before window/GL context.
+        m_textureEditors.clear();
         m_contentBrowser.reset();
         m_viewport.reset();
         m_gui.reset();
@@ -127,5 +148,40 @@ namespace Apex::Editor
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
+    }
+    void Editor::OnExternalDrop(std::vector<std::filesystem::path> paths)
+    {
+        if (!m_contentBrowser) return;
+
+        auto  mouse = m_window->GetMousePosition();
+        float mouseX = static_cast<float>(mouse.m_x);
+        float mouseY = static_cast<float>(mouse.m_y);
+
+        fs::path dest = m_contentBrowser->GetExternalDropDest(mouseX, mouseY);
+        if (!dest.empty())
+        {
+            m_contentBrowser->ImportFiles(std::move(paths), dest);
+            return;
+        }
+
+        if (m_contentBrowser->ContainsGridPoint(mouseX, mouseY))
+            m_contentBrowser->ImportFiles(std::move(paths));
+    }
+
+    void Editor::OpenTextureEditor(const fs::path& path)
+    {
+        // If this texture is already open, just focus that window
+        for (auto& textureEditor : m_textureEditors)
+        {
+            if (textureEditor->GetPath() == path)
+            {
+                textureEditor->Focus();
+                return;
+            }
+        }
+        // Otherwise open a new editor for this texture
+        auto textureEditor = std::make_unique<TextureEditor>(*m_gui);
+        textureEditor->Open(path, static_cast<int>(m_textureEditors.size()));
+        m_textureEditors.push_back(std::move(textureEditor));
     }
 }

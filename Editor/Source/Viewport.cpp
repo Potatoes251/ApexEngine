@@ -65,8 +65,8 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, hit))
 		return;
 
-	LibMath::Vector3 delta = hit - m_startingPoint;
-	float movement = delta.dot(axis);
+	LibMath::Vector3 deltaMove = hit - m_startingPoint;
+	float movement = deltaMove.dot(axis);
 
 	switch (m_currentGizmoMode)
 	{
@@ -136,7 +136,7 @@ void Viewport::Draw()
     m_rhi->SetDepthTest(true);
     m_rhi->UnBindFrameBuffer();
 
-	m_gui->DrawImage2D(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
+	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
 
 	m_gui->EndPanel();
 }

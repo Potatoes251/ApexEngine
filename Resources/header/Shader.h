@@ -9,7 +9,7 @@
 class Shader : public IResource
 {
 public:
-	Shader(std::string name) : m_name(name) {}
+	Shader(std::string name) : IResource(name) {}
 	Shader(Shader const&) = delete;
 	Shader& operator=(Shader const&) = delete;
 

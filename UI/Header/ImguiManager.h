@@ -15,9 +15,9 @@ namespace Apex::UserInterface
 {
 	namespace  FontSize
 	{
-		constexpr 	float	SMALL = 14.0f;
-		constexpr 	float	DEFAULT = 18.0f;
-		constexpr 	float	LARGE = 28.0f;
+		constexpr 	float	SMALL = 16.0f;
+		constexpr 	float	DEFAULT = 22.0f;
+		constexpr 	float	LARGE = 30.0f;
 		constexpr 	float	TITLE = 36.0f;
 	};
 
@@ -44,6 +44,8 @@ namespace Apex::UserInterface
 
         bool WantCaptureMouse() const override;
         bool WantCaptureKeyboard() const override;
+        bool IsKeyPressed(UIKey key) const override;
+        bool IsPanelFocused() const override;
 
         void PushID(const std::string& id) override;
         void PushID(int id) override;
@@ -51,13 +53,22 @@ namespace Apex::UserInterface
 
         void PushColor(StyleColor target, Color color) override;
         void PopColor() override;
+        void PushStyleVariable(StyleVariable var, float x, float y = 0.f) override;
+        void PopStyleVariable() override;
+        void PushFont(FontID id) override;
+        void PopFont() override;
+        float GetTextLineHeight() const override;
 
         void Separator() override;
+        void VerticalSeparator() override;
         void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) override;
+        void AlignTextToFramePadding()  override;
         void SetNextItemWidth(float width)  override;
         LibMath::Vector2 GetAvailableSize() const override;
         LibMath::Vector2 GetCursorPos()     const override;
         void SetCursorPos(LibMath::Vector2 pos)   override;
+        LibMath::Vector2 GetPanelPos()      const override;
+        LibMath::Vector2 GetPanelSize()     const override;
 
         void BeginPanel(const std::string& title, bool* open) override;
         void EndPanel() override;
@@ -70,10 +81,22 @@ namespace Apex::UserInterface
                           TreeNodeFlags flags) override;
         void EndTreeNode() override;
 
-        bool BeginContextMenu() override;
+        bool BeginContextMenu(const std::string& id = "##ctx") override;
+        bool BeginGridContextMenu() override;
         void EndContextMenu() override;
-        bool MenuItem(const std::string& label,
-            bool enabled)                override;
+        bool MenuItem(const std::string& label, bool enabled) override;
+
+        void SetKeyboardFocusHere() override;
+        void SetClipboardText(const std::string& text) override;
+        void SetNextWindowFocus() override;
+
+        void OpenPopup(const std::string& id) override;
+        bool BeginPopup(const std::string& id) override;
+        void EndPopup() override;
+        bool BeginPopupModal(const std::string& title, LibMath::Vector2 size = {}) override;
+        void CloseCurrentPopup() override;
+        void SetNextWindowSize(LibMath::Vector2 size) override;
+        void SetNextWindowPos(LibMath::Vector2 pos)  override;
 
         void BeginTooltip() override;
         void EndTooltip() override;
@@ -82,6 +105,7 @@ namespace Apex::UserInterface
         void TextDisabled(const std::string& text) override;
         void TextColored(Color color, const std::string& text) override;
         bool Button(const std::string& label) override;
+        bool ButtonSized(const std::string& label, LibMath::Vector2 size) override;
         bool SmallButton(const std::string& label) override;
         bool Checkbox(const std::string& label, bool* value) override;
         bool SliderFloat(const std::string& label, float* value, float min, float max) override;
@@ -89,23 +113,39 @@ namespace Apex::UserInterface
         bool ColorEdit3(const std::string& label, float color[3]) override;
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
+        bool Combo(const std::string& label, int* currentItem, const char* items) override;
+        bool CollapsingHeader(const std::string& label, bool defaultOpen = false) override;
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;
 
 		Vector2 GetScreenSize() override;
 
-        Vector2 GetPanelPos() override;
-        Vector2 GetPanelSize() override;
-
-		//In checkbox
-
-        bool IsWindowHovered() const override;
         bool IsItemHovered() const override;
+        bool IsItemActive() const override;
+        LibMath::Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
+        bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
+        bool IsWindowHovered() const override;
+        bool IsAnyItemHovered() const override;
+        bool IsDragDropActive() const override;
+        const char* GetDragDropPayloadType() const override;
+        bool IsMouseDown(MouseButton button = MouseButton::Left) const override;
+        LibMath::Vector2 GetMouseDelta() const override;
+        float GetMouseWheelDelta() const override;
+        LibMath::Vector2 GetMousePos() const override;
 
-		//Out of checkbox
-		void	DrawText2D(const std::string& text, float x, float y, float size, FontID id) override;
-		void    DrawImage2D(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) override;
+		bool BeginDragSource() override;
+        void SetDragPayload(const char* type, const void* data, size_t size) override;
+		void EndDragSource() override;
+
+		bool BeginDropTarget() override;
+        const void* AcceptDragPayload(const char* type) override;
+		void EndDropTarget() override;
+
+		void DrawText2D(const std::string& text, float x, float y, float size, FontID id) override;
+		void DrawImageBackground(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner) override;
+        void DrawImage(uint32_t textureID, LibMath::Vector2 size, bool flipY = true) override;
+        void DrawImageTinted(uint32_t textureID, LibMath::Vector2 size, Color tint, bool flipY = true) override;
         IDrawList* GetDrawList();
 
 	private:

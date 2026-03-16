@@ -24,7 +24,13 @@ namespace Apex::Rendering
         void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
         void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
 
+        Apex::Resources::ResourceHandle<Mesh>& GetMesh();
+        Apex::Resources::ResourceHandle<Texture>& GetTexture();
+        Apex::Resources::ResourceHandle<Shader>& GetShader();
+
         void Render(RenderPassInfo passInfo);
+
+        void Serialize(std::ostream& out) const override;
 
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;

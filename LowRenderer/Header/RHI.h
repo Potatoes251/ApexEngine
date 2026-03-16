@@ -5,6 +5,7 @@
 // RHI.h — Render Hardware Interface
 // ============================================================
 
+#include "Vertex.h"
 
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
@@ -21,14 +22,6 @@ namespace Apex::Rendering
 	using RHITextureHandle = uint32_t;
 
 	constexpr uint32_t RHI_INVALID = 0;
-
-	// ── Vertex layout ─────────────────────────────────────────────
-	struct Vertex
-	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_normal;
-		LibMath::Vector2 m_uv;
-	};
 
 	enum class BufferType
 	{

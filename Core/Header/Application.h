@@ -37,7 +37,7 @@ namespace Apex
 	class Application
 	{
     public:
-        Application(const char* argv0) : m_argv0(argv0) {}
+        Application() = default;
         ~Application() = default;
 
         Application(const Application&) = delete;
@@ -75,8 +75,6 @@ namespace Apex
         float m_totalTime = 0.0f;
         float m_deltaTime = 0.0f;
         float m_accumulator = 0.f;
-
-        const char* m_argv0;
 
         std::unique_ptr<Apex::Rendering::IRHI> m_rhi;
 

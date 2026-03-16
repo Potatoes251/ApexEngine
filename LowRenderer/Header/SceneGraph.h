@@ -24,13 +24,14 @@ namespace Apex::SceneGraph
 
 				SceneNode*						GetParent() const;
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
+				Object*							GetObject() const;
 
 				void							AddChild(shared_ptr<SceneNode> child);
 				void							DestroyChild(SceneNode* child);
 				shared_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
 
 				void							Destroy();
-				void							SetParent(SceneNode& newParent);
+				void							SetParent(SceneNode* newParent);
 				void							MarkDirty();
 	private:
 		bool	IsDescendantOf(SceneNode& otherNode);

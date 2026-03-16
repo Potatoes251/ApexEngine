@@ -8,6 +8,8 @@
 #include "ResourceManager.h"
 #include "Object.h"
 
+#include "Physic.h"
+
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
@@ -22,12 +24,14 @@ namespace Apex::Rendering
 		Scene& operator=(const Scene&) = delete;
 
 		Object* CreateObject();
+		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 
 		void Update(float deltaTime);
 		void Render(RenderPassInfo passInfo);
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
+		void Save(const std::string& path, Apex::Physic::PhysicSystem& phys);
 	private:
 		std::vector<std::unique_ptr<Object>> m_objects;
 	};

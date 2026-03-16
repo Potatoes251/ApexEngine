@@ -361,7 +361,7 @@ Axis Gizmos::IsOnScale(
     LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
 
-    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1]}, mouse));
+    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1]}, mouse))
     {
         return Axis::XYZ;
     }
