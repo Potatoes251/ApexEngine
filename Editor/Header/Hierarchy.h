@@ -23,12 +23,15 @@ namespace Apex::Editor
 
 		void DrawInsertLine(float y);
 
+		void DestroyObject(Object* obj);
+
 	private:
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;
 
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;
+		Apex::Data::Object* m_pendingDelete = nullptr;
 	};
 }
 

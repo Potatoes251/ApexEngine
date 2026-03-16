@@ -48,6 +48,12 @@ void Hierarchy::Draw()
         m_pendingParent = nullptr;
     }
 
+    if (m_pendingDelete)
+    {
+        DestroyObject(m_pendingDelete);
+        m_pendingDelete = nullptr;
+    }
+
     if (m_gui.BeginDropTarget())
     {
         if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
@@ -78,7 +84,6 @@ void Hierarchy::DrawNode(SceneNode* node)
     std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
     bool open = m_gui.BeginTreeNode(label.c_str(), flags);
 
-    // selection
     if (m_gui.IsItemClicked())
         m_selected = obj;
 
@@ -89,17 +94,14 @@ void Hierarchy::DrawNode(SceneNode* node)
             m_pendingParent = node;
         }
 
-        //if (m_gui.MenuItem("Delete"))
-        //{
-        //    DestroyObject(obj);
-        //}
+        if (!m_gui.IsDragDropActive() && m_gui.MenuItem("Delete"))
+        {
+                m_pendingDelete = obj;
+        }
 
         m_gui.EndPopup();
     }
 
-    //
-    // DRAG SOURCE
-    //
     if (m_gui.BeginDragSource())
     {
         SceneNode* payload = node;
@@ -108,9 +110,6 @@ void Hierarchy::DrawNode(SceneNode* node)
         m_gui.EndDragSource();
     }
 
-    //
-    // DROP TARGET
-    //
     if (m_gui.BeginDropTarget())
     {
         if (m_gui.IsDragDropActive() &&
@@ -136,7 +135,6 @@ void Hierarchy::DrawNode(SceneNode* node)
             }
         }
 
-        // ACCEPT DROP (uniquement quand on relâche)
         if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
         {
             SceneNode* dragged = *(SceneNode**)data;
@@ -187,4 +185,17 @@ void Hierarchy::DrawInsertLine(float y)
         PackColor(80, 160, 255),
         2.0f
     );
+}
+
+void Hierarchy::DestroyObject(Object* obj)
+{
+    SceneNode* node = obj->GetSceneNodeRaw();
+
+    if (node->GetParent())
+        node->GetParent()->DestroyChild(node);
+
+    m_scene.DestroyObject(obj);
+
+    if (m_selected == obj)
+        m_selected = nullptr;
 }

@@ -25,6 +25,8 @@ namespace Apex::Rendering
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 
+		void DestroyObject(Object* obj);
+
 		void Update(float deltaTime);
 		void Render(const LibMath::Matrix4& view,
 			const LibMath::Matrix4& projection,

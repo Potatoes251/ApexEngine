@@ -29,6 +29,28 @@ namespace Apex::Rendering
 	{
 		return m_objects;
 	}
+
+	void Scene::DestroyObject(Object* obj)
+	{
+		if (!obj)
+			return;
+
+		Apex::SceneGraph::SceneNode* node = obj->GetSceneNodeRaw();
+
+		if (node && node->GetParent())
+			node->GetParent()->DestroyChild(node);
+
+		auto it = std::find_if(
+			m_objects.begin(),
+			m_objects.end(),
+			[&](const std::unique_ptr<Object>& ptr)
+			{
+				return ptr.get() == obj;
+			});
+
+		if (it != m_objects.end())
+			m_objects.erase(it);
+	}
 	
 	void Scene::Update(float deltaTime)
 	{
