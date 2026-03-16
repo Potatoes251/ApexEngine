@@ -810,7 +810,7 @@ void LibMath::Matrix4::cofactors()
 void LibMath::Matrix4::adjugate()
 {
 	cofactors();
-	transpose();
+	//transpose();
 }
 
 void LibMath::Matrix4::inverse()

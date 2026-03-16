@@ -217,6 +217,7 @@ LibMath::Vector3::Vector3(float x, float y, float z) : m_x(x), m_y(y), m_z(z) {}
 LibMath::Vector3::Vector3(Vector2 const& other, float z) : m_x(other[0]), m_y(other[1]), m_z(z) {}
 
 LibMath::Vector3::Vector3(Vector3 const& other) : m_x(other.m_x), m_y(other.m_y), m_z(other.m_z) {}
+LibMath::Vector3::Vector3(Vector4 const& other) : m_x(other[0]), m_y(other[1]), m_z(other[2]) {}
 
 LibMath::Vector3 LibMath::Vector3::zero()
 {
@@ -387,6 +388,12 @@ LibMath::Vector3& LibMath::Vector3::normalize()
 	m_z /= mag;
 
 	return *this;
+}
+
+LibMath::Vector3 LibMath::Vector3::normalized() const
+{
+	float mag = magnitude();
+	return { m_x / mag,m_y / mag ,m_z / mag };
 }
 
 void LibMath::Vector3::projectOnto(Vector3 const& other)

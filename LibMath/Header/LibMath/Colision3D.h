@@ -30,6 +30,7 @@ namespace LibMath
 	bool			collisionRayPrism(Line3D, Prism);						// aabb
 
 	// not required in the LibMath
+	bool			intersectionRayPlane(Line3D, Plane, Vector3&);
 	bool			intersectionRayPrism(Line3D, Prism, Vector3&);			// aabb		return the first touching point
 	bool			collisionCapsulePrism(Capsule, Prism);					// aabb
 	bool			intersectionCapsulePrism(Capsule, Prism, Vector3&);		// aabb		return the first correction to apply to make em not touch

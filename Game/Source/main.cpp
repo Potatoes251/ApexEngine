@@ -37,7 +37,7 @@ static std::filesystem::path FindProjectRoot(std::filesystem::path dir)
     return dir;
 }
 
-int main(int argc, char* argv[])
+int main(int /*argc*/, char* argv[])
 {
 #ifdef _WIN32
     std::filesystem::path exeDir = GetExeDir();
@@ -53,7 +53,8 @@ int main(int argc, char* argv[])
         return 1;
 
     auto app = std::make_unique<Apex::Application>();
-    if (!app->Init(&editor.GetWindow()))
+    // dont create window for the scene while in editor
+    if (!app->Init(false))
         return 1;
 
 	app->LoadScene();
@@ -63,23 +64,13 @@ int main(int argc, char* argv[])
 
     while (!editor.GetWindow().ShouldClose())
     {
-        // Processes events for all windows ï¿½ must be unconditional
+        // Processes events for all windows must be unconditional
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();
-        // Game tick ï¿½ only while the game window is still open.
-        if (app && !app->GetWindow().ShouldClose())
-        {
-            app->Tick(); // context switched inside Tick()
-        }
-        else if (app)
-        {
-            editor.OnGameStopped();
-            app.reset();
-            editor.GetWindow().Focus();
-        }
-
-        // Editor render ï¿½ always runs while editor window is open.
-        editor.Render(); 
+        editor.Update();
+        // Editor render — always runs while editor window is open.
+        editor.Render();
+        app->GetResourceManager()->ProcessGpuUploads();
     }
 
     editor.Shutdown();

@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
+#include "RenderPassInfo.h"
 
 #include "SceneLoader.h"
 
@@ -29,17 +30,20 @@ void Apex::Application::Run()
     Shutdown();
 }
 
-bool Apex::Application::Init(Apex::Windowing::IWindow* shareContext)
+bool Apex::Application::Init(bool createWindow)
 {
     std::cout << "Application Init\n";
 
-    if (!InitResourceManager())     return false;
-    if (!InitCamera())              return false;
-    if (!InitWindow(shareContext))  return false;
-    if (!InitRHI())                 return false;
-    if (!InitRendering())           return false;
-    if (!InitAudio())               return false;
-    if (!InitScene())               return false;
+    if (createWindow && !InitWindow()) return false;
+
+    if (!InitResourceManager()  
+    || !InitCamera()
+    || !InitRHI()  
+    || !InitRendering()
+    || !InitAudio()
+    || !InitScene())
+
+        return false;
 
     return true;
 }
@@ -56,9 +60,9 @@ bool Apex::Application::InitCamera()
     return true;
 }
 
-bool Apex::Application::InitWindow(Apex::Windowing::IWindow* shareContext)
+bool Apex::Application::InitWindow()
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, shareContext));
+    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, nullptr));
 
     if (!m_window)
         return false;
@@ -95,13 +99,14 @@ bool Apex::Application::InitRHI()
         return false;
 
     m_resourceManager->SetRHI(m_rhi.get());
+    m_rhi->SetClearColor(0.12f, 0.12f, 0.15f);
 
     return true;
 }
 
 bool Apex::Application::InitRendering()
 {
-    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
+    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"), m_rhi.get());
 
     return true;
 }
@@ -114,8 +119,8 @@ bool Apex::Application::InitAudio()
     {
         m_audio->Preload("fragments of hope.ogg");
 
-        m_audio->Play2D("fragments of hope.ogg",
-            { .m_loop = true, .m_volume = 1.f });
+        //m_audio->Play2D("fragments of hope.ogg",
+        //    { .m_loop = true, .m_volume = 1.f });
     }
 
     return true;
@@ -129,12 +134,14 @@ bool Apex::Application::InitScene()
 
 bool Apex::Application::InitUI()
 {
+    if (!m_window) return false;
+
     m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
 
     if (!m_uiManager)
         return false;
 
-    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, UIAnchor::Center, FontID::Default));
+    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
     return true;
 }
@@ -256,8 +263,6 @@ void Apex::Application::Tick()
     }
 
     SyncPhysicsToTransforms();
-    BoxCollider box({ 1,1,1 }, false);
-    std::vector<HitResult> hit;
 
     Render();
 
@@ -302,15 +307,19 @@ void Apex::Application::SyncPhysicsToTransforms()
 
 void Apex::Application::Render()
 {
-    m_rhi->Clear(0.12f, 0.12f, 0.15f);
+    m_rhi->Clear();
+
+    RenderPassInfo pass;
+    pass.m_aspectRatio = m_window->GetAspectRatio();
+    pass.m_camera = m_camera.get();
+
+    m_scene->Render(pass);
 
     LibMath::Matrix4 view = m_camera->GetViewMatrix();
     LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
 
-    m_scene->Render(view, proj, m_camera->GetPosition());
-
     m_physics.DrawColliders();
-    DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);
+    DebugRenderer::Get().DrawLines(proj * view);
 
     m_resourceManager->ProcessGpuUploads();
 }

@@ -249,7 +249,7 @@ namespace Apex::UserInterface
 
     void ImGUIManager::BeginPanel(const std::string& title, bool* open)
     {
-        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
     }
 
     Vector2 ImGUIManager::GetScreenSize()
@@ -459,7 +459,7 @@ namespace Apex::UserInterface
 
     void ImGUIManager::DrawText2D(const std::string& text, float x, float y, float size, FontID id)
     {
-        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         ImFont* font = m_fonts[static_cast<int>(id)];
 
@@ -471,10 +471,12 @@ namespace Apex::UserInterface
 
     void ImGUIManager::DrawImageBackground(unsigned int textureId, Vector2 topLeftCorner, Vector2 bottomRightCorner)
     {
-        ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-        drawList->AddImage(static_cast<ImTextureID>(textureId),
-            ImVec2(topLeftCorner[0], topLeftCorner[1]), ImVec2(bottomRightCorner[0], bottomRightCorner[1]));
+        drawList->AddImage((ImTextureID)(uintptr_t)(textureId),
+            ImVec2(topLeftCorner[0], topLeftCorner[1]),
+            ImVec2(bottomRightCorner[0], bottomRightCorner[1]), ImVec2(0, 1),
+            ImVec2(1, 0));
     }
 
     void ImGUIManager::DrawImage(uint32_t textureID, LibMath::Vector2 size, bool flipY)

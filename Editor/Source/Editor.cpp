@@ -1,5 +1,8 @@
 #include "Editor.h"
 
+#include "Shader.h"
+#include "ResourceHandle.h"
+
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
 using namespace Apex::Audio;
@@ -34,6 +37,37 @@ namespace Apex::Editor
                     m_audio->Play2D(entry.m_path.filename().string());
             });
 
+        m_viewport = std::make_unique<Viewport>(
+            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
+            app.GetScene(), app.GetRhi(), m_gui.get());
+
+        m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
+            {
+                if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
+                    m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
+                else
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseMove(pos.m_x, pos.m_y);
+                }
+            });
+
+        m_window->SetMouseButtonCallback([&](Windowing::MouseButton button, bool press)
+            {
+                if (button == Windowing::MouseButton::Left && press)
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseClick(pos.m_x, pos.m_y);
+                }
+                if (button == Windowing::MouseButton::Left && !press)
+                {
+                    Windowing::MousePosition pos = m_window->GetMousePosition();
+                    m_viewport->OnMouseRelease(pos.m_x, pos.m_y);
+                }
+            });
+
+        m_window->MakeContextCurrent();
+
         m_contentBrowser->SetOnAssetLoad([this](const AssetEntry& entry)
             {
                 switch (entry.m_type)
@@ -58,7 +92,6 @@ namespace Apex::Editor
     {
         if (!m_window) return;
 
-        m_window->MakeContextCurrent();
         m_window->Clear();
 
         if (m_gui && m_contentBrowser)
@@ -74,16 +107,32 @@ namespace Apex::Editor
                     { return !textureEditor->IsOpen(); }),
                 m_textureEditors.end());
 
+            m_viewport->Draw();
             m_gui->EndFrame();
         }
 
         m_window->SwapBuffers();
     }
 
+    void Editor::Update()
+    {
+        m_window->UpdateDeltaTime();
+        m_viewport->GetCamera().ProcessKeyboard(
+            m_window->IsKeyPressed(Key::W),
+            m_window->IsKeyPressed(Key::S),
+            m_window->IsKeyPressed(Key::A),
+            m_window->IsKeyPressed(Key::D),
+            m_window->IsKeyPressed(Key::E),
+            m_window->IsKeyPressed(Key::Q),
+            m_window->GetDeltaTime()
+        );
+    }
+
     void Editor::Shutdown()
     {
         m_textureEditors.clear();
         m_contentBrowser.reset();
+        m_viewport.reset();
         m_gui.reset();
         m_window.reset();
     }

@@ -197,7 +197,7 @@ LibMath::Plane::Plane() :
 {}
 
 LibMath::Plane::Plane(Vector3 normal, float distance) :
-	m_normal(normal),
+	m_normal(normal.normalize()),
 	m_distance(distance)
 {}
 
@@ -214,7 +214,7 @@ float LibMath::Plane::getDistance() const
 LibMath::Point3D LibMath::Plane::getPointOnPlane()
 {
 	m_normal.normalize();
-	Vector3 point = m_normal * m_distance;
+	Vector3 point = -m_normal * m_distance;
 	return Point3D(point[0], point[1], point[2]);
 }
 

@@ -1,6 +1,7 @@
 #ifndef CUBE_RENDERER
 #define CUBE_RENDERER
 
+#include "RenderPassInfo.h"
 #include "RHI.h"
 
 #include "LibMath/Matrix/Matrix4.h"
@@ -27,9 +28,7 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Texture>& GetTexture();
         Apex::Resources::ResourceHandle<Shader>& GetShader();
 
-        void Render(const LibMath::Matrix4& view,
-            const LibMath::Matrix4& projection,
-            const LibMath::Vector3& cameraPos);
+        void Render(RenderPassInfo passInfo);
 
         void Serialize(std::ostream& out) const override;
 

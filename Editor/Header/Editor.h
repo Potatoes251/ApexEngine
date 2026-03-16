@@ -11,6 +11,7 @@
 
 #include "Application.h"
 #include "ContentBrowser.h"
+#include "Viewport.h"
 #include "TextureEditor.h"
 
 namespace Apex::Editor
@@ -37,6 +38,8 @@ namespace Apex::Editor
 		// One editor frame: make editor context current, render all panels,
 		void Render();
 
+		void Update();
+
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
@@ -58,6 +61,7 @@ namespace Apex::Editor
 		std::unique_ptr<ContentBrowser>            m_contentBrowser;
 		// One TextureEditor per open texture — grows on open, shrinks on close
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
+		std::unique_ptr<Viewport>				   m_viewport;
 	};
 }
 
