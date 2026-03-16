@@ -38,11 +38,27 @@ namespace Apex::Editor
 	private:
 		// Sub-sections
 		void DrawToolbar();
+		void DrawToolbarActions();   
+		void DrawToolbarViewOptions();   
+		void DrawToolbarMip();   
+		void DrawToolbarZoom();   
+		void DrawToolbarExposure();   
+		void DrawChannelButtons();
+
 		void DrawViewport();
+		void HandleViewportInput(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, bool hovered, bool active);
+		void DrawTiledImage(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, LibMath::Vector2 cursorStart);
+		void DrawImageBorder(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize);
+
 		void DrawDetails();
+		void DrawDetailsInfoStrip();
+		void DrawDetailsLODSection();
+		void DrawDetailsViewSection();
+		void DrawDetailsFileSection();
+		void DrawDetailsColorSection();
+
 		void DrawCheckerboard(LibMath::Vector2 min, LibMath::Vector2 max);
 		void DrawBackground(LibMath::Vector2 min, LibMath::Vector2 max);
-		void DrawChannelButtons();
 
 		// Helpers
 		void LoadTexture(const fs::path& path);

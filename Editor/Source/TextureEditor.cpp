@@ -94,98 +94,31 @@ namespace Apex::Editor
     {
         m_gui.PushStyleVariable(StyleVariable::FramePadding, 6.f, 4.f);
 
-        // Compress placeholder 
-        if (m_gui.Button("Compress")) { }
-        m_gui.SameLine(0.f, 8.f);
-        if (m_gui.Button("Reimport"))
-        {
-            fs::path p = m_path;
-            UnloadTexture();
-            LoadTexture(p);
-            m_mipLevel = 0;
-        }
+        DrawToolbarActions();
 
         m_gui.SameLine(0.f, 16.f);
         m_gui.VerticalSeparator();
         m_gui.SameLine(0.f, 16.f);
 
-        // Colored channel buttons: R=red, G=green, B=blue, A=grey
-        DrawChannelButtons();
-
-        m_gui.SameLine(0.f, 16.f);
-
-        // Background toggle
-        const char* backgroundLabel = "CHECKBOARD";
-        if (m_background == TextureBackground::Black) backgroundLabel = "BLACK";
-        else if (m_background == TextureBackground::White) backgroundLabel = "WHITE";
-        if (m_gui.ButtonSized(backgroundLabel, LibMath::Vector2(150.f, 0.f)))
-        {
-            switch (m_background)
-            {
-            case TextureBackground::Checkerboard: m_background = TextureBackground::Black; break;
-            case TextureBackground::Black:        m_background = TextureBackground::White; break;
-            case TextureBackground::White:        m_background = TextureBackground::Checkerboard; break;
-            }
-        }
-
-        m_gui.SameLine(0.f, 8.f);
-
-        // Tile repeat
-        std::string tileLabel = std::to_string(m_tileRepeat) + "x";
-        if (m_gui.Button(tileLabel.c_str()))
-            m_tileRepeat = (m_tileRepeat % 3) + 1;
+        DrawToolbarViewOptions();
 
         m_gui.SameLine(0.f, 16.f);
         m_gui.VerticalSeparator();
         m_gui.SameLine(0.f, 16.f);
 
-        // Mip level — dropdown
-        {
-            // Build null-separated items string
-            std::string items;
-            for (int i = 0; i < m_mipCount; ++i)
-                items += "Mip " + std::to_string(i) + '\0';
-            items += '\0';
-
-            m_gui.SetNextItemWidth(110.f);
-            if (m_gui.Combo("##mip", &m_mipLevel, items.c_str()))
-            {
-                glBindTexture(GL_TEXTURE_2D, m_textureID);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, m_mipLevel);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mipLevel);
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
-        }
+        DrawToolbarMip();
 
         m_gui.SameLine(0.f, 16.f);
         m_gui.VerticalSeparator();
         m_gui.SameLine(0.f, 16.f);
 
-        if (m_gui.ButtonSized("+", LibMath::Vector2(28.f, 0.f))) m_zoom = std::min(8.f, m_zoom + 0.25f);
-        m_gui.SameLine(0.f, 8.f);
-        if (m_gui.ButtonSized("-", LibMath::Vector2(28.f, 0.f))) m_zoom = std::max(0.05f, m_zoom - 0.25f);
-        m_gui.SameLine(0.f, 8.f);
-        m_gui.Text("Zoom:");
-        m_gui.SameLine(0.f, 8.f);
-
-        // Zoom slider
-        m_gui.SetNextItemWidth(120.f);
-        m_gui.SliderFloat("##zoom", &m_zoom, 0.05f, 8.f);
-        m_gui.SameLine(0.f, 8.f);
-
-        // Zoom percentage label
-        std::string zoomPercentage = std::to_string(static_cast<int>(m_zoom * 100.f)) + "%";
-        m_gui.Text(zoomPercentage);
+        DrawToolbarZoom();
 
         m_gui.SameLine(0.f, 16.f);
         m_gui.VerticalSeparator();
         m_gui.SameLine(0.f, 16.f);
 
-        // Exposure
-        m_gui.Text("EV:");
-        m_gui.SameLine(0.f, 8.f);
-        m_gui.SetNextItemWidth(80.f);
-        m_gui.SliderFloat("##ev", &m_exposure, 0.f, 4.f);
+        DrawToolbarExposure();
 
         m_gui.SameLine(0.f, 16.f);
         m_gui.VerticalSeparator();
@@ -196,6 +129,88 @@ namespace Apex::Editor
         if (m_gui.Button("Close")) Close();
 
         m_gui.PopStyleVariable();
+    }
+
+    void TextureEditor::DrawToolbarActions()
+    {
+        if (m_gui.Button("Compress")) {  }
+        m_gui.SameLine(0.f, 16.f);
+        if (m_gui.Button("Reimport"))
+        {
+            fs::path path = m_path;
+            UnloadTexture();
+            LoadTexture(path);
+            m_mipLevel = 0;
+        }
+    }
+
+    void TextureEditor::DrawToolbarViewOptions()
+    {
+        DrawChannelButtons();
+
+        m_gui.SameLine(0.f, 16.f);
+        const char* backgroundLabel = "CHECKBOARD";
+        if (m_background == TextureBackground::Black) backgroundLabel = "BLACK";
+        else if (m_background == TextureBackground::White) backgroundLabel = "WHITE";
+        if (m_gui.ButtonSized(backgroundLabel, LibMath::Vector2(150.f, 0.f)))
+        {
+            switch (m_background)
+            {
+            case TextureBackground::Checkerboard: 
+                m_background = TextureBackground::Black; 
+                break;
+            case TextureBackground::Black:        
+                m_background = TextureBackground::White; 
+                break;
+            case TextureBackground::White:        
+                m_background = TextureBackground::Checkerboard; 
+                break;
+            }
+        }
+
+        m_gui.SameLine(0.f, 16.f);
+        std::string tileLabel = std::to_string(m_tileRepeat) + "x";
+        if (m_gui.Button(tileLabel.c_str()))
+            m_tileRepeat = (m_tileRepeat % 3) + 1;
+    }
+
+    void TextureEditor::DrawToolbarMip()
+    {
+        std::string items;
+        for (int i = 0; i < m_mipCount; ++i)
+            items += "Mip " + std::to_string(i) + '\0';
+        items += '\0';
+
+        m_gui.SetNextItemWidth(110.f);
+        if (m_gui.Combo("##mip", &m_mipLevel, items.c_str()))
+        {
+            glBindTexture(GL_TEXTURE_2D, m_textureID);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, m_mipLevel);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mipLevel);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+    }
+
+    void TextureEditor::DrawToolbarZoom()
+    {
+        if (m_gui.ButtonSized("+", LibMath::Vector2(28.f, 0.f))) m_zoom = std::min(8.f, m_zoom + 0.25f);
+        m_gui.SameLine(0.f, 8.f);
+        if (m_gui.ButtonSized("-", LibMath::Vector2(28.f, 0.f))) m_zoom = std::max(0.05f, m_zoom - 0.25f);
+        m_gui.SameLine(0.f, 16.f);
+        m_gui.SetNextItemWidth(120.f);
+        m_gui.SliderFloat("##zoom", &m_zoom, 0.05f, 8.f);
+        m_gui.SameLine(0.f, 16.f);
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text(std::to_string(static_cast<int>(m_zoom * 100.f)) + "%");
+    }
+
+    void TextureEditor::DrawToolbarExposure()
+    {
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("EV:");
+        m_gui.SameLine(0.f, 8.f);
+        m_gui.SetNextItemWidth(80.f);
+        m_gui.SliderFloat("##ev", &m_exposure, 0.f, 4.f);
     }
 
     void TextureEditor::DrawChannelButtons()
@@ -251,7 +266,20 @@ namespace Apex::Editor
         bool hovered = m_gui.IsItemHovered();
         bool active = m_gui.IsItemActive();
 
-        // Pan - only while button is active (LMB held inside viewport)
+        HandleViewportInput(panelPos, panelSize, hovered, active);
+
+        if (m_textureID != 0)
+        {
+            DrawTiledImage(panelPos, panelSize, cursor);
+            DrawImageBorder(panelPos, panelSize);
+        }
+
+        DrawZoomLabel(panelPos, panelSize);
+    }
+
+    void TextureEditor::HandleViewportInput(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, bool hovered, bool active)
+    {
+        // Pan
         if (active && m_gui.IsMouseDown(MouseButton::Left))
         {
             LibMath::Vector2 delta = m_gui.GetMouseDelta();
@@ -266,69 +294,57 @@ namespace Apex::Editor
             if (wheel != 0.f)
             {
                 LibMath::Vector2 mouse = m_gui.GetMousePos();
-                float cx = panelPos[0] + panelSize[0] * 0.5f;
-                float cy = panelPos[1] + panelSize[1] * 0.5f;
-                float preMouseX = mouse[0] - cx - m_panOffset[0];
-                float preMouseY = mouse[1] - cy - m_panOffset[1];
-
+                float cursorX = panelPos[0] + panelSize[0] * 0.5f;
+                float cursorY = panelPos[1] + panelSize[1] * 0.5f;
+                float preMouseX = mouse[0] - cursorX - m_panOffset[0];
+                float preMouseY = mouse[1] - cursorY - m_panOffset[1];
                 float oldZoom = m_zoom;
                 m_zoom *= (wheel > 0.f ? 1.1f : 0.9f);
                 m_zoom = std::max(0.05f, std::min(8.f, m_zoom));
-
                 float scale = m_zoom / oldZoom;
                 m_panOffset[0] -= preMouseX * (scale - 1.f);
                 m_panOffset[1] -= preMouseY * (scale - 1.f);
             }
+
+            // Color pick on right-click
+            if (m_textureID != 0 && m_gui.IsMouseReleased(MouseButton::Right))
+                HandleColorPick(ImageScreenOrigin(panelPos, panelSize));
         }
+    }
 
-        if (m_textureID == 0) return;
-
-        // Color pick on right-click
-        if (hovered && m_gui.IsMouseReleased(MouseButton::Right))
-            HandleColorPick(ImageScreenOrigin(panelPos, panelSize));
-
-        // Compute image display size
+    void TextureEditor::DrawTiledImage(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, LibMath::Vector2 cursorStart)
+    {
         float displayWidth = static_cast<float>(m_width) * m_zoom;
         float displayHeight = static_cast<float>(m_height) * m_zoom;
 
-        // Apply exposure to tint
         Color tint = ChannelTint();
         tint.m_r *= m_exposure;
         tint.m_g *= m_exposure;
         tint.m_b *= m_exposure;
 
-        // Center in panel, then apply pan offset
-        float imageX = panelPos[0] + (panelSize[0] - displayWidth) * 0.5f + m_panOffset[0];
-        float imageY = panelPos[1] + (panelSize[1] - displayHeight) * 0.5f + m_panOffset[1];
-
-        // Draw tiled image
         for (int row = 0; row < m_tileRepeat; ++row)
         {
             for (int col = 0; col < m_tileRepeat; ++col)
             {
                 LibMath::Vector2 origin = ImageScreenOrigin(panelPos, panelSize);
-                float tileX = origin[0] + col * displayWidth;
-                float tileY = origin[1] + row * displayHeight;
-                float localX = tileX - panelPos[0] + cursor[0];
-                float localY = tileY - panelPos[1] + cursor[1];
+                float localX = origin[0] + col * displayWidth - panelPos[0] + cursorStart[0];
+                float localY = origin[1] + row * displayHeight - panelPos[1] + cursorStart[1];
                 m_gui.SetCursorPos(LibMath::Vector2(localX, localY));
                 m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, false);
             }
         }
+    }
 
-        // Border rect around image
-        {
-            IDrawList* drawList = m_gui.GetDrawList();
-            LibMath::Vector2 origin = ImageScreenOrigin(panelPos, panelSize);
-            float totalWidth = displayWidth * m_tileRepeat;
-            float totalHeight = displayHeight * m_tileRepeat;
-            drawList->DrawRect(
-                LibMath::Vector2(origin[0] - 1.f, origin[1] - 1.f),
-                LibMath::Vector2(origin[0] + totalWidth + 1.f,
-                origin[1] + totalHeight + 1.f), 0xFF555555, 0.f, 1.f);
-        }
-
-        DrawZoomLabel(panelPos, panelSize);
+    void TextureEditor::DrawImageBorder(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize)
+    {
+        IDrawList* drawList = m_gui.GetDrawList();
+        LibMath::Vector2 origin = ImageScreenOrigin(panelPos, panelSize);
+        float totalWidth = static_cast<float>(m_width) * m_zoom * m_tileRepeat;
+        float totalHeight = static_cast<float>(m_height) * m_zoom * m_tileRepeat;
+        drawList->DrawRect(
+            LibMath::Vector2(origin[0] - 1.f, origin[1] - 1.f),
+            LibMath::Vector2(origin[0] + totalWidth + 1.f, origin[1] + totalHeight + 1.f),
+            0xFF555555, 0.f, 1.f);
     }
 
     void TextureEditor::DrawCheckerboard(LibMath::Vector2 min, LibMath::Vector2 max)
@@ -375,123 +391,140 @@ namespace Apex::Editor
     {
         m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 4.f, 6.f);
 
-        // Top info strip 
+        DrawDetailsInfoStrip();
+        m_gui.Separator();
+        DrawDetailsFileSection();
+        DrawDetailsLODSection();
+        DrawDetailsViewSection();
+        DrawDetailsColorSection();
+
+        m_gui.PopStyleVariable();
+    }
+
+    void TextureEditor::DrawDetailsInfoStrip()
+    {
         m_gui.PushFont(FontID::Large);
         m_gui.Text("Details");
         m_gui.PopFont();
         m_gui.Separator();
 
-        int displayWidth = m_width >> m_mipLevel;
-        int displayHeight = m_height >> m_mipLevel;
-        displayWidth = std::max(1, displayWidth);
-        displayHeight = std::max(1, displayHeight);
+        int displayWidth = std::max(1, m_width >> m_mipLevel);
+        int displayHeight = std::max(1, m_height >> m_mipLevel);
 
         m_gui.TextDisabled("Imported:   " + std::to_string(m_width) + "x" + std::to_string(m_height));
         m_gui.TextDisabled("Displayed:  " + std::to_string(displayWidth) + "x" + std::to_string(displayHeight));
         m_gui.TextDisabled("Format:     " + FormatString());
         m_gui.TextDisabled("Mip Levels: " + MipCountString());
         m_gui.TextDisabled("Disk Size:  " + FileSizeString());
+    }
 
-        m_gui.Separator();
+    void TextureEditor::DrawDetailsLODSection()
+    {
+        if (!m_gui.CollapsingHeader("Level of Detail", true)) return;
 
-        // File section 
-        if (m_gui.CollapsingHeader("File", true))
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Mip:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+
+        std::string items;
+        for (int i = 0; i < m_mipCount; ++i)
+            items += "Mip " + std::to_string(i) + '\0';
+        items += '\0';
+
+        m_gui.SetNextItemWidth(-1.f);
+        if (m_gui.Combo("##det_mip", &m_mipLevel, items.c_str()))
         {
-            m_gui.AlignTextToFramePadding();
-            TextWithTooltip("Name: ", m_filename);
-
-            m_gui.AlignTextToFramePadding();
-            TextWithTooltip("Path: ", m_path.parent_path().string());
+            glBindTexture(GL_TEXTURE_2D, m_textureID);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, m_mipLevel);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mipLevel);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
+    }
 
-        // Level of Detail section
-        if (m_gui.CollapsingHeader("Level of Detail", true))
-        {
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Mip Preview:");
-            m_gui.SameLine(LABEL_COLUMN_WIDTH);
-            {
-                std::string items;
-                for (int i = 0; i < m_mipCount; ++i)
-                    items += "Mip " + std::to_string(i) + '\0';
-                items += '\0';
-                m_gui.SetNextItemWidth(-1.f);
-                if (m_gui.Combo("##det_mip", &m_mipLevel, items.c_str()))
-                {
-                    glBindTexture(GL_TEXTURE_2D, m_textureID);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, m_mipLevel);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mipLevel);
-                    glBindTexture(GL_TEXTURE_2D, 0);
-                }
-            }
-        }
+    void TextureEditor::DrawDetailsViewSection()
+    {
+        if (!m_gui.CollapsingHeader("View", true)) return;
 
-        // View section
-        if (m_gui.CollapsingHeader("View", true))
-        {
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Zoom:");
-            m_gui.SameLine(LABEL_COLUMN_WIDTH);
-            m_gui.SetNextItemWidth(-1.f);
-            m_gui.SliderFloat("##det_zoom", &m_zoom, 0.05f, 8.f);
+        // Channels mask
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Channels:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        std::string mask;
+        if (m_showR) mask += "R";
+        if (m_showG) mask += "G";
+        if (m_showB) mask += "B";
+        if (m_showA) mask += "A";
+        m_gui.TextDisabled(mask.empty() ? "None" : mask);
 
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Exposure:");
-            m_gui.SameLine(LABEL_COLUMN_WIDTH);
-            m_gui.SetNextItemWidth(-1.f);
-            m_gui.SliderFloat("##det_ev", &m_exposure, 0.f, 4.f);
+        // Zoom
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Zoom:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        m_gui.SliderFloat("##det_zoom", &m_zoom, 0.05f, 8.f);
 
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Tiling:");
-            m_gui.SameLine(LABEL_COLUMN_WIDTH);
-            m_gui.SetNextItemWidth(-1.f);
-            int tileIndex = m_tileRepeat - 1;  
-            if (m_gui.Combo("##det_tile", &tileIndex, "1x1\0" "2x2\0" "3x3\0\0"))
-                m_tileRepeat = tileIndex + 1; 
-        }
+        // Exposure
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Exposure:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        m_gui.SliderFloat("##det_ev", &m_exposure, 0.f, 4.f);
 
-        // Picked color section 
-        if (m_hasPickedColor)
-        {
-            if (m_gui.CollapsingHeader("Picked Color", true))
-            {
-                // Color swatch
-                IDrawList* drawList = m_gui.GetDrawList();
-                LibMath::Vector2 cursorPos = m_gui.GetCursorPos();
-                LibMath::Vector2 swatchMin(cursorPos[0], cursorPos[1]);
-                LibMath::Vector2 swatchMax(swatchMin[0] + DETAILS_WIDTH - 20.f, swatchMin[1] + 28.f);
+        // Tiling
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Tiling:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        int tileIndex = m_tileRepeat - 1;
+        if (m_gui.Combo("##det_tile", &tileIndex, "1x1\0" "2x2\0" "3x3\0\0"))
+            m_tileRepeat = tileIndex + 1;
+    }
 
-                uint32_t color32 =
-                    (uint32_t(m_pickedColor.m_a * 255.f) << 24) |
-                    (uint32_t(m_pickedColor.m_b * 255.f) << 16) |
-                    (uint32_t(m_pickedColor.m_g * 255.f) << 8)  |
-                     uint32_t(m_pickedColor.m_r * 255.f);
+    void TextureEditor::DrawDetailsFileSection()
+    {
+        if (!m_gui.CollapsingHeader("File", true)) return;
 
-                drawList->DrawRectFilled(swatchMin, swatchMax, color32, 4.f);
-                // 1px dark border so white swatches are visible
-                drawList->DrawRect(swatchMin, swatchMax, 0xFF333333, 4.f, 1.f);
-                m_gui.SetCursorPos(LibMath::Vector2(cursorPos[0], cursorPos[1] + 32.f));
+        TextWithTooltip("Name: ", m_filename);
+        TextWithTooltip("Path: ", m_path.parent_path().string());
+    }
 
-                m_gui.Text("Position:  (" + std::to_string(m_pickedX) + ", " + std::to_string(m_pickedY) + ")");
+    void TextureEditor::DrawDetailsColorSection()
+    {
+        if (!m_hasPickedColor) return;
+        if (!m_gui.CollapsingHeader("Picked Color", true)) return;
 
-                std::ostringstream hex;
-                hex << "#" << std::uppercase << std::hex << std::setfill('0')
-                    << std::setw(2) << (int)(m_pickedColor.m_r * 255.f)
-                    << std::setw(2) << (int)(m_pickedColor.m_g * 255.f)
-                    << std::setw(2) << (int)(m_pickedColor.m_b * 255.f)
-                    << std::setw(2) << (int)(m_pickedColor.m_a * 255.f);
-                m_gui.Text("Hex:  " + hex.str());
+        // Color swatch
+        IDrawList* drawList = m_gui.GetDrawList();
+        LibMath::Vector2 cursor = m_gui.GetCursorPos();
+        LibMath::Vector2 swatchMin(cursor[0], cursor[1]);
+        LibMath::Vector2 swatchMax(swatchMin[0] + DETAILS_WIDTH - 20.f, swatchMin[1] + 28.f);
 
-                auto format = [](float value) { return std::to_string(value).substr(0, 4); };
-                m_gui.Text("RGBA: " + format(m_pickedColor.m_r) + 
-                            "  " + format(m_pickedColor.m_g) + 
-                            "  " + format(m_pickedColor.m_b) + 
-                            "  " + format(m_pickedColor.m_a));
-                m_gui.TextDisabled("(right-click to pick)");
-            }
-        }
+        uint32_t color32 =
+            (uint32_t(m_pickedColor.m_a * 255.f) << 24) |
+            (uint32_t(m_pickedColor.m_b * 255.f) << 16) |
+            (uint32_t(m_pickedColor.m_g * 255.f) << 8)  |
+             uint32_t(m_pickedColor.m_r * 255.f);
 
-        m_gui.PopStyleVariable();
+        drawList->DrawRectFilled(swatchMin, swatchMax, color32, 4.f);
+        drawList->DrawRect(swatchMin, swatchMax, 0xFF333333, 4.f, 1.f);
+        m_gui.SetCursorPos(LibMath::Vector2(cursor[0], cursor[1] + 32.f));
+
+        m_gui.Text("Position:  (" + std::to_string(m_pickedX) + ", " + std::to_string(m_pickedY) + ")");
+
+        std::ostringstream hex;
+        hex << "#" << std::uppercase << std::hex << std::setfill('0')
+            << std::setw(2) << (int)(m_pickedColor.m_r * 255.f)
+            << std::setw(2) << (int)(m_pickedColor.m_g * 255.f)
+            << std::setw(2) << (int)(m_pickedColor.m_b * 255.f)
+            << std::setw(2) << (int)(m_pickedColor.m_a * 255.f);
+        m_gui.Text("Hex:  " + hex.str());
+
+        auto format = [](float value) { return std::to_string(value).substr(0, 4); };
+        m_gui.Text("RGBA: " + format(m_pickedColor.m_r) + 
+                    "  " + format(m_pickedColor.m_g) + 
+                    "  " + format(m_pickedColor.m_b) + 
+                    "  " + format(m_pickedColor.m_a));
+        m_gui.TextDisabled("(right-click to pick)");
     }
 
     void TextureEditor::LoadTexture(const fs::path& path)
