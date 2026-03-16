@@ -349,13 +349,15 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawToolbar()
     {
-        // Give every toolbar button a comfortable height
         m_gui.PushStyleVariable(StyleVariable::FramePadding, 8.f, 5.f);
         m_gui.PushFont(FontID::Default);
 
         if (m_gui.Button("+ Add"))
             OnAddButtonClicked();
-        m_gui.SameLine();
+
+        m_gui.SameLine(0.f, 16.f);
+        m_gui.VerticalSeparator();
+        m_gui.SameLine(0.f, 16.f);
 
         m_gui.SetNextItemWidth(220.f);
         m_gui.InputText("##cb_search", m_searchBuffer, sizeof(m_searchBuffer), "Search assets...");
@@ -367,7 +369,10 @@ namespace Apex::Editor
                 std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         }
 
-        m_gui.SameLine();
+        m_gui.SameLine(0.f, 16.f);
+        m_gui.VerticalSeparator();
+        m_gui.SameLine(0.f, 16.f);
+
         if (m_gui.Button("Refresh"))
             Refresh();
 
@@ -382,7 +387,10 @@ namespace Apex::Editor
                 NavigateTo(m_currentPath.parent_path());
         }
 
-        m_gui.SameLine();
+        m_gui.SameLine(0.f, 16.f);
+        m_gui.VerticalSeparator();
+        m_gui.SameLine(0.f, 16.f);
+
 		m_gui.TextDisabled("Tile Size:");
         m_gui.SameLine();
         m_gui.SetNextItemWidth(120.f);
@@ -857,14 +865,14 @@ namespace Apex::Editor
     void ContentBrowser::DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx)
     {
         Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
-        constexpr uint32_t colNormal = 0xFFCCCCCC;
-        constexpr uint32_t colHovered = 0xFFFFFFFF;
-        constexpr float    padX = 6.f;
-        constexpr float    padY = 3.f;
+        constexpr uint32_t COL_NORMAL = 0xFFCCCCCC;
+        constexpr uint32_t COL_HOVERED = 0xFFFFFFFF;
+        constexpr float    PAD_X = 6.f;
+        constexpr float    PAD_Y = 3.f;
 
         LibMath::Vector2 textSize = drawList->CalculateTextSize(label);
-        float buttonWidth = textSize[0] + padX * 2.f;
-        float buttonHeight = textSize[1] + padY * 2.f;
+        float buttonWidth = textSize[0] + PAD_X * 2.f;
+        float buttonHeight = textSize[1] + PAD_Y * 2.f;
 
         LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
 
@@ -876,8 +884,8 @@ namespace Apex::Editor
         bool hovered = m_gui.IsItemHovered();
         m_gui.PopID();
 
-        drawList->DrawText(LibMath::Vector2(buttonPos[0] + padX, buttonPos[1]),
-            hovered ? colHovered : colNormal, label);
+        drawList->DrawText(LibMath::Vector2(buttonPos[0] + PAD_X, buttonPos[1]),
+            hovered ? COL_HOVERED : COL_NORMAL, label);
 
         if (!fs::is_directory(accumulated)) return;
 

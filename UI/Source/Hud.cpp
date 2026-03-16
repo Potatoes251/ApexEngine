@@ -68,7 +68,7 @@ void UIImage::Draw(IGUI& gui)
 
 	Vector2 bottomRight = Vector2(anchorPos[0] + width, anchorPos[1] + height);
 
-	gui.DrawImage2D(m_image->GetId(), anchorPos, bottomRight);
+	gui.DrawImageBackground(m_image->GetId(), anchorPos, bottomRight);
 }
 
 //Canvas
