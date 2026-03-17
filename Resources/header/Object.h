@@ -43,6 +43,8 @@ namespace Apex::Data
 				std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 				Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
 
+				void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
+
 				template<typename T, typename... Args>
 				T& AddComponent(Args&&... args)
 				{

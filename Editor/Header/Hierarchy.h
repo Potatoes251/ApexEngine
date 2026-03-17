@@ -44,6 +44,8 @@ namespace Apex::Editor
 
 		void ApplyPendingOp();
 
+		Apex::Data::Object* DuplicateObject(Apex::Data::Object* original);
+
 		void DestroyObject(Object* obj);
 
 	private:
@@ -56,6 +58,8 @@ namespace Apex::Editor
 
 		Apex::SceneGraph::SceneNode* m_pendingReparent = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingTarget = nullptr;
+
+		Apex::Data::Object* m_pendingClone = nullptr;
 
 		PendingOp m_pendingOp = PendingOp::None;
 	};

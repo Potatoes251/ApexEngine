@@ -57,6 +57,13 @@ void Hierarchy::Draw()
         m_pendingDelete = nullptr;
     }
 
+    if (m_pendingClone)
+    {
+        Object* clone = DuplicateObject(m_pendingClone);
+        m_selected = clone;
+        m_pendingClone = nullptr;
+    }
+
     Vector2 size = m_gui.GetAvailableSize();
 
     m_gui.InvisibleButton("HierarchyDropArea", size);
@@ -127,6 +134,9 @@ void Hierarchy::HandleContextMenu(SceneNode* node)
 
     if (m_gui.MenuItem("Create Child"))
         m_pendingParent = node;
+
+    if (m_gui.MenuItem("Duplicate"))
+        m_pendingClone = obj;
 
     if (!m_gui.IsDragDropActive() && m_gui.MenuItem("Delete"))
         m_pendingDelete = obj;
@@ -262,6 +272,33 @@ void Hierarchy::DrawInsertLine(float y)
         PackColor(80, 160, 255),
         2.0f
     );
+}
+
+Object* Hierarchy::DuplicateObject(Object* original)
+{
+    if (!original) return nullptr;
+
+    Object* clone = m_scene.CreateObject();
+    clone->SetName(original->GetName() + "_Copy");
+    clone->SetLocalTransform(original->GetLocalTransform());
+    clone->SetGlobalTransform(original->GetGlobalTransform());
+
+    for (auto* comp : original->GetComponents())
+    {
+        std::unique_ptr<Component> newComp = comp->Clone();
+        clone->AddComponentDirect(std::move(newComp));
+    }
+
+    SceneNode* originalNode = original->GetSceneNodeRaw();
+    SceneNode* cloneNode = clone->GetSceneNodeRaw();
+    for (auto& child : originalNode->GetChildren())
+    {
+        Object* childClone = DuplicateObject(child->GetObject());
+        if (childClone)
+            cloneNode->AddChild(childClone->GetSceneNode());
+    }
+
+    return clone;
 }
 
 void Hierarchy::DestroyObject(Object* obj)

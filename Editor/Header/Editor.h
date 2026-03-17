@@ -62,7 +62,7 @@ namespace Apex::Editor
 		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		std::unique_ptr<Hierarchy>					m_hierarchy;
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
-		std::unique_ptr<Viewport>				   m_viewport;
+		std::unique_ptr<Viewport>				    m_viewport;
 	};
 }
 

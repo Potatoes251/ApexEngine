@@ -78,3 +78,9 @@ void Object::Update(float deltaTime)
 	}
 	auto pos = m_localTransform.getPosition();
 }
+
+void Object::AddComponentDirect(std::unique_ptr<Component> comp)
+{
+	comp->m_owner = this;
+	m_components.push_back(std::move(comp));
+}

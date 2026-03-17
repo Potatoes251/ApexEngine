@@ -7,232 +7,89 @@
     "bounciness": 1.000000
   }
 ],
-  "objects": [
-    {
-      "id": 0,
-      "parent": null,
-      "name": "Sphere",
-      "position": [ 0.000000,10.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-        "MeshRenderer": {
-          "enabled": true,
-          "mesh": "Assets/Meshes/sphere.obj",
-          "texture": "Assets/Textures/container.jpg",
-          "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
-        },
-        "RigidBody": {
-          "enabled": true,
-          "type": "Dynamic",
-          "mass": 1.000000
-        },
-        "MeshCollider": {
-          "enabled": true,
-          "mesh": "Assets/Meshes/sphere.obj",
-          "type": "Convex",
-          "isTrigger": false,
-          "material": 0
-        }
-      }
-    },
-    {
-      "id": 150,
-      "parent": null,
-      "name": "Sphere2",
-      "position": [ 0.000000, 20.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-        "MeshRenderer": {
-          "enabled": true,
-          "mesh": "Assets/Meshes/sphere.obj",
-          "texture": "Assets/Textures/container.jpg",
-          "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
-        },
-        "RigidBody": {
-          "enabled": true,
-          "type": "Dynamic",
-          "mass": 1.000000
-        },
-        "MeshCollider": {
-          "enabled": true,
-          "mesh": "Assets/Meshes/sphere.obj",
-          "type": "Convex",
-          "isTrigger": false,
-          "material": 0
-        }
-      }
-    },
-    {
-      "id": 1,
-      "parent": 0,
-      "name": "Cube",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-        "MeshRenderer": {
-          "enabled": true,
-          "mesh": "Assets/Meshes/cube.obj",
-          "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
-          "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
-        },
-        "RigidBody": {
-          "enabled": true,
-          "type": "Static",
-          "mass": 0.000000
-        },
-        "BoxCollider": {
-          "enabled": true,
-          "halfExtents": [ 10.000000, 0.500000, 10.000000 ],
-          "isTrigger": false,
-          "material": null
-        }
-      }
-    },
-    {
-      "id": 2,
-      "parent": null,
-      "name": "Object2",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "name": "Object3",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 4,
-      "parent": 5,
-      "name": "Object4",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 5,
-      "parent": null,
-      "name": "Object5",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 6,
-      "parent": 0,
-      "name": "Object6",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 7,
-      "parent": 1,
-      "name": "Object7",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 8,
-      "parent": 1,
-      "name": "Object8",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 9,
-      "parent": 8,
-      "name": "Object9",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 10,
-      "parent": 8,
-      "name": "Object10",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 11,
-      "parent": null,
-      "name": "Object11",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 12,
-      "parent": 9,
-      "name": "Object12",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 13,
-      "parent": 9,
-      "name": "Object13",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
-      }
-    },
-    {
-      "id": 14,
-      "parent": 9,
-      "name": "Object14",
-      "position": [ 0.000000, 0.000000, 0.000000 ],
-      "rotation": [ 0.000000, 0.000000, 0.000000, 1.000000 ],
-      "scale": [ 1.000000, 1.000000, 1.000000 ],
-      "components": {
-
+"objects": [
+  {
+    "id": 0,
+    "parent": null,
+    "name": "Sphere",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [ 1.000000, 1.000000, 1.000000 ],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Dynamic",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "type": "Convex",
+        "isTrigger": false,
+        "material": 0
       }
     }
-  ]
+  },
+  {
+    "id": 1,
+    "parent": null,
+    "name": "Cube",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/cube.obj",
+        "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
+        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 0.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [10.000000, 0.500000, 10.000000],
+        "isTrigger": false,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 2,
+    "parent": null,
+    "name": "Sphere2",
+    "position": [0.000000,5.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Dynamic",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "type": "Convex",
+        "isTrigger": false,
+        "material": 0
+      }
+    }
+  }
+]
 }

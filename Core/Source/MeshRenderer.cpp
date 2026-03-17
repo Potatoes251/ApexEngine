@@ -35,6 +35,15 @@ Apex::Resources::ResourceHandle<Shader>& Apex::Rendering::MeshRenderer::GetShade
     return m_shader;
 }
 
+std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
+{
+    auto clone = std::make_unique<MeshRenderer>();
+    clone->m_mesh = m_mesh;
+    clone->m_shader = m_shader;
+    clone->m_texture = m_texture;
+    return clone;
+}
+
 void Apex::Rendering::MeshRenderer::Render(RenderPassInfo passInfo)
 {
     ResourceHandle<Shader> currentShader = m_shader;

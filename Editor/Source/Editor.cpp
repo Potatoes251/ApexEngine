@@ -41,6 +41,15 @@ namespace Apex::Editor
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get());
 
+        m_window->SetKeyCallback([&](Key key, KeyAction action)
+            {
+                if (key == Key::Escape && action == KeyAction::Press)
+                    m_window->Close();
+
+                if (key == Key::P && action == KeyAction::Press)
+                    m_app->GetScene()->Save("Assets/Scenes/scene.level", *m_app->GetPhysicsSystem());
+            });
+
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
             {
                 if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))

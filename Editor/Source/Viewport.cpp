@@ -124,7 +124,7 @@ void Viewport::Draw()
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
 
-	m_gui->BeginPanel("Viewport", nullptr, false);
+	m_gui->BeginPanel("Viewport", nullptr, true);
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();

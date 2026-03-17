@@ -8,6 +8,13 @@ Apex::Scripting::ScriptComponent::~ScriptComponent()
     }
 }
 
+std::unique_ptr<Apex::Component> Apex::Scripting::ScriptComponent::Clone() const
+{
+    auto clone = std::make_unique<ScriptComponent>(m_lua);
+    clone->SetScript(m_scriptPath);
+    return clone;
+}
+
 void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
 {
     m_scriptPath = path;
