@@ -357,6 +357,11 @@ namespace Apex::UserInterface
         return ImGui::InputTextWithHint(label.c_str(), hint.c_str(), buffer, bufferSize);
     }
 
+    bool ImGUIManager::InputFloat(const std::string& label, float* value)
+    {
+        return ImGui::InputFloat(label.c_str(), value);
+    }
+
     bool ImGUIManager::Combo(const std::string& label, int* currentItem, const char* items)
     {
         return ImGui::Combo(label.c_str(), currentItem, items);

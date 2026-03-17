@@ -114,6 +114,8 @@ namespace Apex::UserInterface
         bool ColorEdit3(const std::string& label, float color[3]) override;
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
+        bool InputFloat(const std::string& label, float* value) override;
+
         bool Combo(const std::string& label, int* currentItem, const char* items) override;
         bool CollapsingHeader(const std::string& label, bool defaultOpen = false) override;
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;

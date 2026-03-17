@@ -53,7 +53,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	}
 	else if (IsAxisPlane())
 	{
-		movementVec = delta; // already lies on the plane
+		movementVec = delta;
 	}
 	else if (IsAxisFree())
 	{
@@ -65,7 +65,6 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-
 		m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
 		break;
 	}
@@ -89,18 +88,13 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	}
 	case GizmoMode::Scale:
 	{
-		if (m_isScaleSnapping) Snap(movementVec);
-		LibMath::Vector3 scaleDelta;
-		if (IsAxisSingle())
-		{
-			float movement = delta.dot(axis);
-			scaleDelta = axis * movement;
-		}
-		else if (IsAxisFree())
+		LibMath::Vector3 scaleDelta = movementVec;
+		if (IsAxisFree())
 		{
 			float movement = delta.dot(m_camera.GetRight()) + delta.dot(m_camera.GetUp());
 			scaleDelta = { movement, movement, movement };
 		}
+		if (m_isScaleSnapping) Snap(scaleDelta);
 		m_selectedObject->GetGlobalTransform().setScale(m_initialTransform.getScale() + scaleDelta);
 		break;
 	}
@@ -108,60 +102,6 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		assert(false && "Unhandled gizmo mode");
 		break;
 	}
-}
-
-void Viewport::Draw()
-{	
-	float aspectRatio = m_width / m_height;
-
-	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(aspectRatio);
-
-	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-	m_rhi->Clear();
-
-	RenderPassInfo pass;
-	pass.m_aspectRatio = aspectRatio;
-	pass.m_camera = &m_camera;
-
-	m_gui->BeginPanel("Viewport");
-
-	m_panelPos = m_gui->GetPanelPos();
-	m_panelSize = m_gui->GetPanelSize();
-
-	m_currentScene->Render(pass);
-    m_rhi->SetDepthTest(false);
-	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
-    m_rhi->SetDepthTest(true);
-    m_rhi->UnBindFrameBuffer();
-
-
-	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
-
-	m_gui->SetCursorPos(m_panelPos + LibMath::Vector2(10, 35));
-
-	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
-	m_gui->SameLine();
-	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->SliderFloat("Translate value", &m_translateSnap, 0.1f, 100.f);
-	m_gui->SameLine();
-	if (m_gui->Button("Rotate"))	m_currentGizmoMode = GizmoMode::Rotation;
-	m_gui->SameLine();
-	m_gui->Checkbox("Rotate Snapping", &m_isRotationSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->SliderFloat("Rotate value", &m_rotateSnap, .1f, g_Pi / 2);
-	m_gui->SameLine();
-	if (m_gui->Button("Scale"))		m_currentGizmoMode = GizmoMode::Scale;
-	m_gui->SameLine();
-	m_gui->Checkbox("Scale Snapping", &m_isScaleSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->SliderFloat("Scale value", &m_scaleSnap, 0.1f, 10.f);
-	
-	m_gui->EndPanel();
 }
 
 int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
@@ -345,4 +285,65 @@ void Viewport::Snap(LibMath::Vector3& value) const
 	default:
 		break;
 	}
+}
+
+void Viewport::Draw()
+{
+	float aspectRatio = m_width / m_height;
+
+	LibMath::Matrix4 view = m_camera.GetViewMatrix();
+	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(aspectRatio);
+
+	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
+	m_rhi->Clear();
+
+	RenderPassInfo pass;
+	pass.m_aspectRatio = aspectRatio;
+	pass.m_camera = &m_camera;
+
+	m_gui->BeginPanel("Viewport");
+
+	m_panelPos = m_gui->GetPanelPos();
+	m_panelSize = m_gui->GetPanelSize();
+
+	m_currentScene->Render(pass);
+	m_rhi->SetDepthTest(false);
+	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
+	m_rhi->SetDepthTest(true);
+	m_rhi->UnBindFrameBuffer();
+
+
+	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
+
+	DrawUI();
+
+	m_gui->EndPanel();
+}
+
+void Viewport::DrawUI()
+{
+	m_gui->SetCursorPos(m_panelPos + LibMath::Vector2(10, 35));
+
+	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
+	m_gui->SameLine();
+	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->InputFloat("Translate value", &m_translateSnap);
+	m_gui->SameLine();
+
+	if (m_gui->Button("Rotate"))	m_currentGizmoMode = GizmoMode::Rotation;
+	m_gui->SameLine();
+	m_gui->Checkbox("Rotate Snapping", &m_isRotationSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->InputFloat("Rotate value", &m_rotateSnap);
+	m_gui->SameLine();
+
+	if (m_gui->Button("Scale"))		m_currentGizmoMode = GizmoMode::Scale;
+	m_gui->SameLine();
+	m_gui->Checkbox("Scale Snapping", &m_isScaleSnapping);
+	m_gui->SameLine();
+	m_gui->SetNextItemWidth(150.0f);
+	m_gui->InputFloat("Scale value", &m_scaleSnap);
 }

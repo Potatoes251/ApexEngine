@@ -50,6 +50,8 @@ namespace Apex::Editor
 		void				Snap(float& value, float snapValue) const;
 		void				Snap(LibMath::Vector3& value) const;
 
+		void				DrawUI();
+
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
 		Axis		m_selectedAxis = Axis::None;
