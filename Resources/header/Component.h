@@ -28,7 +28,6 @@ namespace Apex
         bool IsEnabled() const { return m_enabled; }
 
         Apex::Data::Object* GetOwner() const { return m_owner; }
-        void SetOwner(Apex::Data::Object* obj) { m_owner = obj; }
 
     private:
         friend class Apex::Data::Object;
