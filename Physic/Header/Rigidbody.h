@@ -40,6 +40,8 @@ namespace Apex::Physic
 
 		std::unique_ptr<Apex::Component>	Clone() const override;
 
+		const char* GetTypeName() const override { return "Rigidbody"; };
+
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }
 		LibMath::Transform			GetTransform() const{ return GetOwner()->GetLocalTransform(); }

@@ -7,8 +7,8 @@ using namespace Apex::Rendering;
 using namespace Apex::Data;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene& scene)
-    : m_gui(gui), m_scene(scene)
+    Scene& scene, ComponentsViewer* compViewer)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer)
 {
 }
 
@@ -123,7 +123,12 @@ bool Hierarchy::DrawTreeNode(Object* obj, bool isLeaf)
 void Hierarchy::HandleSelection(Object* obj)
 {
     if (m_gui.IsItemClicked())
+    {
         m_selected = obj;
+
+        if (m_componentsViewer)
+            m_componentsViewer->SetSelectedObject(obj);
+    }
 }
 
 void Hierarchy::HandleContextMenu(SceneNode* node)

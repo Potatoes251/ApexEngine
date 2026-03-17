@@ -8,6 +8,8 @@
 #include "Object.h"
 #include "SceneGraph.h"
 
+#include "ComponentsViewer.h"
+
 namespace Apex::Editor
 {
 	enum class PendingOp
@@ -22,7 +24,7 @@ namespace Apex::Editor
 	{
 	public:
 		Hierarchy(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene& scene);
+			Apex::Rendering::Scene& scene, ComponentsViewer* compViewer);
 
 		void Draw();
 
@@ -51,6 +53,7 @@ namespace Apex::Editor
 	private:
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;
+		ComponentsViewer* m_componentsViewer;
 
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;

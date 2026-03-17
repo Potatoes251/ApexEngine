@@ -83,4 +83,11 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 {
 	comp->m_owner = this;
 	m_components.push_back(std::move(comp));
+
+	if (m_components.size() == 1)
+		m_components.back()->SetId(0);
+	else
+	{
+		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+	}
 }

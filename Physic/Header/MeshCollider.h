@@ -27,6 +27,7 @@ namespace Apex::Physic
 
 		ColliderType GetType() const override { return ColliderType::Mesh; }
 		MeshColliderType GetMeshColliderType() const { return m_type; }
+		const char* GetTypeName() const override { return "MeshCollider"; };
 
 		Resources::ResourceHandle<Mesh> GetMesh() const { return m_mesh; }
 

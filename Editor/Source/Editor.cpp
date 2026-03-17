@@ -88,7 +88,9 @@ namespace Apex::Editor
                     break;
                 }
             });
-        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, *m_app->GetScene());
+
+        m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene());
+        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, *m_app->GetScene(), m_componentsViewer.get());
 
         return true;
     }
@@ -126,6 +128,9 @@ namespace Apex::Editor
 
         if (m_hierarchy)
             m_hierarchy->Draw();
+
+        if (m_componentsViewer)
+            m_componentsViewer->Draw();
 
         m_gui->EndFrame();
 

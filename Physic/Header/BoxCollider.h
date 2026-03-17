@@ -20,6 +20,7 @@ namespace Apex::Physic
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<BoxCollider>(*this); }
 
 		ColliderType GetType() const override { return ColliderType::Box; }
+		const char* GetTypeName() const override { return "BoxCollider"; };
 
 		LibMath::Vector3 GetHalfExtents() const { return m_halfExtents; }
 

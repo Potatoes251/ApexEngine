@@ -28,6 +28,8 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Texture>& GetTexture();
         Apex::Resources::ResourceHandle<Shader>& GetShader();
 
+        const char* GetTypeName() const override { return "MeshRenderer"; };
+
         std::unique_ptr<Apex::Component> Clone() const override;
 
         void Render(RenderPassInfo passInfo);
