@@ -21,6 +21,7 @@ namespace Apex::Scripting
         void SetScript(const std::string& path);
 
         const char* GetTypeName() const override { return "ScriptComponent"; };
+        const void DrawVariables(Apex::UserInterface::IGUI& gui) const override;
 
         int GetInstanceRef() const { return m_instanceRef; }
 

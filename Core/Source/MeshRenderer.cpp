@@ -35,6 +35,13 @@ Apex::Resources::ResourceHandle<Shader>& Apex::Rendering::MeshRenderer::GetShade
     return m_shader;
 }
 
+const void Apex::Rendering::MeshRenderer::DrawVariables(Apex::UserInterface::IGUI& gui) const
+{
+    gui.Text("Mesh: " + m_mesh->GetPath());
+    gui.Text("Shader: " + m_shader->GetPath());
+    gui.Text("Texture: " + m_texture->GetPath());
+}
+
 std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
 {
     auto clone = std::make_unique<MeshRenderer>();

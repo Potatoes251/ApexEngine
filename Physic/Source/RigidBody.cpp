@@ -32,6 +32,28 @@ std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
 	return clone;
 }
 
+const void RigidBodyComponent::DrawVariables(Apex::UserInterface::IGUI& gui) const
+{
+	std::string bodyType;
+	switch (m_bodyType)
+	{
+	case Apex::Physic::BodyType::Static:
+		bodyType = "Static";
+		break;
+	case Apex::Physic::BodyType::Dynamic:
+		bodyType = "Dynamic";
+		break;
+	case Apex::Physic::BodyType::Kinematic:
+		bodyType = "Kinematic";
+		break;
+	default:
+		break;
+	}
+
+	gui.Text("Body type: " + bodyType);
+	gui.Text("Mass: " + std::to_string(m_mass));
+}
+
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();

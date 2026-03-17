@@ -41,6 +41,7 @@ namespace Apex::Physic
 		std::unique_ptr<Apex::Component>	Clone() const override;
 
 		const char* GetTypeName() const override { return "Rigidbody"; };
+		const void DrawVariables(Apex::UserInterface::IGUI& gui) const override;
 
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }

@@ -31,6 +31,13 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	bool open = DrawTreeComp(comp);
 	
 	HandleSelection(comp);
+
+	if (open)
+	{
+		comp->DrawVariables(m_gui);
+
+		m_gui.EndTreeNode();
+	}
 }
 
 bool Apex::Editor::ComponentsViewer::DrawTreeComp(Apex::Component* comp)

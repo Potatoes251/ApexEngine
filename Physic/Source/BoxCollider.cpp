@@ -16,6 +16,13 @@ BoxCollider& BoxCollider::operator=(BoxCollider const& other)
 	return *this;
 }
 
+const void BoxCollider::DrawVariables(Apex::UserInterface::IGUI& gui) const
+{
+    gui.Text("Half extents: (" + std::to_string(m_halfExtents[0]) + 
+        ", " + std::to_string(m_halfExtents[1]) + 
+        ", " + std::to_string(m_halfExtents[2]) + ")");
+}
+
 void BoxCollider::Serialize(std::ostream& out) const
 {
     auto size = m_halfExtents;

@@ -18,6 +18,11 @@ MeshCollider& MeshCollider::operator=(MeshCollider const& other)
 	return *this;
 }
 
+const void MeshCollider::DrawVariables(Apex::UserInterface::IGUI& gui) const
+{
+    gui.Text("Mesh: " + m_mesh->GetPath());
+}
+
 void MeshCollider::Serialize(std::ostream& out) const
 {
     out << "      \"MeshCollider\": {\n";

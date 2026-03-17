@@ -1,6 +1,8 @@
 #ifndef COMPONENT
 #define COMPONENT
 
+#include "../../UI/Header/UI.h"
+
 #include <ostream>
 
 namespace Apex::Data { class Object; }
@@ -25,6 +27,8 @@ namespace Apex
         virtual std::unique_ptr<Component> Clone() const = 0;
 
         virtual const char* GetTypeName() const = 0;
+
+        virtual const void DrawVariables(Apex::UserInterface::IGUI& gui) const = 0;
 
         void SetEnabled(bool enabled) { m_enabled = enabled; }
         bool IsEnabled() const { return m_enabled; }

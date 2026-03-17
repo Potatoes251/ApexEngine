@@ -37,6 +37,11 @@ void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
     lua_pop(L, 1);
 }
 
+const void Apex::Scripting::ScriptComponent::DrawVariables(Apex::UserInterface::IGUI& gui) const
+{
+    return void();
+}
+
 void Apex::Scripting::ScriptComponent::OnStart()
 {
     if (m_instanceRef != LUA_REFNIL)
