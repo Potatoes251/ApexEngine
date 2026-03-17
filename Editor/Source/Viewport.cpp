@@ -12,11 +12,13 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 
-Viewport::Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui)
-	: m_gizmo(shader, rhi), m_currentScene(scene), m_rhi(rhi), m_gui(gui)
+Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui)
+	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_currentScene(scene), m_rhi(rhi), m_gui(gui)
 {
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
-	m_shader = shader;
+	m_pickingshader = pickingShader;
+
+	CreateGrid();
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
@@ -151,7 +153,7 @@ bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
 
 void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 {
-	if (!m_shader.IsReady()) return;
+	if (!m_pickingshader.IsReady()) return;
 
 	if (IsOnGizmo(mousePos[0], mousePos[1])) return;
 
@@ -163,9 +165,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_camera = &m_camera;
 	picking.m_useIdAsColor = true;
 	picking.m_useModelShader = false;
-	picking.m_shader = m_shader;
+	picking.m_shader = m_pickingshader;
 
-	m_shader->Use();
+	m_pickingshader->Use();
 	m_currentScene->Render(picking);
 
 	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1]));
@@ -307,6 +309,7 @@ void Viewport::Draw()
 	m_panelSize = m_gui->GetPanelSize();
 
 	m_currentScene->Render(pass);
+	DrawGrid();
 	m_rhi->SetDepthTest(false);
 	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
 	m_rhi->SetDepthTest(true);
@@ -346,4 +349,48 @@ void Viewport::DrawUI()
 	m_gui->SameLine();
 	m_gui->SetNextItemWidth(150.0f);
 	m_gui->InputFloat("Scale value", &m_scaleSnap);
+}
+
+void Viewport::DrawGrid()
+{
+	if (!m_gridShader.IsReady()) return;
+
+	float gridScale = 1.0f; // major grid size
+
+	LibMath::Matrix4 view = m_camera.GetViewMatrix();
+	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);
+	LibMath::Vector3 position = m_camera.GetPosition();
+
+	Snap(position[0], gridScale);
+	position[1] = -0.001f;
+	Snap(position[2], gridScale);
+	
+	LibMath::Matrix4 model = LibMath::Matrix4::createTranslation(position);
+
+	m_gridShader->Use();
+	m_gridShader->SetUniform("uViewProj", proj * view);
+	m_gridShader->SetUniform("uModel", model);
+	m_gridShader->SetUniform("uCameraPos", position);
+	m_grid.Draw();
+}
+
+void Viewport::CreateGrid()
+{
+	constexpr float gridSize = 10000.f;
+	m_grid.m_vertices = {
+	{ { -gridSize, 0.0f, -gridSize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } }, // 0
+	{ {  gridSize, 0.0f, -gridSize }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } }, // 1
+	{ {  gridSize, 0.0f,  gridSize }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f } }, // 2
+	{ { -gridSize, 0.0f,  gridSize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } }  // 3
+	};
+
+	m_grid.m_indices =
+	{
+		0, 1, 2, // Triangle 1
+		0, 2, 3  // Triangle 2
+	};
+
+	m_grid.SetRhi(m_rhi);
+	m_grid.UploadToGpu();
+	m_grid.ClearVertices();
 }

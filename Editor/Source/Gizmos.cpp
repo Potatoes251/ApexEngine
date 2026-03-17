@@ -26,15 +26,10 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_cone.UploadToGpu();
     m_cylinder.UploadToGpu();
     m_circle.UploadToGpu();
-}
-
-Gizmos::~Gizmos()
-{
-    //m_cube.SetRhi(nullptr);
-    //m_cone.SetRhi(nullptr);
-    //m_cylinder.SetRhi(nullptr);
-    //m_circle.SetRhi(nullptr);
-    //m_shader->SetRhi(nullptr);
+    m_cube.ClearVertices();
+    m_cone.ClearVertices();
+    m_cylinder.ClearVertices();
+    m_circle.ClearVertices();
 }
 
 void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos)

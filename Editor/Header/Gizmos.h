@@ -18,9 +18,9 @@ namespace Apex::Editor
 		Scale
 	};
 
-	// DO NOT CHANGE ORDER
 	enum class Axis
 	{
+		// DO NOT CHANGE ORDER
 		X, Y, Z,
 		XY, XZ, YZ,
 		XYZ,
@@ -33,7 +33,7 @@ namespace Apex::Editor
 		Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi);
 		Gizmos(Gizmos const&) = delete;
 		Gizmos& operator=(Gizmos const&) = delete;
-		~Gizmos();
+		~Gizmos() = default;
 
 
 		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos);

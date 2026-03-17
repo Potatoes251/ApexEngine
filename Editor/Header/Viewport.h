@@ -23,15 +23,17 @@ namespace Apex::Editor
 	class Viewport
 	{
 	public:
-		Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui);
+		Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui);
 		Viewport(Viewport const&) = delete;
 		Viewport& operator=(Viewport const&) = delete;
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
 		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
+
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
 		void				OnMouseMove(double mouseX, double mouseY);
+
 		void				Draw();
 
 	private:
@@ -51,13 +53,18 @@ namespace Apex::Editor
 		void				Snap(LibMath::Vector3& value) const;
 
 		void				DrawUI();
+		void				DrawGrid();
+
+		void				CreateGrid();
 
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
 		Axis		m_selectedAxis = Axis::None;
 		
+		Mesh		m_grid;
+		Resources::ResourceHandle<Shader>	m_gridShader;
 
-		Resources::ResourceHandle<Shader>	m_shader;
+		Resources::ResourceHandle<Shader>	m_pickingshader;
 		Rendering::RHIFrameBufferHandle		m_fbo;
 		Rendering::RHITextureHandle			m_textureFbo;
 

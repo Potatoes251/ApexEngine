@@ -39,6 +39,7 @@ namespace Apex::Editor
 
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
+            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GridVert.glsl|Assets/Shaders/GridFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get());
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
