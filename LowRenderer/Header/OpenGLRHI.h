@@ -56,6 +56,7 @@ namespace Apex::Rendering
 		void DrawLineArrays(uint32_t vertexCount) override;
 		void DrawLineLoop(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
+		void SetDepthTestWrite(bool enabled) override;
 
 		uint32_t GetBuffer(RHIBufferHandle handle)  const;
 		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;

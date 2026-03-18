@@ -1,14 +1,14 @@
 #version 330 core
 
-layout(location = 0) in vec3 aPos;
-
-uniform mat4 uViewProj;
-uniform mat4 uModel;
-
-out vec3 vWorldPos;
+out vec2 vUV;
 
 void main()
 {
-    vWorldPos = aPos;
-    gl_Position = uViewProj * uModel * vec4(aPos, 1.0);
+    vec2 pos = vec2(
+        (gl_VertexID == 1) ? 3.0 : -1.0,
+        (gl_VertexID == 2) ? 3.0 : -1.0
+    );
+
+    vUV = (pos + 1.0) * 0.5;
+    gl_Position = vec4(pos, 0.0, 1.0);
 }

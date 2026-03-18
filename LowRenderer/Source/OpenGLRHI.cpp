@@ -17,6 +17,7 @@ namespace Apex::Rendering
 	void OpenGLRHI::Initialize()
 	{
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 	}
 	void OpenGLRHI::SetClearColor(float r, float g, float b, float a)
 	{
@@ -291,6 +292,11 @@ namespace Apex::Rendering
 			glEnable(GL_DEPTH_TEST);
 		else
 			glDisable(GL_DEPTH_TEST);
+	}
+
+	void OpenGLRHI::SetDepthTestWrite(bool enabled)
+	{
+		glDepthMask(enabled ? GL_TRUE : GL_FALSE);
 	}
 
 

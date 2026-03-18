@@ -310,7 +310,9 @@ void Viewport::Draw()
 
 	m_currentScene->Render(pass);
 	DrawGrid();
+	//m_rhi->SetDepthTestWrite(false);
 	m_rhi->SetDepthTest(false);
+	//m_rhi->SetDepthTestWrite(true);
 	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
 	m_rhi->SetDepthTest(true);
 	m_rhi->UnBindFrameBuffer();
@@ -354,35 +356,24 @@ void Viewport::DrawUI()
 void Viewport::DrawGrid()
 {
 	if (!m_gridShader.IsReady()) return;
+	m_gridShader->Use();
 
 	float gridScale = 1.0f; // major grid size
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);
-	LibMath::Vector3 position = m_camera.GetPosition();
+	LibMath::Matrix4 invViewProj = proj * view;
+	m_gridShader->SetUniform("uViewProj", invViewProj);
+	invViewProj.inverse();
+	m_gridShader->SetUniform("uInvViewProj", invViewProj);
 
-	Snap(position[0], gridScale);
-	position[1] = -0.001f;
-	Snap(position[2], gridScale);
-	
-	LibMath::Matrix4 model = LibMath::Matrix4::createTranslation(position);
-
-	m_gridShader->Use();
-	m_gridShader->SetUniform("uViewProj", proj * view);
-	m_gridShader->SetUniform("uModel", model);
-	m_gridShader->SetUniform("uCameraPos", position);
+	m_gridShader->SetUniform("uCameraPos", m_camera.GetPosition());
 	m_grid.Draw();
 }
 
 void Viewport::CreateGrid()
 {
-	constexpr float gridSize = 10000.f;
-	m_grid.m_vertices = {
-	{ { -gridSize, 0.0f, -gridSize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } }, // 0
-	{ {  gridSize, 0.0f, -gridSize }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } }, // 1
-	{ {  gridSize, 0.0f,  gridSize }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f } }, // 2
-	{ { -gridSize, 0.0f,  gridSize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } }  // 3
-	};
+	m_grid.m_vertices.push_back(Vertex());
 
 	m_grid.m_indices =
 	{

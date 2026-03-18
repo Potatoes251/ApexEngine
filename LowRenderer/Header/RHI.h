@@ -93,6 +93,7 @@ namespace Apex::Rendering
 		virtual void DrawLineArrays(uint32_t vertexCount) = 0;
 		virtual void DrawLineLoop(uint32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
+		virtual void SetDepthTestWrite(bool enabled) = 0;
 
 		virtual uint32_t GetBuffer(RHIBufferHandle handle)  const = 0;
 		virtual uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const = 0;
