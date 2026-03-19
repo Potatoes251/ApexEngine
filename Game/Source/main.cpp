@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "ResourceManager.h"
 #include "Window.h"
 
 #include <filesystem>
@@ -54,7 +55,7 @@ int main(int /*argc*/, char* argv[])
 
     auto app = std::make_unique<Apex::Application>();
     // dont create window for the scene while in editor
-    if (!app->Init(false))
+    if (!app->Init(editor.GetWindow(), editor.GetGUI()))
         return 1;
 
 	app->LoadScene();
@@ -62,7 +63,7 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitPanels(*app))
         return 1;
 
-    while (!editor.GetWindow().ShouldClose())
+    while (!editor.GetWindow()->ShouldClose())
     {
         // Processes events for all windows must be unconditional
         // so the editor window stays responsive when the game is stopped.

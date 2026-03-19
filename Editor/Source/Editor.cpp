@@ -2,6 +2,9 @@
 
 #include "Shader.h"
 #include "ResourceHandle.h"
+#include "Audio.h"
+#include "ResourceManager.h"
+
 
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
@@ -23,24 +26,23 @@ namespace Apex::Editor
     bool Editor::InitPanels(Apex::Application& app)
     {
         m_app = &app;
-		m_audio = std::unique_ptr<IAudioEngine>(CreateAudioEngine());
+		m_audio = app.GetAudio();
         m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
 
-        if (!m_gui)
-            return false;
+        if (!m_app->GetAudio() || !m_gui) return false;
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
             {
-                if (m_audio && entry.m_type == AssetType::Sound)
-                    m_audio->Play2D(entry.m_path.filename().string());
+                if (m_app->GetAudio() && entry.m_type == AssetType::Sound)
+                    m_app->GetAudio()->Play2D(entry.m_path.filename().string());
             });
 
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GridVert.glsl|Assets/Shaders/GridFrag.glsl"), 
-            app.GetScene(), app.GetRhi(), m_gui.get());
+            app.GetScene(), app.GetRhi(), m_gui.get(), this);
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
             {
@@ -127,6 +129,24 @@ namespace Apex::Editor
             m_window->IsKeyPressed(Key::Q),
             m_window->GetDeltaTime()
         );
+
+
+        switch (m_editorState)
+        {
+        case Apex::Editor::EditorState::Edit:
+            break;
+        case Apex::Editor::EditorState::Play:
+            m_app->Tick();
+            break;
+        case Apex::Editor::EditorState::Pause:
+            break;
+        case Apex::Editor::EditorState::Step:
+            m_app->Tick();
+            m_editorState = EditorState::Pause;
+            break;
+        default:
+            break;
+        }
     }
 
     void Editor::Shutdown()

@@ -1,74 +1,78 @@
 #ifndef APPLICATION
 #define APPLICATION
 
-#include "LuaManager.h"
-#include "Behaviour.h"
-#include "SceneGraph.h"
-#include "Object.h"
-
-#include "Window.h"
-#include "Audio.h"
-#include "RHI.h"
-#include "Camera.h"
-
 #include "ThreadPool.h"
-#include "ResourceManager.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Shader.h"
-
 #include "Physic.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
-#include "Rigidbody.h"
 
-#include "DebugRenderer.h"
 
-#include "UI.h"
-#include "Scene.h"
-#include "Hud.h"
+namespace Apex::Rendering
+{
+    class Scene;
+    class IRHI;
+    class Camera;
+}
+namespace Apex::Windowing
+{
+    class IWindow;
+}
+namespace Apex::Resources
+{
+    class ResourceManager;
+}
+namespace Apex::Audio
+{
+    class IAudioEngine;
+}
 
-#include <memory>
-#include <filesystem>
+namespace Apex::UserInterface
+{
+    class UIManager;
+    class IGUI;
+}
+namespace Apex::Scripting
+{
+    class LuaManager;
+}
 
 namespace Apex
-{
+{        
 	class Application
 	{
     public:
-        Application() = default;
-        ~Application() = default;
+        Application();
+        ~Application();
 
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
-        bool Init(bool createWindow = true);
+        bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Run();
         void Tick();
         void LoadScene();
         void Shutdown();
         void ProcessInput();
+        void Render(Rendering::Camera* cam = nullptr);
 
-        Apex::Windowing::IWindow&   GetWindow() { return *m_window; }
+        Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
+        Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
+        UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
 
     private:
+        bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
         bool InitCamera();
-        bool InitWindow();
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
         bool InitScene();
-        bool InitUI();
+        bool InitUI(UserInterface::IGUI* gui);
         
         void UpdateAudioListener();
         void Update();
         void SyncPhysicsToTransforms();
-        void Render();
 
     private:
         bool m_running = true;
@@ -76,20 +80,20 @@ namespace Apex
         float m_deltaTime = 0.0f;
         float m_accumulator = 0.f;
 
-        std::unique_ptr<Apex::Rendering::IRHI> m_rhi;
+        std::unique_ptr<Rendering::IRHI> m_rhi;
 
-        std::unique_ptr<Apex::Scripting::LuaManager> m_luaManager;
-        std::unique_ptr<Apex::Resources::ResourceManager> m_resourceManager;
-        std::unique_ptr<Apex::UserInterface::UIManager> m_uiManager;
+        std::unique_ptr<Scripting::LuaManager> m_luaManager;
+        std::unique_ptr<Resources::ResourceManager> m_resourceManager;
+        std::unique_ptr<UserInterface::UIManager> m_uiManager;
 
-        std::unique_ptr<Apex::Windowing::IWindow> m_window;
-        std::unique_ptr<Apex::Rendering::Camera> m_camera;
-        std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;
+        Windowing::IWindow* m_window = nullptr;
+        std::unique_ptr<Rendering::Camera> m_camera;
+        std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        Apex::Core::ThreadPool m_threadPool;
-        std::unique_ptr<Apex::Rendering::Scene> m_scene;
+        Core::ThreadPool m_threadPool;
+        std::unique_ptr<Rendering::Scene> m_scene;
 
-        Apex::Physic::PhysicSystem m_physics;
+        Physic::PhysicSystem m_physics;
 	};
 }
 

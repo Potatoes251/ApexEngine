@@ -15,15 +15,21 @@
 namespace Apex::Data { class Object; }
 
 namespace Apex::UserInterface { class IGUI; }
-namespace Apex::Rendering { class IRHI; }
-namespace Apex::Rendering { class Scene; }
+namespace Apex::Rendering 
+{ 
+	class IRHI; 
+	class Scene;
+}
 
 namespace Apex::Editor
 {
+	class Editor;
+
 	class Viewport
 	{
 	public:
-		Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui);
+		Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
+			Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor);
 		Viewport(Viewport const&) = delete;
 		Viewport& operator=(Viewport const&) = delete;
 
@@ -75,6 +81,7 @@ namespace Apex::Editor
 		Rendering::IRHI*		m_rhi = nullptr;
 		Rendering::Scene*		m_currentScene = nullptr;
 		Data::Object*			m_selectedObject = nullptr;
+		Editor*					m_editor = nullptr;
 
 		LibMath::Vector2		m_panelPos;
 		LibMath::Vector2		m_panelSize;

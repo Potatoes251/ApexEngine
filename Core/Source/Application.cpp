@@ -1,15 +1,40 @@
 #include "Application.h"
+
+#include "LuaManager.h"
+#include "Behaviour.h"
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
 #include "RenderPassInfo.h"
+#include "SceneGraph.h"
+#include "Object.h"
 
 #include "SceneLoader.h"
 
+#include "Window.h"
+#include "RHI.h"
+#include "Camera.h"
+#include "Audio.h"
+
+
+#include "ResourceManager.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
 #include "Cubemap.h"
+#include "Scene.h"
+#include "BoxCollider.h"
+#include "CapsuleCollider.h"
+#include "MeshCollider.h"
+#include "Rigidbody.h"
+
+#include "DebugRenderer.h"
+#include "UI.h"
+#include "Hud.h"
 
 #include <chrono>
 #include <iostream>
 
+#include <memory>
 #include <filesystem>
 
 using namespace Apex::Windowing;
@@ -20,6 +45,12 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
+
+namespace Apex
+{
+    Application::Application() = default;
+    Application::~Application() = default;
+}
 
 void Apex::Application::Run()
 {
@@ -32,19 +63,16 @@ void Apex::Application::Run()
     Shutdown();
 }
 
-bool Apex::Application::Init(bool createWindow)
+bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
-    std::cout << "Application Init\n";
-
-    if (createWindow && !InitWindow()) return false;
-
-    if (!InitResourceManager()  
+    if (!InitWindow(window)
+    || !InitResourceManager()  
     || !InitCamera()
     || !InitRHI()  
     || !InitRendering()
+    || !InitUI(gui)
     || !InitAudio()
     || !InitScene())
-
         return false;
 
     return true;
@@ -62,14 +90,12 @@ bool Apex::Application::InitCamera()
     return true;
 }
 
-bool Apex::Application::InitWindow()
+bool Apex::Application::InitWindow(IWindow* window)
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, nullptr));
+    m_window = window;
 
     if (!m_window)
         return false;
-
-    m_window->SetCursorCaptured(true);
 
     m_window->SetKeyCallback([&](Key key, KeyAction action)
         {
@@ -134,11 +160,11 @@ bool Apex::Application::InitScene()
     return true;
 }
 
-bool Apex::Application::InitUI()
+bool Apex::Application::InitUI(IGUI* gui)
 {
     if (!m_window) return false;
 
-    m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
+    m_uiManager = std::make_unique<UIManager>(gui);
 
     if (!m_uiManager)
         return false;
@@ -150,48 +176,6 @@ bool Apex::Application::InitUI()
 
 void Apex::Application::LoadScene()
 {
-    //Apex::Resources::ResourceHandle<Shader> m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
-    //Apex::Resources::ResourceHandle<Mesh> m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
-    //Apex::Resources::ResourceHandle<Mesh> m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    //Apex::Resources::ResourceHandle<Texture> m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
-    //Apex::Resources::ResourceHandle<Texture> m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
-
-    //auto obj = m_scene->CreateObject();
-
-    //auto& renderer = obj->AddComponent<MeshRenderer>();
-    //renderer.SetMesh(m_sphere);
-    //renderer.SetTexture(m_texture);
-    //renderer.SetShader(m_shader);
-
-    //auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
-    //body.SetPosition({ 0,10,0 });
-
-    //auto obj2 = m_scene->CreateObject();
-
-    //auto& renderer2 = obj2->AddComponent<MeshRenderer>();
-    //renderer2.SetMesh(m_cube);
-    //renderer2.SetTexture(m_texture2);
-    //renderer2.SetShader(m_shader);
-
-    //auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
-    //body2.SetPosition({ 0,0,0 });
-
-    //PhysMatHandle mat = m_physics.CreateMaterial("0", 0.5f, 0.5f, 1);
-    //PhysMatHandle mat2 = m_physics.CreateMaterial("1", 0.5f, 0.5f, 0);
-
-    //auto& collider = obj->AddComponent<MeshCollider>(m_sphere, MeshColliderType::Convex, false, mat);
-    //auto& collider2 = obj2->AddComponent<BoxCollider>(LibMath::Vector3{ 10.f, .5f, 10.f }, false);
-
-    //while (!m_sphere.IsReady() ||
-    //    !m_cube.IsReady() ||
-    //    !m_texture.IsReady() ||
-    //    !m_texture2.IsReady() ||
-    //    !m_shader.IsReady())
-    //    m_resourceManager->ProcessGpuUploads();
-
-    //m_physics.CreateActor(collider, body);
-    //m_physics.CreateActor(collider2, body2);
-
     Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "Assets/Textures/Skybox/px.png|Assets/Textures/Skybox/nx.png|\
 Assets/Textures/Skybox/ny.png|Assets/Textures/Skybox/py.png|\
@@ -258,8 +242,7 @@ void Apex::Application::Shutdown()
 
 void Apex::Application::Tick()
 {
-    m_window->MakeContextCurrent();
-    m_window->UpdateDeltaTime();
+    //m_window->UpdateDeltaTime();
 
     m_deltaTime = m_window->GetDeltaTime();
     if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;
@@ -277,10 +260,6 @@ void Apex::Application::Tick()
     }
 
     SyncPhysicsToTransforms();
-
-    Render();
-
-    m_window->SwapBuffers();
 }
 
 void Apex::Application::ProcessInput()
@@ -319,21 +298,20 @@ void Apex::Application::SyncPhysicsToTransforms()
     m_physics.SyncFromPhysx();
 }
 
-void Apex::Application::Render()
+void Apex::Application::Render(Camera* cam)
 {
+    if (!cam) cam = m_camera.get();
     m_rhi->Clear();
 
     RenderPassInfo pass;
     pass.m_aspectRatio = m_window->GetAspectRatio();
-    pass.m_camera = m_camera.get();
+    pass.m_camera = cam;
 
     m_scene->Render(pass);
 
-    LibMath::Matrix4 view = m_camera->GetViewMatrix();
-    LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
+    LibMath::Matrix4 view = cam->GetViewMatrix();
+    LibMath::Matrix4 proj = cam->GetProjectionMatrix(m_window->GetAspectRatio());
 
     m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(proj * view);
-
-    m_resourceManager->ProcessGpuUploads();
 }

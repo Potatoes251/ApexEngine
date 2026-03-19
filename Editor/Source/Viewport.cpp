@@ -3,6 +3,8 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
+
+#include "Editor.h"
 #include "Scene.h"
 #include "RHI.h"
 #include "UI.h"
@@ -12,11 +14,13 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 
-Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui)
-	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_currentScene(scene), m_rhi(rhi), m_gui(gui)
+Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
+	Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
+	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_currentScene(scene), m_rhi(rhi), m_gui(gui) 
 {
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
 	m_pickingshader = pickingShader;
+	m_editor = editor;
 
 	CreateGrid();
 }
@@ -35,6 +39,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 {
 	if (m_selectedAxis == Axis::None || !m_selectedObject)
 		return;
+
+	if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
+	else ComputePlaneRotation();
 
 	const LibMath::Vector3 axis = GetAxis();
 
@@ -137,9 +144,6 @@ bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
 	if (m_selectedAxis == Axis::None) return false;
 
 	m_initialTransform = m_selectedObject->GetGlobalTransform();
-
-	if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
-	else ComputePlaneRotation();
 
 	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
 	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint)) return false;
@@ -308,13 +312,13 @@ void Viewport::Draw()
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_currentScene->Render(pass);
-	DrawGrid();
-	//m_rhi->SetDepthTestWrite(false);
-	m_rhi->SetDepthTest(false);
-	//m_rhi->SetDepthTestWrite(true);
-	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
-	m_rhi->SetDepthTest(true);
+	m_editor->GetApp()->Render(&m_camera);
+	if (m_editor->GetEditorState() == EditorState::Edit)
+	{
+		DrawGrid();
+		m_rhi->ClearDepth();
+		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
+	}
 	m_rhi->UnBindFrameBuffer();
 
 
@@ -328,6 +332,16 @@ void Viewport::Draw()
 void Viewport::DrawUI()
 {
 	m_gui->SetCursorPos(m_panelPos + LibMath::Vector2(10, 35));
+
+	if (m_gui->Button("Play")) m_editor->SetEditorState(EditorState::Play);
+	m_gui->SameLine();
+	if (m_gui->Button("Pause") && m_editor->GetEditorState() == EditorState::Play) m_editor->SetEditorState(EditorState::Pause);
+	m_gui->SameLine();
+	if (m_gui->Button("Step") && m_editor->GetEditorState() == EditorState::Pause) m_editor->SetEditorState(EditorState::Step);
+	m_gui->SameLine();
+	if (m_gui->Button("Stop")) m_editor->SetEditorState(EditorState::Edit);
+
+	if (m_editor->GetEditorState() != EditorState::Edit) return;
 
 	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
 	m_gui->SameLine();
