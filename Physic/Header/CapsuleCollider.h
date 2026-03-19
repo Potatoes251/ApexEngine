@@ -16,6 +16,7 @@ namespace Apex::Physic
 		CapsuleCollider& operator=(CapsuleCollider const& other);
 
 		ColliderType GetType() const override { return ColliderType::Capsule; }
+		std::vector<ExposedVar> GetExposedVariables() override;
 
 		float GetHalfHeight() const { return m_halfHeight; }
 		float GetRadius() const { return m_radius; }
@@ -23,7 +24,6 @@ namespace Apex::Physic
 	private:
 		float m_halfHeight;
 		float m_radius;
-
 	};
 }
 

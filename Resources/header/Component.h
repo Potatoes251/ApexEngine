@@ -4,11 +4,20 @@
 #include "../../UI/Header/UI.h"
 
 #include <ostream>
+#include <vector>
 
 namespace Apex::Data { class Object; }
 
 namespace Apex
 {
+    struct ExposedVar
+    {
+        std::string name;
+        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture } type;
+        void* data;
+        std::vector<std::string> enumNames;
+    };  
+
     class Component
     {
     public:
@@ -22,13 +31,14 @@ namespace Apex
         virtual void OnDestroy() {}
         virtual void OnUpdate(float deltaTime) {}
         virtual void OnFixedUpdate(float fixedDeltaTime) {}
-        virtual void Serialize(std::ostream& out) const {}
+        virtual void Serialize(std::ostream& out) const = 0;
 
         virtual std::unique_ptr<Component> Clone() const = 0;
 
         virtual const char* GetTypeName() const = 0;
+        virtual std::vector<ExposedVar> GetExposedVariables() = 0;
 
-        virtual const void DrawVariables(Apex::UserInterface::IGUI& gui) const = 0;
+        virtual void DrawVariables(Apex::UserInterface::IGUI& gui) = 0;
 
         void SetEnabled(bool enabled) { m_enabled = enabled; }
         bool IsEnabled() const { return m_enabled; }

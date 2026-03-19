@@ -1,5 +1,6 @@
 #include "BoxCollider.h"
 
+using namespace Apex;
 using namespace Apex::Physic;
 
 BoxCollider::BoxCollider(BoxCollider const& other) : Collider(other.m_material, other.m_isTrigger)
@@ -16,7 +17,19 @@ BoxCollider& BoxCollider::operator=(BoxCollider const& other)
 	return *this;
 }
 
-const void BoxCollider::DrawVariables(Apex::UserInterface::IGUI& gui) const
+std::vector<ExposedVar> BoxCollider::GetExposedVariables()
+{
+    std::vector<ExposedVar> exposedVec = Collider::GetExposedVariables();
+
+    exposedVec.insert(exposedVec.end(),
+        {
+            { "Half extents", ExposedVar::Vector3,  &m_halfExtents}
+        });
+
+    return exposedVec;
+}
+
+void BoxCollider::DrawVariables(Apex::UserInterface::IGUI& gui)
 {
     gui.Text("Half extents: (" + std::to_string(m_halfExtents[0]) + 
         ", " + std::to_string(m_halfExtents[1]) + 

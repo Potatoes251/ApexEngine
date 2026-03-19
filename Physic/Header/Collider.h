@@ -25,6 +25,7 @@ namespace Apex::Physic
 		virtual ~Collider() = default;
 
 		virtual ColliderType GetType() const = 0;
+		virtual std::vector<ExposedVar> GetExposedVariables() override;
 
 		void SetMaterial(PhysMatHandle material) { m_material = material; }
 		PhysMatHandle GetMaterial() const { return m_material; }

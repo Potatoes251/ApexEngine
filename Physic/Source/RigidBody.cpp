@@ -1,5 +1,6 @@
 #include "Rigidbody.h"
 
+using namespace Apex;
 using namespace Apex::Physic;
 
 RigidBodyComponent::RigidBodyComponent(float mass, BodyType type)
@@ -32,7 +33,16 @@ std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
 	return clone;
 }
 
-const void RigidBodyComponent::DrawVariables(Apex::UserInterface::IGUI& gui) const
+std::vector<ExposedVar> RigidBodyComponent::GetExposedVariables()
+{
+	return 
+	{
+		{ "BodyType", ExposedVar::Enum, &m_bodyType, { "Static", "Dynamic", "Kinematic" } },
+		{ "Mass", ExposedVar::Float, &m_mass }
+	};
+}
+
+void RigidBodyComponent::DrawVariables(Apex::UserInterface::IGUI& gui)
 {
 	std::string bodyType;
 	switch (m_bodyType)
@@ -51,7 +61,7 @@ const void RigidBodyComponent::DrawVariables(Apex::UserInterface::IGUI& gui) con
 	}
 
 	gui.Text("Body type: " + bodyType);
-	gui.Text("Mass: " + std::to_string(m_mass));
+	gui.SliderFloat("Mass", &m_mass, -1000.f, 1000.f);
 }
 
 void RigidBodyComponent::ResetForces()

@@ -3,42 +3,52 @@
 #include "Camera.h"
 
 using namespace LibMath;
+using namespace Apex;
 using namespace Apex::Resources;
+using namespace Apex::Rendering;
 
-void Apex::Rendering::MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
+void MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
 {
     m_mesh = mesh;
 }
 
-void Apex::Rendering::MeshRenderer::SetTexture(ResourceHandle<Texture>& texture)
+void MeshRenderer::SetTexture(ResourceHandle<Texture>& texture)
 {
     m_texture = texture;
 }
 
-void Apex::Rendering::MeshRenderer::SetShader(ResourceHandle<Shader>& shader)
+void MeshRenderer::SetShader(ResourceHandle<Shader>& shader)
 {
     m_shader = shader;
 }
 
-Apex::Resources::ResourceHandle<Mesh>& Apex::Rendering::MeshRenderer::GetMesh()
+ResourceHandle<Mesh>& MeshRenderer::GetMesh()
 {
     return m_mesh;
 }
 
-Apex::Resources::ResourceHandle<Texture>& Apex::Rendering::MeshRenderer::GetTexture()
+ResourceHandle<Texture>& MeshRenderer::GetTexture()
 {
     return m_texture;
 }
 
-Apex::Resources::ResourceHandle<Shader>& Apex::Rendering::MeshRenderer::GetShader()
+ResourceHandle<Shader>& MeshRenderer::GetShader()
 {
     return m_shader;
 }
 
-const void Apex::Rendering::MeshRenderer::DrawVariables(Apex::UserInterface::IGUI& gui) const
+std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
+{
+    return
+    {
+        { "Mesh", ExposedVar::Mesh, &m_mesh },
+        { "Texture", ExposedVar::Texture, &m_texture }
+    };
+}
+
+void Apex::Rendering::MeshRenderer::DrawVariables(Apex::UserInterface::IGUI& gui)
 {
     gui.Text("Mesh: " + m_mesh->GetPath());
-    gui.Text("Shader: " + m_shader->GetPath());
     gui.Text("Texture: " + m_texture->GetPath());
 }
 
@@ -51,7 +61,7 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
     return clone;
 }
 
-void Apex::Rendering::MeshRenderer::Render(RenderPassInfo passInfo)
+void MeshRenderer::Render(RenderPassInfo passInfo)
 {
     ResourceHandle<Shader> currentShader = m_shader;
     if (passInfo.m_useModelShader) m_shader->Use();
@@ -82,7 +92,7 @@ void Apex::Rendering::MeshRenderer::Render(RenderPassInfo passInfo)
     m_mesh->Draw();
 }
 
-void Apex::Rendering::MeshRenderer::Serialize(std::ostream& out) const
+void MeshRenderer::Serialize(std::ostream& out) const
 {
     out << "      \"MeshRenderer\": {\n";
 

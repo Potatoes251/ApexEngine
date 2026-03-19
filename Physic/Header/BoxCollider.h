@@ -21,7 +21,8 @@ namespace Apex::Physic
 
 		ColliderType GetType() const override { return ColliderType::Box; }
 		const char* GetTypeName() const override { return "BoxCollider"; };
-		const void DrawVariables(Apex::UserInterface::IGUI& gui) const override;
+		std::vector<ExposedVar> GetExposedVariables() override;
+		void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
 		LibMath::Vector3 GetHalfExtents() const { return m_halfExtents; }
 

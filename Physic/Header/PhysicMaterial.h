@@ -16,12 +16,15 @@ public:
 	void	SetId(size_t newId) { m_id = newId; }
 	
 	float	GetStaticFriction() const { return m_staticFriction; }
+	float&	GetStaticFriction() { return m_staticFriction; }
 	void	SetStaticFriction(float staticFriction) { m_staticFriction = staticFriction; }
 
 	float	GetDynamicFriction() const { return m_dynamicFriction; }
+	float&	GetDynamicFriction() { return m_dynamicFriction; }
 	void	SetDynamicFriction(float dynamicFriction) { m_dynamicFriction = dynamicFriction; }
 	
 	float	GetBounciness() const { return m_bounciness; }
+	float&	GetBounciness() { return m_bounciness; }
 	void	SetBounciness(float bounciness) { m_bounciness = bounciness; }
 
 private:

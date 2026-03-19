@@ -29,7 +29,8 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Shader>& GetShader();
 
         const char* GetTypeName() const override { return "MeshRenderer"; };
-        const void DrawVariables(Apex::UserInterface::IGUI& gui) const override;
+        std::vector<ExposedVar> GetExposedVariables() override;
+        void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
         std::unique_ptr<Apex::Component> Clone() const override;
 
