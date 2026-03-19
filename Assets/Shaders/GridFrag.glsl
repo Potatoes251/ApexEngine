@@ -42,6 +42,7 @@ void main()
     vec2 grid = abs(fract(coord * minorGridScale - 0.5) - 0.5) / fwidth(coord * minorGridScale);
     float line = min(grid.x, grid.y);
     float minor = 1.0 - min(line, 1.0);
+    minor = min(minor, 0.25);
 
     vec2 majorCoord = coord;
     vec2 majorGrid = abs(fract(majorCoord / gridScale - 0.5) - 0.5) / (fwidth(coord) / gridScale);
@@ -51,7 +52,9 @@ void main()
     float axisZ = smoothstep(0.0, fwidth(coord.x), abs(coord.x));
 
     float dist = length(hit - uCameraPos);
-    float fade = exp(-dist * 0.01);
+    float fadeStart = 50.0; // distance where fading begins
+    float fadeEnd   = 200.0; // distance where grid fully disappears
+    float fade = 1.0 - smoothstep(fadeStart, fadeEnd, dist); // invert
 
     vec3 color = vec3(0.2) * minor + vec3(0.5) * major;
 
@@ -63,5 +66,5 @@ void main()
     if (color.r <= 0.01 && color.g <= 0.01 && color.b <= 0.01)
         discard;
 
-    outColor = vec4(color, 1.0);
+    outColor = vec4(color, fade);
 }

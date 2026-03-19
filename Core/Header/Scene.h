@@ -10,6 +10,8 @@
 
 #include "Physic.h"
 
+#include "Skybox.h"
+
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
@@ -23,6 +25,8 @@ namespace Apex::Rendering
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
+		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
+
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 
@@ -34,6 +38,7 @@ namespace Apex::Rendering
 		void Save(const std::string& path, Apex::Physic::PhysicSystem& phys);
 	private:
 		std::vector<std::unique_ptr<Object>> m_objects;
+		std::unique_ptr<Skybox> m_skybox;
 	};
 }
 

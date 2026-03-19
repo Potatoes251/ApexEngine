@@ -37,6 +37,7 @@ namespace Apex::Rendering
 		int						GetPixelData(int x, int y) override;
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
+		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 

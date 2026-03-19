@@ -71,6 +71,7 @@ namespace Apex::Rendering
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
+		virtual RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) = 0;
 		virtual void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) = 0;
 		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
 

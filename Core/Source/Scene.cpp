@@ -5,6 +5,8 @@
 #include "Texture.h"
 #include "Shader.h"
 
+#include "Camera.h"
+
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
@@ -47,6 +49,11 @@ namespace Apex::Rendering
 
 			renderer->Render(passInfo);
 		}
+		LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
+		view[3][0] = 0;
+		view[3][1] = 0;
+		view[3][2] = 0;
+		m_skybox->Render(passInfo.m_camera->GetProjectionMatrix(passInfo.m_aspectRatio) * view);
 	}
 
 	void Scene::Save(const std::string& path, Apex::Physic::PhysicSystem& phys)

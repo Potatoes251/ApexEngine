@@ -5,6 +5,8 @@
 
 #include "SceneLoader.h"
 
+#include "Cubemap.h"
+
 #include <chrono>
 #include <iostream>
 
@@ -189,6 +191,18 @@ void Apex::Application::LoadScene()
 
     //m_physics.CreateActor(collider, body);
     //m_physics.CreateActor(collider2, body2);
+
+    Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
+        "Assets/Textures/Skybox/px.png|Assets/Textures/Skybox/nx.png|\
+Assets/Textures/Skybox/ny.png|Assets/Textures/Skybox/py.png|\
+Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkyboxVert.glsl|Assets/Shaders/SkyboxFrag.glsl");
+
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
+
+    m_scene->SetSkybox(sk);
+
 
     SceneLoader loader(*m_resourceManager.get(), m_physics);
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
