@@ -6,6 +6,7 @@
 // asset with dimensions, channels and file size info.
 // ============================================================
 #include "UI.h"
+#include "MetaFile.h"
 
 #include <filesystem>
 #include <string>
@@ -16,6 +17,14 @@ using namespace Apex::UserInterface;
 namespace Apex::Editor
 {
 	enum class TextureBackground { Checkerboard, Black, White };
+
+	// GPU block-compression formats supported by the editor.
+	// None  — raw RGBA8, no compression
+	// BC1   — RGB  (no alpha), ~6:1 compression
+	// BC3   — RGBA (smooth alpha), ~4:1 compression
+	// BC4   — single channel (R), grayscale / roughness maps
+	// BC5   — two channels (RG), normal maps
+	enum class CompressionFormat { None, BC1, BC3, BC4, BC5 };
 
 	class TextureEditor
 	{
@@ -56,6 +65,7 @@ namespace Apex::Editor
 		void DrawDetailsViewSection();
 		void DrawDetailsFileSection();
 		void DrawDetailsColorSection();
+		void DrawDetailsCompressionSection();
 
 		void DrawCheckerboard(LibMath::Vector2 min, LibMath::Vector2 max);
 		void DrawBackground(LibMath::Vector2 min, LibMath::Vector2 max);
@@ -63,10 +73,15 @@ namespace Apex::Editor
 		// Helpers
 		void LoadTexture(const fs::path& path);
 		void UnloadTexture();
+		void ApplyCompression();       // CPU-compress m_pixels and re-upload
+		void LoadOrCreateMeta();       // read .meta sidecar, create if missing
+		void SaveMeta();               // write .meta sidecar
+
 		Color ChannelTint() const;
 		std::string FormatString() const;
 		std::string MipCountString() const;
 		std::string FileSizeString() const;
+		std::string CompressionFormatString(CompressionFormat format) const;
 
 		static std::string TruncatePath(const std::string& str, int maxChars);
 		void TextWithTooltip(const std::string& label, const std::string& value, int maxChars = 22);
@@ -93,6 +108,11 @@ namespace Apex::Editor
 
 		// CPU-side pixels kept alive for color picker
 		std::vector<unsigned char> m_pixels;  // RGBA, row-major
+
+		// Compression & meta 
+		CompressionFormat m_compression = CompressionFormat::None;
+		bool              m_metaDirty = false;
+		MetaFile          m_meta;
 
 		// Viewport state
 		float              m_zoom = 1.f;

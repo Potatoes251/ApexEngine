@@ -243,7 +243,7 @@ float Viewport::Snap(float rotationAngle) const
 	case Apex::Editor::GizmoMode::Translation:
 		if (m_translateSnap > 0.0f) 
 		{
-			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+			return round(rotationAngle / m_translateSnap) * m_translateSnap;
 		}
 		break;
 	case Apex::Editor::GizmoMode::Rotation:
@@ -255,7 +255,7 @@ float Viewport::Snap(float rotationAngle) const
 	case Apex::Editor::GizmoMode::Scale:
 		if (m_scaleSnap > 0.0f)
 		{
-			return round(rotationAngle / m_rotateSnap) * m_rotateSnap;
+			return round(rotationAngle / m_scaleSnap) * m_scaleSnap;
 		}
 		break;
 	default:

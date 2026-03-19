@@ -31,12 +31,6 @@ namespace Apex::Editor
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
-        m_contentBrowser->SetOnAssetLoad([&](const AssetEntry& entry)
-            {
-                if (m_audio && entry.m_type == AssetType::Sound)
-                    m_audio->Play2D(entry.m_path.filename().string());
-            });
-
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get());
@@ -150,6 +144,7 @@ namespace Apex::Editor
     {
         m_textureEditors.clear();
         m_contentBrowser.reset();
+        m_hierarchy.reset();
         m_viewport.reset();
         m_gui.reset();
         m_window.reset();

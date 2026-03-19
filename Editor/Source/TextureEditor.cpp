@@ -8,6 +8,8 @@ extern "C"
 }
 #endif
 
+#include <stb_dxt.h>
+
 #include <glad/glad.h>
 
 #include <iomanip>
@@ -35,6 +37,8 @@ namespace Apex::Editor
         m_mipLevel = 0;
         m_exposure = 1.f;
         m_hasPickedColor = false;
+        m_metaDirty = false;
+        LoadOrCreateMeta();
     }
 
     void TextureEditor::Close()
@@ -133,7 +137,22 @@ namespace Apex::Editor
 
     void TextureEditor::DrawToolbarActions()
     {
-        if (m_gui.Button("Compress")) {  }
+        // Compress — apply the selected format and save the meta file
+        bool compressed = (m_compression != CompressionFormat::None);
+        if (compressed)
+        {
+            m_gui.PushColor(StyleColor::Button, Color{ 0.15f, 0.55f, 0.15f, 1.f });
+            m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.20f, 0.70f, 0.20f, 1.f });
+        }
+
+        if (m_gui.Button("Compress"))
+            ApplyCompression();
+        if (compressed)
+        {
+            m_gui.PopColor();
+            m_gui.PopColor();
+        }
+
         m_gui.SameLine(0.f, 16.f);
         if (m_gui.Button("Reimport"))
         {
@@ -141,6 +160,7 @@ namespace Apex::Editor
             UnloadTexture();
             LoadTexture(path);
             m_mipLevel = 0;
+            LoadOrCreateMeta();
         }
     }
 
@@ -394,6 +414,7 @@ namespace Apex::Editor
         DrawDetailsInfoStrip();
         m_gui.Separator();
         DrawDetailsFileSection();
+        DrawDetailsCompressionSection();
         DrawDetailsLODSection();
         DrawDetailsViewSection();
         DrawDetailsColorSection();
@@ -527,6 +548,91 @@ namespace Apex::Editor
         m_gui.TextDisabled("(right-click to pick)");
     }
 
+    void TextureEditor::DrawDetailsCompressionSection()
+    {
+        if (!m_gui.CollapsingHeader("Compression", true)) return;
+
+        // Format picker
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Format:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+
+        int formatIndex = static_cast<int>(m_compression);
+        if (m_gui.Combo("##comp_fmt", &formatIndex,
+            "None\0BC1  (RGB,  no alpha)\0"
+            "BC3  (RGBA, smooth alpha)\0"
+            "BC4  (R only)\0"
+            "BC5  (RG, normals)\0\0"))
+        {
+            m_compression = static_cast<CompressionFormat>(formatIndex);
+            m_metaDirty = true;
+        }
+
+        // Format hint text
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Info:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        switch (m_compression)
+        {
+        case CompressionFormat::None:
+            m_gui.TextDisabled("Uncompressed RGBA8");          break;
+        case CompressionFormat::BC1:
+            m_gui.TextDisabled("~6:1 — diffuse, no alpha");    break;
+        case CompressionFormat::BC3:
+            m_gui.TextDisabled("~4:1 — diffuse with alpha");   break;
+        case CompressionFormat::BC4:
+            m_gui.TextDisabled("~2:1 — roughness / AO");       break;
+        case CompressionFormat::BC5:
+            m_gui.TextDisabled("~2:1 — normal map (RG)");      break;
+        }
+
+        // Estimated compressed size
+        if (m_compression != CompressionFormat::None && m_width > 0 && m_height > 0)
+        {
+            int bpb = (m_compression == CompressionFormat::BC1 || m_compression == CompressionFormat::BC4) ? 8 : 16;
+            int bx = (m_width + 3) / 4;
+            int by = (m_height + 3) / 4;
+            uintmax_t size = static_cast<uintmax_t>(bx) * by * bpb;
+
+            m_gui.AlignTextToFramePadding();
+            m_gui.Text("Est. size:");
+            m_gui.SameLine(LABEL_COLUMN_WIDTH);
+
+            std::string sizeString;
+            if (size >= 1024 * 1024) sizeString = std::to_string(size / (1024 * 1024)) + " MB";
+            else if (size >= 1024)        sizeString = std::to_string(size / 1024) + " KB";
+            else                        sizeString = std::to_string(size) + " B";
+            m_gui.TextDisabled(sizeString);
+        }
+
+        // Show current on-disk state
+        int savedFormat = m_meta.GetInt("compression", static_cast<int>(CompressionFormat::None));
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("On disk:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.TextDisabled(CompressionFormatString(static_cast<CompressionFormat>(savedFormat)));
+
+        // Apply button
+        bool needsSave = m_metaDirty ||
+            m_compression != static_cast<CompressionFormat>(
+                m_meta.GetInt("compression", static_cast<int>(CompressionFormat::None)));
+        if (needsSave)
+        {
+            m_gui.PushColor(StyleColor::Button, Color{ 0.15f, 0.55f, 0.15f, 1.f });
+            m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.20f, 0.70f, 0.20f, 1.f });
+        }
+        m_gui.Separator();
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        if (m_gui.Button("Apply & Save"))
+            ApplyCompression();
+        if (needsSave)
+        {
+            m_gui.PopColor();
+            m_gui.PopColor();
+        }
+    }
+
     void TextureEditor::LoadTexture(const fs::path& path)
     {
         m_path = path;
@@ -573,6 +679,142 @@ namespace Apex::Editor
         m_hasPickedColor = false;
     }
 
+    void TextureEditor::ApplyCompression()
+    {
+        if (m_pixels.empty() || m_textureID == 0)
+            return;
+
+        if (m_compression == CompressionFormat::None)
+        {
+            // Re-upload as raw RGBA8 — just reload
+            glBindTexture(GL_TEXTURE_2D, m_textureID);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels.data());
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            SaveMeta();
+            return;
+        }
+
+        // BC compression — stb_dxt compresses one 4x4 block at a time.
+        // We walk the image in 4x4 tiles, compress each, accumulate output.
+
+        // Bytes per compressed block
+        int bytesPerBlock = (m_compression == CompressionFormat::BC1 || m_compression == CompressionFormat::BC4) ? 8 : 16;
+
+        int blocksX = (m_width + 3) / 4;
+        int blocksY = (m_height + 3) / 4;
+        std::vector<unsigned char> compressed(blocksX * blocksY * bytesPerBlock);
+
+        unsigned char* dst = compressed.data();
+
+        for (int by = 0; by < blocksY; ++by)
+        {
+            for (int bx = 0; bx < blocksX; ++bx)
+            {
+                // Extract the 4x4 RGBA block from m_pixels
+                unsigned char block[4 * 4 * 4] = {};
+                for (int row = 0; row < 4; ++row)
+                {
+                    int py = std::min(by * 4 + row, m_height - 1);
+                    for (int col = 0; col < 4; ++col)
+                    {
+                        int px = std::min(bx * 4 + col, m_width - 1);
+                        int src = (py * m_width + px) * 4;
+                        int dst_b = (row * 4 + col) * 4;
+                        block[dst_b + 0] = m_pixels[src + 0];
+                        block[dst_b + 1] = m_pixels[src + 1];
+                        block[dst_b + 2] = m_pixels[src + 2];
+                        block[dst_b + 3] = m_pixels[src + 3];
+                    }
+                }
+
+                // Compress the block
+                switch (m_compression)
+                {
+                case CompressionFormat::BC1:
+                    stb_compress_dxt_block(dst, block, 0, STB_DXT_NORMAL);
+                    break;
+                case CompressionFormat::BC3:
+                    stb_compress_dxt_block(dst, block, 1, STB_DXT_NORMAL);
+                    break;
+                case CompressionFormat::BC4:
+                    // BC4: single channel — compress R channel only
+                {
+                    unsigned char rBlock[16];
+                    for (int i = 0; i < 16; ++i) rBlock[i] = block[i * 4];
+                    stb_compress_bc4_block(dst, rBlock);
+                }
+                break;
+                case CompressionFormat::BC5:
+                    // BC5: two channels — compress RG
+                {
+                    unsigned char rgBlock[32];
+                    for (int i = 0; i < 16; ++i)
+                    {
+                        rgBlock[i * 2 + 0] = block[i * 4 + 0];
+                        rgBlock[i * 2 + 1] = block[i * 4 + 1];
+                    }
+                    stb_compress_bc5_block(dst, rgBlock);
+                }
+                break;
+                default:
+                    break;
+                }
+
+                dst += bytesPerBlock;
+            }
+        }
+
+        // Upload compressed data to GPU
+        GLenum internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        switch (m_compression)
+        {
+        case CompressionFormat::BC1:
+            internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;   break;
+        case CompressionFormat::BC3:
+            internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;   break;
+        case CompressionFormat::BC4:
+            internalFormat = GL_COMPRESSED_RED_RGTC1;            break;
+        case CompressionFormat::BC5:
+            internalFormat = GL_COMPRESSED_RG_RGTC2;             break;
+        default: break;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, m_textureID);
+        glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
+            m_width, m_height, 0,
+            static_cast<GLsizei>(compressed.size()),
+            compressed.data());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        SaveMeta();
+    }
+
+    void TextureEditor::LoadOrCreateMeta()
+    {
+        m_meta.Load(m_path);  // no-op if file doesn't exist
+
+        // Read saved compression setting, defaulting to None
+        int saved = m_meta.GetInt("compression", static_cast<int>(CompressionFormat::None));
+        m_compression = static_cast<CompressionFormat>(saved);
+        m_metaDirty = false;
+    }
+
+    void TextureEditor::SaveMeta()
+    {
+        m_meta.Set("compression", static_cast<int>(m_compression));
+        m_meta.Set("width", m_width);
+        m_meta.Set("height", m_height);
+        m_meta.Set("channels", m_channels);
+        m_meta.Save(m_path);
+        m_metaDirty = false;
+    }
+
     Color TextureEditor::ChannelTint() const
     {
         return 
@@ -609,6 +851,19 @@ namespace Apex::Editor
             return std::to_string(m_fileBytes / 1024) + " KB";
         else
             return std::to_string(m_fileBytes) + " B";
+    }
+
+    std::string TextureEditor::CompressionFormatString(CompressionFormat format) const
+    {
+        switch (format)
+        {
+        case CompressionFormat::None: return "None (RGBA8)";
+        case CompressionFormat::BC1:  return "BC1 (DXT1)";
+        case CompressionFormat::BC3:  return "BC3 (DXT5)";
+        case CompressionFormat::BC4:  return "BC4 (RGTC1)";
+        case CompressionFormat::BC5:  return "BC5 (RGTC2)";
+        }
+        return "Unknown";
     }
 
     std::string TextureEditor::TruncatePath(const std::string& str, int maxChars)

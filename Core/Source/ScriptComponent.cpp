@@ -21,13 +21,10 @@ void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
     m_scriptRef = m_lua.LoadScript(path);
     m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
 
-    m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
-
-    // Après création de l’instance :
     lua_State* L = m_lua.GetState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
-    // push light userdata vers Object*
+    // push light userdata to Object*
     lua_pushlightuserdata(L, GetOwner());
 
     // instance.__object = pointer

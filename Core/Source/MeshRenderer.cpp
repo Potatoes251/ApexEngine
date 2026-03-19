@@ -46,9 +46,17 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
 
 void Apex::Rendering::MeshRenderer::Render(RenderPassInfo passInfo)
 {
-    ResourceHandle<Shader> currentShader = m_shader;
-    if (passInfo.m_useModelShader) m_shader->Use();
-    else currentShader = passInfo.m_shader;
+    ResourceHandle<Shader> currentShader;
+    if (passInfo.m_useModelShader)
+    {
+        currentShader = m_shader;
+        m_shader->Use();
+    }
+    else
+    {
+        currentShader = passInfo.m_shader;
+        passInfo.m_shader->Use();
+    }
 
 
     Matrix4 model = GetOwner()->GetGlobalTransform();

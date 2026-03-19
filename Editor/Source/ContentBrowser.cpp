@@ -91,6 +91,9 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
+            if (!entry.is_directory() && entry.path().extension() == ".meta")
+                continue;
+
             AssetEntry assetEntry = ClassifyEntry(entry);
             if (assetEntry.m_isFolder) 
                 folders.push_back(assetEntry);
@@ -117,6 +120,7 @@ namespace Apex::Editor
         for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
+            if (entry.path().extension() == ".meta") continue;
 
             std::string name = entry.path().filename().string();
             std::string low = name;
