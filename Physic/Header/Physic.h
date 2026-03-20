@@ -86,6 +86,17 @@ namespace Apex::Physic
 			PhysicSystem* m_system; // back-pointer to the wrapper
 		};
 
+		struct PhysXContext
+		{
+			physx::PxDefaultAllocator        m_allocator;
+			physx::PxDefaultErrorCallback    m_errorCallback;
+
+			physx::PxFoundation* m_foundation = nullptr;
+			physx::PxPhysics* m_physics = nullptr;
+
+			physx::PxDefaultCpuDispatcher* m_dispatcher = nullptr;
+		};
+
 		void	DrawMeshCollider(physx::PxShape* shape, physx::PxRigidActor* actor, LibMath::Vector3 scale) const;
 		void	DrawTriangleMeshCollider32(
 			physx::PxTriangleMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
@@ -118,6 +129,10 @@ namespace Apex::Physic
 		static LibMath::Quaternion		ToLibQuat(physx::PxQuat quat) { return { quat.x, quat.y, quat.z, quat.w }; }
 		static physx::PxQuat			ToPxQuat(LibMath::Quaternion quat) { return { quat[0], quat[1], quat[2], quat[3] }; }
 
+		static inline PhysXContext		m_pxCtx;
+		static inline bool				m_isCtxInit = false;
+		static inline int				m_physicInstanceCount = 0;
+
 		std::unordered_map<std::string, Resources::ResourceEntry>
 										m_materialsMap;
 
@@ -126,11 +141,6 @@ namespace Apex::Physic
 
 		SimulationCallback				m_simCallback;
 
-		physx::PxDefaultAllocator		m_allocator;
-		physx::PxDefaultErrorCallback	m_errorCallback;
-		physx::PxDefaultCpuDispatcher*	m_dispatcher = nullptr;
-		physx::PxFoundation*			m_foundation = nullptr;
-		physx::PxPhysics*				m_physics = nullptr;
 		physx::PxScene*					m_scene	= nullptr;
 
 		physx::PxMaterial*				m_defaultMaterial = nullptr;

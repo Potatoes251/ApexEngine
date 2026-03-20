@@ -84,9 +84,9 @@ void UICanvas::Render(IGUI& gui)
 
 
 //UIManager
-UIManager::UIManager(void* nativeWindow)
+UIManager::UIManager(IGUI* gui)
 {
-	m_gui = unique_ptr<IGUI>(CreateGUI(nativeWindow));
+	m_gui = gui;
 
 	// mess with the rest of rendering
 	//glDisable(GL_DEPTH_TEST);	//TOO SEE IF IYT AFFECT 3D RENDERING
@@ -99,9 +99,9 @@ UICanvas& Apex::UserInterface::UIManager::GetCanvas()
 
 void UIManager::RenderCanvas()
 {
-	m_gui.get()->BeginFrame();
+	m_gui->BeginFrame();
 
 	m_canvas.Render(*m_gui);
 
-	m_gui.get()->EndFrame();
+	m_gui->EndFrame();
 }

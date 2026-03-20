@@ -92,7 +92,7 @@ namespace Apex::UserInterface		// can't be 'HUD' as used on top
 	{
 	public:
 		UIManager() = delete;
-		UIManager(void* nativeWindow);
+		UIManager(IGUI* gui);
 		UIManager(UIManager& other) = delete;
 		~UIManager() = default;
 
@@ -103,8 +103,8 @@ namespace Apex::UserInterface		// can't be 'HUD' as used on top
 		void		RenderCanvas();
 
 	private:
-		UICanvas				m_canvas;
-		std::unique_ptr<IGUI>	m_gui;
+		UICanvas	m_canvas;
+		IGUI*		m_gui;
 	};
 }
 

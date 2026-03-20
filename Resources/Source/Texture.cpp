@@ -5,6 +5,7 @@
 #include <stb_image.h>
 
 #include <iostream>
+#include "Cubemap.h"
 
 void Texture::LoadFromFile()
 {

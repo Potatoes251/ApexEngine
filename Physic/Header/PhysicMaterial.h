@@ -11,6 +11,7 @@ public:
 	PhysicMaterial(PhysicMaterial const& other);
 	PhysicMaterial& operator=(PhysicMaterial const& other);
 	
+	void	SetName(std::string const& name) { m_path = name; }
 
 	size_t	GetId() const { return m_id; }
 	void	SetId(size_t newId) { m_id = newId; }

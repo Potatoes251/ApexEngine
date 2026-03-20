@@ -21,13 +21,16 @@ public:
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
+	void ClearVertices();
+
 	void Draw() const;
 	void DrawLineLoop() const;
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<unsigned int>				m_indices;
 
-	int32_t GetIndexCount()  const { return m_indexCount; }
+	uint32_t GetIndexCount()  const { return m_indexCount; }
+	uint32_t GetVertexCount()  const { return m_vertexCount; }
 
 private:
 
@@ -35,6 +38,7 @@ private:
 	uint32_t m_VBO = 0;
 	uint32_t m_EBO = 0;
 	uint32_t m_indexCount = 0;
+	uint32_t m_vertexCount = 0;
 };
 
 

@@ -12,24 +12,13 @@ RigidBodyComponent::RigidBodyComponent(RigidBodyComponent const& other)
 {
 	m_mass = other.m_mass;
 	m_bodyType = other.m_bodyType;
-	m_pendingForces = other.m_pendingForces;
 }
 
 RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& other)
 {
-	if (this != &other)
-	{
-		m_mass = other.m_mass;
-		m_bodyType = other.m_bodyType;
-		m_pendingForces = other.m_pendingForces;
-	}
+	m_mass = other.m_mass;
+	m_bodyType = other.m_bodyType;
 	return *this;
-}
-
-std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
-{
-	auto clone = std::make_unique<RigidBodyComponent>(*this);
-	return clone;
 }
 
 void RigidBodyComponent::ResetForces()
@@ -63,12 +52,12 @@ void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 
 void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)
 {
-	printf("OnTriggerEnter\n");
+	printf("Send OnTriggerEnter to the object\n");
 }
 
 void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
 {
-	printf("OnTriggerExit\n");
+	printf("Send OnTriggerExit to the object\n");
 }
 
 void RigidBodyComponent::Serialize(std::ostream& out) const

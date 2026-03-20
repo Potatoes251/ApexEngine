@@ -4,7 +4,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(EXE_NAME Game)
+set(EXE_NAME GameLauncher)
+set(EXE_EDITOR_NAME Editor)
 project(${EXE_NAME} LANGUAGES C CXX)
 
 if (MSVC)
@@ -39,5 +40,5 @@ add_subdirectory(Editor)
 add_subdirectory(Game)
 
 if (MSVC)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXE_NAME})
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXE_EDITOR_NAME})
 endif()

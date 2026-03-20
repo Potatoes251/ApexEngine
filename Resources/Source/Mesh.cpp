@@ -36,12 +36,16 @@ void Mesh::UploadToGpu()
 
 	m_rhi->SetupVertexLayout();
 
-	m_indexCount = static_cast<int32_t>(m_indices.size());
+	m_indexCount = static_cast<uint32_t>(m_indices.size());
+	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
+}
 
-	//m_vertices.clear();
-	//m_vertices.shrink_to_fit();
-	//m_indices.clear();
-	//m_indices.shrink_to_fit();
+void Mesh::ClearVertices()
+{
+	m_vertices.clear();
+	m_vertices.shrink_to_fit();
+	m_indices.clear();
+	m_indices.shrink_to_fit();
 }
 
 void Mesh::Draw() const
@@ -53,5 +57,5 @@ void Mesh::Draw() const
 void Mesh::DrawLineLoop() const
 {
 	m_rhi->BindVAO(m_VAO);
-	m_rhi->DrawLineLoop(m_vertices.size());
+	m_rhi->DrawLineLoop(m_vertexCount);
 }
