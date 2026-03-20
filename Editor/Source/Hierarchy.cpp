@@ -64,6 +64,15 @@ void Hierarchy::Draw()
         m_pendingClone = nullptr;
     }
 
+    if (m_selected && m_gui.IsPanelFocused() && m_gui.IsKeyPressed(UIKey::F2))
+    {
+        m_renaming = m_selected;
+        m_renameFocusPending = true;
+
+        strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
+        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+    }
+
     Vector2 size = m_gui.GetAvailableSize();
 
     m_gui.InvisibleButton("HierarchyDropArea", size);
@@ -115,6 +124,71 @@ bool Hierarchy::DrawTreeNode(Object* obj, bool isLeaf)
     TreeNodeFlags flags = TreeNodeFlags::SpanAvailWidth;
     if (isLeaf) flags = flags | TreeNodeFlags::Leaf;
     if (obj == m_selected) flags = flags | TreeNodeFlags::Selected;
+
+    std::string id = "##" + std::to_string(obj->GetId());
+
+    if (obj == m_renaming)
+    {
+        if (m_renameFocusPending)
+        {
+            m_gui.SetKeyboardFocusHere();
+            m_renameFocusPending = false;
+        }
+
+        m_gui.InputText(id, m_renameBuffer, sizeof(m_renameBuffer));
+        
+        if (m_gui.IsKeyPressed(UIKey::Enter))
+        {
+            bool voidName = true;
+
+            for (size_t i = 0; m_renameBuffer[i] != '\0'; i++)
+            {
+                if (m_renameBuffer[i] != ' ' &&
+                    m_renameBuffer[i] != '\t' &&
+                    m_renameBuffer[i] != '\n' &&
+                    m_renameBuffer[i] != '\r' &&
+                    m_renameBuffer[i] != '\v' &&
+                    m_renameBuffer[i] != '\f')
+                {
+                    voidName = false;
+                    break;
+                }
+            }
+
+            size_t start = 0;
+
+            while (m_renameBuffer[start] != '\0' &&
+                (m_renameBuffer[start] == ' ' ||
+                    m_renameBuffer[start] == '\t' ||
+                    m_renameBuffer[start] == '\n' ||
+                    m_renameBuffer[start] == '\r' ||
+                    m_renameBuffer[start] == '\v' ||
+                    m_renameBuffer[start] == '\f'))
+            {
+                start++;
+            }
+
+            if (start > 0)
+            {
+                size_t i = 0;
+                while (m_renameBuffer[start + i] != '\0')
+                {
+                    m_renameBuffer[i] = m_renameBuffer[start + i];
+                    i++;
+                }
+                m_renameBuffer[i] = '\0';
+            }
+
+            if (!voidName) obj->SetName(m_renameBuffer);
+
+            m_renaming = nullptr;
+        }
+
+        if (m_gui.IsKeyPressed(UIKey::Escape))
+            m_renaming = nullptr;
+
+        return false;
+    }
 
     std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
     return m_gui.BeginTreeNode(label.c_str(), flags);

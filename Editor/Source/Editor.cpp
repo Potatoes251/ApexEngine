@@ -43,9 +43,6 @@ namespace Apex::Editor
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
-                if (key == Key::Escape && action == KeyAction::Press)
-                    m_window->Close();
-
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level", *m_app->GetPhysicsSystem());
             });

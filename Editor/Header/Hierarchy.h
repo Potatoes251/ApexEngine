@@ -39,7 +39,7 @@ namespace Apex::Editor
 		void HandleDropTarget(Apex::SceneGraph::SceneNode* node);
 		void HandleInsertLine(Apex::SceneGraph::SceneNode* node);
 		void HandleAcceptDrop(Apex::SceneGraph::SceneNode* node);
-
+		
 		void SetPending(Apex::SceneGraph::SceneNode* dragged, Apex::SceneGraph::SceneNode* target, PendingOp op);
 
 		void DrawInsertLine(float y);
@@ -65,6 +65,10 @@ namespace Apex::Editor
 		Apex::Data::Object* m_pendingClone = nullptr;
 
 		PendingOp m_pendingOp = PendingOp::None;
+
+		Apex::Data::Object* m_renaming = nullptr;
+		char m_renameBuffer[256] = {};
+		bool m_renameFocusPending = false;
 	};
 }
 

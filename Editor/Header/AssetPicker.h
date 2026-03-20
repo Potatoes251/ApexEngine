@@ -4,24 +4,14 @@
 #include "IResource.h"
 #include "ResourceManager.h"
 #include "UI.h"
+#include "Mesh.h"
+#include "Texture.h"
 
 #include <vector>
 #include <filesystem>
 
 namespace Apex::Resources
 {
-    enum AssetType
-    {
-        MeshAsset,
-        TextureAsset
-    };
-
-    struct AssetInfo
-    {
-        std::string path;
-        AssetType type;
-    };
-
     template<typename T>
     class AssetPicker
     {
@@ -39,7 +29,6 @@ namespace Apex::Resources
         ResourceHandle<T>* m_target = nullptr;
         Apex::UserInterface::IGUI& m_gui;
         Apex::Resources::ResourceManager& m_resourceManager;
-        std::vector<AssetInfo> m_assets;
     };
 
     template<typename T>
@@ -75,7 +64,9 @@ namespace Apex::Resources
             else if constexpr (std::is_same_v<T, Texture>)
             {
                 if (path.extension() != ".png" &&
-                    path.extension() != ".jpg")
+                    path.extension() != ".jpg" &&
+                    path.extension() != ".hdr" &&
+                    path.extension() != ".tga")
                     continue;
             }
 
