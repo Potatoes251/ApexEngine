@@ -4,9 +4,10 @@
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
+using namespace Apex::Resources;
 
-ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene)
-	: m_gui(gui), m_scene(scene)
+ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, Apex::Resources::ResourceManager& resourceManager)
+	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager)
 {
 }
 
@@ -24,6 +25,10 @@ void ComponentsViewer::Draw()
 	}
 
 	m_gui.EndPanel();
+
+	m_meshPicker.Draw();
+	m_texturePicker.Draw();
+
 	m_gui.PopFont();
 }
 
@@ -96,8 +101,8 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 
 			case ExposedVar::Mesh:
 			{
-				auto* mesh = (Apex::Resources::ResourceHandle<Mesh>*)var.data;
-				
+				auto* mesh = (ResourceHandle<Mesh>*)var.data;
+
 				if (mesh->IsValid())
 					m_gui.Text("Mesh: " + (*mesh)->GetPath());
 				else
@@ -105,7 +110,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 
 				if (m_gui.Button(("Select##" + var.name).c_str()))
 				{
-					// asset picker
+					m_meshPicker.Open(mesh);
 				}
 				break;
 			}
@@ -121,7 +126,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 
 				if (m_gui.Button(("Select##" + var.name).c_str()))
 				{
-					// asset picker
+					m_texturePicker.Open(texture);
 				}
 				break;
 			}
