@@ -148,6 +148,13 @@ void SceneNode::SetParent(SceneNode* newParent)
 		return;
 	}
 
+	if (!newParent)
+	{
+		m_parent->DetachChild(this);
+		m_parent = nullptr;
+		return;
+	}
+
 	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
 	newParent->AddChild(self);
 	MarkDirty();
@@ -160,6 +167,79 @@ void SceneNode::MarkDirty()
 	{
 		child->MarkDirty();
 	}
+}
+
+void SceneNode::InsertBefore(SceneNode* other)
+{
+	if (!other || other == this)
+		return;
+
+	SceneNode* parent = other->m_parent;
+
+	if (!parent)
+		return;
+
+	if (IsDescendantOf(*other))
+		return;
+
+	// detach self
+	shared_ptr<SceneNode> self =
+		m_parent ? m_parent->DetachChild(this) : shared_from_this();
+
+	auto& siblings = parent->m_children;
+
+	auto it = std::find_if(
+		siblings.begin(),
+		siblings.end(),
+		[&](const shared_ptr<SceneNode>& ptr)
+		{
+			return ptr.get() == other;
+		});
+
+	if (it != siblings.end())
+	{
+		m_parent = parent;
+		siblings.insert(it, self);
+	}
+
+	MarkDirty();
+}
+
+void SceneNode::InsertAfter(SceneNode* other)
+{
+	if (!other || other == this)
+		return;
+
+	SceneNode* parent = other->m_parent;
+
+	if (!parent)
+		return;
+
+	if (IsDescendantOf(*other))
+		return;
+
+	shared_ptr<SceneNode> self =
+		m_parent ? m_parent->DetachChild(this) : shared_from_this();
+
+	auto& siblings = parent->m_children;
+
+	auto it = std::find_if(
+		siblings.begin(),
+		siblings.end(),
+		[&](const shared_ptr<SceneNode>& ptr)
+		{
+			return ptr.get() == other;
+		});
+
+	if (it != siblings.end())
+	{
+		++it;
+
+		m_parent = parent;
+		siblings.insert(it, self);
+	}
+
+	MarkDirty();
 }
 
 bool SceneNode::IsDirty() const

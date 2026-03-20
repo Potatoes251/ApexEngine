@@ -248,9 +248,12 @@ namespace Apex::UserInterface
         return LibMath::Vector2(size.x, size.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title, bool* open)
+    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool noMove)
     {
-        ImGui::Begin(title.c_str(), open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+        if (noMove)
+            flags |= ImGuiWindowFlags_NoMove;
+        ImGui::Begin(title.c_str(), open, flags);
     }
 
     Vector2 ImGUIManager::GetScreenSize()
@@ -505,6 +508,18 @@ namespace Apex::UserInterface
     {
         m_drawListWrapper.Reset(ImGui::GetWindowDrawList());
         return &m_drawListWrapper;
+    }
+
+    Vector2 ImGUIManager::GetItemRectMin() const
+    {
+        ImVec2 v = ImGui::GetItemRectMin();
+        return { v.x, v.y };
+    }
+
+    Vector2 ImGUIManager::GetItemRectMax() const
+    {
+        ImVec2 v = ImGui::GetItemRectMax();
+        return { v.x, v.y };
     }
 }
 

@@ -48,6 +48,15 @@ namespace Apex::Editor
             app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GridVert.glsl|Assets/Shaders/GridFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get(), this);
 
+        m_window->SetKeyCallback([&](Key key, KeyAction action)
+            {
+                if (key == Key::Escape && action == KeyAction::Press)
+                    m_window->Close();
+
+                if (key == Key::P && action == KeyAction::Press)
+                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
+            });
+
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
             {
                 if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
@@ -86,6 +95,7 @@ namespace Apex::Editor
                     break;
                 }
             });
+        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, *m_app->GetScene());
 
         return true;
     }
@@ -101,9 +111,12 @@ namespace Apex::Editor
 
         m_window->Clear();
 
-        if (m_gui && m_contentBrowser)
+        if (!m_gui) return;
+
+        m_gui->BeginFrame();
+
+        if (m_contentBrowser)
         {
-            m_gui->BeginFrame();
             m_contentBrowser->Draw();
             // Draw all open texture editors, then remove any that were closed
             for (auto& textureEditor : m_textureEditors)
@@ -113,10 +126,15 @@ namespace Apex::Editor
                     [](const std::unique_ptr<TextureEditor>& textureEditor)
                     { return !textureEditor->IsOpen(); }),
                 m_textureEditors.end());
-
-            m_viewport->Draw();
-            m_gui->EndFrame();
         }
+
+        if (m_viewport)
+            m_viewport->Draw();
+
+        if (m_hierarchy)
+            m_hierarchy->Draw();
+
+        m_gui->EndFrame();
 
         m_window->SwapBuffers();
     }

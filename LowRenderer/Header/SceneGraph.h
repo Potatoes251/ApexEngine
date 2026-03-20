@@ -36,8 +36,12 @@ namespace Apex::SceneGraph
 		void		MarkDirty();
 		bool		IsDirty() const;
 		void		CleanDirty();
+		
+		bool		IsDescendantOf(SceneNode& otherNode);
+
+		void		InsertBefore(SceneNode* other);
+		void		InsertAfter(SceneNode* other);
 	private:
-		bool	IsDescendantOf(SceneNode& otherNode);
 
 		bool							m_dirty = true;
 

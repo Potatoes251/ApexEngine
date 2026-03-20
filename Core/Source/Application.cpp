@@ -103,7 +103,7 @@ bool Apex::Application::InitWindow(IWindow* window)
                 m_window->Close();
 
             if (key == Key::P && action == KeyAction::Press)
-                m_scene->Save("../../../Assets/Scenes/scene.level");
+                m_scene->Save("Assets/Scenes/scene.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)
@@ -186,9 +186,8 @@ Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
 
     m_scene->SetSkybox(sk);
-
-
-    SceneLoader loader(*m_resourceManager, *m_scene->GetPhysic());
+    
+    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic());
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;

@@ -71,7 +71,7 @@ namespace Apex::UserInterface
         LibMath::Vector2 GetPanelPos()      const override;
         LibMath::Vector2 GetPanelSize()     const override;
 
-        void BeginPanel(const std::string& title, bool* open) override;
+        void BeginPanel(const std::string& title, bool* open, bool noMove) override;
         void EndPanel() override;
 
         void BeginChildPanel(const std::string& id,
@@ -150,6 +150,8 @@ namespace Apex::UserInterface
         void DrawImage(uint32_t textureID, LibMath::Vector2 size, bool flipY = true) override;
         void DrawImageTinted(uint32_t textureID, LibMath::Vector2 size, Color tint, bool flipY = true) override;
         IDrawList* GetDrawList();
+        Vector2 GetItemRectMin() const override;
+        Vector2 GetItemRectMax() const override;
 
 	private:
         static int ToImGuiMouseButton(MouseButton button);

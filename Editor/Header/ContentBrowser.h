@@ -2,8 +2,8 @@
 #define CONTENT_BROWSER
 
 // ============================================================
-// ContentBrowser.h — Editor "Assets" window.
-// Uses only IGUI — no ImGui headers required.
+// ContentBrowser.h - Editor "Assets" window.
+// Uses only IGUI - no ImGui headers required.
 // ============================================================
 
 #include "UI.h"
@@ -34,8 +34,8 @@ namespace Apex::Editor
 	class ContentBrowser
 	{
 	public:
-		// gui      — IGUI reference owned by the Application.
-		// rootPath — assets root directory (e.g. "Assets/").
+		// gui      - IGUI reference owned by the Application.
+		// rootPath - assets root directory (e.g. "Assets/").
 		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, 
 								Apex::Windowing::IWindow& window, 
 								const fs::path& rootPath);
@@ -122,12 +122,12 @@ namespace Apex::Editor
 		fs::path             m_pendingNavigate;
 		OnAssetLoadCallback  m_onLoad;
 
-		// Rename state — active when m_renamingPath is non-empty
+		// Rename state - active when m_renamingPath is non-empty
 		fs::path m_renamingPath;
 		char     m_renameBuffer[256] = {};
 		bool     m_renameFocusPending = false;
 
-		// Asset grid child panel bounds — updated every frame in DrawAssetGrid()
+		// Asset grid child panel bounds - updated every frame in DrawAssetGrid()
 		float m_gridX = 0.f, m_gridY = 0.f;
 		float m_gridWidth = 0.f, m_gridHeight = 0.f;
 
@@ -140,7 +140,7 @@ namespace Apex::Editor
 
 		// Hovered drop destination for external OS drops.
 		// m_hoveredDestThisFrame: set by hovered items each frame, cleared at start of Draw().
-		// m_externalDropDest: sticky — only updated when something is hovered, persists
+		// m_externalDropDest: sticky - only updated when something is hovered, persists
 		//                     across frames so the OS drop callback can read it.
 		fs::path m_hoveredDestThisFrame;
 		fs::path m_externalDropDest;
