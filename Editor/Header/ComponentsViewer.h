@@ -30,6 +30,12 @@ namespace Apex::Editor
 		void HandleSelection(Apex::Component* comp);
 
 	private:
+		void DrawComponentEnum(ExposedVar var);
+		void DrawComponentVector3(ExposedVar var);
+		void DrawComponentPhysMaterial(ExposedVar var);
+		void DrawComponentMesh(ExposedVar var);
+		void DrawComponentTexture(ExposedVar var);
+
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;
 		Apex::Resources::ResourceManager& m_resourceManager;

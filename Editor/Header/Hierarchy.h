@@ -32,6 +32,8 @@ namespace Apex::Editor
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
 
+		void HandlePending();
+
 		bool DrawTreeNode(Apex::Data::Object* obj, bool isLeaf);
 
 		void HandleSelection(Apex::Data::Object* obj);

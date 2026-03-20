@@ -38,12 +38,13 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	
 	HandleSelection(comp);
 
-	if (open)
+	if (!open)
+		return;
+
+	for (auto& var : comp->GetExposedVariables())
 	{
-		for (auto& var : comp->GetExposedVariables())
+		switch (var.type)
 		{
-			switch (var.type)
-			{
 			case ExposedVar::Float:
 				m_gui.SliderFloat(var.name, (float*)var.data, 0.0f, 10.0f);
 				break;
@@ -62,80 +63,40 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 
 			case ExposedVar::Enum:
 			{
-				int value = *(int*)var.data;
-
-				std::string items;
-				for (const auto& name : var.enumNames)
-					items += name + '\0';
-
-				if (m_gui.Combo(var.name, &value, items.c_str()))
-				{
-					*(int*)var.data = value;
-				}
+				DrawComponentEnum(var);
 				break;
 			}
 
 			case ExposedVar::Vector3:
 			{
-				float* v = (float*)var.data;
-
-				m_gui.Text(var.name);
-
-				m_gui.SliderFloat("X", &v[0], -10.0f, 10.0f);
-				m_gui.SliderFloat("Y", &v[1], -10.0f, 10.0f);
-				m_gui.SliderFloat("Z", &v[2], -10.0f, 10.0f);
-
+				DrawComponentVector3(var);
 				break;
 			}
 
 			case ExposedVar::PhysMaterial:
 			{
-				PhysicMaterial* mat = (PhysicMaterial*)var.data;
-
-				m_gui.SliderFloat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f);
-				m_gui.SliderFloat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f);
-				m_gui.SliderFloat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f);
-
+				DrawComponentPhysMaterial(var);
 				break;
 			}
 
 			case ExposedVar::Mesh:
 			{
-				auto* mesh = (ResourceHandle<Mesh>*)var.data;
-
-				if (mesh->IsValid())
-					m_gui.Text("Mesh: " + (*mesh)->GetPath());
-				else
-					m_gui.Text("Mesh: None");
-
-				if (m_gui.Button(("Select##" + var.name).c_str()))
-				{
-					m_meshPicker.Open(mesh);
-				}
+				DrawComponentMesh(var);
 				break;
 			}
 
 			case ExposedVar::Texture:
 			{
-				auto* texture = (Apex::Resources::ResourceHandle<Texture>*)var.data;
-
-				if (texture->IsValid())
-					m_gui.Text("Texture: " + (*texture)->GetPath());
-				else
-					m_gui.Text("Texture: None");
-
-				if (m_gui.Button(("Select##" + var.name).c_str()))
-				{
-					m_texturePicker.Open(texture);
-				}
+				DrawComponentTexture(var);
 				break;
 			}
-			}
 		}
-
-		m_gui.EndTreeNode();
 	}
+
+	m_gui.EndTreeNode();
 }
+
+
 
 bool Apex::Editor::ComponentsViewer::DrawTreeComp(Apex::Component* comp)
 {
@@ -150,4 +111,62 @@ void Apex::Editor::ComponentsViewer::HandleSelection(Apex::Component* comp)
 {
 	if (m_gui.IsItemClicked())
 		m_selectedComp = comp;
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
+{
+	int value = *(int*)var.data;
+
+	std::string items;
+	for (const auto& name : var.enumNames)
+		items += name + '\0';
+
+	if (m_gui.Combo(var.name, &value, items.c_str()))
+		*(int*)var.data = value;
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
+{
+	float* v = (float*)var.data;
+
+	m_gui.Text(var.name);
+
+	m_gui.SliderFloat("X", &v[0], -10.0f, 10.0f);
+	m_gui.SliderFloat("Y", &v[1], -10.0f, 10.0f);
+	m_gui.SliderFloat("Z", &v[2], -10.0f, 10.0f);
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
+{
+	PhysicMaterial* mat = (PhysicMaterial*)var.data;
+
+	m_gui.SliderFloat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f);
+	m_gui.SliderFloat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f);
+	m_gui.SliderFloat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f);
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
+{
+	auto* mesh = (ResourceHandle<Mesh>*)var.data;
+
+	if (mesh->IsValid())
+		m_gui.Text("Mesh: " + (*mesh)->GetPath());
+	else
+		m_gui.Text("Mesh: None");
+
+	if (m_gui.Button(("Select##" + var.name).c_str()))
+		m_meshPicker.Open(mesh);
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentTexture(ExposedVar var)
+{
+	auto* texture = (ResourceHandle<Texture>*)var.data;
+
+	if (texture->IsValid())
+		m_gui.Text("Texture: " + (*texture)->GetPath());
+	else
+		m_gui.Text("Texture: None");
+
+	if (m_gui.Button(("Select##" + var.name).c_str()))
+		m_texturePicker.Open(texture);
 }
