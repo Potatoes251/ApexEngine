@@ -1,14 +1,21 @@
 #include "TextureEditor.h"
 
+#include "EditorIcon.h"
+
+#include <iostream>
+
 #ifndef STB_IMAGE_STATIC
 extern "C"
 {
     extern unsigned char* stbi_load(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
+    extern float*         stbi_loadf(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
     extern void           stbi_image_free(void* retval_from_stbi_load);
 }
 #endif
 
 #include <stb_dxt.h>
+#include <stb_image_write.h>
+#include <stb_image_resize2.h>
 
 #include <glad/glad.h>
 
@@ -16,13 +23,15 @@ extern "C"
 
 namespace Apex::Editor
 {
-    TextureEditor::TextureEditor(IGUI& gui) : m_gui(gui) {}
+    TextureEditor::TextureEditor(IGUI& gui, Apex::Windowing::IWindow& window) : m_gui(gui), m_window(window) {}
     TextureEditor::~TextureEditor() { UnloadTexture(); }
 
     void TextureEditor::Open(const fs::path& path, int instanceIndex)
     {
         UnloadTexture();
-        LoadTexture(path);
+        m_path = path;
+        LoadOrCreateMeta();
+        LoadTexture();
         m_open = true;
         m_pendingFocus = false;
         m_instanceIndex = instanceIndex;
@@ -32,17 +41,23 @@ namespace Apex::Editor
         m_showG = true;
         m_showB = true;
         m_showA = true;
-        m_background = TextureBackground::Black;
+        m_background = TextureBackground::Checkerboard;
         m_tileRepeat = 1;
         m_mipLevel = 0;
         m_exposure = 1.f;
         m_hasPickedColor = false;
+        m_pickerModeActive = false;
         m_metaDirty = false;
-        LoadOrCreateMeta();
     }
 
     void TextureEditor::Close()
     {
+        if (m_pickerModeActive)
+        {
+            m_pickerModeActive = false;
+            m_window.ResetCursor();
+            m_gui.SetManagesCursor(true);
+        }
         UnloadTexture();
         m_open = false;
     }
@@ -137,28 +152,47 @@ namespace Apex::Editor
 
     void TextureEditor::DrawToolbarActions()
     {
-        // Compress — apply the selected format and save the meta file
-        bool compressed = (m_compression != CompressionFormat::None);
-        if (compressed)
-        {
-            m_gui.PushColor(StyleColor::Button, Color{ 0.15f, 0.55f, 0.15f, 1.f });
-            m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.20f, 0.70f, 0.20f, 1.f });
-        }
+        DrawToolbarSave();
+        m_gui.SameLine(0.f, 16.f);
+        DrawToolbarEyeDropper();
+        // Only highlight if the current setting is different from the saved meta state
+        auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
+        bool needsApply = (m_compression != savedFormat) || m_metaDirty;
 
-        if (m_gui.Button("Compress"))
-            ApplyCompression();
-        if (compressed)
+        m_gui.SameLine(0.f, 16.f);
+        if (IsHDR())
         {
-            m_gui.PopColor();
-            m_gui.PopColor();
+            m_gui.PushColor(StyleColor::Button, Color{ 0.3f, 0.3f, 0.3f, 0.5f });
+            m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.3f, 0.3f, 0.3f, 0.5f });
+            m_gui.Button("Compress");  // non-functional, just visual indicator
+            m_gui.PopColor(2);
+            if (m_gui.IsItemHovered())
+            {
+                m_gui.BeginTooltip();
+                m_gui.Text("BC compression not available for HDR textures");
+                m_gui.EndTooltip();
+            }
         }
-
+        else
+        {
+            auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
+            bool needsApply = (m_compression != savedFormat) || m_metaDirty;
+            if (needsApply)
+            {
+                m_gui.PushColor(StyleColor::Button, Color{ 0.15f, 0.55f, 0.15f, 1.f });
+                m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.20f, 0.70f, 0.20f, 1.f });
+            }
+            if (m_gui.Button("Compress")) ApplyCompression();
+            if (needsApply) 
+            { 
+                m_gui.PopColor(2);
+            }
+        }
         m_gui.SameLine(0.f, 16.f);
         if (m_gui.Button("Reimport"))
         {
-            fs::path path = m_path;
             UnloadTexture();
-            LoadTexture(path);
+            LoadTexture();
             m_mipLevel = 0;
             LoadOrCreateMeta();
         }
@@ -233,6 +267,66 @@ namespace Apex::Editor
         m_gui.SliderFloat("##ev", &m_exposure, 0.f, 4.f);
     }
 
+    void TextureEditor::DrawToolbarSave()
+    {
+        uint32_t saveIcon = EditorIcon::Get("ApexAssets/Icons/save.png");
+        if (saveIcon != 0)
+        {
+            if (m_gui.ImageButton("##save", saveIcon, LibMath::Vector2(22.f, 22.f)))
+                SaveExport();
+            if (m_gui.IsItemHovered()) 
+            { 
+                m_gui.BeginTooltip(); 
+                m_gui.Text("Export texture..."); 
+                m_gui.EndTooltip(); 
+            }
+        }
+        else
+        {
+            if (m_gui.Button("Save")) SaveExport();
+        }
+    }
+
+    void TextureEditor::DrawToolbarEyeDropper()
+    {
+        // Eyedropper / color picker mode toggle
+        uint32_t eyeIcon = EditorIcon::Get("ApexAssets/Icons/color_picker.png");
+        if (m_pickerModeActive)
+            m_gui.PushColor(StyleColor::Button, Color{ 0.2f, 0.5f, 0.9f, 1.f });
+        bool pickerClicked = false;
+        if (eyeIcon != 0)
+            pickerClicked = m_gui.ImageButton("##picker", eyeIcon,
+                LibMath::Vector2(22.f, 22.f),
+                Color{ 1.f, 1.f, 1.f, 1.f }, 0.f);
+        else
+            pickerClicked = m_gui.Button(m_pickerModeActive ? "[X]" : "[.]");
+
+        if (m_pickerModeActive)
+            m_gui.PopColor();   // always pop — state captured before the button
+
+        if (pickerClicked)
+        {
+            m_pickerModeActive = !m_pickerModeActive;
+            if (m_pickerModeActive)
+            {
+                m_gui.SetManagesCursor(false);
+                m_window.SetCrosshairCursor();
+            }
+            else
+            {
+                m_window.ResetCursor();
+                m_gui.SetManagesCursor(true);
+            }
+        }
+
+        if (m_gui.IsItemHovered())
+        {
+            m_gui.BeginTooltip();
+            m_gui.Text("Color Picker (Escape to cancel)");
+            m_gui.EndTooltip();
+        }
+    }
+
     void TextureEditor::DrawChannelButtons()
     {
         // colored square buttons, active = fully opaque, inactive = dimmed
@@ -266,9 +360,7 @@ namespace Apex::Editor
             if (m_gui.Button(button.m_label))
                 *button.m_active = !(*button.m_active);  // toggle on click
 
-            m_gui.PopColor();
-            m_gui.PopColor();
-            m_gui.PopColor();
+            m_gui.PopColor(3);
             m_gui.SameLine(0.f, 4.f);
         }
     }
@@ -295,6 +387,7 @@ namespace Apex::Editor
         }
 
         DrawZoomLabel(panelPos, panelSize);
+        DrawHoverInfo(panelPos, panelSize);
     }
 
     void TextureEditor::HandleViewportInput(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, bool hovered, bool active)
@@ -306,7 +399,6 @@ namespace Apex::Editor
             m_panOffset[0] += delta[0];
             m_panOffset[1] += delta[1];
         }
-
         // Zoom toward cursor
         if (hovered)
         {
@@ -326,9 +418,70 @@ namespace Apex::Editor
                 m_panOffset[1] -= preMouseY * (scale - 1.f);
             }
 
-            // Color pick on right-click
-            if (m_textureID != 0 && m_gui.IsMouseReleased(MouseButton::Right))
-                HandleColorPick(ImageScreenOrigin(panelPos, panelSize));
+            HandleHoverPixelInfo(panelPos, panelSize);
+
+            // Color pick: left-click when picker mode is active, or right-click fallback
+            if (m_textureID != 0)
+            {
+                bool pickNow = false;
+                if (m_pickerModeActive && m_gui.IsItemClicked(MouseButton::Left))
+                    pickNow = true;
+                if (pickNow)
+                {
+                    bool picked = HandleColorPick(ImageScreenOrigin(panelPos, panelSize));
+                    if (picked)
+                    {
+                        m_pickerModeActive = false;
+                        m_window.ResetCursor();
+                        m_gui.SetManagesCursor(true);
+                    }
+                }
+            }
+            // Escape cancels picker mode
+            if (m_pickerModeActive && m_gui.IsKeyPressed(UIKey::Escape))
+            {
+                m_pickerModeActive = false;
+                m_window.ResetCursor();
+                m_gui.SetManagesCursor(true);
+            }
+        }
+    }
+
+    void TextureEditor::HandleHoverPixelInfo(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize)
+    {
+        // Update hover pixel info every frame
+        if (m_textureID != 0 && (!m_pixels.empty() || !m_pixelsHDR.empty()))
+        {
+            LibMath::Vector2 origin = ImageScreenOrigin(panelPos, panelSize);
+            LibMath::Vector2 mouse = m_gui.GetMousePos();
+            float displayWidth = static_cast<float>(m_width) * m_zoom;
+            float displayHeight = static_cast<float>(m_height) * m_zoom;
+            float imgR = origin[0] + displayWidth * m_tileRepeat;
+            float imgB = origin[1] + displayHeight * m_tileRepeat;
+            if (mouse[0] >= origin[0] && mouse[0] < imgR &&
+                mouse[1] >= origin[1] && mouse[1] < imgB)
+            {
+                int px = static_cast<int>((mouse[0] - origin[0]) / displayWidth * m_width);
+                int py = static_cast<int>((mouse[1] - origin[1]) / displayHeight * m_height);
+                px = std::max(0, std::min(m_width - 1, px));
+                py = std::max(0, std::min(m_height - 1, py));
+                int idx = (py * m_width + px) * 4;
+                m_hoverX = px;
+                m_hoverY = py;
+                if (!m_pixelsHDR.empty())
+                    m_hoverColor = { m_pixelsHDR[idx],     m_pixelsHDR[idx + 1],
+                                     m_pixelsHDR[idx + 2], m_pixelsHDR[idx + 3] };
+                else
+                    m_hoverColor = { m_pixels[idx] / 255.f,
+                                     m_pixels[idx + 1] / 255.f,
+                                     m_pixels[idx + 2] / 255.f,
+                                     m_pixels[idx + 3] / 255.f };
+                m_hoverValid = true;
+            }
+            else
+            {
+                m_hoverValid = false;
+            }
         }
     }
 
@@ -417,6 +570,8 @@ namespace Apex::Editor
         DrawDetailsCompressionSection();
         DrawDetailsLODSection();
         DrawDetailsViewSection();
+        DrawDetailsResizeSection();
+        DrawDetailsStatisticsSection();
         DrawDetailsColorSection();
 
         m_gui.PopStyleVariable();
@@ -520,11 +675,13 @@ namespace Apex::Editor
         LibMath::Vector2 swatchMin(cursor[0], cursor[1]);
         LibMath::Vector2 swatchMax(swatchMin[0] + DETAILS_WIDTH - 20.f, swatchMin[1] + 28.f);
 
+        // Clamp to [0,1] for display — HDR values above 1 are shown as white
+        auto clamp01 = [](float v) { return v < 0.f ? 0.f : (v > 1.f ? 1.f : v); };
         uint32_t color32 =
-            (uint32_t(m_pickedColor.m_a * 255.f) << 24) |
-            (uint32_t(m_pickedColor.m_b * 255.f) << 16) |
-            (uint32_t(m_pickedColor.m_g * 255.f) << 8)  |
-             uint32_t(m_pickedColor.m_r * 255.f);
+            (uint32_t(clamp01(m_pickedColor.m_a) * 255.f) << 24) |
+            (uint32_t(clamp01(m_pickedColor.m_b) * 255.f) << 16) |
+            (uint32_t(clamp01(m_pickedColor.m_g) * 255.f) << 8) |
+            uint32_t(clamp01(m_pickedColor.m_r) * 255.f);
 
         drawList->DrawRectFilled(swatchMin, swatchMax, color32, 4.f);
         drawList->DrawRect(swatchMin, swatchMax, 0xFF333333, 4.f, 1.f);
@@ -532,138 +689,262 @@ namespace Apex::Editor
 
         m_gui.Text("Position:  (" + std::to_string(m_pickedX) + ", " + std::to_string(m_pickedY) + ")");
 
-        std::ostringstream hex;
-        hex << "#" << std::uppercase << std::hex << std::setfill('0')
-            << std::setw(2) << (int)(m_pickedColor.m_r * 255.f)
-            << std::setw(2) << (int)(m_pickedColor.m_g * 255.f)
-            << std::setw(2) << (int)(m_pickedColor.m_b * 255.f)
-            << std::setw(2) << (int)(m_pickedColor.m_a * 255.f);
-        m_gui.Text("Hex:  " + hex.str());
+        auto fmtFloat = [](float v) { char buf[16]; snprintf(buf, sizeof(buf), "%.4f", v); return std::string(buf); };
 
-        auto format = [](float value) { return std::to_string(value).substr(0, 4); };
-        m_gui.Text("RGBA: " + format(m_pickedColor.m_r) + 
-                    "  " + format(m_pickedColor.m_g) + 
-                    "  " + format(m_pickedColor.m_b) + 
-                    "  " + format(m_pickedColor.m_a));
-        m_gui.TextDisabled("(right-click to pick)");
+        if (IsHDR())
+        {
+            // HDR — show raw float values, may exceed 1.0
+            m_gui.Text("R: " + fmtFloat(m_pickedColor.m_r) +
+                "  G: " + fmtFloat(m_pickedColor.m_g) +
+                "  B: " + fmtFloat(m_pickedColor.m_b) +
+                "  A: " + fmtFloat(m_pickedColor.m_a));
+            m_gui.TextDisabled("(HDR values may exceed 1.0)");
+        }
+        else
+        {
+            std::ostringstream hex;
+            hex << "#" << std::uppercase << std::hex << std::setfill('0')
+                << std::setw(2) << (int)(m_pickedColor.m_r * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_g * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_b * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_a * 255.f);
+            m_gui.Text("Hex:  " + hex.str());
+
+            auto format = [](float value) { return std::to_string(value).substr(0, 4); };
+            m_gui.Text("RGBA: " + format(m_pickedColor.m_r) +
+                "  " + format(m_pickedColor.m_g) +
+                "  " + format(m_pickedColor.m_b) +
+                "  " + format(m_pickedColor.m_a));
+        }
     }
 
     void TextureEditor::DrawDetailsCompressionSection()
     {
         if (!m_gui.CollapsingHeader("Compression", true)) return;
 
-        // Format picker
-        m_gui.AlignTextToFramePadding();
-        m_gui.Text("Format:");
-        m_gui.SameLine(LABEL_COLUMN_WIDTH);
-        m_gui.SetNextItemWidth(-1.f);
-
-        int formatIndex = static_cast<int>(m_compression);
-        if (m_gui.Combo("##comp_fmt", &formatIndex,
-            "None\0BC1  (RGB,  no alpha)\0"
-            "BC3  (RGBA, smooth alpha)\0"
-            "BC4  (R only)\0"
-            "BC5  (RG, normals)\0\0"))
+        if (IsHDR())
         {
-            m_compression = static_cast<CompressionFormat>(formatIndex);
-            m_metaDirty = true;
+            m_gui.TextDisabled("BC compression is not available for HDR textures.");
+            m_gui.TextDisabled("HDR data is stored as GL_RGBA16F (floating point).");
+            return;
         }
 
-        // Format hint text
-        m_gui.AlignTextToFramePadding();
-        m_gui.Text("Info:");
-        m_gui.SameLine(LABEL_COLUMN_WIDTH);
-        switch (m_compression)
+        auto drawRow = [this](const char* label, auto contentFunc) 
+            {
+                m_gui.AlignTextToFramePadding();
+                m_gui.Text(label);
+                m_gui.SameLine(LABEL_COLUMN_WIDTH);
+                contentFunc();
+            };
+
+        // 1. Format Picker
+        drawRow("Format:", [this] 
+            {
+                m_gui.SetNextItemWidth(-1.f);
+                int fmt = static_cast<int>(m_compression);
+                if (m_gui.Combo("##comp_fmt", &fmt, "None\0BC1\0BC3\0BC4\0BC5\0\0")) 
+                {
+                    m_compression = static_cast<CompressionFormat>(fmt);
+                    m_metaDirty = true;
+                }
+            });
+
+        // 2. Info & Size Estimates
+        static const char* hints[] = { "Uncompressed RGBA8", "~6:1 — diffuse", "~4:1 — alpha", "~2:1 — linear", "~2:1 — normal" };
+        drawRow("Info:", [&] { m_gui.TextDisabled(hints[static_cast<int>(m_compression)]); });
+
+        if (m_compression != CompressionFormat::None && m_width > 0) 
         {
-        case CompressionFormat::None:
-            m_gui.TextDisabled("Uncompressed RGBA8");          break;
-        case CompressionFormat::BC1:
-            m_gui.TextDisabled("~6:1 — diffuse, no alpha");    break;
-        case CompressionFormat::BC3:
-            m_gui.TextDisabled("~4:1 — diffuse with alpha");   break;
-        case CompressionFormat::BC4:
-            m_gui.TextDisabled("~2:1 — roughness / AO");       break;
-        case CompressionFormat::BC5:
-            m_gui.TextDisabled("~2:1 — normal map (RG)");      break;
+            drawRow("Est. size:", [&] 
+                {
+                int bpb = (m_compression == CompressionFormat::BC1 || m_compression == CompressionFormat::BC4) ? 8 : 16;
+                uintmax_t size = static_cast<uintmax_t>((m_width + 3) / 4) * ((m_height + 3) / 4) * bpb;
+                m_gui.TextDisabled(FormatBytes(size).c_str());
+                });
         }
 
-        // Estimated compressed size
-        if (m_compression != CompressionFormat::None && m_width > 0 && m_height > 0)
-        {
-            int bpb = (m_compression == CompressionFormat::BC1 || m_compression == CompressionFormat::BC4) ? 8 : 16;
-            int bx = (m_width + 3) / 4;
-            int by = (m_height + 3) / 4;
-            uintmax_t size = static_cast<uintmax_t>(bx) * by * bpb;
+        // 3. Disk State & Action
+        CompressionFormat saved = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
+        drawRow("On disk:", [&] { m_gui.TextDisabled(CompressionFormatString(saved)); });
 
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Est. size:");
-            m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        bool needsSave = m_metaDirty || m_compression != saved;
+        if (needsSave) m_gui.PushColor(StyleColor::Button, { 0.15f, 0.55f, 0.15f, 1.f });
 
-            std::string sizeString;
-            if (size >= 1024 * 1024) sizeString = std::to_string(size / (1024 * 1024)) + " MB";
-            else if (size >= 1024)        sizeString = std::to_string(size / 1024) + " KB";
-            else                        sizeString = std::to_string(size) + " B";
-            m_gui.TextDisabled(sizeString);
-        }
-
-        // Show current on-disk state
-        int savedFormat = m_meta.GetInt("compression", static_cast<int>(CompressionFormat::None));
-        m_gui.AlignTextToFramePadding();
-        m_gui.Text("On disk:");
-        m_gui.SameLine(LABEL_COLUMN_WIDTH);
-        m_gui.TextDisabled(CompressionFormatString(static_cast<CompressionFormat>(savedFormat)));
-
-        // Apply button
-        bool needsSave = m_metaDirty ||
-            m_compression != static_cast<CompressionFormat>(
-                m_meta.GetInt("compression", static_cast<int>(CompressionFormat::None)));
-        if (needsSave)
-        {
-            m_gui.PushColor(StyleColor::Button, Color{ 0.15f, 0.55f, 0.15f, 1.f });
-            m_gui.PushColor(StyleColor::ButtonHovered, Color{ 0.20f, 0.70f, 0.20f, 1.f });
-        }
         m_gui.Separator();
         m_gui.SameLine(LABEL_COLUMN_WIDTH);
-        if (m_gui.Button("Apply & Save"))
-            ApplyCompression();
-        if (needsSave)
+        if (m_gui.Button("Apply & Save")) ApplyCompression();
+
+        if (needsSave) m_gui.PopColor();
+    }
+
+    void TextureEditor::DrawDetailsStatisticsSection()
+    {
+        if (!m_statsValid) return;
+        if (!m_gui.CollapsingHeader("Statistics")) return;
+
+        const char* labels[4] = { "R:", "G:", "B:", "A:" };
+        const Color  tints[4] = 
         {
-            m_gui.PopColor();
-            m_gui.PopColor();
+            { 0.9f, 0.3f, 0.3f, 1.f },
+            { 0.3f, 0.9f, 0.3f, 1.f },
+            { 0.3f, 0.5f, 0.9f, 1.f },
+            { 0.7f, 0.7f, 0.7f, 1.f }
+        };
+
+        auto format = [](float v) -> std::string 
+            {
+                char buf[8]; 
+                snprintf(buf, sizeof(buf), "%.3f", v); 
+                return buf;
+            };
+
+        for (int c = 0; c < 4; ++c)
+        {
+            const auto& stat = m_stats[c];
+            m_gui.AlignTextToFramePadding();
+            m_gui.TextColored(tints[c], labels[c]);
+            m_gui.SameLine(100);
+            m_gui.TextDisabled(
+                "min " + format(stat.m_min) +
+                "  max " + format(stat.m_max) +
+                "  avg " + format(stat.m_avg));
         }
     }
 
-    void TextureEditor::LoadTexture(const fs::path& path)
+    void TextureEditor::DrawDetailsResizeSection()
     {
-        m_path = path;
-        m_filename = path.filename().string();
-        m_fileBytes = fs::exists(path) ? fs::file_size(path) : 0;
+        if (IsHDR()) return;
+        if (m_pixels.empty()) return;
+        if (!m_gui.CollapsingHeader("Resize")) return;
+        // Width
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Width:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        if (m_gui.SliderInt("##rw", &m_resizeWidth, 1, 8192))
+        {
+            if (m_resizeLockAspectRatio && m_width > 0)
+                m_resizeHeight = std::max(1, static_cast<int>(m_resizeWidth * static_cast<float>(m_height) / m_width));
+        }
+        // Height
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Height:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        if (m_gui.SliderInt("##rh", &m_resizeHeight, 1, 8192))
+        {
+            if (m_resizeLockAspectRatio && m_height > 0)
+                m_resizeWidth = std::max(1, static_cast<int>(m_resizeHeight * static_cast<float>(m_width) / m_height));
+        }
+        // Lock aspect ratio toggle
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Lock AR:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.Checkbox("##lockAR", &m_resizeLockAspectRatio);
+        // Show what the resize will do
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Result:");
+        m_gui.SameLine(LABEL_COLUMN_WIDTH);
+        m_gui.TextDisabled(std::to_string(m_resizeWidth) + " x " + std::to_string(m_resizeHeight));
 
-        unsigned char* data = stbi_load(path.string().c_str(), &m_width, &m_height, &m_channels, 4);
-        if (!data) return;
+        m_gui.Separator();
 
-        m_pixels.assign(data, data + (m_width * m_height * 4));
+        // Power-of-two shortcuts
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Presets:");
+        m_gui.SameLine(85);
+        for (int preset : { 64, 128, 256, 512, 1024, 2048 })
+        {
+            if (m_gui.ButtonSized(std::to_string(preset).c_str(), LibMath::Vector2(58.f, 0.f)))
+            {
+                m_resizeWidth = preset;
+                m_resizeHeight = m_resizeLockAspectRatio && m_width > 0
+                    ? std::max(1, static_cast<int>(preset * static_cast<float>(m_height) / m_width))
+                    : preset;
+            }
+            m_gui.SameLine(0.f, 2.f);
+        }
+        m_gui.Separator();
+        bool changed = (m_resizeWidth != m_width || m_resizeHeight != m_height);
+        if (changed)
+        {
+            m_gui.PushColor(StyleColor::Button,
+                Color{ 0.15f, 0.55f, 0.15f, 1.f });
+            m_gui.PushColor(StyleColor::ButtonHovered,
+                Color{ 0.20f, 0.70f, 0.20f, 1.f });
+        }
+        
+        if (m_gui.Button("Apply Resize"))
+            ResizeTexture(m_resizeWidth, m_resizeHeight);
+        if (changed)
+        {
+            m_gui.PopColor(2);
+        }
+        m_gui.SameLine(0.f, 8.f);
+        if (m_gui.Button("Reset"))
+        {
+            m_resizeWidth = m_width;
+            m_resizeHeight = m_height;
+        }
+    }
 
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+    void TextureEditor::LoadTexture()
+    {
+        m_filename = m_path.filename().string();
+        m_fileBytes = fs::exists(m_path) ? fs::file_size(m_path) : 0;
+        m_pixels.clear();
+        m_pixelsHDR.clear();
 
-        stbi_image_free(data);
-        m_textureID = static_cast<uint32_t>(texture);
+        std::string ext = m_path.extension().string();
+        for (auto& c : ext) c = static_cast<char>(::tolower(c));
 
-        // Count mip levels
-        int maxDimension = std::max(m_width, m_height);
+        if (ext == ".hdr")
+        {
+            float* data = stbi_loadf(m_path.string().c_str(), &m_width, &m_height, &m_channels, 4);
+            if (!data) return;
+            m_pixelsHDR.assign(data, data + (m_width * m_height * 4));
+            stbi_image_free(data);
+
+            if (m_textureID == 0)
+            {
+                GLuint tex; glGenTextures(1, &tex);
+                m_textureID = static_cast<uint32_t>(tex);
+            }
+            glBindTexture(GL_TEXTURE_2D, m_textureID);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, m_pixelsHDR.data());
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        else
+        {
+            unsigned char* data = stbi_load(m_path.string().c_str(), &m_width, &m_height, &m_channels, 4);
+            if (!data) return;
+            m_pixels.assign(data, data + (m_width * m_height * 4));
+            stbi_image_free(data);
+
+            if (m_textureID == 0)
+            {
+                GLuint tex; glGenTextures(1, &tex);
+                m_textureID = static_cast<uint32_t>(tex);
+            }
+            ApplyCompression();
+        }
+
+        // Reset resize targets to current dimensions
+        m_resizeWidth = m_width;
+        m_resizeHeight = m_height;
+
+        ComputeStatistics();
+
+        int maxDim = std::max(m_width, m_height);
         m_mipCount = 1;
-        while (maxDimension > 1) { maxDimension /= 2; ++m_mipCount; }
+        while (maxDim > 1) { maxDim /= 2; ++m_mipCount; }
     }
 
     void TextureEditor::UnloadTexture()
@@ -674,124 +955,88 @@ namespace Apex::Editor
             glDeleteTextures(1, &texture);
             m_textureID = 0;
         }
+        m_pixels.clear();
+        m_pixelsHDR.clear();
         m_width = m_height = m_channels = m_mipCount = 0;
         m_fileBytes = 0;
         m_hasPickedColor = false;
+        m_hoverValid = false;
+        m_statsValid = false;
+        m_resizeWidth = m_resizeHeight = 0;
     }
 
     void TextureEditor::ApplyCompression()
     {
-        if (m_pixels.empty() || m_textureID == 0)
-            return;
+        if (m_pixels.empty() || m_textureID == 0) return;
 
-        if (m_compression == CompressionFormat::None)
-        {
-            // Re-upload as raw RGBA8 — just reload
-            glBindTexture(GL_TEXTURE_2D, m_textureID);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels.data());
-            glGenerateMipmap(GL_TEXTURE_2D);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            SaveMeta();
-            return;
-        }
+        struct FormatDesc { GLenum m_internalFormat; int m_bytesPerBlock; };
+        static const FormatDesc formats[] = {
+            { GL_RGBA8, 0 },                          // None
+            { GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 8 },   // BC1
+            { GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 16 },  // BC3
+            { GL_COMPRESSED_RED_RGTC1, 8 },           // BC4
+            { GL_COMPRESSED_RG_RGTC2, 16 }            // BC5
+        };
+        const auto& target = formats[static_cast<int>(m_compression)];
 
-        // BC compression — stb_dxt compresses one 4x4 block at a time.
-        // We walk the image in 4x4 tiles, compress each, accumulate output.
-
-        // Bytes per compressed block
-        int bytesPerBlock = (m_compression == CompressionFormat::BC1 || m_compression == CompressionFormat::BC4) ? 8 : 16;
-
-        int blocksX = (m_width + 3) / 4;
-        int blocksY = (m_height + 3) / 4;
-        std::vector<unsigned char> compressed(blocksX * blocksY * bytesPerBlock);
-
-        unsigned char* dst = compressed.data();
-
-        for (int by = 0; by < blocksY; ++by)
-        {
-            for (int bx = 0; bx < blocksX; ++bx)
-            {
-                // Extract the 4x4 RGBA block from m_pixels
-                unsigned char block[4 * 4 * 4] = {};
-                for (int row = 0; row < 4; ++row)
-                {
-                    int py = std::min(by * 4 + row, m_height - 1);
-                    for (int col = 0; col < 4; ++col)
-                    {
-                        int px = std::min(bx * 4 + col, m_width - 1);
-                        int src = (py * m_width + px) * 4;
-                        int dst_b = (row * 4 + col) * 4;
-                        block[dst_b + 0] = m_pixels[src + 0];
-                        block[dst_b + 1] = m_pixels[src + 1];
-                        block[dst_b + 2] = m_pixels[src + 2];
-                        block[dst_b + 3] = m_pixels[src + 3];
-                    }
-                }
-
-                // Compress the block
-                switch (m_compression)
-                {
-                case CompressionFormat::BC1:
-                    stb_compress_dxt_block(dst, block, 0, STB_DXT_NORMAL);
-                    break;
-                case CompressionFormat::BC3:
-                    stb_compress_dxt_block(dst, block, 1, STB_DXT_NORMAL);
-                    break;
-                case CompressionFormat::BC4:
-                    // BC4: single channel — compress R channel only
-                {
-                    unsigned char rBlock[16];
-                    for (int i = 0; i < 16; ++i) rBlock[i] = block[i * 4];
-                    stb_compress_bc4_block(dst, rBlock);
-                }
-                break;
-                case CompressionFormat::BC5:
-                    // BC5: two channels — compress RG
-                {
-                    unsigned char rgBlock[32];
-                    for (int i = 0; i < 16; ++i)
-                    {
-                        rgBlock[i * 2 + 0] = block[i * 4 + 0];
-                        rgBlock[i * 2 + 1] = block[i * 4 + 1];
-                    }
-                    stb_compress_bc5_block(dst, rgBlock);
-                }
-                break;
-                default:
-                    break;
-                }
-
-                dst += bytesPerBlock;
-            }
-        }
-
-        // Upload compressed data to GPU
-        GLenum internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        switch (m_compression)
-        {
-        case CompressionFormat::BC1:
-            internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;   break;
-        case CompressionFormat::BC3:
-            internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;   break;
-        case CompressionFormat::BC4:
-            internalFormat = GL_COMPRESSED_RED_RGTC1;            break;
-        case CompressionFormat::BC5:
-            internalFormat = GL_COMPRESSED_RG_RGTC2;             break;
-        default: break;
-        }
-
+        GLint currentGpuFormat;
         glBindTexture(GL_TEXTURE_2D, m_textureID);
-        glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
-            m_width, m_height, 0,
-            static_cast<GLsizei>(compressed.size()),
-            compressed.data());
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &currentGpuFormat);
+        if (static_cast<GLenum>(currentGpuFormat) == target.m_internalFormat) 
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            return;
+        }
+
+        if (m_compression == CompressionFormat::None) 
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels.data());
+        }
+        else 
+        {
+            int blocksWide = (m_width + 3) / 4;
+            int blocksHigh = (m_height + 3) / 4;
+            std::vector<unsigned char> outData(blocksWide * blocksHigh * target.m_bytesPerBlock);
+            unsigned char* writePtr = outData.data();
+
+            for (int by = 0; by < blocksHigh; ++by) 
+            {
+                for (int bx = 0; bx < blocksWide; ++bx) 
+                {
+                    unsigned char rgbaBlock[64] = {};
+                    for (int row = 0; row < 4; ++row) 
+                    {
+                        int pixelY = std::min(by * 4 + row, m_height - 1);
+                        int pixelX = std::min(bx * 4, m_width - 1);
+                        memcpy(&rgbaBlock[row * 16], &m_pixels[(pixelY * m_width + pixelX) * 4], 16);
+                    }
+
+                    if (m_compression == CompressionFormat::BC1) stb_compress_dxt_block(writePtr, rgbaBlock, 0, 0);
+                    else if (m_compression == CompressionFormat::BC3) stb_compress_dxt_block(writePtr, rgbaBlock, 1, 0);
+                    else if (m_compression == CompressionFormat::BC4) 
+                    {
+                        unsigned char redOnly[16]; for (int i = 0; i < 16; ++i) redOnly[i] = rgbaBlock[i * 4];
+                        stb_compress_bc4_block(writePtr, redOnly);
+                    }
+                    else 
+                    {
+                        unsigned char rgOnly[32]; 
+                        for (int i = 0; i < 16; ++i) 
+                        {
+                            rgOnly[i * 2] = rgbaBlock[i * 4]; rgOnly[i * 2 + 1] = rgbaBlock[i * 4 + 1];
+                        }
+                        stb_compress_bc5_block(writePtr, rgOnly);
+                    }
+                    writePtr += target.m_bytesPerBlock;
+                }
+            }
+            glCompressedTexImage2D(GL_TEXTURE_2D, 0, target.m_internalFormat, m_width, m_height, 0, 
+                                   (GLsizei)outData.size(), outData.data());
+        }
         glGenerateMipmap(GL_TEXTURE_2D);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
         SaveMeta();
     }
 
@@ -813,6 +1058,114 @@ namespace Apex::Editor
         m_meta.Set("channels", m_channels);
         m_meta.Save(m_path);
         m_metaDirty = false;
+    }
+
+    void TextureEditor::SaveExport()
+    {
+        bool hasPixels = !m_pixels.empty() || !m_pixelsHDR.empty();
+        if (!hasPixels) return;
+
+        // Suggest the current filename as a default
+        std::string suggested = m_path.stem().string()
+            + (IsHDR() ? ".hdr" : ".png");
+        fs::path dest = m_window.SaveFileDialog(suggested);
+        if (dest.empty()) return;
+
+        if (!m_pixelsHDR.empty())
+        {
+            // HDR export — write as .hdr (RGBE)
+            if (dest.extension().empty()) dest += ".hdr";
+            stbi_write_hdr(dest.string().c_str(),
+                m_width, m_height, 4, m_pixelsHDR.data());
+        }
+        else
+        {
+            // LDR export — prefer PNG, fallback to JPG
+            if (dest.extension().empty()) dest += ".png";
+            std::string destStr = dest.string();
+            int ok = stbi_write_png(destStr.c_str(),
+                m_width, m_height, 4,
+                m_pixels.data(), m_width * 4);
+            if (!ok)
+            {
+                dest.replace_extension(".jpg");
+                stbi_write_jpg(dest.string().c_str(),
+                    m_width, m_height, 4,
+                    m_pixels.data(), 90);
+            }
+        }
+    }
+
+    void TextureEditor::ResizeTexture(int newWidth, int newHeight)
+    {
+        if (newWidth <= 0 || newHeight <= 0 || m_pixels.empty()) return;
+        if (newWidth == m_width && newHeight == m_height) return;
+
+        std::vector<unsigned char> out(newWidth * newHeight * 4);
+
+        stbir_resize_uint8_linear(
+            m_pixels.data(), m_width, m_height, 0,
+            out.data(), newWidth, newHeight, 0,
+            STBIR_RGBA);
+
+        m_pixels = std::move(out);
+        m_width = newWidth;
+        m_height = newHeight;
+
+        // Re-upload resized pixels
+        if (m_textureID != 0)
+        {
+            glBindTexture(GL_TEXTURE_2D, m_textureID);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels.data());
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        // Recompute stats and mip count for the new dimensions
+        ComputeStatistics();
+        m_resizeWidth = m_width;
+        m_resizeHeight = m_height;
+
+        int maxDim = std::max(m_width, m_height);
+        m_mipCount = 1;
+        while (maxDim > 1) { maxDim /= 2; ++m_mipCount; }
+
+        // Save new dimensions to meta
+        m_meta.Set("width", m_width);
+        m_meta.Set("height", m_height);
+        m_meta.Save(m_path);
+    }
+
+    void TextureEditor::ComputeStatistics()
+    {
+        m_statsValid = false;
+        if (m_pixels.empty()) return;
+
+        for (int c = 0; c < 4; ++c)
+        {
+            m_stats[c].m_min = 1.f;
+            m_stats[c].m_max = 0.f;
+            m_stats[c].m_avg = 0.f;
+        }
+
+        int pixelCount = m_width * m_height;
+        for (int i = 0; i < pixelCount; ++i)
+        {
+            for (int c = 0; c < 4; ++c)
+            {
+                float value = m_pixels[i * 4 + c] / 255.f;
+                m_stats[c].m_min = std::min(m_stats[c].m_min, value);
+                m_stats[c].m_max = std::max(m_stats[c].m_max, value);
+                m_stats[c].m_avg += value;
+            }
+        }
+
+        for (int c = 0; c < 4; ++c)
+            m_stats[c].m_avg /= static_cast<float>(pixelCount);
+
+        m_statsValid = true;
     }
 
     Color TextureEditor::ChannelTint() const
@@ -866,6 +1219,13 @@ namespace Apex::Editor
         return "Unknown";
     }
 
+    std::string TextureEditor::FormatBytes(uintmax_t bytes) const
+    {
+        if (bytes >= 1048576) return std::to_string(bytes / 1048576) + " MB";
+        if (bytes >= 1024)    return std::to_string(bytes / 1024) + " KB";
+        return std::to_string(bytes) + " B";
+    }
+
     std::string TextureEditor::TruncatePath(const std::string& str, int maxChars)
     {
         if (static_cast<int>(str.size()) <= maxChars)
@@ -909,14 +1269,15 @@ namespace Apex::Editor
         return LibMath::Vector2(x, y);
     }
 
-    void TextureEditor::HandleColorPick(LibMath::Vector2 imageOrigin)
+    bool TextureEditor::HandleColorPick(LibMath::Vector2 imageOrigin)
     {
-        if (m_pixels.empty()) return;
+        bool hasPixels = !m_pixels.empty() || !m_pixelsHDR.empty();
+        if (!hasPixels) return false;
+
         LibMath::Vector2 mouse = m_gui.GetMousePos();
         float displayWidth = static_cast<float>(m_width) * m_zoom;
         float displayHeight = static_cast<float>(m_height) * m_zoom;
 
-        // Total tiled image bounds in screen space
         float imgLeft = imageOrigin[0];
         float imgTop = imageOrigin[1];
         float imgRight = imgLeft + displayWidth * m_tileRepeat;
@@ -925,7 +1286,7 @@ namespace Apex::Editor
         // Bail if the click is outside the image
         if (mouse[0] < imgLeft || mouse[0] >= imgRight ||
             mouse[1] < imgTop || mouse[1] >= imgBottom)
-            return;
+            return false;
 
         int pickedX = static_cast<int>((mouse[0] - imageOrigin[0]) / displayWidth * m_width);
         int pickedY = static_cast<int>((mouse[1] - imageOrigin[1]) / displayHeight * m_height);
@@ -933,23 +1294,46 @@ namespace Apex::Editor
         pickedY = std::max(0, std::min(m_height - 1, pickedY));
 
         int idx = (pickedY * m_width + pickedX) * 4;
-        if (idx + 3 >= static_cast<int>(m_pixels.size())) return;
-
-        uint8_t r = m_pixels[idx];
-        uint8_t g = m_pixels[idx + 1];
-        uint8_t b = m_pixels[idx + 2];
-        uint8_t a = m_pixels[idx + 3];
-
-        m_pickedColor = { r / 255.f, g / 255.f, b / 255.f, a / 255.f };
+        if (!m_pixelsHDR.empty())
+        {
+            std::cout << "hi" << std::endl;
+            if (static_cast<size_t>(idx + 3) >= m_pixelsHDR.size()) return false;
+            m_pickedColor = { m_pixelsHDR[idx],     m_pixelsHDR[idx + 1],
+                              m_pixelsHDR[idx + 2], m_pixelsHDR[idx + 3] };
+        }
+        else
+        {
+            if (static_cast<size_t>(idx + 3) >= m_pixels.size()) return false;
+            m_pickedColor = { m_pixels[idx] / 255.f, m_pixels[idx + 1] / 255.f,
+                              m_pixels[idx + 2] / 255.f, m_pixels[idx + 3] / 255.f };
+        }
         m_pickedX = pickedX;
         m_pickedY = pickedY;
         m_hasPickedColor = true;
-
-        std::ostringstream hex;
-        hex << "#" << std::uppercase << std::hex << std::setfill('0')
-            << std::setw(2) << (int)r << std::setw(2) << (int)g
-            << std::setw(2) << (int)b << std::setw(2) << (int)a;
-        m_gui.SetClipboardText(hex.str());
+        // Clipboard: HDR values can exceed 1 so show as floats, LDR as hex
+        if (!m_pixelsHDR.empty())
+        {
+            auto format = [](float v) 
+                { 
+                    char buffer[16]; 
+                    snprintf(buffer, sizeof(buffer), "%.4f", v); 
+                    return std::string(buffer); 
+                };
+            m_gui.SetClipboardText(
+                format(m_pickedColor.m_r) + " " + format(m_pickedColor.m_g) + " " +
+                format(m_pickedColor.m_b) + " " + format(m_pickedColor.m_a));
+        }
+        else
+        {
+            std::ostringstream hex;
+            hex << "#" << std::uppercase << std::hex << std::setfill('0')
+                << std::setw(2) << (int)(m_pickedColor.m_r * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_g * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_b * 255.f)
+                << std::setw(2) << (int)(m_pickedColor.m_a * 255.f);
+            m_gui.SetClipboardText(hex.str());
+        }
+        return true;
     }
     
     void TextureEditor::DrawZoomLabel(LibMath::Vector2 panelPos,
@@ -968,5 +1352,63 @@ namespace Apex::Editor
             0xBB000000, 4.f);
 
         drawList->DrawTextEx(pos, 0xFFFFFFFF, label, FONT_SIZE);
+    }
+
+    void TextureEditor::DrawHoverInfo(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize)
+    {
+        if (!m_hoverValid) return;
+
+        IDrawList* drawList = m_gui.GetDrawList();
+
+        // Build the info string
+        auto format = [](float v) -> std::string 
+            {
+                char buf[8];
+                snprintf(buf, sizeof(buf), "%.3f", v);
+                return buf;
+            };
+        std::string info =
+            "(" + std::to_string(m_hoverX) + ", " + std::to_string(m_hoverY) + ")  "
+            + "R:" + format(m_hoverColor.m_r)
+            + "  G:" + format(m_hoverColor.m_g)
+            + "  B:" + format(m_hoverColor.m_b)
+            + "  A:" + format(m_hoverColor.m_a);
+
+        constexpr float FONT_SIZE = 16.f;
+        constexpr float PAD = 5.f;
+        LibMath::Vector2 size = drawList->CalculateTextSizeEx(info, FONT_SIZE);
+
+        // Position: bottom-right of viewport
+        float x = panelPos[0] + panelSize[0] - size[0] - PAD * 2.f - 8.f;
+        float y = panelPos[1] + panelSize[1] - size[1] - PAD * 2.f - 8.f;
+
+        // Small color swatch to the left of the text
+        constexpr float SWATCH_SIZE =  14.f;
+        float swatchX = x - SWATCH_SIZE - 6.f;
+        float swatchY = y + (size[1] - SWATCH_SIZE) * 0.5f + PAD;
+
+        // Background pill
+        drawList->DrawRectFilled(
+            LibMath::Vector2(swatchX - PAD, y),
+            LibMath::Vector2(x + size[0] + PAD, y + size[1] + PAD * 2.f),
+            0xCC000000, 4.f);
+
+        // Color swatch
+        uint32_t swCol =
+            (uint32_t(m_hoverColor.m_a * 255.f) << 24) |
+            (uint32_t(m_hoverColor.m_b * 255.f) << 16) |
+            (uint32_t(m_hoverColor.m_g * 255.f) << 8) |
+            uint32_t(m_hoverColor.m_r * 255.f);
+        drawList->DrawRectFilled(
+            LibMath::Vector2(swatchX, swatchY),
+            LibMath::Vector2(swatchX + SWATCH_SIZE, swatchY + SWATCH_SIZE),
+            swCol, 2.f);
+        drawList->DrawRect(
+            LibMath::Vector2(swatchX, swatchY),
+            LibMath::Vector2(swatchX + SWATCH_SIZE, swatchY + SWATCH_SIZE),
+            0xFF888888, 2.f, 1.f);
+
+        // Text
+        drawList->DrawTextEx(LibMath::Vector2(x, y + PAD), 0xFFFFFFFF, info, FONT_SIZE);
     }
 }

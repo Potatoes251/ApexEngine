@@ -1,5 +1,5 @@
-#ifndef TEXTURE_VIEWER
-#define TEXTURE_VIEWER
+#ifndef TEXTURE_EDITOR
+#define TEXTURE_EDITOR
 
 // ============================================================
 // TextureViewer.h - Floating popup that previews a texture
@@ -7,6 +7,7 @@
 // ============================================================
 #include "UI.h"
 #include "MetaFile.h"
+#include "Window.h"
 
 #include <filesystem>
 #include <string>
@@ -29,7 +30,7 @@ namespace Apex::Editor
 	class TextureEditor
 	{
 	public:
-		explicit TextureEditor(IGUI& gui);
+		explicit TextureEditor(IGUI& gui, Apex::Windowing::IWindow& window);
 		~TextureEditor();
 		TextureEditor(const TextureEditor&) = delete;
 		TextureEditor& operator=(const TextureEditor&) = delete;
@@ -51,11 +52,14 @@ namespace Apex::Editor
 		void DrawToolbarViewOptions();   
 		void DrawToolbarMip();   
 		void DrawToolbarZoom();   
-		void DrawToolbarExposure();   
+		void DrawToolbarExposure();
+		void DrawToolbarSave();
+		void DrawToolbarEyeDropper();
 		void DrawChannelButtons();
 
 		void DrawViewport();
 		void HandleViewportInput(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, bool hovered, bool active);
+		void HandleHoverPixelInfo(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize);
 		void DrawTiledImage(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize, LibMath::Vector2 cursorStart);
 		void DrawImageBorder(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize);
 
@@ -66,33 +70,45 @@ namespace Apex::Editor
 		void DrawDetailsFileSection();
 		void DrawDetailsColorSection();
 		void DrawDetailsCompressionSection();
+		void DrawDetailsStatisticsSection();
+		void DrawDetailsResizeSection();
 
 		void DrawCheckerboard(LibMath::Vector2 min, LibMath::Vector2 max);
 		void DrawBackground(LibMath::Vector2 min, LibMath::Vector2 max);
 
 		// Helpers
-		void LoadTexture(const fs::path& path);
+		void LoadTexture();
 		void UnloadTexture();
 		void ApplyCompression();       // CPU-compress m_pixels and re-upload
 		void LoadOrCreateMeta();       // read .meta sidecar, create if missing
 		void SaveMeta();               // write .meta sidecar
+
+		void SaveExport();
+		void ResizeTexture(int newWidth, int newHeight);
+		bool IsHDR() const { return !m_pixelsHDR.empty(); }
+
+		void ComputeStatistics();
 
 		Color ChannelTint() const;
 		std::string FormatString() const;
 		std::string MipCountString() const;
 		std::string FileSizeString() const;
 		std::string CompressionFormatString(CompressionFormat format) const;
+		std::string FormatBytes(uintmax_t bytes) const;
 
 		static std::string TruncatePath(const std::string& str, int maxChars);
 		void TextWithTooltip(const std::string& label, const std::string& value, int maxChars = 22);
 
 		LibMath::Vector2 ImageScreenOrigin(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize) const;
-		void HandleColorPick(LibMath::Vector2 imageOrigin);
+		bool HandleColorPick(LibMath::Vector2 imageOrigin);
 		void DrawZoomLabel(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize);
+		void DrawHoverInfo(LibMath::Vector2 panelPos, LibMath::Vector2 panelSize);
 
 		// Core
 		IGUI& m_gui;
+		Apex::Windowing::IWindow& m_window;
 		bool  m_open = false;
+		bool  m_pickerModeActive = false;
 		bool  m_pendingFocus = false;
 		int   m_instanceIndex = 0;
 
@@ -108,6 +124,23 @@ namespace Apex::Editor
 
 		// CPU-side pixels kept alive for color picker
 		std::vector<unsigned char> m_pixels;  // RGBA, row-major
+		std::vector<float>         m_pixelsHDR; // RGBA f32, row-major (HDR .hdr files)
+
+		// Resize state (Details panel)
+		int  m_resizeWidth = 0;   // target width  (0 = use current)
+		int  m_resizeHeight = 0;   // target height (0 = use current)
+		bool m_resizeLockAspectRatio = true; // lock aspect ratio
+
+		// Hover pixel info - updated every frame when mouse is over image
+		bool  m_hoverValid = false;
+		int   m_hoverX = 0;
+		int   m_hoverY = 0;
+		Color m_hoverColor = { 0.f, 0.f, 0.f, 1.f };
+
+		// Per-channel image statistics (computed once after load)
+		struct ChannelStats { float m_min = 1.f, m_max = 0.f, m_avg = 0.f; };
+		ChannelStats m_stats[4];  // R G B A
+		bool         m_statsValid = false;
 
 		// Compression & meta 
 		CompressionFormat m_compression = CompressionFormat::None;
@@ -135,7 +168,7 @@ namespace Apex::Editor
 		// Checkerboard tile size in screen pixels
 		static constexpr float CHECKER_TILE_SIZE = 16.f;
 		// Details panel width
-		static constexpr float DETAILS_WIDTH = 400.f;
+		static constexpr float DETAILS_WIDTH = 470.f;
 		// Label column width - all labels snap to this offset so widgets align
 		static constexpr float LABEL_COLUMN_WIDTH = 150.f;
 	};

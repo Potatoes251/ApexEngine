@@ -1,4 +1,5 @@
 #include "Editor.h"
+#include "EditorIcon.h"
 
 #include "Shader.h"
 #include "ResourceHandle.h"
@@ -37,8 +38,8 @@ namespace Apex::Editor
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
-                if (key == Key::Escape && action == KeyAction::Press)
-                    m_window->Close();
+                //if (key == Key::Escape && action == KeyAction::Press)
+                //    m_window->Close();
 
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level", *m_app->GetPhysicsSystem());
@@ -146,6 +147,7 @@ namespace Apex::Editor
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
+        EditorIcon::Shutdown();
         m_gui.reset();
         m_window.reset();
     }
@@ -193,7 +195,7 @@ namespace Apex::Editor
             }
         }
         // Otherwise open a new editor for this texture
-        auto textureEditor = std::make_unique<TextureEditor>(*m_gui);
+        auto textureEditor = std::make_unique<TextureEditor>(*m_gui, *m_window);
         textureEditor->Open(path, static_cast<int>(m_textureEditors.size()));
         m_textureEditors.push_back(std::move(textureEditor));
     }

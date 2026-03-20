@@ -8,10 +8,14 @@ namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
     {
-        if (ext == ".obj" || ext == ".fbx")                  return AssetType::Mesh;
-        if (ext == ".jpg" || ext == ".png" || ext == ".tga") return AssetType::Texture;
-        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") return AssetType::Sound;
-        if (ext == ".level")                                 return AssetType::Level;
+        if (ext == ".obj" || ext == ".fbx")                  
+            return AssetType::Mesh;
+        if (ext == ".jpg" || ext == ".png" || ext == ".tga" || ext == ".hdr") 
+            return AssetType::Texture;
+        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") 
+            return AssetType::Sound;
+        if (ext == ".level")                                 
+            return AssetType::Level;
         return AssetType::Unknown;
     }
 
