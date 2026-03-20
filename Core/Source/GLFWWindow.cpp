@@ -75,12 +75,14 @@ namespace Apex::Windowing
         glfwSetDropCallback(m_window, GLFWDropCallback);
 
         m_lastFrameTime = (float)glfwGetTime();
+        m_crosshairCursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
     }
 
     GLFWWindow::~GLFWWindow() 
     {
-        if (m_window)     glfwDestroyWindow(m_window);
-        if (m_isPrimary)  glfwTerminate();
+        if (m_crosshairCursor) glfwDestroyCursor(m_crosshairCursor);
+        if (m_window)          glfwDestroyWindow(m_window);
+        if (m_isPrimary)       glfwTerminate();
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
@@ -181,6 +183,17 @@ namespace Apex::Windowing
 		m_firstMouseMove = true; // Reset mouse movement tracking when toggling capture
 	}
 
+    void GLFWWindow::SetCrosshairCursor()
+    {
+        if (m_crosshairCursor)
+            glfwSetCursor(m_window, m_crosshairCursor);
+    }
+
+    void GLFWWindow::ResetCursor()
+    {
+        glfwSetCursor(m_window, nullptr);  // nullptr restores the default arrow
+    }
+
     // ── Callback setters ─────────────────────────────────────────
 	void GLFWWindow::SetKeyCallback(KeyCallback callback) { m_keyCallback = callback; }
 	void GLFWWindow::SetMouseMoveCallback(MouseMoveCallback callback) { m_mouseMoveCallback = callback; }
@@ -245,6 +258,34 @@ namespace Apex::Windowing
         SHGetPathFromIDListW(pIDList, buffer);
         CoTaskMemFree(pIDList);
         return std::filesystem::path(buffer);
+    }
+
+    std::filesystem::path GLFWWindow::SaveFileDialog(const std::string& defaultName)
+    {
+        constexpr int BUFFER = 32768;
+        std::wstring buffer(BUFFER, L'\0');
+
+        // Pre-fill the filename field with the suggested name
+        if (!defaultName.empty())
+        {
+            std::wstring wide(defaultName.begin(), defaultName.end());
+            wide.copy(buffer.data(), std::min(wide.size(), (size_t)(BUFFER - 1)));
+        }
+
+        OPENFILENAMEW ofn = {};
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = GetActiveWindow();
+        ofn.lpstrFile = buffer.data();
+        ofn.nMaxFile = BUFFER;
+        ofn.lpstrTitle = L"Export Texture";
+        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0\0";
+        ofn.nFilterIndex = 1;
+        ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_EXPLORER;
+
+        if (!GetSaveFileNameW(&ofn))
+            return {};
+
+        return std::filesystem::path(buffer.data());
     }
 
 	// ── GLFW static callback wrappers ─────────────────────────────

@@ -9,6 +9,7 @@
 
 // Forward declaration of GLFW types to avoid including GLFW headers in Window.h
 struct GLFWwindow;
+struct GLFWcursor;
 
 namespace Apex::Windowing
 {
@@ -43,6 +44,9 @@ namespace Apex::Windowing
 		bool			IsMousButtonPressed(MouseButton key) const override;
 		MousePosition	GetMousePosition() const override;
 		void			SetCursorCaptured(bool captured) override;
+		void			SetCrosshairCursor() override;
+		void			ResetCursor() override;
+
 
 		// Callbacks
 		void SetKeyCallback(KeyCallback callback) override;
@@ -60,10 +64,12 @@ namespace Apex::Windowing
 
 		std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) override;
 		std::filesystem::path OpenFolderDialog() override;
+		std::filesystem::path SaveFileDialog(const std::string& defaultName = "") override;
 
 
 	private:
 		GLFWwindow* m_window = nullptr;
+		GLFWcursor* m_crosshairCursor = nullptr;
 		bool        m_isPrimary = true;   // only primary calls glfwInit/Terminate
 		int			m_width = 0;
 		int			m_height = 0;

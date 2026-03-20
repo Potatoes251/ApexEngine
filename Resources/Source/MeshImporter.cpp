@@ -37,7 +37,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        s_manager->Destroy();
+        scene->Destroy();
         return;
     }
 
@@ -45,7 +45,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        s_manager->Destroy();
+        scene->Destroy();
         return;
     }
 
