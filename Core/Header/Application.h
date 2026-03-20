@@ -3,11 +3,10 @@
 
 #include "ThreadPool.h"
 #include "Physic.h"
-#include "Scene.h"
 
 namespace Apex::Rendering
 {
-    //class Scene;
+    class Scene;
     class IRHI;
     class Camera;
 }

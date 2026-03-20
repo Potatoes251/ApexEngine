@@ -7,7 +7,7 @@ using namespace Apex::Rendering;
 using namespace Apex::Data;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene& scene)
+    Scene* scene)
     : m_gui(gui), m_scene(scene)
 {
 }
@@ -26,14 +26,14 @@ void Hierarchy::Draw()
     {
         if (m_gui.MenuItem("Empty"))
         {
-            Object* obj = m_scene.CreateObject();
+            Object* obj = m_scene->CreateObject();
             m_selected = obj;
         }
 
         m_gui.EndPopup();
     }
 
-    for (auto& obj : m_scene.GetObjects())
+    for (auto& obj : m_scene->GetObjects())
     {
         SceneNode* node = obj->GetSceneNodeRaw();
 
@@ -43,7 +43,7 @@ void Hierarchy::Draw()
 
     if (m_pendingParent)
     {
-        Object* newObj = m_scene.CreateObject();
+        Object* newObj = m_scene->CreateObject();
 
         m_pendingParent->AddChild(newObj->GetSceneNode());
 
@@ -230,7 +230,7 @@ void Hierarchy::ApplyPendingOp()
         if (m_pendingReparent->GetParent())
             m_pendingReparent->SetParent(nullptr);
 
-        m_scene.InsertBefore(
+        m_scene->InsertBefore(
             m_pendingReparent->GetObject(),
             m_pendingTarget->GetObject());
     }
@@ -239,7 +239,7 @@ void Hierarchy::ApplyPendingOp()
         if (m_pendingReparent->GetParent())
             m_pendingReparent->SetParent(nullptr);
 
-        m_scene.InsertAfter(
+        m_scene->InsertAfter(
             m_pendingReparent->GetObject(),
             m_pendingTarget->GetObject());
     }
@@ -278,7 +278,7 @@ Object* Hierarchy::DuplicateObject(Object* original)
 {
     if (!original) return nullptr;
 
-    Object* clone = m_scene.CreateObject();
+    Object* clone = m_scene->CreateObject();
     clone->SetName(original->GetName() + "_Copy");
     clone->SetLocalTransform(original->GetLocalTransform());
     clone->SetGlobalTransform(original->GetGlobalTransform());
@@ -308,7 +308,7 @@ void Hierarchy::DestroyObject(Object* obj)
     if (node->GetParent())
         node->GetParent()->DestroyChild(node);
 
-    m_scene.DestroyObject(obj);
+    m_scene->DestroyObject(obj);
 
     if (m_selected == obj)
         m_selected = nullptr;

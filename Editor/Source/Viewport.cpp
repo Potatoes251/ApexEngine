@@ -106,7 +106,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 			scaleDelta = { movement, movement, movement };
 		}
 		if (m_isScaleSnapping) Snap(scaleDelta);
-		m_selectedObject->GetLocalTransform().setScale(m_initialTransform.getScale() + scaleDelta);
+		LibMath::Vector3 newScale = m_initialTransform.getScale() + scaleDelta;
+		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
+		m_selectedObject->GetLocalTransform().setScale(newScale);
 		break;
 	}
 	default:
@@ -309,7 +311,7 @@ void Viewport::Draw()
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
 
-	m_gui->BeginPanel("Viewport");
+	m_gui->BeginPanel("Viewport", nullptr, true);
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();

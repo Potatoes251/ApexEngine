@@ -95,7 +95,7 @@ namespace Apex::Editor
                     break;
                 }
             });
-        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, *m_app->GetScene());
+        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene());
 
         return true;
     }
@@ -189,6 +189,7 @@ namespace Apex::Editor
             m_app->SetScene(m_editScene->Clone());
 
             m_viewport->ChangeScene(m_app->GetScene());
+            m_hierarchy->SetScene(m_app->GetScene());
         }
         else if (newState == EditorState::Edit)
         {
@@ -196,6 +197,7 @@ namespace Apex::Editor
             m_app->SetScene(m_editScene->Clone());
 
             m_viewport->ChangeScene(m_editScene.get());
+            m_hierarchy->SetScene(m_app->GetScene());
         }
         m_editorState = newState;
     }
