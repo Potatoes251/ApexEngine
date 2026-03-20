@@ -14,12 +14,12 @@
     "name": "Sphere",
     "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [ 1.000000, 1.000000, 1.000000 ],
+    "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
-        "texture": "Assets/Textures/container.jpg",
+        "mesh": "Assets/Meshes/skull.obj",
+        "texture": "Assets/Textures/awesomeface.png",
         "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
       },
       "RigidBody": {
@@ -46,8 +46,8 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/cube.obj",
-        "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
+        "mesh": "Assets/Meshes/padoru.obj",
+        "texture": "Assets/Textures/padoru.png",
         "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
       },
       "RigidBody": {
