@@ -17,6 +17,14 @@
 
 namespace Apex::Editor
 {
+	enum class EditorState
+	{
+		Edit,   // Editing the scene
+		Play,   // Game is running
+		Pause,  // Game is paused, can still inspect
+		Step    // Advance one frame
+	};
+
 	class Editor 
 	{
 	public:
@@ -45,7 +53,11 @@ namespace Apex::Editor
 		void Shutdown();
 
 		// main.cpp uses this to drive the outer loop.
-		Apex::Windowing::IWindow& GetWindow() { return *m_window; }
+		Apex::Windowing::IWindow*	GetWindow() { return m_window.get(); }
+		Apex::Application*			GetApp() { return m_app; }
+		Apex::UserInterface::IGUI*	GetGUI() { return m_gui.get(); }
+		void						SetEditorState(EditorState newState);
+		EditorState					GetEditorState() const { return m_editorState; }
 
 	private:
 		static const char* TypeToString(AssetType type);
@@ -55,14 +67,17 @@ namespace Apex::Editor
 		void OpenTextureEditor(const std::filesystem::path& path);
 
 		Apex::Application* m_app = nullptr;
-		std::unique_ptr<Apex::Audio::IAudioEngine>	m_audio;
+		Apex::Audio::IAudioEngine* m_audio;
 
 		std::unique_ptr<Apex::Windowing::IWindow>	m_window;
 		std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
 		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		std::unique_ptr<Hierarchy>					m_hierarchy;
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
-		std::unique_ptr<Viewport>				    m_viewport;
+		std::unique_ptr<Viewport>					m_viewport;
+		std::unique_ptr<Rendering::Scene>			m_editScene;
+
+		EditorState	m_editorState = EditorState::Edit;
 	};
 }
 

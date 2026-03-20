@@ -215,6 +215,7 @@ namespace Apex::UserInterface
     void ImGUIManager::Separator() { ImGui::Separator(); }
     void ImGUIManager::VerticalSeparator() { ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); }
     void ImGUIManager::SameLine(float offsetFromLeft, float spacing) { ImGui::SameLine(offsetFromLeft, spacing); }
+    void ImGUIManager::NewLine() { ImGui::NewLine(); }
     void ImGUIManager::AlignTextToFramePadding() { ImGui::AlignTextToFramePadding(); }
     void ImGUIManager::SetNextItemWidth(float w) { ImGui::SetNextItemWidth(w); }
 
@@ -357,6 +358,11 @@ namespace Apex::UserInterface
         size_t bufferSize, const std::string& hint)
     {
         return ImGui::InputTextWithHint(label.c_str(), hint.c_str(), buffer, bufferSize);
+    }
+
+    bool ImGUIManager::InputFloat(const std::string& label, float* value)
+    {
+        return ImGui::InputFloat(label.c_str(), value);
     }
 
     bool ImGUIManager::Combo(const std::string& label, int* currentItem, const char* items)

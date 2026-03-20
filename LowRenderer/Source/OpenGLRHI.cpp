@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 namespace Apex::Rendering
 {
@@ -17,6 +18,9 @@ namespace Apex::Rendering
 	void OpenGLRHI::Initialize()
 	{
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	void OpenGLRHI::SetClearColor(float r, float g, float b, float a)
 	{
@@ -26,6 +30,11 @@ namespace Apex::Rendering
 	void OpenGLRHI::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void OpenGLRHI::ClearDepth()
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	// ── VAO ───────────────────────────────────────────────────────
@@ -172,6 +181,38 @@ namespace Apex::Rendering
 		return texture;
 	}
 
+	RHITextureHandle OpenGLRHI::CreateCubemap(const std::vector<TextureDescription>& desc)
+	{
+		GLuint glTexture;
+		glGenTextures(1, &glTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, glTexture);
+
+		const GLenum internalFmt = (desc[0].m_channels == 4) ? GL_RGBA8 : GL_RGB8;
+		const GLenum pixelFmt = (desc[0].m_channels == 4) ? GL_RGBA : GL_RGB;
+
+		for (int i = 0; i < 6; i++)
+		{
+			assert(desc[i].m_width == desc[0].m_width);
+			assert(desc[i].m_height == desc[0].m_height);
+			assert(desc[i].m_channels == desc[0].m_channels);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFmt, 
+				desc[i].m_width, desc[i].m_height, 0, pixelFmt, GL_UNSIGNED_BYTE, desc[i].m_data);
+		}
+
+		//glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		RHITextureHandle texture = NewHandle();
+		m_textures[texture] = glTexture;
+		return texture;
+	}
+
 	void OpenGLRHI::BindTexture(RHITextureHandle texture, uint32_t unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
@@ -291,6 +332,11 @@ namespace Apex::Rendering
 			glEnable(GL_DEPTH_TEST);
 		else
 			glDisable(GL_DEPTH_TEST);
+	}
+
+	void OpenGLRHI::SetDepthTestWrite(bool enabled)
+	{
+		glDepthMask(enabled ? GL_TRUE : GL_FALSE);
 	}
 
 

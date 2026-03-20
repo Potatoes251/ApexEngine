@@ -29,11 +29,14 @@ namespace Apex
 
         Apex::Data::Object* GetOwner() const { return m_owner; }
 
+        size_t GetId() const { return m_id; }
+        void SetId(size_t newId) { m_id = newId; }
     private:
         friend class Apex::Data::Object;
 
         Apex::Data::Object* m_owner = nullptr;
         bool m_enabled = true;
+        size_t m_id = SIZE_MAX;
     };
 }
 

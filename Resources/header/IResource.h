@@ -32,6 +32,7 @@ public:
 protected:
     std::string m_path;
     Apex::Rendering::IRHI* m_rhi = nullptr;
+private:
     ResourceState   m_state = ResourceState::Unloaded;
 };
 

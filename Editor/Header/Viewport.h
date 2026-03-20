@@ -15,43 +15,62 @@
 namespace Apex::Data { class Object; }
 
 namespace Apex::UserInterface { class IGUI; }
-namespace Apex::Rendering { class IRHI; }
-namespace Apex::Rendering { class Scene; }
+namespace Apex::Rendering 
+{ 
+	class IRHI; 
+	class Scene;
+}
 
 namespace Apex::Editor
 {
+	class Editor;
+
 	class Viewport
 	{
 	public:
-		Viewport(Resources::ResourceHandle<Shader> shader, Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui);
+		Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
+			Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor);
 		Viewport(Viewport const&) = delete;
 		Viewport& operator=(Viewport const&) = delete;
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
 		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
+
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
 		void				OnMouseMove(double mouseX, double mouseY);
+
 		void				Draw();
 
 	private:
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
 		bool				IsOnGizmo(double mouseX, double mouseY);
+		void				PerformPicking(LibMath::Vector2 mousePos);
 
 		LibMath::Vector3	GetAxis();
-		bool				IsSingleAxis() const;
-		bool				IsPlaneAxis() const;
+		LibMath::Vector3	GetAxisPlane();
+		bool				IsAxisSingle() const;
+		bool				IsAxisPlane() const;
+		bool				IsAxisFree() const;
 		void				ComputePlane();
 		void				ComputePlaneRotation();
-		float				Snap(float rotationAngle = 0) const;
+		void				Snap(float& value, float snapValue) const;
+		void				Snap(LibMath::Vector3& value) const;
+
+		void				DrawUI();
+		void				DrawGrid();
+
+		void				CreateGrid();
 
 		Gizmos		m_gizmo;
-		GizmoMode	m_currentGizmoMode = GizmoMode::Scale;
+		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
 		Axis		m_selectedAxis = Axis::None;
 		
+		Mesh		m_grid;
+		Resources::ResourceHandle<Shader>	m_gridShader;
 
-		Resources::ResourceHandle<Shader>	m_shader;
+		Resources::ResourceHandle<Shader>	m_pickingshader;
 		Rendering::RHIFrameBufferHandle		m_fbo;
 		Rendering::RHITextureHandle			m_textureFbo;
 
@@ -62,6 +81,7 @@ namespace Apex::Editor
 		Rendering::IRHI*		m_rhi = nullptr;
 		Rendering::Scene*		m_currentScene = nullptr;
 		Data::Object*			m_selectedObject = nullptr;
+		Editor*					m_editor = nullptr;
 
 		LibMath::Vector2		m_panelPos;
 		LibMath::Vector2		m_panelSize;
@@ -76,10 +96,9 @@ namespace Apex::Editor
 		float	m_height = 720;
 
 		float	m_translateSnap = 1.f;
-		float	m_rotateSnap = .2f;
+		float	m_rotateSnap = 2.f;
 		float	m_scaleSnap = 1.f;
 
-		bool	m_isHovered = false;
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
 		bool	m_isScaleSnapping = true;

@@ -62,6 +62,7 @@ namespace Apex::UserInterface
         void Separator() override;
         void VerticalSeparator() override;
         void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) override;
+        void NewLine() override;
         void AlignTextToFramePadding()  override;
         void SetNextItemWidth(float width)  override;
         LibMath::Vector2 GetAvailableSize() const override;
@@ -113,6 +114,8 @@ namespace Apex::UserInterface
         bool ColorEdit3(const std::string& label, float color[3]) override;
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
+        bool InputFloat(const std::string& label, float* value) override;
+
         bool Combo(const std::string& label, int* currentItem, const char* items) override;
         bool CollapsingHeader(const std::string& label, bool defaultOpen = false) override;
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;

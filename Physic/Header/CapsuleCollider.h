@@ -15,6 +15,8 @@ namespace Apex::Physic
 		CapsuleCollider(CapsuleCollider const& other);
 		CapsuleCollider& operator=(CapsuleCollider const& other);
 
+		std::unique_ptr<Component> Clone() const override { return std::make_unique<CapsuleCollider>(*this); }
+
 		ColliderType GetType() const override { return ColliderType::Capsule; }
 
 		float GetHalfHeight() const { return m_halfHeight; }

@@ -20,6 +20,7 @@ namespace Apex::Rendering
 		void Initialize() override;
 		void SetClearColor(float r, float g, float b, float a = 1.f) override;
 		void Clear() override;
+		void ClearDepth() override;
 
 		RHIVAOHandle	CreateVAO() override;
 		void			BindVAO(RHIVAOHandle vao) override;
@@ -37,6 +38,7 @@ namespace Apex::Rendering
 		int						GetPixelData(int x, int y) override;
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
+		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 
@@ -56,6 +58,7 @@ namespace Apex::Rendering
 		void DrawLineArrays(uint32_t vertexCount) override;
 		void DrawLineLoop(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
+		void SetDepthTestWrite(bool enabled) override;
 
 		uint32_t GetBuffer(RHIBufferHandle handle)  const;
 		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;

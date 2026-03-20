@@ -26,15 +26,10 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_cone.UploadToGpu();
     m_cylinder.UploadToGpu();
     m_circle.UploadToGpu();
-}
-
-Gizmos::~Gizmos()
-{
-    //m_cube.SetRhi(nullptr);
-    //m_cone.SetRhi(nullptr);
-    //m_cylinder.SetRhi(nullptr);
-    //m_circle.SetRhi(nullptr);
-    //m_shader->SetRhi(nullptr);
+    m_cube.ClearVertices();
+    m_cone.ClearVertices();
+    m_cylinder.ClearVertices();
+    m_circle.ClearVertices();
 }
 
 void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos)
@@ -85,10 +80,54 @@ void Gizmos::DrawTranslation(Data::Object* object)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
+    float planeSize = 0.25f * m_distanceToCamera;
+    float planeOffset = planeSize * 0.5f;
+    float planeThickness = 0.02f * m_distanceToCamera;
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(planeOffset, planeOffset, 0),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeSize, planeSize, planeThickness });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,1,0 }); // yellow
+        m_cube.Draw();
+    }
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(planeOffset, 0, planeOffset),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeSize, planeThickness, planeSize });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,0,1 }); // magenta
+        m_cube.Draw();
+    }
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, planeOffset, planeOffset),
+            { 0,0,1 }, LibMath::Degree(0),
+            { planeThickness, planeSize, planeSize });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 0,1,1 }); // cyan
+        m_cube.Draw();
+    }
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
     constexpr float handleScale = 2.f;
 
+    // central part (WHITE)
+    {
+        LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
+            pos + LibMath::Vector3(0, 0, 0),
+            { 1,0,0 }, LibMath::Degree(0),
+            { thickness * handleScale * 1.5f, thickness * handleScale * 1.5f, thickness * handleScale * 1.5f });
+
+        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uColor", { 1,1,1 });
+        m_cube.Draw();
+    }
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
@@ -265,20 +304,72 @@ void Gizmos::DrawScale(Data::Object* object)
     }
 }
 
+bool PointInQuad(LibMath::Vector2 p,
+    LibMath::Vector2 a,
+    LibMath::Vector2 b,
+    LibMath::Vector2 c)
+{
+    LibMath::Vector2 ab = b - a;
+    LibMath::Vector2 ac = c - a;
+    LibMath::Vector2 ap = p - a;
+
+    float d1 = ap.dotProduct(ab);
+    float d2 = ap.dotProduct(ac);
+
+    return d1 >= 0 && d2 >= 0 &&
+        d1 <= ab.dotProduct(ab) &&
+        d2 <= ac.dotProduct(ac);
+}
+
 Axis Gizmos::IsOnTranslation(
     LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
     LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
-    float axisLength = 1.0f * m_distanceToCamera;
+    const float planeSize = 0.25f * m_distanceToCamera * 1.2f;
+    const float planeOffset = planeSize * 0.5f;
+
     float mouseRadius = 15.0f * m_distanceToCamera;
 
     LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
 
+    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1] }, mouse))
+    {
+        return Axis::XYZ;
+    }
+
+    struct PlaneAxes
+    {
+        LibMath::Vector3 m_a;
+        LibMath::Vector3 m_b;
+        Axis m_axis;
+    };
+
+    PlaneAxes planes[3] =
+    {
+        { {1,0,0}, {0,1,0}, Axis::XY },
+        { {1,0,0}, {0,0,1}, Axis::XZ },
+        { {0,1,0}, {0,0,1}, Axis::YZ }
+    };
+
+    for (const PlaneAxes& plane : planes)
+    {
+        LibMath::Vector3 base = worldPos + (plane.m_a + plane.m_b) * planeOffset;
+
+        LibMath::Vector2 p0 = GetScreenPos(base, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 px = GetScreenPos(base + plane.m_a * planeSize, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 py = GetScreenPos(base + plane.m_b * planeSize, viewProj, panelOffset, panelSize);
+
+        if (PointInQuad(mousePosOnScreen, p0, px, py))
+            return plane.m_axis;
+    }
+
+    float axisLength = 1.0f * m_distanceToCamera;
+
     const LibMath::Vector3 axes[3] = {
-        {axisLength, 0, 0},
-        {0, axisLength, 0},
-        {0, 0, axisLength}
+    { axisLength, 0, 0 },
+    { 0, axisLength, 0 },
+    { 0, 0, axisLength }
     };
 
     for (int i = 0; i < 3; ++i)
