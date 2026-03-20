@@ -28,7 +28,6 @@ target_include_directories(${EXE_NAME}
     PRIVATE ${UI_INCLUDE_DIR}
     PRIVATE ${PHYS_INCLUDE_DIR}
     PRIVATE ${CORE_INCLUDE_DIR}
-    PRIVATE ${EDITOR_INCLUDE_DIR}
 )
 
 # ---- Link libraries ----
@@ -50,7 +49,6 @@ target_link_libraries(${EXE_NAME}
     PRIVATE ${UI_NAME}
     PRIVATE ${PHYS_NAME}
     PRIVATE ${CORE_NAME}
-    PRIVATE ${EDITOR_NAME}
 )
 
 add_custom_command(TARGET ${EXE_NAME} POST_BUILD

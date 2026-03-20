@@ -109,9 +109,9 @@ namespace Apex::UserInterface
 
         // Style 
         virtual void PushColor(StyleColor target, Color color) = 0;
-        virtual void PopColor() = 0;
+        virtual void PopColor(int count = 1) = 0;
         virtual void PushStyleVariable(StyleVariable var, float x, float y = 0.f) = 0;
-        virtual void PopStyleVariable() = 0;
+        virtual void PopStyleVariable(int count = 1) = 0;
         virtual void PushFont(FontID id) = 0;
         virtual void PopFont() = 0;
         virtual float GetTextLineHeight() const = 0;
@@ -120,6 +120,7 @@ namespace Apex::UserInterface
         virtual void Separator() = 0;
         virtual void VerticalSeparator() = 0;
         virtual void SameLine(float offsetFromLeft = 0.f, float spacing = -1.f) = 0;
+        virtual void NewLine() = 0;
         virtual void AlignTextToFramePadding() = 0;  
         virtual void SetNextItemWidth(float width) = 0;
         virtual LibMath::Vector2 GetAvailableSize() const = 0;
@@ -184,6 +185,10 @@ namespace Apex::UserInterface
         virtual void TextColored(Color color, const std::string& text) = 0;
         virtual bool Button(const std::string& label) = 0;
         virtual bool ButtonSized(const std::string& label, LibMath::Vector2 size) = 0;
+        virtual bool ImageButton(const std::string& id, uint32_t textureID,
+                                 LibMath::Vector2 size,
+                                 Color tint = { 1.f, 1.f, 1.f, 1.f },
+                                 float padding = 2.f) = 0;
         virtual bool SmallButton(const std::string& label) = 0;
         virtual bool Checkbox(const std::string& label, bool* value) = 0;
         virtual bool SliderFloat(const std::string& label, float* value, float min, float max) = 0;
@@ -192,6 +197,7 @@ namespace Apex::UserInterface
         virtual bool InputText(const std::string& label,
                                char* buffer, size_t bufferSize,
                                const std::string& hint = "") = 0;
+        virtual bool InputFloat(const std::string& label, float* value) = 0;
 
         virtual bool Combo(const std::string& label, int* currentItem, const char* items) = 0;
 
@@ -209,6 +215,7 @@ namespace Apex::UserInterface
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsMouseReleased(MouseButton button = MouseButton::Left) const = 0;
+        virtual bool IsMouseClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsWindowHovered() const = 0;
         virtual bool IsAnyItemHovered()   const = 0;
         virtual bool IsDragDropActive() const = 0;
@@ -239,6 +246,8 @@ namespace Apex::UserInterface
 
         virtual Vector2 GetItemRectMin() const = 0;
         virtual Vector2 GetItemRectMax() const = 0;
+
+        virtual void SetManagesCursor(bool manages) = 0;
 	private:
 	};
 

@@ -22,38 +22,43 @@ using namespace Apex::Resources;
 
 PhysicSystem::PhysicSystem() : m_simCallback(this)
 {
-	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
-	if (!m_foundation)
-	{
-		std::cerr << "PhysX foundation creation failed." << std::endl;
-		m_physics = nullptr;
-		return;
-	}
-
+	m_physicInstanceCount++;
 	physx::PxTolerancesScale scale;
-
-	m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation, scale, true, nullptr);
-
-	if (!m_physics)
+	if (!m_isCtxInit) // first physic instance
 	{
-		std::cerr << "PhysX physics creation failed." << std::endl;
-		m_foundation->release();
-		m_foundation = nullptr;
-		return;
+		m_pxCtx.m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_pxCtx.m_allocator, m_pxCtx.m_errorCallback);
+
+		if (!m_pxCtx.m_foundation)
+		{
+			std::cerr << "PhysX foundation creation failed." << std::endl;
+			m_pxCtx.m_physics = nullptr;
+			return;
+		}
+
+		m_pxCtx.m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pxCtx.m_foundation, scale, true, nullptr);
+
+		if (!m_pxCtx.m_physics)
+		{
+			std::cerr << "PhysX physics creation failed." << std::endl;
+			m_pxCtx.m_foundation->release();
+			m_pxCtx.m_foundation = nullptr;
+			return;
+		}
+
+		m_pxCtx.m_dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+
+		m_isCtxInit = true;
 	}
-
-	m_dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-
 	physx::PxSceneDesc sceneDesc(scale);
 
 	sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
-	sceneDesc.cpuDispatcher = m_dispatcher;
+	sceneDesc.cpuDispatcher = m_pxCtx.m_dispatcher;
 	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
 	sceneDesc.simulationEventCallback = &m_simCallback;
 
-	m_scene = m_physics->createScene(sceneDesc);
+	m_scene = m_pxCtx.m_physics->createScene(sceneDesc);
 
-	m_defaultMaterial = m_physics->createMaterial(
+	m_defaultMaterial = m_pxCtx.m_physics->createMaterial(
 		0.5f,  // static friction
 		0.5f,  // dynamic friction
 		0.6f   // restitution (bounciness)
@@ -62,10 +67,16 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 PhysicSystem::~PhysicSystem()
 {
+	m_physicInstanceCount--;
 	if (m_scene)       m_scene->release();
-	if (m_dispatcher)  m_dispatcher->release();
-	if (m_physics)     m_physics->release();
-	if (m_foundation)  m_foundation->release();
+	if (m_physicInstanceCount == 0)
+	{
+		if (m_pxCtx.m_dispatcher)  m_pxCtx.m_dispatcher->release();
+		if (m_pxCtx.m_physics)     m_pxCtx.m_physics->release();
+		if (m_pxCtx.m_foundation)  m_pxCtx.m_foundation->release();
+		m_pxCtx.m_physics = nullptr;
+		m_pxCtx.m_foundation = nullptr;
+	}
 }
 
 PhysMatHandle PhysicSystem::CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness)
@@ -79,10 +90,11 @@ PhysMatHandle PhysicSystem::CreateMaterial(std::string const& name, float static
 	entry->m_resource = std::make_unique<PhysicMaterial>(staticFriction, dynamicFriction, bounciness);
 	PhysMatHandle handle(entry);
 
+	handle->SetName(name);
 	handle->SetState(ResourceState::Uploaded);
 	handle->SetId(m_physxMaterials.size());
 
-	m_physxMaterials.push_back(m_physics->createMaterial(staticFriction, dynamicFriction, bounciness));
+	m_physxMaterials.push_back(m_pxCtx.m_physics->createMaterial(staticFriction, dynamicFriction, bounciness));
 
 	return handle;
 }
@@ -301,12 +313,6 @@ void PhysicSystem::SyncFromPhysx()
 
 			actor.m_owner->SetPosition(ToLibVec(trans.p));
 			actor.m_owner->SetRotation(ToLibQuat(trans.q));
-
-			if (auto* obj = actor.m_owner->GetOwner())
-			{
-				obj->GetGlobalTransform().setPosition(ToLibVec(trans.p));
-				obj->GetGlobalTransform().setRotation(ToLibQuat(trans.q));
-			}
 		}
 	}
 }
@@ -453,7 +459,7 @@ physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& colli
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
-	return m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
+	return m_pxCtx.m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
 }
 
 physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
@@ -461,7 +467,7 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float halfHeight = capsule.GetHalfHeight();
 	float radius = capsule.GetRadius();
 
-	return m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
+	return m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
 }
 
 physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody)
@@ -481,7 +487,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
 			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
-			return m_physics->createShape(geometry, *GetMaterial(mesh));
+			return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
 		}
 	case MeshColliderType::Convex:
 	{
@@ -493,7 +499,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 
 		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
-		return m_physics->createShape(geometry, *GetMaterial(mesh));
+		return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
 	}
 	default:
 		assert(false && "Unhandled mesh collider type");
@@ -507,7 +513,7 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 {
 	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()), ToPxQuat(rigidBody.GetRotation()));
 
-	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
+	physx::PxRigidDynamic* body = m_pxCtx.m_physics->createRigidDynamic(transform);
 
 	body->attachShape(*shape);
 
@@ -528,7 +534,7 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 {
 	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()), ToPxQuat(rigidBody.GetRotation()));
 
-	physx::PxRigidStatic* body = m_physics->createRigidStatic(transform);
+	physx::PxRigidStatic* body = m_pxCtx.m_physics->createRigidStatic(transform);
 
 	body->attachShape(*shape);
 
@@ -547,7 +553,7 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 {
 	physx::PxTransform transform(ToPxVec(rigidBody.GetPosition()));
 
-	physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
+	physx::PxRigidDynamic* body = m_pxCtx.m_physics->createRigidDynamic(transform);
 
 	body->attachShape(*shape);
 
@@ -685,7 +691,7 @@ physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceH
 
 	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 
-	return m_physics->createTriangleMesh(readBuffer);
+	return m_pxCtx.m_physics->createTriangleMesh(readBuffer);
 }
 
 physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh)
@@ -711,7 +717,7 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 
 	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 
-	return m_physics->createConvexMesh(readBuffer);
+	return m_pxCtx.m_physics->createConvexMesh(readBuffer);
 }
 
 

@@ -19,6 +19,10 @@ CapsuleCollider& Apex::Physic::CapsuleCollider::operator=(CapsuleCollider const&
 	return *this;
 }
 
+void Apex::Physic::CapsuleCollider::Serialize(std::ostream& out) const
+{
+}
+
 std::vector<ExposedVar> Apex::Physic::CapsuleCollider::GetExposedVariables()
 {
 	std::vector<ExposedVar> exposedVec = Collider::GetExposedVariables();

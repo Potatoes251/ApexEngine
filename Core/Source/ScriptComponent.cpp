@@ -24,9 +24,6 @@ void ScriptComponent::SetScript(const std::string& path)
     m_scriptRef = m_lua.LoadScript(path);
     m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
 
-    m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
-
-    // After instance creation:
     lua_State* L = m_lua.GetState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 

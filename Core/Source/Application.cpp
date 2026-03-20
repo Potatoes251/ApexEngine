@@ -1,13 +1,40 @@
 #include "Application.h"
+
+#include "LuaManager.h"
+#include "Behaviour.h"
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
 #include "RenderPassInfo.h"
+#include "SceneGraph.h"
+#include "Object.h"
 
 #include "SceneLoader.h"
+
+#include "Window.h"
+#include "RHI.h"
+#include "Camera.h"
+#include "Audio.h"
+
+
+#include "ResourceManager.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
+#include "Cubemap.h"
+#include "Scene.h"
+#include "BoxCollider.h"
+#include "CapsuleCollider.h"
+#include "MeshCollider.h"
+#include "Rigidbody.h"
+
+#include "DebugRenderer.h"
+#include "UI.h"
+#include "Hud.h"
 
 #include <chrono>
 #include <iostream>
 
+#include <memory>
 #include <filesystem>
 
 using namespace Apex::Windowing;
@@ -18,6 +45,12 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
+
+namespace Apex
+{
+    Application::Application() = default;
+    Application::~Application() = default;
+}
 
 void Apex::Application::Run()
 {
@@ -30,19 +63,16 @@ void Apex::Application::Run()
     Shutdown();
 }
 
-bool Apex::Application::Init(bool createWindow)
+bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
-    std::cout << "Application Init\n";
-
-    if (createWindow && !InitWindow()) return false;
-
-    if (!InitResourceManager()  
+    if (!InitWindow(window)
+    || !InitResourceManager()  
     || !InitCamera()
     || !InitRHI()  
     || !InitRendering()
+    || !InitUI(gui)
     || !InitAudio()
     || !InitScene())
-
         return false;
 
     return true;
@@ -60,14 +90,12 @@ bool Apex::Application::InitCamera()
     return true;
 }
 
-bool Apex::Application::InitWindow()
+bool Apex::Application::InitWindow(IWindow* window)
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Scene", 1280, 720, nullptr));
+    m_window = window;
 
     if (!m_window)
         return false;
-
-    m_window->SetCursorCaptured(true);
 
     m_window->SetKeyCallback([&](Key key, KeyAction action)
         {
@@ -75,7 +103,7 @@ bool Apex::Application::InitWindow()
                 m_window->Close();
 
             if (key == Key::P && action == KeyAction::Press)
-                m_scene->Save("Assets/Scenes/scene.level", m_physics);
+                m_scene->Save("Assets/Scenes/scene.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)
@@ -132,11 +160,11 @@ bool Apex::Application::InitScene()
     return true;
 }
 
-bool Apex::Application::InitUI()
+bool Apex::Application::InitUI(IGUI* gui)
 {
     if (!m_window) return false;
 
-    m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
+    m_uiManager = std::make_unique<UIManager>(gui);
 
     if (!m_uiManager)
         return false;
@@ -148,7 +176,18 @@ bool Apex::Application::InitUI()
 
 void Apex::Application::LoadScene()
 {
-    SceneLoader loader(*m_resourceManager.get(), m_physics);
+    Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
+        "Assets/Textures/Skybox/px.png|Assets/Textures/Skybox/nx.png|\
+Assets/Textures/Skybox/ny.png|Assets/Textures/Skybox/py.png|\
+Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkyboxVert.glsl|Assets/Shaders/SkyboxFrag.glsl");
+
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
+
+    m_scene->SetSkybox(sk);
+    
+    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic());
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;
@@ -191,7 +230,7 @@ void Apex::Application::LoadScene()
         auto* collider = obj->GetComponent<Collider>();
 
         if (body && collider)
-            m_physics.CreateActor(*collider, *body);
+            m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
 }
 
@@ -202,29 +241,23 @@ void Apex::Application::Shutdown()
 
 void Apex::Application::Tick()
 {
-    m_window->MakeContextCurrent();
-    m_window->UpdateDeltaTime();
+    //m_window->UpdateDeltaTime();
 
-    m_deltaTime = m_window->GetDeltaTime();
-    if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;
+    constexpr float fixedUpdateTime_s = 1.f / 60.f;
+
+    m_deltaTime_s = m_window->GetDeltaTime();
+    if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
     ProcessInput();
     Update();
 
-    m_accumulator += m_deltaTime;
-    m_totalTime += m_deltaTime;
+    m_accumulator_s += m_deltaTime_s;
 
-    while (m_accumulator >= 1.f / 60.f)
+    while (m_accumulator_s >= fixedUpdateTime_s)
     {
-        m_physics.Update(1.f / 60.f);
-        m_accumulator -= 1.f / 60.f;
+        m_scene->FixedUpdate(fixedUpdateTime_s);
+        m_accumulator_s -= fixedUpdateTime_s;
     }
-
-    SyncPhysicsToTransforms();
-
-    Render();
-
-    m_window->SwapBuffers();
 }
 
 void Apex::Application::ProcessInput()
@@ -236,7 +269,7 @@ void Apex::Application::ProcessInput()
         m_window->IsKeyPressed(Key::D),
         m_window->IsKeyPressed(Key::E),
         m_window->IsKeyPressed(Key::Q),
-        m_deltaTime
+        m_deltaTime_s
     );
 }
 
@@ -255,29 +288,22 @@ void Apex::Application::UpdateAudioListener()
 
 void Apex::Application::Update()
 {
-    m_scene->Update(m_deltaTime);
+    m_scene->Update(m_deltaTime_s);
 }
 
-void Apex::Application::SyncPhysicsToTransforms()
+void Apex::Application::Render(Camera* cam)
 {
-    m_physics.SyncFromPhysx();
-}
-
-void Apex::Application::Render()
-{
+    if (!cam) cam = m_camera.get();
     m_rhi->Clear();
 
     RenderPassInfo pass;
     pass.m_aspectRatio = m_window->GetAspectRatio();
-    pass.m_camera = m_camera.get();
+    pass.m_camera = cam;
 
     m_scene->Render(pass);
 
-    LibMath::Matrix4 view = m_camera->GetViewMatrix();
-    LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
+    LibMath::Matrix4 view = cam->GetViewMatrix();
+    LibMath::Matrix4 proj = cam->GetProjectionMatrix(m_window->GetAspectRatio());
 
-    m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(proj * view);
-
-    m_resourceManager->ProcessGpuUploads();
 }

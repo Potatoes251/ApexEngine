@@ -19,29 +19,32 @@ namespace Apex::Data
 		Object();
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other);
+		Object&	operator=(const Object& other) = delete;
 		~Object() = default;
 
-				size_t			GetId() const { return m_id; }
-				void			SetId(size_t id) { m_id = id; }
+		std::unique_ptr<Object>		Clone();
 
-				std::string&	GetName() { return m_name; }
-				void			SetName(std::string name) { m_name = name; }
+		size_t			GetId() const { return m_id; }
+		void			SetId(size_t id) { m_id = id; }
 
-				Object&			operator=(const Object& other) = delete;
+		std::string&	GetName() { return m_name; }
+		void			SetName(std::string name) { m_name = name; }
+
 
 				LibMath::Transform&		GetLocalTransform();
 		const	LibMath::Transform&		GetLocalTransform() const;
-				LibMath::Transform&		GetGlobalTransform();
-		const	LibMath::Transform&		GetGlobalTransform() const;
+		const	LibMath::Transform&		GetGlobalTransform();
 
-				void		SetLocalTransform(const LibMath::Transform& transform);
-				void		SetGlobalTransform(const LibMath::Transform& transform);
+		void		UpdateGlobalTransform();
 
-				void		Start();
-				void		Update(float deltaTime);
+		void		SetLocalTransform(const LibMath::Transform& transform);
+		void		SetGlobalTransform(const LibMath::Transform& transform);
 
-				std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
-				Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
+		void		Start();
+		void		Update(float deltaTime);
+
+		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
+		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
 
 				void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
 
@@ -50,10 +53,10 @@ namespace Apex::Data
 				{
 					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
 
-					component->m_owner = this;
+			component->m_owner = this;
 
-					T& ref = *component;
-					m_components.push_back(std::move(component));
+			T& ref = *component;
+			m_components.push_back(std::move(component));
 
 					if (m_components.size() == 1)
 						m_components.back()->SetId(0);
@@ -65,27 +68,27 @@ namespace Apex::Data
 					return ref;
 				}
 
-				template<typename T>
-				T* GetComponent()
-				{
-					for (auto& comp : m_components)
-					{
-						T* casted = dynamic_cast<T*>(comp.get());
+		template<typename T>
+		T* GetComponent()
+		{
+			for (auto& comp : m_components)
+			{
+				T* casted = dynamic_cast<T*>(comp.get());
 
-						if (casted)
-							return casted;
-					}
+				if (casted)
+					return casted;
+			}
 
-					return nullptr;
-				}
+			return nullptr;
+		}
 
-				std::vector<Component*> GetComponents() const
-				{
-					std::vector<Component*> comps;
-					for (auto& c : m_components)
-						comps.push_back(c.get());
-					return comps;
-				}
+		std::vector<Component*> GetComponents() const
+		{
+			std::vector<Component*> comps;
+			for (auto& c : m_components)
+				comps.push_back(c.get());
+			return comps;
+		}
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 

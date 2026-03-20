@@ -24,9 +24,10 @@ namespace Apex::Editor
 	{
 	public:
 		Hierarchy(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene& scene, ComponentsViewer* compViewer);
+			Apex::Rendering::Scene* scene, ComponentsViewer* compViewer);
 
 		void Draw();
+		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
@@ -52,7 +53,7 @@ namespace Apex::Editor
 
 	private:
 		Apex::UserInterface::IGUI& m_gui;
-		Apex::Rendering::Scene& m_scene;
+		Apex::Rendering::Scene* m_scene;
 		ComponentsViewer* m_componentsViewer;
 
 		Apex::Data::Object* m_selected = nullptr;

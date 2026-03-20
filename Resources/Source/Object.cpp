@@ -1,5 +1,4 @@
 #include "Object.h"
-#include "../../LowRenderer/header/SceneGraph.h"
 
 using namespace Apex::Data;
 using namespace LibMath;
@@ -30,6 +29,31 @@ Object::Object(const Object& other) :
 	m_name = "Object" + std::to_string(m_id);
 }
 
+std::unique_ptr<Object> Object::Clone()
+{
+	std::unique_ptr<Object> clone = std::make_unique<Object>();
+	clone->SetName(m_name);
+	clone->SetLocalTransform(m_localTransform);
+	clone->SetGlobalTransform(m_globalTransform);
+
+	for (auto* comp : GetComponents())
+	{
+		std::unique_ptr<Component> newComp = comp->Clone();
+		clone->AddComponentDirect(std::move(newComp));
+	}
+
+	SceneNode* originalNode = GetSceneNodeRaw();
+	SceneNode* cloneNode = clone->GetSceneNodeRaw();
+	for (auto& child : originalNode->GetChildren())
+	{
+		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
+		if (childClone)
+			cloneNode->AddChild(childClone->GetSceneNode());
+	}
+
+	return clone;
+}
+
 void Object::SetLocalTransform(const Transform& transform)
 {
 	m_localTransform = transform;
@@ -52,14 +76,27 @@ const Transform& Object::GetLocalTransform() const
 	return m_localTransform;
 }
 
-Transform& Object::GetGlobalTransform()
+const Transform& Object::GetGlobalTransform()
 {
+	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
+
 	return m_globalTransform;
 }
 
-const Transform& Object::GetGlobalTransform() const
+void Object::UpdateGlobalTransform()
 {
-	return m_globalTransform;
+	if (!m_owner || !m_owner->IsDirty()) return;
+
+	Object* parent = m_owner->GetParentObj();
+
+	if (!parent) 
+	{
+		m_globalTransform = m_localTransform;
+		return;
+	}
+
+	m_globalTransform = parent->GetGlobalTransform() * m_localTransform;
+	m_owner->CleanDirty();
 }
 
 void Object::Start()

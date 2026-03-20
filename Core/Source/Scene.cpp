@@ -5,6 +5,8 @@
 #include "Texture.h"
 #include "Shader.h"
 
+#include "Camera.h"
+
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
@@ -14,9 +16,35 @@
 #include <algorithm>
 
 using namespace Apex::Physic;
+using namespace Apex::Data;
 
 namespace Apex::Rendering
 {
+	std::unique_ptr<Scene> Scene::Clone()
+	{
+		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
+		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
+
+		for (const auto& obj : m_objects)
+		{
+			copy->m_objects.push_back(obj->Clone());
+			std::unique_ptr<Object>& newObj = copy->m_objects[copy->m_objects.size() - 1];
+
+			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
+			Collider* collider = newObj->GetComponent<Collider>();
+
+			PhysMatHandle mat = collider->GetMaterial();
+			if (mat.IsValid())
+				collider->SetMaterial(copy->m_physics.CreateMaterial(
+					mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
+
+			if (body && collider)
+				copy->m_physics.CreateActor(*collider, *body);
+		}
+
+		return copy;
+	}
+
 	Object* Scene::CreateObject()
 	{
 		auto obj = std::make_unique<Object>();
@@ -52,11 +80,18 @@ namespace Apex::Rendering
 		if (it != m_objects.end())
 			m_objects.erase(it);
 	}
-	
-	void Scene::Update(float deltaTime)
+		
+	void Scene::Update(float deltaTime_s)
 	{
 		for (auto& obj : m_objects)
-			obj->Update(deltaTime);
+			obj->Update(deltaTime_s);
+
+		m_physics.SyncFromPhysx();
+	}
+
+	void Scene::FixedUpdate(float deltaTime_s)
+	{
+		m_physics.Update(deltaTime_s);
 	}
 
 	void Scene::Render(RenderPassInfo passInfo)
@@ -70,6 +105,12 @@ namespace Apex::Rendering
 
 			renderer->Render(passInfo);
 		}
+		LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
+		view[3][0] = 0;
+		view[3][1] = 0;
+		view[3][2] = 0;
+		m_skybox->Render(passInfo.m_camera->GetProjectionMatrix(passInfo.m_aspectRatio) * view);
+		m_physics.DrawColliders();
 	}
 
 	void Scene::InsertBefore(Object* dragged, Object* target)
@@ -116,7 +157,7 @@ namespace Apex::Rendering
 			std::rotate(itTarget + 1, itDragged, itDragged + 1);
 	}
 
-	void Scene::Save(const std::string& path, Apex::Physic::PhysicSystem& phys)
+	void Scene::Save(const std::string& path)
 	{
 		std::ofstream file(path);
 
@@ -133,7 +174,7 @@ namespace Apex::Rendering
 
 		file << "\"materials\": [\n";
 
-		auto& materials = phys.GetMaterials();
+		auto& materials = m_physics.GetMaterials();
 
 		bool first = true;
 
