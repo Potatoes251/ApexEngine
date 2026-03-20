@@ -20,19 +20,22 @@ namespace Apex::SceneGraph
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
-				SceneNode&						operator=(const SceneNode& other) = delete;
+		SceneNode&						operator=(const SceneNode& other) = delete;
 
-				SceneNode*						GetParent() const;
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
-				Object*							GetObject() const;
+		SceneNode*	GetParent() const;
+		Object*		GetParentObj() const;
+		Object*		GetObject() const;
 
-				void							AddChild(shared_ptr<SceneNode> child);
-				void							DestroyChild(SceneNode* child);
-				shared_ptr<SceneNode>			DetachChild(SceneNode* child);			//return a unique pointer, to use children use ' .get() ' on each children
+		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a unique pointer, to use children use ' .get() ' on each children
+		void		AddChild(shared_ptr<SceneNode> child);
+		void		DestroyChild(SceneNode* child);
 
-				void							Destroy();
-				void							SetParent(SceneNode* newParent);
-				void							MarkDirty();
+		void		Destroy();
+		void		SetParent(SceneNode* newParent);
+		void		MarkDirty();
+		bool		IsDirty() const;
+		void		CleanDirty();
 	private:
 		bool	IsDescendantOf(SceneNode& otherNode);
 

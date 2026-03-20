@@ -76,14 +76,27 @@ const Transform& Object::GetLocalTransform() const
 	return m_localTransform;
 }
 
-Transform& Object::GetGlobalTransform()
+const Transform& Object::GetGlobalTransform()
 {
+	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
+
 	return m_globalTransform;
 }
 
-const Transform& Object::GetGlobalTransform() const
+void Object::UpdateGlobalTransform()
 {
-	return m_globalTransform;
+	if (!m_owner || !m_owner->IsDirty()) return;
+
+	Object* parent = m_owner->GetParentObj();
+
+	if (!parent) 
+	{
+		m_globalTransform = m_localTransform;
+		return;
+	}
+
+	m_globalTransform = parent->GetGlobalTransform() * m_localTransform;
+	m_owner->CleanDirty();
 }
 
 void Object::Start()

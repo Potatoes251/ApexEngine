@@ -33,8 +33,9 @@ namespace Apex::Data
 
 				LibMath::Transform&		GetLocalTransform();
 		const	LibMath::Transform&		GetLocalTransform() const;
-				LibMath::Transform&		GetGlobalTransform();
-		const	LibMath::Transform&		GetGlobalTransform() const;
+		const	LibMath::Transform&		GetGlobalTransform();
+
+		void		UpdateGlobalTransform();
 
 		void		SetLocalTransform(const LibMath::Transform& transform);
 		void		SetGlobalTransform(const LibMath::Transform& transform);

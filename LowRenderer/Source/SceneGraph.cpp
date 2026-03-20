@@ -14,6 +14,11 @@ SceneNode* SceneNode::GetParent() const
 	return m_parent;
 }
 
+Object* SceneNode::GetParentObj() const
+{
+	return m_parent ? m_parent->m_object : nullptr;
+}
+
 const vector<shared_ptr<SceneNode>>& SceneNode::GetChildren() const
 {
 	return m_children;
@@ -155,4 +160,14 @@ void SceneNode::MarkDirty()
 	{
 		child->MarkDirty();
 	}
+}
+
+bool SceneNode::IsDirty() const
+{
+	return m_dirty;
+}
+
+void SceneNode::CleanDirty()
+{
+	m_dirty = false;
 }

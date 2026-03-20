@@ -315,12 +315,6 @@ void PhysicSystem::SyncFromPhysx()
 
 			actor.m_owner->SetPosition(ToLibVec(trans.p));
 			actor.m_owner->SetRotation(ToLibQuat(trans.q));
-
-			if (auto* obj = actor.m_owner->GetOwner())
-			{
-				obj->GetGlobalTransform().setPosition(ToLibVec(trans.p));
-				obj->GetGlobalTransform().setRotation(ToLibQuat(trans.q));
-			}
 		}
 	}
 }

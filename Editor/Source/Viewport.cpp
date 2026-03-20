@@ -76,7 +76,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-		m_selectedObject->GetGlobalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
+		m_selectedObject->GetLocalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
 		break;
 	}
 
@@ -94,7 +94,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		m_selectedObject->GetGlobalTransform().setRotation(deltaAngle * m_initialTransform.getRotation());
+		m_selectedObject->GetLocalTransform().setRotation(deltaAngle * m_initialTransform.getRotation());
 		break;
 	}
 	case GizmoMode::Scale:
@@ -106,7 +106,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 			scaleDelta = { movement, movement, movement };
 		}
 		if (m_isScaleSnapping) Snap(scaleDelta);
-		m_selectedObject->GetGlobalTransform().setScale(m_initialTransform.getScale() + scaleDelta);
+		m_selectedObject->GetLocalTransform().setScale(m_initialTransform.getScale() + scaleDelta);
 		break;
 	}
 	default:
