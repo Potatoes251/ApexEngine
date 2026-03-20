@@ -222,7 +222,17 @@ namespace Apex::Editor
         if (m_renamingPath.empty()) return;
 
         std::string newStem(m_renameBuffer);
-        if (!newStem.empty() && newStem != m_renamingPath.stem().string())
+
+        auto firstNonSpace = newStem.find_first_not_of(' ');
+        if (firstNonSpace == std::string::npos)
+        {
+            // All spaces or empty — cancel silently
+            m_renamingPath.clear();
+            return;
+        }
+        newStem = newStem.substr(firstNonSpace);
+
+        if (newStem != m_renamingPath.stem().string())
         {
             // Re-attach the original extension so the user can never change it
             fs::path dest = m_renamingPath.parent_path() / (newStem + m_renamingPath.extension().string());
