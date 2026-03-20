@@ -340,9 +340,9 @@ Axis Gizmos::IsOnTranslation(
 
     struct PlaneAxes
     {
-        LibMath::Vector3 a;
-        LibMath::Vector3 b;
-        Axis axis;
+        LibMath::Vector3 m_a;
+        LibMath::Vector3 m_b;
+        Axis m_axis;
     };
 
     PlaneAxes planes[3] =
@@ -352,16 +352,16 @@ Axis Gizmos::IsOnTranslation(
         { {0,1,0}, {0,0,1}, Axis::YZ }
     };
 
-    for (const PlaneAxes& p : planes)
+    for (const PlaneAxes& plane : planes)
     {
-        LibMath::Vector3 base = worldPos + (p.a + p.b) * planeOffset;
+        LibMath::Vector3 base = worldPos + (plane.m_a + plane.m_b) * planeOffset;
 
         LibMath::Vector2 p0 = GetScreenPos(base, viewProj, panelOffset, panelSize);
-        LibMath::Vector2 px = GetScreenPos(base + p.a * planeSize, viewProj, panelOffset, panelSize);
-        LibMath::Vector2 py = GetScreenPos(base + p.b * planeSize, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 px = GetScreenPos(base + plane.m_a * planeSize, viewProj, panelOffset, panelSize);
+        LibMath::Vector2 py = GetScreenPos(base + plane.m_b * planeSize, viewProj, panelOffset, panelSize);
 
         if (PointInQuad(mousePosOnScreen, p0, px, py))
-            return p.axis;
+            return plane.m_axis;
     }
 
     float axisLength = 1.0f * m_distanceToCamera;

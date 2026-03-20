@@ -1,25 +1,37 @@
-set(EDITOR_NAME Editor) #Local variable only
+# -----------------------------------
+# Editor/CMakeLists.txt
+# -----------------------------------
 
-file(GLOB_RECURSE PROJECT_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp
+# Collect code files
+file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Header/*.h)
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
+
+# Group files for IDE
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
+             FILES ${PROJECT_HEADERS} ${PROJECT_SOURCES})
+
+
+# Create executable
+add_executable(${EXE_EDITOR_NAME})
+
+# Add source files
+target_sources(${EXE_EDITOR_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
+
+
+# ---- Include directories ----
+target_include_directories(${EXE_EDITOR_NAME}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/header
+    PRIVATE ${LIB_INCLUDE_DIR}
+    PRIVATE ${DAT_INCLUDE_DIR}
+    PRIVATE ${LOW_INCLUDE_DIR}
+    PRIVATE ${RESOURCES_INCLUDE_DIR}
+    PRIVATE ${UI_INCLUDE_DIR}
+    PRIVATE ${PHYS_INCLUDE_DIR}
+    PRIVATE ${CORE_INCLUDE_DIR}
 )
 
-add_library(${EDITOR_NAME})
-
-target_sources(${EDITOR_NAME} PRIVATE ${PROJECT_FILES})
-
-target_include_directories(${EDITOR_NAME} 
-	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Header
-	PRIVATE ${RESOURCES_INCLUDE_DIR}
-	PRIVATE ${LOW_INCLUDE_DIR}
-	PRIVATE ${UI_INCLUDE_DIR}
-    	PRIVATE ${PHYS_INCLUDE_DIR}
-	PRIVATE ${CORE_INCLUDE_DIR}
-)
-
-target_include_directories(${EDITOR_NAME} PRIVATE ${LIB_INCLUDE_DIR})
-target_link_libraries(${EDITOR_NAME}
+# ---- Link libraries ----
+target_link_libraries(${EXE_EDITOR_NAME}
     PRIVATE Glad
     PRIVATE GLFW
     PRIVATE ImGui
@@ -28,17 +40,60 @@ target_link_libraries(${EDITOR_NAME}
     PRIVATE PhysX
     PRIVATE LUA
     PRIVATE opengl32
-    PRIVATE user32
-    PRIVATE gdi32
+    PRIVATE user32 
+    PRIVATE gdi32 
     PRIVATE shell32
     PRIVATE ${LIB_NAME}
     PRIVATE ${RESOURCES_NAME}
     PRIVATE ${LOW_NAME}
     PRIVATE ${UI_NAME}
-    PRIVATE ${CORE_NAME}
     PRIVATE ${PHYS_NAME}
+    PRIVATE ${CORE_NAME}
 )
-set(EDITOR_NAME ${EDITOR_NAME} PARENT_SCOPE) #outer scope variable only
 
-set(EDITOR_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Header PARENT_SCOPE)
-#This command sets the LIB_INCLUDE_DIR variable to the path of the 'include' directory
+add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${EXE_EDITOR_NAME}>/assets
+)
+
+# This ensures the executable can find the DLL at runtime
+add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/External/irrKlang/bin/irrKlang.dll"
+        $<TARGET_FILE_DIR:${EXE_EDITOR_NAME}>
+)
+
+add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/External/FBX_SDK/lib/x64/debug/libfbxsdk.dll>
+
+    $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/External/FBX_SDK/lib/x64/release/libfbxsdk.dll>
+
+    $<TARGET_FILE_DIR:${EXE_EDITOR_NAME}>
+)
+
+set(PHYSX_ROOT "${CMAKE_SOURCE_DIR}/External/PhysX")
+
+add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysX_64.dll>
+        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXCommon_64.dll>
+        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXFoundation_64.dll>
+        $<$<CONFIG:Debug>:${PHYSX_ROOT}/bin/Debug/PhysXCooking_64.dll>
+
+        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysX_64.dll>
+        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXCommon_64.dll>
+        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXFoundation_64.dll>
+        $<$<CONFIG:Release>:${PHYSX_ROOT}/bin/Release/PhysXCooking_64.dll>
+        $<TARGET_FILE_DIR:${EXE_EDITOR_NAME}>
+)
+
+add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/External/Lua/bin/Debug/lua51.dll>
+
+    $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/External/Lua/bin/Release/lua51.dll>
+
+    $<TARGET_FILE_DIR:${EXE_EDITOR_NAME}>
+)
