@@ -39,15 +39,15 @@
   {
     "id": 1,
     "parent": null,
-    "name": "Cube",
+    "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/cube.obj",
-        "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
+        "mesh": "Assets/Meshes/padoru.obj",
+        "texture": "Assets/Textures/padoru.png",
         "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
       },
       "RigidBody": {
@@ -66,14 +66,14 @@
   {
     "id": 2,
     "parent": null,
-    "name": "Sphere2",
+    "name": "Floor",
     "position": [0.000000,5.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
+        "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
         "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
       },

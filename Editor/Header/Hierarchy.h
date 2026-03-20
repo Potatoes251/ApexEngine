@@ -8,6 +8,8 @@
 #include "Object.h"
 #include "SceneGraph.h"
 
+#include "ComponentsViewer.h"
+
 namespace Apex::Editor
 {
 	enum class PendingOp
@@ -22,13 +24,15 @@ namespace Apex::Editor
 	{
 	public:
 		Hierarchy(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene* scene);
+			Apex::Rendering::Scene* scene, ComponentsViewer* compViewer);
 
 		void Draw();
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
+
+		void HandlePending();
 
 		bool DrawTreeNode(Apex::Data::Object* obj, bool isLeaf);
 
@@ -38,7 +42,7 @@ namespace Apex::Editor
 		void HandleDropTarget(Apex::SceneGraph::SceneNode* node);
 		void HandleInsertLine(Apex::SceneGraph::SceneNode* node);
 		void HandleAcceptDrop(Apex::SceneGraph::SceneNode* node);
-
+		
 		void SetPending(Apex::SceneGraph::SceneNode* dragged, Apex::SceneGraph::SceneNode* target, PendingOp op);
 
 		void DrawInsertLine(float y);
@@ -52,6 +56,7 @@ namespace Apex::Editor
 	private:
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene* m_scene;
+		ComponentsViewer* m_componentsViewer;
 
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;
@@ -63,6 +68,10 @@ namespace Apex::Editor
 		Apex::Data::Object* m_pendingClone = nullptr;
 
 		PendingOp m_pendingOp = PendingOp::None;
+
+		Apex::Data::Object* m_renaming = nullptr;
+		char m_renameBuffer[256] = {};
+		bool m_renameFocusPending = false;
 	};
 }
 

@@ -226,7 +226,7 @@ namespace Apex::Editor
         auto firstNonSpace = newStem.find_first_not_of(' ');
         if (firstNonSpace == std::string::npos)
         {
-            // All spaces or empty — cancel silently
+            // All spaces or empty - cancel silently
             m_renamingPath.clear();
             return;
         }
@@ -306,7 +306,7 @@ namespace Apex::Editor
     void ContentBrowser::Draw()
     {
         m_gui.PushFont(FontID::Default);
-        m_gui.BeginPanel("Content Browser");
+        m_gui.BeginPanel("Content Browser", nullptr, true);
         m_gui.PopFont();
 
         DrawToolbar();

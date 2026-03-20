@@ -1,6 +1,9 @@
 #include "ScriptComponent.h"
 
-Apex::Scripting::ScriptComponent::~ScriptComponent()
+using namespace Apex;
+using namespace Apex::Scripting;
+
+ScriptComponent::~ScriptComponent()
 {
     if (m_instanceRef != LUA_REFNIL)
     {
@@ -8,14 +11,14 @@ Apex::Scripting::ScriptComponent::~ScriptComponent()
     }
 }
 
-std::unique_ptr<Apex::Component> Apex::Scripting::ScriptComponent::Clone() const
+std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);
     clone->SetScript(m_scriptPath);
     return clone;
 }
 
-void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
+void ScriptComponent::SetScript(const std::string& path)
 {
     m_scriptPath = path;
     m_scriptRef = m_lua.LoadScript(path);
@@ -34,13 +37,23 @@ void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
     lua_pop(L, 1);
 }
 
-void Apex::Scripting::ScriptComponent::OnStart()
+std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
+{
+    return std::vector<ExposedVar>();
+}
+
+void ScriptComponent::DrawVariables(Apex::UserInterface::IGUI& gui)
+{
+    
+}
+
+void ScriptComponent::OnStart()
 {
     if (m_instanceRef != LUA_REFNIL)
         m_lua.CallFunction(m_instanceRef, "Start");
 }
 
-void Apex::Scripting::ScriptComponent::OnUpdate(float deltaTime)
+void ScriptComponent::OnUpdate(float deltaTime)
 {
     if (!IsEnabled())
         return;
@@ -49,7 +62,7 @@ void Apex::Scripting::ScriptComponent::OnUpdate(float deltaTime)
         m_lua.CallFunction(m_instanceRef, "Update", deltaTime);
 }
 
-void Apex::Scripting::ScriptComponent::Serialize(std::ostream& out) const
+void ScriptComponent::Serialize(std::ostream& out) const
 {
     out << "      \"ScriptComponent\": {\n";
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";

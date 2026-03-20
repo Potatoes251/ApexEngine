@@ -1,5 +1,6 @@
 #include "CapsuleCollider.h"
 
+using namespace Apex;
 using namespace Apex::Physic;
 
 CapsuleCollider::CapsuleCollider(CapsuleCollider const& other) : Collider(other.m_material, other.m_isTrigger)
@@ -16,4 +17,21 @@ CapsuleCollider& Apex::Physic::CapsuleCollider::operator=(CapsuleCollider const&
 	m_isTrigger = other.m_isTrigger;
 
 	return *this;
+}
+
+void Apex::Physic::CapsuleCollider::Serialize(std::ostream& out) const
+{
+}
+
+std::vector<ExposedVar> Apex::Physic::CapsuleCollider::GetExposedVariables()
+{
+	std::vector<ExposedVar> exposedVec = Collider::GetExposedVariables();
+
+	exposedVec.insert(exposedVec.end(),
+		{
+			{ "Half height", ExposedVar::Float, &m_halfHeight},
+			{ "Radius", ExposedVar::Float, &m_radius }
+		});
+	
+	return exposedVec;
 }

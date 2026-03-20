@@ -45,9 +45,6 @@ namespace Apex::Editor
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
-                //if (key == Key::Escape && action == KeyAction::Press)
-                //    m_window->Close();
-
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
             });
@@ -90,7 +87,9 @@ namespace Apex::Editor
                     break;
                 }
             });
-        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene());
+
+        m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene(), *m_app->GetResourceManager());
+        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene(), m_componentsViewer.get());
 
         return true;
     }
@@ -128,6 +127,9 @@ namespace Apex::Editor
 
         if (m_hierarchy)
             m_hierarchy->Draw();
+
+        if (m_componentsViewer)
+            m_componentsViewer->Draw();
 
         m_gui->EndFrame();
 
