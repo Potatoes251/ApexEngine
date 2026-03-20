@@ -15,8 +15,8 @@ namespace Apex::Rendering
 	public:
 		Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHandle<Mesh> mesh, 
 			Resources::ResourceHandle<Shader> shader, IRHI* rhi);
-		Skybox(Skybox const&) = delete;
-		Skybox& operator=(Skybox const&) = delete;
+		Skybox(Skybox const&);
+		Skybox& operator=(Skybox const&);
 
 		void Render(LibMath::Matrix4 viewProj);
 	private:

@@ -3,11 +3,11 @@
 
 #include "ThreadPool.h"
 #include "Physic.h"
-
+#include "Scene.h"
 
 namespace Apex::Rendering
 {
-    class Scene;
+    //class Scene;
     class IRHI;
     class Camera;
 }
@@ -55,6 +55,7 @@ namespace Apex
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
+        void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
         Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
@@ -72,13 +73,11 @@ namespace Apex
         
         void UpdateAudioListener();
         void Update();
-        void SyncPhysicsToTransforms();
 
     private:
         bool m_running = true;
-        float m_totalTime = 0.0f;
-        float m_deltaTime = 0.0f;
-        float m_accumulator = 0.f;
+        float m_deltaTime_s = 0.0f;
+        float m_accumulator_s = 0.f;
 
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
@@ -92,8 +91,6 @@ namespace Apex
 
         Core::ThreadPool m_threadPool;
         std::unique_ptr<Rendering::Scene> m_scene;
-
-        Physic::PhysicSystem m_physics;
 	};
 }
 

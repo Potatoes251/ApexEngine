@@ -8,6 +8,21 @@ Skybox::Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHa
 	: m_cubemap(cubemap), m_mesh(mesh), m_shader(shader), m_rhi(rhi)
 {}
 
+Skybox::Skybox(Skybox const& other)
+{
+	m_cubemap = other.m_cubemap;
+	m_mesh = other.m_mesh;
+	m_shader = other.m_shader;
+}
+
+Skybox& Skybox::operator=(Skybox const& other)
+{
+	m_cubemap = other.m_cubemap;
+	m_mesh = other.m_mesh;
+	m_shader = other.m_shader;
+	return *this;
+}
+
 void Skybox::Render(LibMath::Matrix4 viewProj)
 {
 	if (!m_cubemap.IsReady() || !m_shader.IsReady() || !m_mesh.IsReady()) return;

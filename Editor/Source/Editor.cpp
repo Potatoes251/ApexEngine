@@ -4,11 +4,13 @@
 #include "ResourceHandle.h"
 #include "Audio.h"
 #include "ResourceManager.h"
+#include "Scene.h"
 
 
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
 using namespace Apex::Audio;
+using namespace Apex::Rendering;
 
 namespace Apex::Editor 
 {
@@ -28,6 +30,8 @@ namespace Apex::Editor
         m_app = &app;
 		m_audio = app.GetAudio();
         m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
+
+        m_editScene = app.GetScene()->Clone();
 
         if (!m_app->GetAudio() || !m_gui) return false;
 
@@ -156,6 +160,26 @@ namespace Apex::Editor
         m_viewport.reset();
         m_gui.reset();
         m_window.reset();
+    }
+
+    void Editor::SetEditorState(EditorState newState)
+    {
+        if (m_editorState != newState)
+        m_editorState = newState;
+
+        if (newState == EditorState::Play)
+        {
+            m_app->SetScene(m_editScene->Clone());
+
+            m_viewport->ChangeScene(m_app->GetScene());
+        }
+        else if (newState == EditorState::Edit)
+        {
+            // Restore editor scene
+            m_app->SetScene(m_editScene->Clone());
+
+            m_viewport->ChangeScene(m_editScene.get());
+        }
     }
 
     const char* Editor::TypeToString(AssetType type)

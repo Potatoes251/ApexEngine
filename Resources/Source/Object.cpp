@@ -1,5 +1,4 @@
 #include "Object.h"
-#include "../../LowRenderer/header/SceneGraph.h"
 
 using namespace Apex::Data;
 using namespace LibMath;
@@ -28,6 +27,31 @@ Object::Object(const Object& other) :
 {
 	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
+}
+
+std::unique_ptr<Object> Object::Clone()
+{
+	std::unique_ptr<Object> clone = std::make_unique<Object>();
+	clone->SetName(m_name);
+	clone->SetLocalTransform(m_localTransform);
+	clone->SetGlobalTransform(m_globalTransform);
+
+	for (auto* comp : GetComponents())
+	{
+		std::unique_ptr<Component> newComp = comp->Clone();
+		clone->AddComponentDirect(std::move(newComp));
+	}
+
+	SceneNode* originalNode = GetSceneNodeRaw();
+	SceneNode* cloneNode = clone->GetSceneNodeRaw();
+	for (auto& child : originalNode->GetChildren())
+	{
+		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
+		if (childClone)
+			cloneNode->AddChild(childClone->GetSceneNode());
+	}
+
+	return clone;
 }
 
 void Object::SetLocalTransform(const Transform& transform)
@@ -77,4 +101,17 @@ void Object::Update(float deltaTime)
 			comp->OnUpdate(deltaTime);
 	}
 	auto pos = m_localTransform.getPosition();
+}
+
+void Object::AddComponentDirect(std::unique_ptr<Component> comp)
+{
+	comp->m_owner = this;
+	m_components.push_back(std::move(comp));
+
+	if (m_components.size() == 1)
+		m_components.back()->SetId(0);
+	else
+	{
+		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+	}
 }

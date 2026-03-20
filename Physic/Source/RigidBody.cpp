@@ -8,6 +8,19 @@ RigidBodyComponent::RigidBodyComponent(float mass, BodyType type)
 	m_bodyType = type;
 }
 
+RigidBodyComponent::RigidBodyComponent(RigidBodyComponent const& other)
+{
+	m_mass = other.m_mass;
+	m_bodyType = other.m_bodyType;
+}
+
+RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& other)
+{
+	m_mass = other.m_mass;
+	m_bodyType = other.m_bodyType;
+	return *this;
+}
+
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();
@@ -39,12 +52,12 @@ void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 
 void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)
 {
-	printf("OnTriggerEnter\n");
+	printf("Send OnTriggerEnter to the object\n");
 }
 
 void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
 {
-	printf("OnTriggerExit\n");
+	printf("Send OnTriggerExit to the object\n");
 }
 
 void RigidBodyComponent::Serialize(std::ostream& out) const

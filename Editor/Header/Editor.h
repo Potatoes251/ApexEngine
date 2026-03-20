@@ -55,7 +55,7 @@ namespace Apex::Editor
 		Apex::Windowing::IWindow*	GetWindow() { return m_window.get(); }
 		Apex::Application*			GetApp() { return m_app; }
 		Apex::UserInterface::IGUI*	GetGUI() { return m_gui.get(); }
-		void						SetEditorState(EditorState isTicking) { m_editorState = isTicking; }
+		void						SetEditorState(EditorState newState);
 		EditorState					GetEditorState() const { return m_editorState; }
 
 	private:
@@ -68,12 +68,13 @@ namespace Apex::Editor
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;
 
-		std::unique_ptr<Apex::Windowing::IWindow>  m_window;
-		std::unique_ptr<Apex::UserInterface::IGUI> m_gui;
-		std::unique_ptr<ContentBrowser>            m_contentBrowser;
+		std::unique_ptr<Apex::Windowing::IWindow>	m_window;
+		std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
+		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		// One TextureEditor per open texture — grows on open, shrinks on close
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
-		std::unique_ptr<Viewport>				   m_viewport;
+		std::unique_ptr<Viewport>					m_viewport;
+		std::unique_ptr<Rendering::Scene>			m_editScene;
 
 		EditorState	m_editorState = EditorState::Edit;
 	};

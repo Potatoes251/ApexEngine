@@ -25,18 +25,25 @@ namespace Apex::Rendering
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
+		std::unique_ptr<Scene> Clone();
+
 		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
 
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 
-		void Update(float deltaTime);
+		void Update(float deltaTime_s);
+		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
-		void Save(const std::string& path, Apex::Physic::PhysicSystem& phys);
+		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+
+		void Save(const std::string& path);
 	private:
+		Physic::PhysicSystem m_physics;
+
 		std::vector<std::unique_ptr<Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
 	};

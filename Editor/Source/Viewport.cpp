@@ -27,11 +27,13 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
+	if (m_editor->GetEditorState() != EditorState::Edit) return;
 	PerformPicking({ (float)mouseX, (float)mouseY });
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
+	if (m_editor->GetEditorState() != EditorState::Edit) return;
 	m_selectedAxis = Axis::None;
 }
 
@@ -90,9 +92,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		if (m_isRotationSnapping && m_rotateSnap > 0.f) Snap(angle, m_rotateSnap);
 
-		LibMath::Quaternion delta(LibMath::Radian(angle), axis);
+		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		m_selectedObject->GetGlobalTransform().setRotation(delta * m_initialTransform.getRotation());
+		m_selectedObject->GetGlobalTransform().setRotation(deltaAngle * m_initialTransform.getRotation());
 		break;
 	}
 	case GizmoMode::Scale:
@@ -371,8 +373,6 @@ void Viewport::DrawGrid()
 {
 	if (!m_gridShader.IsReady()) return;
 	m_gridShader->Use();
-
-	float gridScale = 1.0f; // major grid size
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);

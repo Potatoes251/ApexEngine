@@ -103,7 +103,7 @@ bool Apex::Application::InitWindow(IWindow* window)
                 m_window->Close();
 
             if (key == Key::P && action == KeyAction::Press)
-                m_scene->Save("../../../Assets/Scenes/scene.level", m_physics);
+                m_scene->Save("../../../Assets/Scenes/scene.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)
@@ -188,7 +188,7 @@ Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
     m_scene->SetSkybox(sk);
 
 
-    SceneLoader loader(*m_resourceManager.get(), m_physics);
+    SceneLoader loader(*m_resourceManager, *m_scene->GetPhysic());
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;
@@ -231,7 +231,7 @@ Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
         auto* collider = obj->GetComponent<Collider>();
 
         if (body && collider)
-            m_physics.CreateActor(*collider, *body);
+            m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
 }
 
@@ -244,22 +244,21 @@ void Apex::Application::Tick()
 {
     //m_window->UpdateDeltaTime();
 
-    m_deltaTime = m_window->GetDeltaTime();
-    if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;
+    constexpr float fixedUpdateTime_s = 1.f / 60.f;
+
+    m_deltaTime_s = m_window->GetDeltaTime();
+    if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
     ProcessInput();
     Update();
 
-    m_accumulator += m_deltaTime;
-    m_totalTime += m_deltaTime;
+    m_accumulator_s += m_deltaTime_s;
 
-    while (m_accumulator >= 1.f / 60.f)
+    while (m_accumulator_s >= fixedUpdateTime_s)
     {
-        m_physics.Update(1.f / 60.f);
-        m_accumulator -= 1.f / 60.f;
+        m_scene->FixedUpdate(fixedUpdateTime_s);
+        m_accumulator_s -= fixedUpdateTime_s;
     }
-
-    SyncPhysicsToTransforms();
 }
 
 void Apex::Application::ProcessInput()
@@ -271,7 +270,7 @@ void Apex::Application::ProcessInput()
         m_window->IsKeyPressed(Key::D),
         m_window->IsKeyPressed(Key::E),
         m_window->IsKeyPressed(Key::Q),
-        m_deltaTime
+        m_deltaTime_s
     );
 }
 
@@ -290,12 +289,7 @@ void Apex::Application::UpdateAudioListener()
 
 void Apex::Application::Update()
 {
-    m_scene->Update(m_deltaTime);
-}
-
-void Apex::Application::SyncPhysicsToTransforms()
-{
-    m_physics.SyncFromPhysx();
+    m_scene->Update(m_deltaTime_s);
 }
 
 void Apex::Application::Render(Camera* cam)
@@ -312,6 +306,5 @@ void Apex::Application::Render(Camera* cam)
     LibMath::Matrix4 view = cam->GetViewMatrix();
     LibMath::Matrix4 proj = cam->GetProjectionMatrix(m_window->GetAspectRatio());
 
-    m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(proj * view);
 }
