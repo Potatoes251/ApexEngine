@@ -165,9 +165,8 @@ namespace Apex::Editor
     void Editor::SetEditorState(EditorState newState)
     {
         if (m_editorState != newState)
-        m_editorState = newState;
 
-        if (newState == EditorState::Play)
+        if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
             m_app->SetScene(m_editScene->Clone());
 
@@ -180,6 +179,7 @@ namespace Apex::Editor
 
             m_viewport->ChangeScene(m_editScene.get());
         }
+        m_editorState = newState;
     }
 
     const char* Editor::TypeToString(AssetType type)

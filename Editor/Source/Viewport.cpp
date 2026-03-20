@@ -337,7 +337,13 @@ void Viewport::DrawUI()
 
 	if (m_gui->Button("Play")) m_editor->SetEditorState(EditorState::Play);
 	m_gui->SameLine();
-	if (m_gui->Button("Pause") && m_editor->GetEditorState() == EditorState::Play) m_editor->SetEditorState(EditorState::Pause);
+	if (m_gui->Button("Pause")) 
+	{
+		if (m_editor->GetEditorState() == EditorState::Play)
+			m_editor->SetEditorState(EditorState::Pause);
+		else if (m_editor->GetEditorState() == EditorState::Pause)
+			m_editor->SetEditorState(EditorState::Play);
+	}
 	m_gui->SameLine();
 	if (m_gui->Button("Step") && m_editor->GetEditorState() == EditorState::Pause) m_editor->SetEditorState(EditorState::Step);
 	m_gui->SameLine();

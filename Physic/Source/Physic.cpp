@@ -49,7 +49,6 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		m_isCtxInit = true;
 	}
-	printf("didnt crash\n");
 	physx::PxSceneDesc sceneDesc(scale);
 
 	sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
@@ -72,7 +71,6 @@ PhysicSystem::~PhysicSystem()
 	if (m_scene)       m_scene->release();
 	if (m_physicInstanceCount == 0)
 	{
-		printf("destroying\n");
 		if (m_pxCtx.m_dispatcher)  m_pxCtx.m_dispatcher->release();
 		if (m_pxCtx.m_physics)     m_pxCtx.m_physics->release();
 		if (m_pxCtx.m_foundation)  m_pxCtx.m_foundation->release();
