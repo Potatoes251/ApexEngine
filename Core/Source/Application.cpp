@@ -15,13 +15,11 @@
 #include "Camera.h"
 #include "Audio.h"
 
-
 #include "ResourceManager.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Cubemap.h"
-#include "Scene.h"
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "MeshCollider.h"

@@ -4,6 +4,7 @@
 #include <LibMath/Colision3D.h>
 
 
+#include "Hierarchy.h"
 #include "Editor.h"
 #include "Scene.h"
 #include "RHI.h"
@@ -23,6 +24,13 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_editor = editor;
 
 	CreateGrid();
+}
+
+void Viewport::SelectObject(Data::Object* selected, bool send)
+{
+	m_selectedObject = selected;
+	if (send && m_hierarchy)
+		m_hierarchy->SelectObject(selected, false);
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
@@ -184,7 +192,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	m_pickingshader->Use();
 	m_currentScene->Render(picking);
 
-	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1]));
+	SelectObject(m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer();
 }

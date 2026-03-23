@@ -100,6 +100,9 @@ namespace Apex::Editor
             });
         m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene());
 
+        m_hierarchy->SetViewport(m_viewport.get());
+        m_viewport->SetHierarchy(m_hierarchy.get());
+
         return true;
     }
 

@@ -24,6 +24,7 @@ namespace Apex::Rendering
 namespace Apex::Editor
 {
 	class Editor;
+	class Hierarchy;
 
 	class Viewport
 	{
@@ -34,7 +35,9 @@ namespace Apex::Editor
 		Viewport& operator=(Viewport const&) = delete;
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
+		void				SetHierarchy(Hierarchy* hierarchy) { m_hierarchy = hierarchy; }
 		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
+		void				SelectObject(Data::Object* selected, bool send = true);
 
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
@@ -83,6 +86,7 @@ namespace Apex::Editor
 		Rendering::Scene*		m_currentScene = nullptr;
 		Data::Object*			m_selectedObject = nullptr;
 		Editor*					m_editor = nullptr;
+		Hierarchy*				m_hierarchy = nullptr;
 
 		LibMath::Vector2		m_panelPos;
 		LibMath::Vector2		m_panelSize;

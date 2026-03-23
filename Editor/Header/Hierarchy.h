@@ -2,14 +2,24 @@
 #define HERARCHY
 
 #include "UI.h"
-#include "Window.h"
 
-#include "Scene.h"
-#include "Object.h"
-#include "SceneGraph.h"
+namespace Apex::Rendering
+{
+	class Scene;
+}
+namespace Apex::SceneGraph
+{
+	class SceneNode;
+}
+namespace Apex::Data
+{
+	class Object;
+}
 
 namespace Apex::Editor
 {
+	class Viewport;
+
 	enum class PendingOp
 	{
 		None,
@@ -26,6 +36,8 @@ namespace Apex::Editor
 
 		void Draw();
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
+		void SetViewport(Viewport* viewport) { m_viewport = viewport; }
+		void SelectObject(Apex::Data::Object* selected, bool send = true);
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
@@ -47,7 +59,7 @@ namespace Apex::Editor
 
 		Apex::Data::Object* DuplicateObject(Apex::Data::Object* original);
 
-		void DestroyObject(Object* obj);
+		void DestroyObject(Apex::Data::Object* obj);
 
 	private:
 		Apex::UserInterface::IGUI& m_gui;
@@ -61,6 +73,7 @@ namespace Apex::Editor
 		Apex::SceneGraph::SceneNode* m_pendingTarget = nullptr;
 
 		Apex::Data::Object* m_pendingClone = nullptr;
+		Viewport* m_viewport = nullptr;
 
 		PendingOp m_pendingOp = PendingOp::None;
 	};

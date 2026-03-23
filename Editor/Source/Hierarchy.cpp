@@ -1,5 +1,9 @@
 #include "Hierarchy.h"
 
+#include "Viewport.h"
+#include "Scene.h"
+#include "Object.h"
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
@@ -27,7 +31,7 @@ void Hierarchy::Draw()
         if (m_gui.MenuItem("Empty"))
         {
             Object* obj = m_scene->CreateObject();
-            m_selected = obj;
+            SelectObject(obj);
         }
 
         m_gui.EndPopup();
@@ -47,7 +51,7 @@ void Hierarchy::Draw()
 
         m_pendingParent->AddChild(newObj->GetSceneNode());
 
-        m_selected = newObj;
+        SelectObject(newObj);
         m_pendingParent = nullptr;
     }
 
@@ -60,7 +64,7 @@ void Hierarchy::Draw()
     if (m_pendingClone)
     {
         Object* clone = DuplicateObject(m_pendingClone);
-        m_selected = clone;
+        SelectObject(clone);
         m_pendingClone = nullptr;
     }
 
@@ -89,6 +93,13 @@ void Hierarchy::Draw()
     m_gui.PopFont();
 
     ApplyPendingOp();
+}
+
+void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
+{
+    m_selected = selected;
+    if (send && m_viewport)
+        m_viewport->SelectObject(selected, false);
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -123,7 +134,7 @@ bool Hierarchy::DrawTreeNode(Object* obj, bool isLeaf)
 void Hierarchy::HandleSelection(Object* obj)
 {
     if (m_gui.IsItemClicked())
-        m_selected = obj;
+        SelectObject(obj);
 }
 
 void Hierarchy::HandleContextMenu(SceneNode* node)
@@ -311,5 +322,5 @@ void Hierarchy::DestroyObject(Object* obj)
     m_scene->DestroyObject(obj);
 
     if (m_selected == obj)
-        m_selected = nullptr;
+        SelectObject(nullptr);
 }
