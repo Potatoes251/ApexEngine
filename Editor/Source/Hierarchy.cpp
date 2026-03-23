@@ -15,7 +15,7 @@ Hierarchy::Hierarchy(IGUI& gui,
 void Hierarchy::Draw()
 {
     m_gui.PushFont(FontID::Default);
-    m_gui.BeginPanel("Hierarchy", nullptr, true);
+    m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.Button(" + Add "))
         m_gui.OpenPopup("AddObject");

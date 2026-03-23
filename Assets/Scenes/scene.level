@@ -20,7 +20,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/sphere.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -48,7 +48,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/padoru.obj",
         "texture": "Assets/Textures/padoru.png",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -75,7 +75,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,

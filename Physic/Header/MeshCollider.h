@@ -33,7 +33,7 @@ namespace Apex::Physic
 
 		Resources::ResourceHandle<Mesh> GetMesh() const { return m_mesh; }
 
-		Resources::ResourceHandle<Mesh> SetMeshColliderType(MeshColliderType type) { m_type = type; }
+		void SetMeshColliderType(MeshColliderType type) { m_type = type; }
 
 		void Serialize(std::ostream& out) const override;
 

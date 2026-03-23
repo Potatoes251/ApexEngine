@@ -14,6 +14,7 @@
 #include "Hierarchy.h"
 #include "Viewport.h"
 #include "TextureEditor.h"
+#include "MeshViewer.h"
 #include "ComponentsViewer.h"
 
 namespace Apex::Editor
@@ -66,6 +67,8 @@ namespace Apex::Editor
 
 		// Opens a new TextureEditor for path, or focuses the existing one
 		void OpenTextureEditor(const std::filesystem::path& path);
+		// Opens a new MeshViewer for path, or focuses the existing one
+		void OpenMeshViewer(const std::filesystem::path& path);
 
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;
@@ -75,6 +78,7 @@ namespace Apex::Editor
 		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		std::unique_ptr<Hierarchy>					m_hierarchy;
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
+		std::vector<std::unique_ptr<MeshViewer>>    m_meshViewers;
 		std::unique_ptr<Viewport>					m_viewport;
 		std::unique_ptr<Rendering::Scene>			m_editScene;
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;
