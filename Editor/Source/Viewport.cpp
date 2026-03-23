@@ -117,6 +117,12 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	}
 }
 
+void Viewport::ToggleFullScreen()
+{
+	m_isFullScreen = !m_isFullScreen;
+	m_isFirstFullScreen = true;
+}
+
 int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 {
 	// relative to panel top-left
@@ -310,6 +316,23 @@ void Viewport::Draw()
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
+
+	if (m_isFullScreen && m_isFirstFullScreen)
+	{
+		LibMath::Vector2 screen = m_gui->GetScreenSize();
+		m_gui->SetNextWindowPos(LibMath::Vector2(0));
+		m_gui->SetNextWindowSize(LibMath::Vector2(screen[0], screen[1]));
+		m_gui->SetNextWindowFocus();
+		m_oldPanelPos = m_panelPos;
+		m_oldPanelSize = m_panelSize;
+		m_isFirstFullScreen = false;
+	}
+	else if (m_isFirstFullScreen)
+	{
+		m_gui->SetNextWindowPos(m_oldPanelPos);
+		m_gui->SetNextWindowSize(m_oldPanelSize);
+		m_isFirstFullScreen = false;
+	}
 
 	m_gui->BeginPanel("Viewport", nullptr, true);
 

@@ -39,6 +39,7 @@ namespace Apex::Editor
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
 		void				OnMouseMove(double mouseX, double mouseY);
+		void				ToggleFullScreen();
 
 		void				Draw();
 
@@ -85,6 +86,8 @@ namespace Apex::Editor
 
 		LibMath::Vector2		m_panelPos;
 		LibMath::Vector2		m_panelSize;
+		LibMath::Vector2		m_oldPanelPos;
+		LibMath::Vector2		m_oldPanelSize;
 
 		// used for changing the object's transform with gizmos
 		LibMath::Transform		m_initialTransform;
@@ -102,6 +105,8 @@ namespace Apex::Editor
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
 		bool	m_isScaleSnapping = true;
+		bool	m_isFullScreen = false;
+		bool	m_isFirstFullScreen = false;
 	};
 }
 

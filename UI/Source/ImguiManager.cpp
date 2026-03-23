@@ -313,12 +313,12 @@ namespace Apex::UserInterface
 
     void ImGUIManager::SetNextWindowSize(LibMath::Vector2 size)
     {
-        ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Always);
     }
 
     void ImGUIManager::SetNextWindowPos(LibMath::Vector2 pos)
     {
-        ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Appearing);
+        ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Always);
     }
 
     void ImGUIManager::BeginTooltip() { ImGui::BeginTooltip(); }

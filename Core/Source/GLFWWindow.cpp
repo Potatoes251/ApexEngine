@@ -136,6 +136,9 @@ namespace Apex::Windowing
         case Key::P:
             glfwKey = GLFW_KEY_P;
             break;
+        case Key::F:
+            glfwKey = GLFW_KEY_F;
+            break;
         case Key::Escape: 
             glfwKey = GLFW_KEY_ESCAPE; 
             break;
@@ -345,6 +348,7 @@ namespace Apex::Windowing
         case GLFW_KEY_Q:      return Key::Q;
         case GLFW_KEY_E:      return Key::E;
         case GLFW_KEY_P:      return Key::P;
+        case GLFW_KEY_F:      return Key::F;
         case GLFW_KEY_UP:     return Key::Up;
         case GLFW_KEY_DOWN:   return Key::Down;
         case GLFW_KEY_LEFT:   return Key::Left;

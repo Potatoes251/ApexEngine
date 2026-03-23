@@ -5,6 +5,13 @@ uniform mat4 uViewProj;
 uniform vec3 uCameraPos;
 uniform float near = 0.01;
 uniform float far = 100;
+uniform float gridScale = 10;
+uniform float minorThickness = 0.01;
+uniform float majorThickness = 0.01;
+uniform float fadeStart = 20.0; // distance where fading begins
+uniform float fadeEnd   = 100.0; // distance where grid fully disappears
+uniform vec3 minorColor = vec3(0.2);
+uniform vec3 majorColor = vec3(0.5);
 
 in vec2 vUV;
 out vec4 outColor;
@@ -37,26 +44,25 @@ void main()
 
     vec2 coord = hit.xz;
 
-    float gridScale = 10;
     float minorGridScale = gridScale * .1;
-    vec2 grid = abs(fract(coord * minorGridScale - 0.5) - 0.5) / fwidth(coord * minorGridScale);
+    vec2 grid = abs(fract(coord * minorGridScale - 0.5) - 0.5);
     float line = min(grid.x, grid.y);
-    float minor = 1.0 - min(line, 1.0);
+    float minor = 1.0 - smoothstep(0, minorThickness, line);
     minor = min(minor, 0.25);
 
     vec2 majorCoord = coord;
-    vec2 majorGrid = abs(fract(majorCoord / gridScale - 0.5) - 0.5) / (fwidth(coord) / gridScale);
-    float major = 1.0 - min(min(majorGrid.x, majorGrid.y), 1.0);
+    vec2 majorGrid = abs(fract(majorCoord / gridScale - 0.5) - 0.5);
+    float majorLine = min(majorGrid.x, majorGrid.y);
+    float major = 1.0 - smoothstep(0, majorThickness, majorLine);
 
-    float axisX = smoothstep(0.0, fwidth(coord.y), abs(coord.y));
-    float axisZ = smoothstep(0.0, fwidth(coord.x), abs(coord.x));
+
+    float axisX = smoothstep(0, majorThickness, abs(coord.y));
+    float axisZ = smoothstep(0, majorThickness, abs(coord.x));
 
     float dist = length(hit - uCameraPos);
-    float fadeStart = 50.0; // distance where fading begins
-    float fadeEnd   = 200.0; // distance where grid fully disappears
     float fade = 1.0 - smoothstep(fadeStart, fadeEnd, dist); // invert
 
-    vec3 color = vec3(0.2) * minor + vec3(0.5) * major;
+    vec3 color = minorColor * minor + majorColor * major;
 
     color = mix(vec3(1,0,0), color, axisX); // X axis
     color = mix(vec3(0,0,1), color, axisZ); // Z axis

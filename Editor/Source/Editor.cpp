@@ -55,6 +55,9 @@ namespace Apex::Editor
 
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+
+                if (key == Key::F && action == KeyAction::Press)
+                    m_viewport->ToggleFullScreen();
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -151,7 +154,6 @@ namespace Apex::Editor
             m_window->IsKeyPressed(Key::Q),
             m_window->GetDeltaTime()
         );
-
 
         switch (m_editorState)
         {
