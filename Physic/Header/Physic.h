@@ -61,9 +61,6 @@ namespace Apex::Physic
 		// should be called inside a fixed update
 		void	Update(float deltaTime_s);
 
-		// called on frame update
-		void	SyncFromPhysx();
-
 		void	DrawColliders();
 
 	private:
@@ -119,6 +116,7 @@ namespace Apex::Physic
 		void	CreateActorKinematic(physx::PxShape* shape, RigidBodyComponent& rigidBody);
 
 		void	SyncToPhysx();
+		void	SyncFromPhysx();
 		void	ApplyForce(physx::PxRigidDynamic* body, Force force);
 
 		physx::PxTriangleMesh*	CookTriangleMesh(Resources::ResourceHandle<Mesh> const& mesh);

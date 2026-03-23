@@ -121,6 +121,8 @@ namespace Apex::Editor
 
         m_gui->BeginFrame();
 
+        m_gui->StartDockSpace();
+
         if (m_contentBrowser)
         {
             m_contentBrowser->Draw();
@@ -148,15 +150,7 @@ namespace Apex::Editor
     void Editor::Update()
     {
         m_window->UpdateDeltaTime();
-        m_viewport->GetCamera().ProcessKeyboard(
-            m_window->IsKeyPressed(Key::W),
-            m_window->IsKeyPressed(Key::S),
-            m_window->IsKeyPressed(Key::A),
-            m_window->IsKeyPressed(Key::D),
-            m_window->IsKeyPressed(Key::E),
-            m_window->IsKeyPressed(Key::Q),
-            m_window->GetDeltaTime()
-        );
+        m_viewport->UpdateCamera(m_window.get());
 
         switch (m_editorState)
         {

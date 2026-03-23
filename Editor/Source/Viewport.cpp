@@ -3,9 +3,9 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
-
 #include "Hierarchy.h"
 #include "Editor.h"
+#include "Window.h"
 #include "Scene.h"
 #include "RHI.h"
 #include "UI.h"
@@ -31,6 +31,18 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 	m_selectedObject = selected;
 	if (send && m_hierarchy)
 		m_hierarchy->SelectObject(selected, false);
+}
+
+void Viewport::UpdateCamera(Windowing::IWindow* window)
+{
+	m_camera.ProcessKeyboard(
+		window->IsKeyPressed(Windowing::Key::W),
+		window->IsKeyPressed(Windowing::Key::S),
+		window->IsKeyPressed(Windowing::Key::A),
+		window->IsKeyPressed(Windowing::Key::D),
+		window->IsKeyPressed(Windowing::Key::E),
+		window->IsKeyPressed(Windowing::Key::Q),
+		window->GetDeltaTime());
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
@@ -342,7 +354,7 @@ void Viewport::Draw()
 		m_isFirstFullScreen = false;
 	}
 
-	m_gui->BeginPanel("Viewport", nullptr, true);
+	m_gui->BeginPanel("Viewport");
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();

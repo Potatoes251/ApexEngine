@@ -15,6 +15,7 @@
 namespace Apex::Data { class Object; }
 
 namespace Apex::UserInterface { class IGUI; }
+namespace Apex::Windowing { class IWindow; }
 namespace Apex::Rendering 
 { 
 	class IRHI; 
@@ -39,6 +40,7 @@ namespace Apex::Editor
 		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
 		void				SelectObject(Data::Object* selected, bool send = true);
 
+		void				UpdateCamera(Windowing::IWindow* window);
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
 		void				OnMouseMove(double mouseX, double mouseY);

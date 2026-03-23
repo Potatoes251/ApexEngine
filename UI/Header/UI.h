@@ -95,6 +95,7 @@ namespace Apex::UserInterface
         virtual void LoadFonts() = 0;
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
+        virtual void StartDockSpace() = 0;
 
         // Input Passthrough
         virtual bool WantCaptureMouse()    const = 0;
@@ -131,9 +132,7 @@ namespace Apex::UserInterface
 
         //  Panels & children 
         // BeginPanel / EndPanel - top-level named window
-        virtual void BeginPanel(const std::string& title,
-                                bool* open = nullptr,
-                                bool noMove = false) = 0;
+        virtual void BeginPanel(const std::string& title, bool dock = true, bool* open = nullptr) = 0;
         virtual void EndPanel() = 0;
 
         // BeginChildPanel / EndChildPanel - scrollable sub-region

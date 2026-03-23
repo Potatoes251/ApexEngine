@@ -41,6 +41,7 @@ namespace Apex::UserInterface
         void LoadFonts()  override;
         void BeginFrame() override;
         void EndFrame()   override;
+        void StartDockSpace() override;
 
         bool WantCaptureMouse() const override;
         bool WantCaptureKeyboard() const override;
@@ -71,7 +72,7 @@ namespace Apex::UserInterface
         LibMath::Vector2 GetPanelPos()      const override;
         LibMath::Vector2 GetPanelSize()     const override;
 
-        void BeginPanel(const std::string& title, bool* open, bool noMove) override;
+        void BeginPanel(const std::string& title, bool dock, bool* open) override;
         void EndPanel() override;
 
         void BeginChildPanel(const std::string& id,

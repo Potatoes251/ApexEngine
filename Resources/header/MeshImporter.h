@@ -18,6 +18,8 @@ struct MeshHeader
 	int m_version = 1;
 };
 
+bool IsBigEndian();
+
 class MeshImporter
 {
 public:

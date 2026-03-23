@@ -36,6 +36,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
 
 bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
 {
+    if (IsBigEndian()) return false;
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::ifstream file(binaryPath, std::ios::binary);
@@ -240,4 +241,15 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
             mesh.m_indices.push_back(vertexCounter++);
         }
     }
+}
+
+bool IsBigEndian()
+{
+    union
+    {
+        int in;
+        char ch[4];
+    } bint = { 0x01020304 };
+
+    return bint.ch[0] == 1;
 }
