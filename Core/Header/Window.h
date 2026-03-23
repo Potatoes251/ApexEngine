@@ -76,6 +76,8 @@ namespace Apex::Windowing
 		virtual bool			IsMousButtonPressed(MouseButton key) const = 0;
 		virtual MousePosition	GetMousePosition() const = 0;
 		virtual void			SetCursorCaptured(bool captured) = 0;
+		virtual void			SetCrosshairCursor() = 0;
+		virtual void			ResetCursor() = 0;
 
 		// Callbacks
 		virtual void SetKeyCallback(KeyCallback callback) = 0;
@@ -96,6 +98,7 @@ namespace Apex::Windowing
 		// allowMultiple: let the user select more than one file at once.
 		virtual std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) = 0;
 		virtual std::filesystem::path OpenFolderDialog() = 0;
+		virtual std::filesystem::path SaveFileDialog(const std::string& defaultName = "") = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────

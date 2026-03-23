@@ -10,7 +10,7 @@ public:
 	Cubemap(Cubemap const&) = delete;
 	Cubemap& operator=(Cubemap const&) = delete;
 
-	~Cubemap() { m_rhi->DeleteTexture(m_id); }
+	~Cubemap() { if (m_rhi && m_id != 0) m_rhi->DeleteTexture(m_id); }
 
 	void Bind(uint32_t slot = 0);
 

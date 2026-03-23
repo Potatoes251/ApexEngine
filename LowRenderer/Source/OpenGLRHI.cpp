@@ -130,6 +130,9 @@ namespace Apex::Rendering
 		m_textures[texture] = colorTexture;
 		texture_out = texture;
 
+		RHITextureHandle depthHandle = NewHandle();
+		m_textures[depthHandle] = depthTexture;
+
 		RHIFrameBufferHandle fbo = NewHandle();
 		m_frameBuffers[fbo] = glFbo;
 		return fbo;
@@ -148,9 +151,9 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::DeleteFrameBuffer(RHIFrameBufferHandle buffer)
 	{
-		GLuint glBuffer = GetBuffer(buffer);
-		glDeleteFramebuffers(1, &glBuffer);
-		m_buffers.erase(buffer);
+		GLuint glFrameBuffer = GetFrameBuffer(buffer);
+		glDeleteFramebuffers(1, &glFrameBuffer);
+		m_frameBuffers.erase(buffer);
 	}
 
 	int OpenGLRHI::GetPixelData(int x, int y)

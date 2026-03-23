@@ -6,12 +6,10 @@ using namespace Apex::Rendering;
 
 Mesh::~Mesh()
 {
-	if (m_rhi)
-	{
-		m_rhi->DeleteVAO(m_VAO);
-		m_rhi->DeleteBuffer(m_VBO);
-		m_rhi->DeleteBuffer(m_EBO);
-	}
+	if (!m_rhi) return;
+	if (m_VAO) m_rhi->DeleteVAO(m_VAO);
+	if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
+	if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
 }
 
 void Mesh::LoadFromFile()
@@ -38,6 +36,18 @@ void Mesh::UploadToGpu()
 
 	m_indexCount = static_cast<uint32_t>(m_indices.size());
 	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
+
+	// Compute AABB now while vertices are still in CPU memory
+	m_boundsMin = { 1e9f,  1e9f,  1e9f };
+	m_boundsMax = { -1e9f, -1e9f, -1e9f };
+	for (const auto& v : m_vertices)
+	{
+		for (int c = 0; c < 3; ++c)
+		{
+			if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
+			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
+		}
+	}
 }
 
 void Mesh::ClearVertices()

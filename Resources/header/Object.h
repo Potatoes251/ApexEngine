@@ -58,8 +58,15 @@ namespace Apex::Data
 			T& ref = *component;
 			m_components.push_back(std::move(component));
 
-			return ref;
-		}
+					if (m_components.size() == 1)
+						m_components.back()->SetId(0);
+					else
+					{
+						m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+					}
+
+					return ref;
+				}
 
 		template<typename T>
 		T* GetComponent()

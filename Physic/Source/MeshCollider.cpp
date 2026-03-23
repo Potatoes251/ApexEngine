@@ -1,5 +1,6 @@
 #include "MeshCollider.h"
 
+using namespace Apex;
 using namespace Apex::Physic;
 
 MeshCollider::MeshCollider(MeshCollider const& other) : Collider(other.m_material, other.m_isTrigger)
@@ -16,6 +17,41 @@ MeshCollider& MeshCollider::operator=(MeshCollider const& other)
 	m_isTrigger = other.m_isTrigger;
 
 	return *this;
+}
+
+std::vector<ExposedVar> MeshCollider::GetExposedVariables()
+{
+    std::vector<ExposedVar> exposedVec = Collider::GetExposedVariables();
+
+    exposedVec.insert(exposedVec.end(),
+        {
+            { "Mesh", ExposedVar::Mesh, &m_mesh },
+            { "Type", ExposedVar::Enum, &m_type, { "Triangle", "Convex" } }
+        });
+
+    return exposedVec;
+}
+
+void MeshCollider::DrawVariables(Apex::UserInterface::IGUI& gui)
+{
+	std::string type;
+	switch (m_type)
+	{
+	case Apex::Physic::MeshColliderType::Triangle:
+        type = "Triangle";
+		break;
+	case Apex::Physic::MeshColliderType::Convex:
+        type = "Convex";
+		break;
+	default:
+		break;
+	}
+
+    gui.Text("Collider type: " + type);
+    if (m_mesh.IsValid())
+        gui.Text("Mesh: " + m_mesh->GetPath());
+    else
+        gui.Text("Mesh: None");
 }
 
 void MeshCollider::Serialize(std::ostream& out) const

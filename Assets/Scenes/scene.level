@@ -9,18 +9,18 @@
 ],
 "objects": [
   {
-    "id": 0,
+    "id": 9,
     "parent": null,
     "name": "Sphere",
     "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [ 1.000000, 1.000000, 1.000000 ],
+    "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
         "mesh": "Assets/Meshes/sphere.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -37,18 +37,18 @@
     }
   },
   {
-    "id": 1,
+    "id": 10,
     "parent": null,
-    "name": "Cube",
+    "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/cube.obj",
-        "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "mesh": "Assets/Meshes/padoru.obj",
+        "texture": "Assets/Textures/padoru.png",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -64,18 +64,18 @@
     }
   },
   {
-    "id": 2,
+    "id": 11,
     "parent": null,
-    "name": "Sphere2",
+    "name": "Floor",
     "position": [0.000000,5.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
+        "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -84,7 +84,7 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
+        "mesh": "Assets/Meshes/floor.obj",
         "type": "Convex",
         "isTrigger": false,
         "material": 0

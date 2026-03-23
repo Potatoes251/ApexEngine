@@ -13,7 +13,7 @@ public:
 	Texture(Texture const&) = delete;
 	Texture& operator=(Texture const&) = delete;
 
-	~Texture() { m_rhi->DeleteTexture(m_id); }
+	~Texture() { if (m_rhi && m_id != 0) m_rhi->DeleteTexture(m_id); }
 
 	uint32_t GetId() const { return m_id; }
 

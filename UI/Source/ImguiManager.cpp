@@ -188,7 +188,7 @@ namespace Apex::UserInterface
     {
         ImGui::PushStyleColor(ToImGuiCol(target), ImVec4(color.m_r, color.m_g, color.m_b, color.m_a));
     }
-    void ImGUIManager::PopColor() { ImGui::PopStyleColor(); }
+    void ImGUIManager::PopColor(int count) { ImGui::PopStyleColor(count); }
 
     void ImGUIManager::PushStyleVariable(StyleVariable var, float x, float y)
     {
@@ -215,7 +215,7 @@ namespace Apex::UserInterface
         }
     }
 
-    void ImGUIManager::PopStyleVariable() { ImGui::PopStyleVar(); }
+    void ImGUIManager::PopStyleVariable(int count) { ImGui::PopStyleVar(count); }
 
     void ImGUIManager::PushFont(FontID id)
     {
@@ -361,6 +361,18 @@ namespace Apex::UserInterface
         return ImGui::Button(label.c_str(), ImVec2(size[0], size[1]));
     }
 
+    bool ImGUIManager::ImageButton(const std::string& id, uint32_t textureID, LibMath::Vector2 size, Color tint, float padding)
+    {
+        ImVec4 tintV(tint.m_r, tint.m_g, tint.m_b, tint.m_a);
+        ImVec4 bgV(0.f, 0.f, 0.f, 0.f);  // transparent behind the image pixels
+        bool result = ImGui::ImageButton(id.c_str(),
+            (ImTextureID)(uintptr_t)textureID,
+            ImVec2(size[0], size[1]),
+            ImVec2(0, 0), ImVec2(1, 1),
+            bgV, tintV);
+        return result;
+    }
+
     bool ImGUIManager::SmallButton(const std::string& label) { return ImGui::SmallButton(label.c_str()); }
     bool ImGUIManager::Checkbox(const std::string& label, bool* value) { return ImGui::Checkbox(label.c_str(), value); }
 
@@ -422,6 +434,11 @@ namespace Apex::UserInterface
     bool ImGUIManager::IsMouseReleased(MouseButton button) const
     {
         return ImGui::IsMouseReleased(ToImGuiMouseButton(button));
+    }
+
+    bool ImGUIManager::IsMouseClicked(MouseButton button) const
+    {
+        return ImGui::IsMouseClicked(ToImGuiMouseButton(button));
     }
 
     bool ImGUIManager::IsWindowHovered() const
@@ -543,6 +560,15 @@ namespace Apex::UserInterface
     {
         ImVec2 v = ImGui::GetItemRectMax();
         return { v.x, v.y };
+    }
+
+    void ImGUIManager::SetManagesCursor(bool manages)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        if (manages)
+            io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+        else
+            io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     }
 }
 

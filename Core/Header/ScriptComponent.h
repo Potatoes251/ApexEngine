@@ -20,6 +20,10 @@ namespace Apex::Scripting
 
         void SetScript(const std::string& path);
 
+        const char* GetTypeName() const override { return "ScriptComponent"; };
+        std::vector<ExposedVar> GetExposedVariables() override;
+        void DrawVariables(Apex::UserInterface::IGUI& gui) override;
+
         int GetInstanceRef() const { return m_instanceRef; }
 
         void Serialize(std::ostream& out) const override;

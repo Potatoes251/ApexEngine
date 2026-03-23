@@ -53,9 +53,9 @@ namespace Apex::UserInterface
         void PopID() override;
 
         void PushColor(StyleColor target, Color color) override;
-        void PopColor() override;
+        void PopColor(int count) override;
         void PushStyleVariable(StyleVariable var, float x, float y = 0.f) override;
-        void PopStyleVariable() override;
+        void PopStyleVariable(int count) override;
         void PushFont(FontID id) override;
         void PopFont() override;
         float GetTextLineHeight() const override;
@@ -108,6 +108,10 @@ namespace Apex::UserInterface
         void TextColored(Color color, const std::string& text) override;
         bool Button(const std::string& label) override;
         bool ButtonSized(const std::string& label, LibMath::Vector2 size) override;
+        bool ImageButton(const std::string& id, uint32_t textureID,
+                         LibMath::Vector2 size,
+                         Color tint = { 1.f, 1.f, 1.f, 1.f },
+                         float padding = 2.f) override;
         bool SmallButton(const std::string& label) override;
         bool Checkbox(const std::string& label, bool* value) override;
         bool SliderFloat(const std::string& label, float* value, float min, float max) override;
@@ -129,6 +133,7 @@ namespace Apex::UserInterface
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
         bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
+        bool IsMouseClicked(MouseButton button = MouseButton::Left) const override;
         bool IsWindowHovered() const override;
         bool IsAnyItemHovered() const override;
         bool IsDragDropActive() const override;
@@ -153,6 +158,8 @@ namespace Apex::UserInterface
         IDrawList* GetDrawList();
         Vector2 GetItemRectMin() const override;
         Vector2 GetItemRectMax() const override;
+
+        void SetManagesCursor(bool manages) override;
 
 	private:
         static int ToImGuiMouseButton(MouseButton button);

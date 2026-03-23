@@ -8,10 +8,14 @@ namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
     {
-        if (ext == ".obj" || ext == ".fbx")                  return AssetType::Mesh;
-        if (ext == ".jpg" || ext == ".png" || ext == ".tga") return AssetType::Texture;
-        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") return AssetType::Sound;
-        if (ext == ".level")                                 return AssetType::Level;
+        if (ext == ".obj" || ext == ".fbx")                  
+            return AssetType::Mesh;
+        if (ext == ".jpg" || ext == ".png" || ext == ".tga" || ext == ".hdr") 
+            return AssetType::Texture;
+        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") 
+            return AssetType::Sound;
+        if (ext == ".level")                                 
+            return AssetType::Level;
         return AssetType::Unknown;
     }
 
@@ -91,6 +95,9 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
+            if (!entry.is_directory() && entry.path().extension() == ".meta")
+                continue;
+
             AssetEntry assetEntry = ClassifyEntry(entry);
             if (assetEntry.m_isFolder) 
                 folders.push_back(assetEntry);
@@ -117,6 +124,7 @@ namespace Apex::Editor
         for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
+            if (entry.path().extension() == ".meta") continue;
 
             std::string name = entry.path().filename().string();
             std::string low = name;
@@ -214,7 +222,17 @@ namespace Apex::Editor
         if (m_renamingPath.empty()) return;
 
         std::string newStem(m_renameBuffer);
-        if (!newStem.empty() && newStem != m_renamingPath.stem().string())
+
+        auto firstNonSpace = newStem.find_first_not_of(' ');
+        if (firstNonSpace == std::string::npos)
+        {
+            // All spaces or empty - cancel silently
+            m_renamingPath.clear();
+            return;
+        }
+        newStem = newStem.substr(firstNonSpace);
+
+        if (newStem != m_renamingPath.stem().string())
         {
             // Re-attach the original extension so the user can never change it
             fs::path dest = m_renamingPath.parent_path() / (newStem + m_renamingPath.extension().string());

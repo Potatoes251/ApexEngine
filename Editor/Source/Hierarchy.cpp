@@ -11,8 +11,8 @@ using namespace Apex::Rendering;
 using namespace Apex::Data;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene* scene)
-    : m_gui(gui), m_scene(scene)
+    Scene* scene, ComponentsViewer* compViewer)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer)
 {
 }
 
@@ -22,9 +22,7 @@ void Hierarchy::Draw()
     m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.Button(" + Add "))
-    {
         m_gui.OpenPopup("AddObject");
-    }
 
     if (m_gui.BeginPopup("AddObject"))
     {
@@ -33,43 +31,27 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             SelectObject(obj);
         }
-
         m_gui.EndPopup();
     }
 
     for (auto& obj : m_scene->GetObjects())
     {
         SceneNode* node = obj->GetSceneNodeRaw();
-
         if (node && node->GetParent() == nullptr)
             DrawNode(node);
     }
 
-    if (m_pendingParent)
+    HandlePending();
+
+    if (m_selected && m_gui.IsPanelFocused() && m_gui.IsKeyPressed(UIKey::F2))
     {
-        Object* newObj = m_scene->CreateObject();
-
-        m_pendingParent->AddChild(newObj->GetSceneNode());
-
-        SelectObject(newObj);
-        m_pendingParent = nullptr;
-    }
-
-    if (m_pendingDelete)
-    {
-        DestroyObject(m_pendingDelete);
-        m_pendingDelete = nullptr;
-    }
-
-    if (m_pendingClone)
-    {
-        Object* clone = DuplicateObject(m_pendingClone);
-        SelectObject(clone);
-        m_pendingClone = nullptr;
+        m_renaming = m_selected;
+        m_renameFocusPending = true;
+        strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
+        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
     }
 
     Vector2 size = m_gui.GetAvailableSize();
-
     m_gui.InvisibleButton("HierarchyDropArea", size);
 
     if (m_gui.BeginDropTarget())
@@ -100,6 +82,9 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
     m_selected = selected;
     if (send && m_viewport)
         m_viewport->SelectObject(selected, false);
+
+    if (selected && m_componentsViewer)
+        m_componentsViewer->SetSelectedObject(selected);
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -121,20 +106,108 @@ void Hierarchy::DrawNode(SceneNode* node)
     }
 }
 
+void Apex::Editor::Hierarchy::HandlePending()
+{
+    if (m_pendingParent)
+    {
+        Object* newObj = m_scene->CreateObject();
+        m_pendingParent->AddChild(newObj->GetSceneNode());
+        SelectObject(newObj);
+        m_pendingParent = nullptr;
+    }
+
+    if (m_pendingDelete)
+    {
+        DestroyObject(m_pendingDelete);
+        m_pendingDelete = nullptr;
+    }
+
+    if (m_pendingClone)
+    {
+        Object* clone = DuplicateObject(m_pendingClone);
+        SelectObject(clone);
+        m_pendingClone = nullptr;
+    }
+}
+
 bool Hierarchy::DrawTreeNode(Object* obj, bool isLeaf)
 {
     TreeNodeFlags flags = TreeNodeFlags::SpanAvailWidth;
     if (isLeaf) flags = flags | TreeNodeFlags::Leaf;
     if (obj == m_selected) flags = flags | TreeNodeFlags::Selected;
+    std::string id = "##" + std::to_string(obj->GetId());
 
-    std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
-    return m_gui.BeginTreeNode(label.c_str(), flags);
+    if (obj != m_renaming)
+    {
+        std::string label = obj->GetName() + "##" + std::to_string(obj->GetId());
+        return m_gui.BeginTreeNode(label.c_str(), flags);
+    }
+
+    if (m_renameFocusPending)
+    {
+        m_gui.SetKeyboardFocusHere();
+        m_renameFocusPending = false;
+    }
+
+    m_gui.InputText(id, m_renameBuffer, sizeof(m_renameBuffer));
+
+    if (m_gui.IsKeyPressed(UIKey::Enter))
+    {
+        bool voidName = true;
+
+        for (size_t i = 0; m_renameBuffer[i] != '\0'; i++)
+        {
+            if (m_renameBuffer[i] != ' ' &&
+                m_renameBuffer[i] != '\t' &&
+                m_renameBuffer[i] != '\n' &&
+                m_renameBuffer[i] != '\r' &&
+                m_renameBuffer[i] != '\v' &&
+                m_renameBuffer[i] != '\f')
+            {
+                voidName = false;
+                break;
+            }
+        }
+
+        size_t start = 0;
+
+        while (m_renameBuffer[start] != '\0' &&
+            (m_renameBuffer[start] == ' ' ||
+                m_renameBuffer[start] == '\t' ||
+                m_renameBuffer[start] == '\n' ||
+                m_renameBuffer[start] == '\r' ||
+                m_renameBuffer[start] == '\v' ||
+                m_renameBuffer[start] == '\f'))
+        {
+            start++;
+        }
+
+        if (start > 0)
+        {
+            size_t i = 0;
+            while (m_renameBuffer[start + i] != '\0')
+            {
+                m_renameBuffer[i] = m_renameBuffer[start + i];
+                i++;
+            }
+            m_renameBuffer[i] = '\0';
+        }
+
+        if (!voidName) obj->SetName(m_renameBuffer);
+        m_renaming = nullptr;
+    }
+    if (m_gui.IsKeyPressed(UIKey::Escape))
+        m_renaming = nullptr;
+
+    return false;
 }
 
 void Hierarchy::HandleSelection(Object* obj)
 {
     if (m_gui.IsItemClicked())
+    {
         SelectObject(obj);
+    }
 }
 
 void Hierarchy::HandleContextMenu(SceneNode* node)
