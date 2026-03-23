@@ -2,12 +2,13 @@
 
 #include "Vertex.h"
 
+#include <fstream>
+#include <filesystem>
+
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
 // causes undefined behaviour and crashes.
-// Initialized on first use via std::call_once; kept alive for
-// the process lifetime as the SDK recommends.
 FbxManager* MeshImporter::s_manager = nullptr;
 std::mutex  MeshImporter::s_mutex;
 
@@ -24,32 +25,138 @@ static void EnsureManager()
 
 void MeshImporter::Import(std::string path, Mesh& mesh)
 {
+    if (ImportBin(path, mesh)) return;
+    if (ImportFbx(path, mesh))
+    {
+        ExportBin(path, mesh);
+        return;
+    }
+    // eventually load another way
+}
+
+bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
+{
+    std::filesystem::path binaryPath = path;
+    binaryPath.replace_extension(".mesh");
+    std::ifstream file(binaryPath, std::ios::binary);
+
+    if (!file.is_open())
+    {
+        std::cout << "Failed to open file\n";
+        return false;
+    }
+
+    file.seekg(0, std::ios::end);
+    std::streamsize size = file.tellg();
+
+    if (size == 0)
+    {
+        std::cout << "File is empty\n";
+        return false;
+    }
+
+    file.seekg(0, std::ios::beg);
+
+    MeshHeader header;
+    file.read((char*)&header, sizeof(header));
+
+    if (header.m_magic != 0x4D455348)
+    {
+        std::cout << "Invalid file format\n";
+        return false;
+    }
+    if (header.m_version != CURRENT_VERSION)
+    {
+        std::cout << "File needs to be updated\n";
+        return false;
+    }
+    uint32_t vertexCount;
+    uint32_t indexCount;
+
+    if (!file.read((char*)&vertexCount, sizeof(vertexCount)))
+        return false;
+
+    if (!file.read((char*)&indexCount, sizeof(indexCount)))
+        return false;
+
+    std::vector<Apex::Rendering::Vertex> vertices(vertexCount);
+
+    if (!file.read((char*)vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex)))
+        return false;
+
+    std::vector<uint32_t> indices(indexCount);
+
+    if (!file.read((char*)indices.data(), indexCount * sizeof(uint32_t)))
+        return false;
+
+    mesh.m_vertices = vertices;
+    mesh.m_indices = indices;
+
+    return true;
+}
+
+bool MeshImporter::ExportBin(std::string path, Mesh& mesh)
+{
+    std::filesystem::path binaryPath = path;
+    binaryPath.replace_extension(".mesh");
+
+    std::ofstream file(binaryPath, std::ios::binary);
+
+    if (!file.is_open())
+    {
+        std::cout << "Failed to open file for writing\n";
+        return false;
+    }
+
+    // Header
+    MeshHeader header;
+    header.m_magic = 0x4D455348; // "MESH"
+    header.m_version = CURRENT_VERSION;
+
+    file.write((char*)&header, sizeof(header));
+
+    // Counts
+    uint32_t vertexCount = mesh.m_vertices.size();
+    uint32_t indexCount = mesh.m_indices.size();
+
+    file.write((char*)&vertexCount, sizeof(vertexCount));
+    file.write((char*)&indexCount, sizeof(indexCount));
+
+    // Data
+    file.write((char*)mesh.m_vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex));
+    file.write((char*)mesh.m_indices.data(), indexCount * sizeof(uint32_t));
+
+    return true;
+}
+
+bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
+{
     // Serialize all FBX operations — the SDK is not thread-safe.
     std::lock_guard<std::mutex> lock(s_mutex);
 
     EnsureManager();
 
-	FbxScene* scene = FbxScene::Create(s_manager, "");
+    FbxScene* scene = FbxScene::Create(s_manager, "");
 
-	FbxImporter* importer = FbxImporter::Create(s_manager, "");
+    FbxImporter* importer = FbxImporter::Create(s_manager, "");
 
     if (!importer->Initialize(path.c_str(), -1, s_manager->GetIOSettings()))
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        s_manager->Destroy();
-        return;
+        scene->Destroy();
+        return false;
     }
 
-    if (!importer->Import(scene)) 
+    if (!importer->Import(scene))
     {
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
-        s_manager->Destroy();
-        return;
+        scene->Destroy();
+        return false;
     }
 
-	importer->Destroy();
+    importer->Destroy();
 
     FbxGeometryConverter converter(s_manager);
     converter.Triangulate(scene, true);
@@ -62,7 +169,7 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     {
         mesh.SetState(ResourceState::Failed);
         scene->Destroy();
-        return;
+        return false;
     }
 
     for (int i = 0; i < root->GetChildCount(); ++i)
@@ -71,6 +178,8 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
     }
 
     scene->Destroy();
+
+    return true;
 }
 
 void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)

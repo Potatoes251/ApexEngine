@@ -26,11 +26,11 @@ public:
 	void Draw() const;
 	void DrawLineLoop() const;
 
-	std::vector<Apex::Rendering::Vertex>	m_vertices;
-	std::vector<unsigned int>				m_indices;
-
 	uint32_t GetIndexCount()  const { return m_indexCount; }
 	uint32_t GetVertexCount()  const { return m_vertexCount; }
+
+	std::vector<Apex::Rendering::Vertex>	m_vertices;
+	std::vector<unsigned int>				m_indices;
 
 private:
 
