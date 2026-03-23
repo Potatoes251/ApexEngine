@@ -154,6 +154,7 @@ namespace Apex::Editor
             if (m_gui.Button("Lit")) m_displayMode = MeshDisplayMode::Lit;
             if (active) m_gui.PopColor();
         }
+        // Unlit
         m_gui.SameLine(0.f, 4.f);
         {
             bool active = (m_displayMode == MeshDisplayMode::Unlit);
@@ -161,6 +162,7 @@ namespace Apex::Editor
             if (m_gui.Button("Unlit")) m_displayMode = MeshDisplayMode::Unlit;
             if (active) m_gui.PopColor();
         }
+        // Wireframe
         m_gui.SameLine(0.f, 4.f);
         {
             bool active = (m_displayMode == MeshDisplayMode::Wireframe);
@@ -168,6 +170,7 @@ namespace Apex::Editor
             if (m_gui.Button("Wireframe")) m_displayMode = MeshDisplayMode::Wireframe;
             if (active) m_gui.PopColor();
         }
+        // Normals
         m_gui.SameLine(0.f, 4.f);
         {
             bool active = (m_displayMode == MeshDisplayMode::Normals);
@@ -392,7 +395,7 @@ namespace Apex::Editor
     // 3-D rendering 
     void MeshViewer::RenderScene()
     {
-        if (!m_mesh.IsValid() || !m_mesh.IsReady()) return;
+        if (!m_mesh.IsReady()) return;
 
         UpdateOrbitCamera();
 
