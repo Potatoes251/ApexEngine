@@ -59,7 +59,6 @@ namespace Apex::Resources
 	{
 		assert(m_rhi != nullptr && "rhi must be set in the ResourceManager before starting to load resources");
 		std::unique_lock<std::shared_mutex> lock(m_mapMutex);
-		std::cout << "Loading: " << id << std::endl;
 		auto [it, inserted] = m_resources.try_emplace(id, std::make_unique<ResourceEntry>(nullptr, persistent));
 		ResourceEntry* entry = it->second.get();
 

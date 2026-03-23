@@ -16,10 +16,10 @@ endif()
 
 # --- Existing Assets ---
 file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/assets/*
+    ${CMAKE_SOURCE_DIR}/Assets/*
 )
 
-source_group(TREE ${CMAKE_SOURCE_DIR}/assets
+source_group(TREE ${CMAKE_SOURCE_DIR}/Assets
              PREFIX "Assets"
              FILES ${ASSET_FILES})
 

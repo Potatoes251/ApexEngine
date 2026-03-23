@@ -3,8 +3,9 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
-
+#include "Hierarchy.h"
 #include "Editor.h"
+#include "Window.h"
 #include "Scene.h"
 #include "RHI.h"
 #include "UI.h"
@@ -23,6 +24,25 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_editor = editor;
 
 	CreateGrid();
+}
+
+void Viewport::SelectObject(Data::Object* selected, bool send)
+{
+	m_selectedObject = selected;
+	if (send && m_hierarchy)
+		m_hierarchy->SelectObject(selected, false);
+}
+
+void Viewport::UpdateCamera(Windowing::IWindow* window)
+{
+	m_camera.ProcessKeyboard(
+		window->IsKeyPressed(Windowing::Key::W),
+		window->IsKeyPressed(Windowing::Key::S),
+		window->IsKeyPressed(Windowing::Key::A),
+		window->IsKeyPressed(Windowing::Key::D),
+		window->IsKeyPressed(Windowing::Key::E),
+		window->IsKeyPressed(Windowing::Key::Q),
+		window->GetDeltaTime());
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
@@ -117,6 +137,12 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	}
 }
 
+void Viewport::ToggleFullScreen()
+{
+	m_isFullScreen = !m_isFullScreen;
+	m_isFirstFullScreen = true;
+}
+
 int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 {
 	// relative to panel top-left
@@ -178,7 +204,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	m_pickingshader->Use();
 	m_currentScene->Render(picking);
 
-	m_selectedObject = m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1]));
+	SelectObject(m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer();
 }
@@ -311,7 +337,27 @@ void Viewport::Draw()
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
 
-	m_gui->BeginPanel("Viewport", nullptr, true);
+	if (m_isFirstFullScreen)
+	{
+		m_isFirstFullScreen = false;
+		if (m_isFullScreen)
+		{
+			LibMath::Vector2 screen = m_gui->GetScreenSize();
+			m_gui->SetNextWindowPos(LibMath::Vector2(0));
+			m_gui->SetNextWindowSize(LibMath::Vector2(screen[0], screen[1]));
+			m_gui->SetNextWindowFocus();
+			m_oldPanelPos = m_panelPos;
+			m_oldPanelSize = m_panelSize;
+		}
+		else
+		{
+			m_gui->SetNextWindowPos(m_oldPanelPos);
+			m_gui->SetNextWindowSize(m_oldPanelSize);
+		}
+	}
+
+
+	m_gui->BeginPanel("Viewport");
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();

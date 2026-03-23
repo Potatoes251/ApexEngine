@@ -47,6 +47,9 @@ namespace Apex::Editor
             {
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+
+                if (key == Key::F && action == KeyAction::Press)
+                    m_viewport->ToggleFullScreen();
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -94,6 +97,9 @@ namespace Apex::Editor
         m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene(), *m_app->GetResourceManager());
         m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene(), m_componentsViewer.get());
 
+        m_hierarchy->SetViewport(m_viewport.get());
+        m_viewport->SetHierarchy(m_hierarchy.get());
+
         return true;
     }
 
@@ -111,6 +117,8 @@ namespace Apex::Editor
         if (!m_gui) return;
 
         m_gui->BeginFrame();
+
+        m_gui->StartDockSpace();
 
         if (m_contentBrowser)
         {
@@ -150,16 +158,7 @@ namespace Apex::Editor
     void Editor::Update()
     {
         m_window->UpdateDeltaTime();
-        m_viewport->GetCamera().ProcessKeyboard(
-            m_window->IsKeyPressed(Key::W),
-            m_window->IsKeyPressed(Key::S),
-            m_window->IsKeyPressed(Key::A),
-            m_window->IsKeyPressed(Key::D),
-            m_window->IsKeyPressed(Key::E),
-            m_window->IsKeyPressed(Key::Q),
-            m_window->GetDeltaTime()
-        );
-
+        m_viewport->UpdateCamera(m_window.get());
 
         switch (m_editorState)
         {

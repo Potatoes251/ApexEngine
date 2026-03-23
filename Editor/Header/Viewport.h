@@ -15,6 +15,7 @@
 namespace Apex::Data { class Object; }
 
 namespace Apex::UserInterface { class IGUI; }
+namespace Apex::Windowing { class IWindow; }
 namespace Apex::Rendering 
 { 
 	class IRHI; 
@@ -24,6 +25,7 @@ namespace Apex::Rendering
 namespace Apex::Editor
 {
 	class Editor;
+	class Hierarchy;
 
 	class Viewport
 	{
@@ -34,11 +36,15 @@ namespace Apex::Editor
 		Viewport& operator=(Viewport const&) = delete;
 
 		Rendering::Camera&  GetCamera() { return m_camera; }
+		void				SetHierarchy(Hierarchy* hierarchy) { m_hierarchy = hierarchy; }
 		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
+		void				SelectObject(Data::Object* selected, bool send = true);
 
+		void				UpdateCamera(Windowing::IWindow* window);
 		void				OnMouseClick(double mouseX, double mouseY);
 		void				OnMouseRelease(double /*mouseX*/, double /*mouseY*/);
 		void				OnMouseMove(double mouseX, double mouseY);
+		void				ToggleFullScreen();
 
 		void				Draw();
 
@@ -82,9 +88,12 @@ namespace Apex::Editor
 		Rendering::Scene*		m_currentScene = nullptr;
 		Data::Object*			m_selectedObject = nullptr;
 		Editor*					m_editor = nullptr;
+		Hierarchy*				m_hierarchy = nullptr;
 
 		LibMath::Vector2		m_panelPos;
 		LibMath::Vector2		m_panelSize;
+		LibMath::Vector2		m_oldPanelPos;
+		LibMath::Vector2		m_oldPanelSize;
 
 		// used for changing the object's transform with gizmos
 		LibMath::Transform		m_initialTransform;
@@ -102,6 +111,8 @@ namespace Apex::Editor
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
 		bool	m_isScaleSnapping = true;
+		bool	m_isFullScreen = false;
+		bool	m_isFirstFullScreen = false;
 	};
 }
 

@@ -95,7 +95,7 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
-            if (!entry.is_directory() && entry.path().extension() == ".meta")
+            if (!entry.is_directory() && (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh"))
                 continue;
 
             AssetEntry assetEntry = ClassifyEntry(entry);
