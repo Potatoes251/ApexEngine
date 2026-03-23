@@ -14,7 +14,7 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, Apex::Resources::Res
 void ComponentsViewer::Draw()
 {
 	m_gui.PushFont(FontID::Default);
-	m_gui.BeginPanel("Components", nullptr, true);
+	m_gui.BeginPanel("Components");
 
 	if (m_selectedObj)
 	{
@@ -58,7 +58,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 				break;
 
 			case ExposedVar::String:
-				m_gui.InputText(var.name, (char*)var.data, 20.0f);
+				m_gui.InputText(var.name, (char*)var.data, 256);
 				break;
 
 			case ExposedVar::Enum:
@@ -131,9 +131,9 @@ void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 
 	m_gui.Text(var.name);
 
-	m_gui.SliderFloat("X", &v[0], -10.0f, 10.0f);
-	m_gui.SliderFloat("Y", &v[1], -10.0f, 10.0f);
-	m_gui.SliderFloat("Z", &v[2], -10.0f, 10.0f);
+	m_gui.SliderFloat("X", &v[0], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Y", &v[1], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Z", &v[2], -1000.0f, 1000.0f);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)

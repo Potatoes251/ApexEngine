@@ -38,17 +38,20 @@ void MeshCollider::DrawVariables(Apex::UserInterface::IGUI& gui)
 	switch (m_type)
 	{
 	case Apex::Physic::MeshColliderType::Triangle:
-        type = "Static";
+        type = "Triangle";
 		break;
 	case Apex::Physic::MeshColliderType::Convex:
-        type = "Dynamic";
+        type = "Convex";
 		break;
 	default:
 		break;
 	}
 
-	gui.Text("Body type: " + type);
-    gui.Text("Mesh: " + m_mesh->GetPath());
+    gui.Text("Collider type: " + type);
+    if (m_mesh.IsValid())
+        gui.Text("Mesh: " + m_mesh->GetPath());
+    else
+        gui.Text("Mesh: None");
 }
 
 void MeshCollider::Serialize(std::ostream& out) const

@@ -44,7 +44,7 @@ namespace Apex::Resources
 				if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_sub(1);
 
 				m_resourceEntry = other.m_resourceEntry;
-				m_resourceEntry->m_refCount.fetch_add(1);
+				if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_add(1);
 			}
 			return *this;
 		}
@@ -56,10 +56,10 @@ namespace Apex::Resources
 
 			m_resourceEntry->m_refCount.fetch_sub(1);
 
-			if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
+			/*if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
 			{
 				m_resourceEntry->m_resource.reset();
-			}
+			}*/
 		}
 
 		bool IsValid() const

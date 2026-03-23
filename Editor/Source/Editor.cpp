@@ -39,8 +39,8 @@ namespace Apex::Editor
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_viewport = std::make_unique<Viewport>(
-            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GizmoVert.glsl|Assets/Shaders/GizmoFrag.glsl"), 
-            app.GetResourceManager()->CreateAsync<Shader>("Assets/Shaders/GridVert.glsl|Assets/Shaders/GridFrag.glsl"), 
+            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"), 
+            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"), 
             app.GetScene(), app.GetRhi(), m_gui.get(), this);
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
@@ -83,6 +83,9 @@ namespace Apex::Editor
                 case AssetType::Texture:
                     OpenTextureEditor(entry.m_path);
                     break;
+                case AssetType::Mesh:
+                    OpenMeshViewer(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -120,6 +123,14 @@ namespace Apex::Editor
                     [](const std::unique_ptr<TextureEditor>& textureEditor)
                     { return !textureEditor->IsOpen(); }),
                 m_textureEditors.end());
+            // Draw all open mesh viewers, then remove closed ones
+            for (auto& meshViewer : m_meshViewers)
+                meshViewer->Draw();
+            m_meshViewers.erase(
+                std::remove_if(m_meshViewers.begin(), m_meshViewers.end(),
+                    [](const std::unique_ptr<MeshViewer>& meshViewer) 
+                    { return !meshViewer->IsOpen(); }),
+                m_meshViewers.end());
         }
 
         if (m_viewport)
@@ -171,6 +182,7 @@ namespace Apex::Editor
     void Editor::Shutdown()
     {
         m_textureEditors.clear();
+        m_meshViewers.clear();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -181,8 +193,6 @@ namespace Apex::Editor
 
     void Editor::SetEditorState(EditorState newState)
     {
-        if (m_editorState != newState)
-
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
             m_app->SetScene(m_editScene->Clone());
@@ -247,5 +257,22 @@ namespace Apex::Editor
         auto textureEditor = std::make_unique<TextureEditor>(*m_gui, *m_window);
         textureEditor->Open(path, static_cast<int>(m_textureEditors.size()));
         m_textureEditors.push_back(std::move(textureEditor));
+    }
+
+    void Editor::OpenMeshViewer(const fs::path& path)
+    {
+        // If this mesh is already open, just focus that window
+        for (auto& meshViewer : m_meshViewers)
+        {
+            if (meshViewer->GetPath() == path)
+            {
+                meshViewer->Focus();
+                return;
+            }
+        }
+        // Otherwise open a new viewer for this mesh
+        auto meshViewer = std::make_unique<MeshViewer>(*m_gui, *m_window, *m_app->GetRhi(), *m_app->GetResourceManager());
+        meshViewer->Open(path, static_cast<int>(m_meshViewers.size()));
+        m_meshViewers.push_back(std::move(meshViewer));
     }
 }

@@ -23,6 +23,10 @@ namespace Apex::Rendering
 		LibMath::Vector3 GetRight() const { return m_right; }
 		LibMath::Vector3 GetUp() const { return m_up; }
 
+		void SetPosition(LibMath::Vector3 pos);
+		void SetYaw(float yawDegrees);
+		void SetPitch(float pitchDegrees);
+
 		// Input processing
 		void ProcessKeyboard(bool moveForward, bool moveBackward,
 							 bool moveLeft, bool moveRight,

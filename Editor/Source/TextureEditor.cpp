@@ -86,7 +86,15 @@ namespace Apex::Editor
             m_pendingFocus = false;
         }
 
-        m_gui.BeginPanel("Texture Editor - " + m_filename);
+        m_gui.BeginPanel("Texture Editor - " + m_filename, &m_open);
+
+        if (!m_open)
+        {
+            Close();
+            m_gui.EndPanel();
+            m_gui.PopFont();
+            return;
+        }
 
         DrawToolbar();
         m_gui.Separator();
@@ -144,8 +152,6 @@ namespace Apex::Editor
         m_gui.SameLine(0.f, 16.f);
 
         if (m_gui.Button("Fit")) { m_zoom = 1.f; m_panOffset = { 0.f, 0.f }; }
-        m_gui.SameLine(0.f, 8.f);
-        if (m_gui.Button("Close")) Close();
 
         m_gui.PopStyleVariable();
     }
