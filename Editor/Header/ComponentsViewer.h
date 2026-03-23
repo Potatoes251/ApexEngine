@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "Mesh.h"
 #include "ResourceManager.h"
+#include "Physic.h"
 
 namespace Apex::Editor
 {
@@ -18,7 +19,8 @@ namespace Apex::Editor
 	public:
 		ComponentsViewer(Apex::UserInterface::IGUI& gui,
 			Apex::Rendering::Scene& scene, 
-			Apex::Resources::ResourceManager& resourceManager);
+			Apex::Resources::ResourceManager& resourceManager,
+			Apex::Physic::PhysicSystem& phys);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
 
@@ -41,6 +43,7 @@ namespace Apex::Editor
 		Apex::Resources::ResourceManager& m_resourceManager;
 		Apex::Resources::AssetPicker<Mesh> m_meshPicker;
 		Apex::Resources::AssetPicker<Texture> m_texturePicker;
+		Apex::Physic::PhysicSystem& m_phys;
 
 		Apex::Data::Object* m_selectedObj = nullptr;
 		Apex::Component* m_selectedComp = nullptr;

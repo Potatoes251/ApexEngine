@@ -306,7 +306,7 @@ namespace Apex::Editor
     void ContentBrowser::Draw()
     {
         m_gui.PushFont(FontID::Default);
-        m_gui.BeginPanel("Content Browser", nullptr, true);
+        m_gui.BeginPanel("Content Browser", nullptr, false);
         m_gui.PopFont();
 
         DrawToolbar();

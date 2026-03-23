@@ -1,20 +1,76 @@
 #include "ComponentsViewer.h"
 #include "ResourceHandle.h"
+#include "MeshRenderer.h"
+#include "MeshCollider.h"
+#include "BoxCollider.h"
+#include "CapsuleCollider.h"
+#include "Rigidbody.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
+using namespace Apex::Physic;
 
-ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, Apex::Resources::ResourceManager& resourceManager)
-	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager)
+ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, Apex::Resources::ResourceManager& resourceManager, Apex::Physic::PhysicSystem& phys)
+	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), m_phys(phys)
 {
 }
 
 void ComponentsViewer::Draw()
 {
 	m_gui.PushFont(FontID::Default);
-	m_gui.BeginPanel("Components", nullptr, true);
+	m_gui.BeginPanel("Components", nullptr, false);
+
+	if (m_gui.Button(" + Add "))
+		m_gui.OpenPopup("AddComponent");
+
+	if (m_gui.BeginPopup("AddComponent") && m_selectedObj)
+	{
+		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
+			m_gui.MenuItem("Mesh"))
+		{
+			m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
+		}
+
+		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
+			m_gui.MenuItem("Rigidbody"))
+		{
+			m_selectedObj->AddComponent<RigidBodyComponent>(1.0f);
+		}
+
+		RigidBodyComponent* rb = m_selectedObj->GetComponent<RigidBodyComponent>();
+
+		if (rb && m_selectedObj->GetComponent<Collider>() == nullptr)
+		{
+			auto* meshRenderer = m_selectedObj->GetComponent<MeshRenderer>();
+
+			if (meshRenderer && m_gui.MenuItem("Mesh Collider"))
+			{
+				m_selectedObj->AddComponent<MeshCollider>(m_resourceManager.Get<Mesh>(
+					m_selectedObj->GetComponent<MeshRenderer>()->GetMesh()->GetPath()),
+					MeshColliderType::Convex, false);
+
+				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+			}
+
+			else if (m_gui.MenuItem("Box Collider"))
+			{
+				m_selectedObj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
+
+				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+			}
+
+			else if (m_gui.MenuItem("Capsule Collider"))
+			{
+				m_selectedObj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
+
+				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+			}
+		}
+
+		m_gui.EndPopup();
+	}
 
 	if (m_selectedObj)
 	{

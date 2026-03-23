@@ -88,7 +88,7 @@ namespace Apex::Editor
                 }
             });
 
-        m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene(), *m_app->GetResourceManager());
+        m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene(), *m_app->GetResourceManager(), *m_app->GetScene()->GetPhysic());
         m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene(), m_componentsViewer.get());
 
         return true;
