@@ -3,6 +3,8 @@
 // includes Vertex
 #include "RHI.h"
 
+const double ANIMATION_FPS = 30;
+
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
@@ -71,6 +73,10 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
         ProcessNode(root->GetChild(i), mesh);
     }
 
+    ExtractAnimations(scene, mesh);
+
+    m_ctrlPointToVertices.clear();
+
     scene->Destroy();
 }
 
@@ -82,7 +88,10 @@ void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)
     FbxMesh* fbxMesh = node->GetMesh();
 
     if (fbxMesh)
+    {
         ProcessMesh(fbxMesh, mesh);
+        ExtractBones(fbxMesh, mesh);
+    }
 
     for (int i = 0; i < node->GetChildCount(); ++i)
     {
@@ -128,8 +137,12 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
                 vertex.m_uv = { static_cast<float>(uv[0]), static_cast<float>(uv[1]) };
             }
 
+            int vertexIndex = static_cast<int>(mesh.m_vertices.size());
+
             mesh.m_vertices.push_back(vertex);
             mesh.m_indices.push_back(vertexCounter++);
+
+            m_ctrlPointToVertices[controlPointIndex].push_back(vertexIndex);
         }
     }
 }
@@ -159,16 +172,34 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
             {
                 boneIndex = static_cast<int>(mesh.m_bones.size());
 
-                mesh.m_boneMap[boneName] = boneIndex;
+                mesh.m_boneMap[boneName] = boneIndex;;
 
-                Matrix4     bone;
+                BoneInfo boneInfo;
+                boneInfo.parentIndex = -1;
 
-                FbxAMatrix  offsetMatrix;
-                cluster->GetTransformLinkMatrix(offsetMatrix);
+                FbxAMatrix meshTransform;
+                FbxAMatrix boneTransform;
 
-                bone = ConvertFBXMatrix(offsetMatrix);
+                cluster->GetTransformMatrix(meshTransform);          // mesh global at bind pose
+                cluster->GetTransformLinkMatrix(boneTransform);      // bone global at bind pose
 
-                mesh.m_bones.push_back(bone);
+                FbxAMatrix offsetMatrix = boneTransform.Inverse() * meshTransform;
+
+                boneInfo.offsetMatrix = ConvertFBXMatrix(offsetMatrix);
+
+                if (boneNode->GetParent()) //check if node has a parent
+                {
+                    std::string parentName = boneNode->GetParent()->GetName();
+
+                    auto it = mesh.m_boneMap.find(parentName);
+                    if (it != mesh.m_boneMap.end())
+                    {
+                        boneInfo.parentIndex = it->second;
+                    }
+                }
+
+
+                mesh.m_bones.push_back(boneInfo);
             }
             else
             {
@@ -184,7 +215,15 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
                 int     ctrlIndex = controlPointIndices[k];
                 double  weight = weights[k];
 
-                AddBoneWeight(mesh, ctrlIndex, boneIndex, static_cast<float>(weight));
+                auto it = m_ctrlPointToVertices.find(ctrlIndex);
+
+                if (it != m_ctrlPointToVertices.end())
+                {
+                    for (int vertexID : it->second)
+                    {
+                        AddBoneWeight(mesh, vertexID, boneIndex, static_cast<float>(weight));
+                    }
+                }
             }
         }
     }
@@ -203,6 +242,108 @@ void MeshImporter::AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float wei
             return;
         }
     }
+}
+
+void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
+{
+    int animStackCount = scene->GetSrcObjectCount<FbxAnimStack>();
+    if (animStackCount == 0) return;
+
+    FbxNode* root = scene->GetRootNode();
+    if (!root) return;
+
+    mesh.m_animations.clear();
+    mesh.m_animations.resize(animStackCount);
+
+    for (int animIndex = 0; animIndex < animStackCount; ++animIndex)
+    {
+        FbxAnimStack* stack = scene->GetSrcObject<FbxAnimStack>(animIndex);
+        scene->SetCurrentAnimationStack(stack);
+
+        FbxTakeInfo* takeInfo = scene->GetTakeInfo(stack->GetName());
+        if (!takeInfo) continue;
+
+        FbxTime start = takeInfo->mLocalTimeSpan.GetStart();
+        FbxTime end = takeInfo->mLocalTimeSpan.GetStop();
+
+        double duration = end.GetSecondDouble() - start.GetSecondDouble();
+        int frameCount = static_cast<int>(duration * ANIMATION_FPS);
+
+        if (frameCount <= 0) continue;
+
+        Animation& anim = mesh.m_animations[animIndex];
+        anim.m_name = stack->GetName();
+
+        int boneCount = static_cast<int>(mesh.m_bones.size());
+        anim.m_boneAnimations.resize(boneCount);
+
+        for (int bone = 0; bone < boneCount; ++bone)
+        {
+            const std::string& boneName = GetBoneNameFromIndex(mesh, bone);
+
+            auto& boneAnim = anim.m_boneAnimations[bone];
+            boneAnim.m_frames.resize(frameCount);
+
+            FbxNode* node = root->FindChild(boneName.c_str(), true);
+            if (!node)
+            {
+                for (int frame = 0; frame < frameCount; ++frame)
+                {
+                    KeyFrame& key = boneAnim.m_frames[frame];
+                    key.m_position = Vector3(0.f, 0.f, 0.f);
+                    key.m_rotation = Quaternion::identity();
+                    key.m_scale = Vector3(1.f, 1.f, 1.f);
+                }
+                continue;
+            }
+
+            for (int frame = 0; frame < frameCount; ++frame)
+            {
+                FbxTime time;
+                time.SetSecondDouble(start.GetSecondDouble() + frame / ANIMATION_FPS);
+
+                FbxAMatrix transform = node->EvaluateGlobalTransform(time);
+
+                FbxVector4 t = transform.GetT();
+                FbxQuaternion r = transform.GetQ();
+                FbxVector4 s = transform.GetS();
+
+                KeyFrame& key = boneAnim.m_frames[frame];
+
+                key.m_position = Vector3((float)t[0], (float)t[1], (float)t[2]);
+
+                key.m_rotation = Quaternion(
+                    (float)r[3],
+                    (float)r[0],
+                    (float)r[1],
+                    (float)r[2]);
+
+                key.m_scale = Vector3((float)s[0], (float)s[1], (float)s[2]);
+
+                key.m_matrix = ConvertFBXMatrix(transform);
+            }
+        }
+    }
+}
+
+const std::string& MeshImporter::GetBoneNameFromIndex(const Mesh& mesh, int index)
+{
+    for (const auto& [name, i] : mesh.m_boneMap)
+    {
+        if (i == index) return name;
+    }
+
+    static std::string empty = "";
+    return empty;
+}
+
+FbxAMatrix MeshImporter::GetGeometryTransform(FbxNode* node)
+{
+    FbxVector4 t = node->GetGeometricTranslation(FbxNode::eSourcePivot);
+    FbxVector4 r = node->GetGeometricRotation(FbxNode::eSourcePivot);
+    FbxVector4 s = node->GetGeometricScaling(FbxNode::eSourcePivot);
+
+    return FbxAMatrix(t, r, s);
 }
 
 Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)

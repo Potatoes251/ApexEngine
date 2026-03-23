@@ -29,6 +29,8 @@
 #include "Scene.h"
 #include "Hud.h"
 
+#include "Animator.h"
+
 #include <memory>
 #include <filesystem>
 
@@ -56,6 +58,7 @@ namespace Apex
         bool InitAudio();
         bool InitScene();
         bool InitUI();
+        bool InitAnimation();
 
         void Shutdown();
         void Tick();
@@ -80,6 +83,7 @@ namespace Apex
         std::unique_ptr<Apex::Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<Apex::UserInterface::UIManager> m_uiManager;
 
+
         std::unique_ptr<Apex::Windowing::IWindow> m_window;
         std::unique_ptr<Apex::Rendering::Camera> m_camera;
         std::unique_ptr<Apex::Audio::IAudioEngine> m_audio;
@@ -95,8 +99,14 @@ namespace Apex
         Apex::Resources::ResourceHandle<Texture> m_texture;
         Apex::Resources::ResourceHandle<Texture> m_texture2;
 
+        Apex::Resources::ResourceHandle<Mesh>       m_animationMesh;
+        Apex::Resources::ResourceHandle<Shader>     m_animationShader;
+        Apex::Resources::ResourceHandle<Animation>  m_animationAnimation;
+
         Apex::Physic::RigidBodyComponent* m_body = nullptr;
         Apex::Physic::RigidBodyComponent* m_body2 = nullptr;
+
+        std::shared_ptr<Apex::Rendering::Animator> m_animator;
 	};
 }
 

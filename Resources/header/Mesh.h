@@ -5,13 +5,45 @@
 
 #include "LibMath/Vector.h"
 #include "LibMath/Matrix/Matrix4.h"
+#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Quaternion.h"
+
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 
 using LibMath::Matrix4;
+using LibMath::Vector3;
+using LibMath::Quaternion;
 using std::unordered_map;
+
+struct BoneInfo
+{
+	int parentIndex;
+	Matrix4 offsetMatrix;
+};
+
+struct KeyFrame
+{
+public:
+	Vector3		m_position;
+	Quaternion	m_rotation;
+	Vector3		m_scale;
+
+	Matrix4		m_matrix;
+};
+
+struct SingleBoneAnimation
+{
+	std::vector<KeyFrame>	m_frames;
+};
+
+struct Animation
+{
+	std::vector<SingleBoneAnimation>	m_boneAnimations;
+	std::string							m_name;
+};
 
 class Mesh : public IResource
 {
@@ -32,8 +64,9 @@ public:
 
 	GLsizei GetIndexCount()  const { return m_indexCount; }
 
-	std::vector<Matrix4>			m_bones;		//offsetMatrix | inverse bind pose
+	std::vector<BoneInfo>			m_bones;		//offsetMatrix | inverse bind pose
  	unordered_map<std::string, int> m_boneMap;
+	std::vector<Animation>			m_animations;
 
 private:
 	std::string m_name;

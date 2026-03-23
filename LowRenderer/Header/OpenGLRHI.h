@@ -40,6 +40,7 @@ namespace Apex::Rendering
 		void SetUniformFloat(GLuint shader, const std::string& name, float value) override;
 		void SetUniformVec3(GLuint shader, const std::string& name, const LibMath::Vector3& vec) override;
 		void SetUniformMat4(GLuint shader, const std::string& name, const LibMath::Matrix4& matrix) override;
+		void SetUniformMat4Array(GLuint shader, const std::string& name, const LibMath::Matrix4& matrices, int count) override;
 
 		void SetupVertexLayout() override;
 		void DrawIndexed(GLsizei indexCount) override;

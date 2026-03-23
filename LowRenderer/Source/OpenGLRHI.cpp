@@ -181,14 +181,28 @@ namespace Apex::Rendering
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
+	void OpenGLRHI::SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrices, int count)
+	{
+		GLint location = glGetUniformLocation(GetGLShader(shader), name.c_str());
+		glUniformMatrix4fv(location, count, GL_FALSE, matrices.data());
+	}
+
+
 	void OpenGLRHI::SetupVertexLayout()
 	{
+		//mesh datas
 		glEnableVertexAttribArray(0); // Position
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
 		glEnableVertexAttribArray(1); // Normal
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
 		glEnableVertexAttribArray(2); // UV
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
+
+		//animation datas
+		glEnableVertexAttribArray(3); //bone IDs
+		glVertexAttribIPointer(3, 4, GL_INT,  sizeof(Vertex), (void*)offsetof(Vertex, m_boneIDs));
+		glEnableVertexAttribArray(4); //bone weights
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_weights));
 	}
 
 	// ── Draw ───────────────────────────────────────────────────────

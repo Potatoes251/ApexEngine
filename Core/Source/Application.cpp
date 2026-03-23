@@ -36,6 +36,7 @@ bool Apex::Application::Init()
     if (!InitRendering())       return false;
     if (!InitAudio())           return false;
     if (!InitScene())           return false;
+    if (!InitAnimation())       return false;
 
     return true;
 }
@@ -132,6 +133,19 @@ bool Apex::Application::InitUI()
     return true;
 }
 
+bool Apex::Application::InitAnimation()
+{
+    m_animationMesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/Withered_Freddy.fbx");
+    m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkinningVert.glsl|Assets/Shaders/SkinningFrag.glsl");
+    //m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+
+    m_animator = std::make_shared<Apex::Rendering::Animator>(m_animationMesh, m_animationShader, 30.f);
+
+    m_animator->Play(16);
+    
+    return true;
+}
+
 void Apex::Application::LoadScene()
 {
     m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
@@ -201,6 +215,8 @@ void Apex::Application::Tick()
     Render();
 
     m_window->SwapBuffers();
+
+    m_resourceManager->ProcessGpuUploads();
 }
 
 void Apex::Application::ProcessInput()
@@ -266,7 +282,20 @@ void Apex::Application::Render()
 
     m_texture2->Bind();
     m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body2->GetTransform()));
-    m_cube->Draw();
+    //m_cube->Draw();
+
+    //animation
+
+    m_animationShader->Use();
+
+    m_animationShader->SetUniform("uModel", LibMath::Matrix4::identity());
+    m_animationShader->SetUniform("uView", view);
+    m_animationShader->SetUniform("uProjection", proj);
+    //m_animationShader->SetUniform("uCameraPos", m_camera->GetPosition());
+
+    m_animator->Update(m_deltaTime);
+
+    m_animationMesh->Draw();
 
     m_physics.DrawColliders();
     DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);

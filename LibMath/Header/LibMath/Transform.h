@@ -26,6 +26,8 @@ namespace LibMath
 		void	setPosition(Vector3 position) { m_position = position; }
 		void	setScale(Vector3 scale) { m_scale = scale; }
 
+		Transform operator*(Transform const& other) const;
+
 		operator Matrix4() const;
 
 	private:

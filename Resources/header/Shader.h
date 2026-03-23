@@ -25,6 +25,7 @@ public:
 	void SetUniform(std::string const& name, float value);
 	void SetUniform(std::string const& name, LibMath::Vector3 const& value);
 	void SetUniform(std::string const& name, LibMath::Matrix4 const& value);
+	void SetUniformMat4Array(std::string const& name, std::vector<LibMath::Matrix4> const& value);
 
 private:
 	std::string m_name;
