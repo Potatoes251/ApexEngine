@@ -132,7 +132,7 @@ namespace Apex::UserInterface
 
         //  Panels & children 
         // BeginPanel / EndPanel - top-level named window
-        virtual void BeginPanel(const std::string& title, bool dock = true, bool* open = nullptr) = 0;
+        virtual void BeginPanel(const std::string& title, bool* open = nullptr, bool dock = true) = 0;
         virtual void EndPanel() = 0;
 
         // BeginChildPanel / EndChildPanel - scrollable sub-region

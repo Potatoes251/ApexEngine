@@ -84,7 +84,7 @@ namespace Apex::Editor
             m_pendingFocus = false;
         }
 
-        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open);
+        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open, false);
 
         if (!m_open)
         {

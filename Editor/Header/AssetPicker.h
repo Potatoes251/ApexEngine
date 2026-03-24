@@ -77,7 +77,7 @@ namespace Apex::Resources
     {
         if (!m_isOpen) return;
 
-        m_gui.BeginPanel("Select Asset", &m_isOpen);
+        m_gui.BeginPanel("Select Asset", &m_isOpen, false);
 
         if (m_gui.Button("Refresh"))
             ScanAssets();
