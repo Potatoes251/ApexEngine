@@ -67,13 +67,10 @@ namespace Apex::Editor
 		void				DrawUI();
 		void				DrawGrid();
 
-		void				CreateGrid();
-
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
 		Axis		m_selectedAxis = Axis::None;
 		
-		Mesh		m_grid;
 		Resources::ResourceHandle<Shader>	m_gridShader;
 
 		Resources::ResourceHandle<Shader>	m_pickingshader;

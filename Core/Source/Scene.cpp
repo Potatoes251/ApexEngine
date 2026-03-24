@@ -64,7 +64,7 @@ namespace Apex::Rendering
 		if (!obj)
 			return;
 
-		Apex::SceneGraph::SceneNode* node = obj->GetSceneNodeRaw();
+		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
 		if (node && node->GetParent())
 			node->GetParent()->DestroyChild(node);

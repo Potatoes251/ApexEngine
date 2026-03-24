@@ -90,6 +90,7 @@ namespace Apex::Rendering
 		// Draw
 		virtual void SetupVertexLayout() = 0;
 		virtual void SetupVector3Layout() = 0;
+		virtual void DrawEmpty() = 0;
 		virtual void DrawIndexed(uint32_t indexCount) = 0;
 		virtual void DrawArrays(uint32_t vertexCount) = 0;
 		virtual void DrawLineArrays(uint32_t vertexCount) = 0;

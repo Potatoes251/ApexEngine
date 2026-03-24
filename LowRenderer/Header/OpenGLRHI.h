@@ -53,6 +53,7 @@ namespace Apex::Rendering
 
 		void SetupVertexLayout() override;
 		void SetupVector3Layout() override;
+		void DrawEmpty() override;
 		void DrawIndexed(uint32_t indexCount) override;
 		void DrawArrays(uint32_t vertexCount) override;
 		void DrawLineArrays(uint32_t vertexCount) override;

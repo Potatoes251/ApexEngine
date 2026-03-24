@@ -309,6 +309,17 @@ namespace Apex::Rendering
 	}
 
 	// ── Draw ───────────────────────────────────────────────────────
+	void OpenGLRHI::DrawEmpty()
+	{
+		static GLuint vao = 0;
+
+		if (vao == 0)
+			glGenVertexArrays(1, &vao);
+
+		glBindVertexArray(vao);
+		DrawArrays(3);
+	}
+
 	void OpenGLRHI::DrawIndexed(uint32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);

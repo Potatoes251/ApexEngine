@@ -64,7 +64,7 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
 
         if (child && parent)
         {
-            child->GetSceneNodeRaw()->SetParent(parent->GetSceneNodeRaw());
+            child->GetSceneNodeRaw()->SetParent(parent->GetSceneNode());
         }
     }
 }
@@ -104,19 +104,21 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
     parser.Expect(',');
 
     // position
+    LibMath::Transform transform = obj->GetLocalTransform();
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setPosition(parser.ParseVector3());
+    transform.setPosition(parser.ParseVector3());
     parser.Expect(',');
 
     // rotation
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setRotation(parser.ParseQuaternion());
+    transform.setRotation(parser.ParseQuaternion());
     parser.Expect(',');
 
     // scale
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setScale(parser.ParseVector3());
+    transform.setScale(parser.ParseVector3());
     parser.Expect(',');
+    obj->SetLocalTransform(transform);   
 
     // components
     parser.ParseString(); parser.Expect(':');

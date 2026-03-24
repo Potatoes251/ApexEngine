@@ -22,8 +22,6 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
 	m_pickingshader = pickingShader;
 	m_editor = editor;
-
-	CreateGrid();
 }
 
 void Viewport::SelectObject(Data::Object* selected, bool send)
@@ -31,6 +29,8 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 	m_selectedObject = selected;
 	if (send && m_hierarchy)
 		m_hierarchy->SelectObject(selected, false);
+	if (m_selectedObject)
+		printf("%llp\n", m_selectedObject->GetSceneNodeRaw());
 }
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
@@ -96,7 +96,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-		m_selectedObject->GetLocalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setPosition(m_initialTransform.getPosition() + movementVec);
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 
@@ -114,7 +116,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		m_selectedObject->GetLocalTransform().setRotation(deltaAngle * m_initialTransform.getRotation());
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setRotation(deltaAngle * m_initialTransform.getRotation());
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 	case GizmoMode::Scale:
@@ -128,7 +132,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		if (m_isScaleSnapping) Snap(scaleDelta);
 		LibMath::Vector3 newScale = m_initialTransform.getScale() + scaleDelta;
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
-		m_selectedObject->GetLocalTransform().setScale(newScale);
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setScale(newScale);
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 	default:
@@ -356,7 +362,6 @@ void Viewport::Draw()
 		}
 	}
 
-
 	m_gui->BeginPanel("Viewport");
 
 	m_panelPos = m_gui->GetPanelPos();
@@ -372,7 +377,24 @@ void Viewport::Draw()
 	m_rhi->UnBindFrameBuffer();
 
 
-	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
+	float panelRatio = m_panelSize[0] / m_panelSize[1];
+	LibMath::Vector2 drawSize;
+	LibMath::Vector2 offset;
+
+	if (panelRatio > aspectRatio)
+	{
+		drawSize[1] = m_panelSize[1];
+		drawSize[0] = drawSize[1] * aspectRatio;
+		offset[0] = (m_panelSize[0] - drawSize[0]) * 0.5f;
+	}
+	else
+	{
+		drawSize[0] = m_panelSize[0];
+		drawSize[1] = drawSize[0] / aspectRatio;
+		offset[1] = (m_panelSize[1] - drawSize[1]) * 0.5f;
+	}
+
+	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_panelPos + offset, m_panelPos + offset + drawSize);
 
 	DrawUI();
 
@@ -395,7 +417,11 @@ void Viewport::DrawUI()
 	m_gui->SameLine();
 	if (m_gui->Button("Step") && m_editor->GetEditorState() == EditorState::Pause) m_editor->SetEditorState(EditorState::Step);
 	m_gui->SameLine();
-	if (m_gui->Button("Stop")) m_editor->SetEditorState(EditorState::Edit);
+	if (m_gui->Button("Stop")) 
+	{
+		m_editor->SetEditorState(EditorState::Edit);
+		SelectObject(nullptr);
+	}
 
 	if (m_editor->GetEditorState() != EditorState::Edit) return;
 
@@ -436,20 +462,6 @@ void Viewport::DrawGrid()
 	m_gridShader->SetUniform("uInvViewProj", invViewProj);
 
 	m_gridShader->SetUniform("uCameraPos", m_camera.GetPosition());
-	m_grid.Draw();
-}
 
-void Viewport::CreateGrid()
-{
-	m_grid.m_vertices.push_back(Vertex());
-
-	m_grid.m_indices =
-	{
-		0, 1, 2, // Triangle 1
-		0, 2, 3  // Triangle 2
-	};
-
-	m_grid.SetRhi(m_rhi);
-	m_grid.UploadToGpu();
-	m_grid.ClearVertices();
+	m_rhi->DrawEmpty();
 }

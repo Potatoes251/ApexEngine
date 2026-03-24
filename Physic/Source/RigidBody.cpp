@@ -72,20 +72,23 @@ void RigidBodyComponent::SetTransform(LibMath::Transform trans)
 
 void RigidBodyComponent::SetRotation(LibMath::Quaternion rot)
 {
-	LibMath::Transform& transform = GetOwner()->GetLocalTransform();
+	LibMath::Transform transform = GetOwner()->GetLocalTransform();
 	transform.setRotation(rot);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::SetPosition(LibMath::Vector3 pos)
 {
-	LibMath::Transform& transform = GetOwner()->GetLocalTransform();
+	LibMath::Transform transform = GetOwner()->GetLocalTransform();
 	transform.setPosition(pos);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 {
-	LibMath::Transform& transform = GetOwner()->GetLocalTransform();
+	LibMath::Transform transform = GetOwner()->GetLocalTransform();
 	transform.setScale(scale);
+	GetOwner()->SetLocalTransform(transform);
 }
 
 void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)

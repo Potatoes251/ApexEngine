@@ -18,7 +18,7 @@ namespace Apex::Data
 	public:
 		Object();
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
-		Object(const Object& other);
+		Object(const Object& other) = delete;
 		Object&	operator=(const Object& other) = delete;
 		~Object() = default;
 
@@ -30,8 +30,6 @@ namespace Apex::Data
 		std::string&	GetName() { return m_name; }
 		void			SetName(std::string name) { m_name = name; }
 
-
-				LibMath::Transform&		GetLocalTransform();
 		const	LibMath::Transform&		GetLocalTransform() const;
 		const	LibMath::Transform&		GetGlobalTransform();
 
@@ -89,8 +87,6 @@ namespace Apex::Data
 				comps.push_back(c.get());
 			return comps;
 		}
-
-		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 	private:
 		size_t			m_id;
