@@ -2,7 +2,6 @@
 #include "EditorIcon.h"
 
 #include "Mesh.h"
-#include "MeshImporter.h"
 
 #include "LibMath/Trigonometry.h"
 #include "LibMath/Arithmetic.h"
@@ -84,7 +83,7 @@ namespace Apex::Editor
             m_pendingFocus = false;
         }
 
-        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open);
+        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open, false, true);
 
         if (!m_open)
         {
