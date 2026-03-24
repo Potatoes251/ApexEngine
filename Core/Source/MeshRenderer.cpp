@@ -82,7 +82,7 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     Matrix4 model = GetOwner()->GetGlobalTransform();
 
     currentShader->SetUniform("uModel", model);
-    currentShader->SetUniform("uViewProj", passInfo.m_camera->GetProjectionMatrix(passInfo.m_aspectRatio) * passInfo.m_camera->GetViewMatrix());
+    currentShader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
     
     currentShader->SetUniform("uLightPos", { 2.f, 3.f, 2.f });
     currentShader->SetUniform("uLightColor", { 1.f, 1.f, 1.f });

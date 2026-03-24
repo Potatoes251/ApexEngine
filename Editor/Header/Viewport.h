@@ -10,7 +10,7 @@
 
 #include "Gizmos.h"
 
-#include "Camera.h"
+#include "FirstPersonCamera.h"
 
 namespace Apex::Data { class Object; }
 
@@ -31,13 +31,12 @@ namespace Apex::Editor
 	{
 	public:
 		Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
-			Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor);
+			Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor);
 		Viewport(Viewport const&) = delete;
 		Viewport& operator=(Viewport const&) = delete;
 
-		Rendering::Camera&  GetCamera() { return m_camera; }
+		Rendering::FirstPersonCamera&  GetCamera() { return m_camera; }
 		void				SetHierarchy(Hierarchy* hierarchy) { m_hierarchy = hierarchy; }
-		void				ChangeScene(Rendering::Scene* newScene) { m_currentScene = newScene; }
 		void				SelectObject(Data::Object* selected, bool send = true);
 
 		void				UpdateCamera(Windowing::IWindow* window);
@@ -78,11 +77,10 @@ namespace Apex::Editor
 		Rendering::RHITextureHandle			m_textureFbo;
 
 
-		Rendering::Camera		m_camera;
+		Rendering::FirstPersonCamera		m_camera;
 
 		UserInterface::IGUI*	m_gui = nullptr;
 		Rendering::IRHI*		m_rhi = nullptr;
-		Rendering::Scene*		m_currentScene = nullptr;
 		Data::Object*			m_selectedObject = nullptr;
 		Editor*					m_editor = nullptr;
 		Hierarchy*				m_hierarchy = nullptr;
@@ -110,6 +108,7 @@ namespace Apex::Editor
 		bool	m_isScaleSnapping = true;
 		bool	m_isFullScreen = false;
 		bool	m_isFirstFullScreen = false;
+		bool	m_showGrid = false;
 	};
 }
 

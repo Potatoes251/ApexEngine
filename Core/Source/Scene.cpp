@@ -107,8 +107,9 @@ namespace Apex::Rendering
 		view[3][0] = 0;
 		view[3][1] = 0;
 		view[3][2] = 0;
-		m_skybox->Render(passInfo.m_camera->GetProjectionMatrix(passInfo.m_aspectRatio) * view);
-		m_physics.DrawColliders();
+		m_skybox->Render(passInfo.m_camera->GetProjection() * view);
+		if (passInfo.m_showCollider)
+			m_physics.DrawColliders();
 	}
 
 	void Scene::InsertBefore(Object* dragged, Object* target)

@@ -321,14 +321,16 @@ bool PointInQuad(LibMath::Vector2 p,
         d2 <= ac.dotProduct(ac);
 }
 
+constexpr float toleranceScale = 25.f;
+
 Axis Gizmos::IsOnTranslation(
     LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
     LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
-    const float planeSize = 0.25f * m_distanceToCamera * 1.2f;
+    const float planeSize = 0.25f * m_distanceToCamera * 1.3f;
     const float planeOffset = planeSize * 0.5f;
 
-    float mouseRadius = 15.0f * m_distanceToCamera;
+    float mouseRadius = toleranceScale * m_distanceToCamera;
 
     LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
@@ -366,6 +368,8 @@ Axis Gizmos::IsOnTranslation(
 
     float axisLength = 1.0f * m_distanceToCamera;
 
+    mouse = LibMath::Circle(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius * 2);
+
     const LibMath::Vector3 axes[3] = {
     { axisLength, 0, 0 },
     { 0, axisLength, 0 },
@@ -393,7 +397,7 @@ Axis Gizmos::IsOnRotation(
 {
     float axisLength = 1.0f * m_distanceToCamera;
 
-    float tolerance = 0.15f * axisLength;
+    float tolerance = toleranceScale * 0.01f * axisLength;
 
     LibMath::Line3D ray = ScreenToWorldRay(mousePosOnScreen, viewProj, panelOffset, panelSize);
 
@@ -406,7 +410,7 @@ Axis Gizmos::IsOnRotation(
     };
 
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
-    LibMath::Circle mouseCircle(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), 15.0f * m_distanceToCamera);
+    LibMath::Circle mouseCircle(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), toleranceScale * m_distanceToCamera);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -447,7 +451,7 @@ Axis Gizmos::IsOnScale(
     LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
 {
     float axisLength = 1.0f * m_distanceToCamera;
-    float mouseRadius = 15.0f * m_distanceToCamera;
+    float mouseRadius = toleranceScale * m_distanceToCamera;
 
     LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
     LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);

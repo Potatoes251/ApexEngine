@@ -15,13 +15,14 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 
-Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
-	Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
-	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_currentScene(scene), m_rhi(rhi), m_gui(gui) 
+Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
+	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
+	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_rhi(rhi), m_gui(gui) 
 {
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
 	m_pickingshader = pickingShader;
 	m_editor = editor;
+	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
 void Viewport::SelectObject(Data::Object* selected, bool send)
@@ -29,8 +30,6 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 	m_selectedObject = selected;
 	if (send && m_hierarchy)
 		m_hierarchy->SelectObject(selected, false);
-	if (m_selectedObject)
-		printf("%llp\n", m_selectedObject->GetSceneNodeRaw());
 }
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
@@ -67,7 +66,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 	const LibMath::Vector3 axis = GetAxis();
 
-	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) *m_camera.GetViewMatrix();
+	LibMath::Matrix4 viewProj = m_camera.GetViewProj();
 
 	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX, (float)mouseY }, viewProj, m_panelPos, m_panelSize);
 
@@ -174,14 +173,14 @@ bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
 	if (!m_selectedObject) return false;
 
 	LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
-	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) * m_camera.GetViewMatrix();
-	m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode, center, viewProj, m_panelPos, m_panelSize);
+	m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode, 
+		center, m_camera.GetViewProj(), m_panelPos, m_panelSize);
 
 	if (m_selectedAxis == Axis::None) return false;
 
 	m_initialTransform = m_selectedObject->GetGlobalTransform();
 
-	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
+	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, m_camera.GetViewProj(), m_panelPos, m_panelSize);
 	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint)) return false;
 	
 	if (m_currentGizmoMode != GizmoMode::Rotation)
@@ -208,9 +207,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_shader = m_pickingshader;
 
 	m_pickingshader->Use();
-	m_currentScene->Render(picking);
+	m_editor->GetApp()->Render(picking);
 
-	SelectObject(m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
+	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer();
 }
@@ -334,14 +333,14 @@ void Viewport::Draw()
 	float aspectRatio = m_width / m_height;
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(aspectRatio);
+	LibMath::Matrix4 proj = m_camera.GetProjection();
 
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-	m_rhi->Clear();
 
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
+	pass.m_showCollider = m_editor->GetEditorState() != EditorState::Play;
 
 	if (m_isFirstFullScreen)
 	{
@@ -367,10 +366,10 @@ void Viewport::Draw()
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_editor->GetApp()->Render(&m_camera);
+	m_editor->GetApp()->Render(pass);
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
-		DrawGrid();
+		if (m_showGrid) DrawGrid();
 		m_rhi->ClearDepth();
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
 	}
@@ -407,7 +406,7 @@ void Viewport::DrawUI()
 
 	if (m_gui->Button("Play")) m_editor->SetEditorState(EditorState::Play);
 	m_gui->SameLine();
-	if (m_gui->Button("Pause")) 
+	if (m_gui->Button("Pause"))
 	{
 		if (m_editor->GetEditorState() == EditorState::Play)
 			m_editor->SetEditorState(EditorState::Pause);
@@ -422,6 +421,8 @@ void Viewport::DrawUI()
 		m_editor->SetEditorState(EditorState::Edit);
 		SelectObject(nullptr);
 	}
+	m_gui->SameLine();
+	m_gui->Checkbox("Grid", &m_showGrid);
 
 	if (m_editor->GetEditorState() != EditorState::Edit) return;
 
@@ -455,7 +456,7 @@ void Viewport::DrawGrid()
 	m_gridShader->Use();
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);
+	LibMath::Matrix4 proj = m_camera.GetProjection();
 	LibMath::Matrix4 invViewProj = proj * view;
 	m_gridShader->SetUniform("uViewProj", invViewProj);
 	invViewProj.inverse();

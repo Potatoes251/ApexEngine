@@ -4,13 +4,13 @@
 #include "ThreadPool.h"
 #include "Physic.h"
 #include "Scene.h"
-
+#include "RenderPassInfo.h"
 
 namespace Apex::Rendering
 {
     class IRHI;
     class Scene;
-    class Camera;
+    class FirstPersonCamera;
 }
 namespace Apex::Windowing
 {
@@ -53,6 +53,7 @@ namespace Apex
         void Shutdown();
         void ProcessInput();
         void Render(Rendering::Camera* cam = nullptr);
+        void Render(Rendering::RenderPassInfo pass);
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -87,7 +88,7 @@ namespace Apex
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 
         Windowing::IWindow* m_window = nullptr;
-        std::unique_ptr<Rendering::Camera> m_camera;
+        std::unique_ptr<Rendering::FirstPersonCamera> m_camera;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;

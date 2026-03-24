@@ -12,7 +12,7 @@
 
 #include "Window.h"
 #include "RHI.h"
-#include "Camera.h"
+#include "FirstPersonCamera.h"
 #include "Audio.h"
 
 #include "ResourceManager.h"
@@ -84,7 +84,8 @@ bool Apex::Application::InitResourceManager()
 
 bool Apex::Application::InitCamera()
 {
-    m_camera = std::make_unique<Camera>();
+    m_camera = std::make_unique<FirstPersonCamera>();
+    m_camera->SetProjectionMatrix(m_window->GetAspectRatio());
     return true;
 }
 
@@ -301,8 +302,14 @@ void Apex::Application::Render(Camera* cam)
 
     m_scene->Render(pass);
 
-    LibMath::Matrix4 view = cam->GetViewMatrix();
-    LibMath::Matrix4 proj = cam->GetProjectionMatrix(m_window->GetAspectRatio());
+}
 
-    DebugRenderer::Get().DrawLines(proj * view);
+void Apex::Application::Render(RenderPassInfo pass)
+{
+    m_rhi->Clear();
+
+    m_scene->Render(pass);
+
+    if (pass.m_showCollider)
+        DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

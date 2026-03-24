@@ -41,7 +41,7 @@ namespace Apex::Editor
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"), 
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"), 
-            app.GetScene(), app.GetRhi(), m_gui.get(), this);
+            app.GetRhi(), m_gui.get(), this);
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
@@ -194,9 +194,9 @@ namespace Apex::Editor
     {
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
+            m_editScene = m_app->GetScene()->Clone();
             m_app->SetScene(m_editScene->Clone());
 
-            m_viewport->ChangeScene(m_app->GetScene());
             m_hierarchy->SetScene(m_app->GetScene());
         }
         else if (newState == EditorState::Edit)
@@ -204,7 +204,6 @@ namespace Apex::Editor
             // Restore editor scene
             m_app->SetScene(m_editScene->Clone());
 
-            m_viewport->ChangeScene(m_editScene.get());
             m_hierarchy->SetScene(m_app->GetScene());
         }
         m_editorState = newState;
