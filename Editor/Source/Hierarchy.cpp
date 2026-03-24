@@ -9,10 +9,11 @@ using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Data;
+using namespace Apex::Resources;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene* scene, ComponentsViewer* compViewer)
-    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer)
+    Scene* scene, ComponentsViewer* compViewer, ResourceManager* resourceManager)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_resourceManager(resourceManager)
 {
 }
 
@@ -31,6 +32,39 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             SelectObject(obj);
         }
+
+        if (m_gui.MenuItem("Cube"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+            comp.SetMesh(mesh);
+            auto texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/blank.png");
+            comp.SetTexture(texture);
+            auto shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag");
+            comp.SetShader(shader);
+            obj->SetName("Cube");
+
+            m_selected = obj;
+        }
+
+        if (m_gui.MenuItem("Sphere"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
+            comp.SetMesh(mesh);
+            auto texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/blank.png");
+            comp.SetTexture(texture);
+            auto shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag");
+            comp.SetShader(shader);
+            obj->SetName("Sphere");
+
+            m_selected = obj;
+        }
+
         m_gui.EndPopup();
     }
 

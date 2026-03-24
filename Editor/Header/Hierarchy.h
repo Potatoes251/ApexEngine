@@ -16,6 +16,11 @@ namespace Apex::Data
 	class Object;
 }
 
+namespace Apex::Resources
+{
+	class ResourceManager;
+}
+
 #include "ComponentsViewer.h"
 
 namespace Apex::Editor
@@ -34,7 +39,8 @@ namespace Apex::Editor
 	{
 	public:
 		Hierarchy(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene* scene, ComponentsViewer* compViewer);
+			Apex::Rendering::Scene* scene, ComponentsViewer* compViewer,
+			Apex::Resources::ResourceManager* resourceManager);
 
 		void Draw();
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
@@ -69,6 +75,7 @@ namespace Apex::Editor
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene* m_scene;
 		ComponentsViewer* m_componentsViewer;
+		Apex::Resources::ResourceManager* m_resourceManager;
 
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;
