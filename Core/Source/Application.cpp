@@ -8,6 +8,8 @@
 #include "SceneGraph.h"
 #include "Object.h"
 
+#include "Lighting/PointLightComponent.h"
+
 #include "SceneLoader.h"
 
 #include "Window.h"
@@ -221,6 +223,8 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
 
         m_resourceManager->ProcessGpuUploads();
     }
+
+    m_scene->GetObjectAt(0)->AddComponent<Lighting::PointLightComponent>();
 
     for (auto& objPtr : m_scene->GetObjects())
     {

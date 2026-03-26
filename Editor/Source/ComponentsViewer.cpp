@@ -131,9 +131,9 @@ void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 
 	m_gui.Text(var.name);
 
-	m_gui.SliderFloat("X", &v[0], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Y", &v[1], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Z", &v[2], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("X##" + var.name, &v[0], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Y##" + var.name, &v[1], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Z##" + var.name, &v[2], -1000.0f, 1000.0f);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)

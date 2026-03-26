@@ -14,6 +14,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
 # Create executable
 add_executable(${EXE_EDITOR_NAME})
 
+# Create Visual Studio filters matching folder structure
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_FILES})
+
 # Add source files
 target_sources(${EXE_EDITOR_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
 

@@ -44,27 +44,27 @@ namespace Apex::Data
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
 
-				void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
+		void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
 
-				template<typename T, typename... Args>
-				T& AddComponent(Args&&... args)
-				{
-					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
+		template<typename T, typename... Args>
+		T& AddComponent(Args&&... args)
+		{
+			std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
 
 			component->m_owner = this;
 
 			T& ref = *component;
 			m_components.push_back(std::move(component));
 
-					if (m_components.size() == 1)
-						m_components.back()->SetId(0);
-					else
-					{
-						m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
-					}
+			if (m_components.size() == 1)
+				m_components.back()->SetId(0);
+			else
+			{
+				m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+			}
 
-					return ref;
-				}
+			return ref;
+		}
 
 		template<typename T>
 		T* GetComponent()

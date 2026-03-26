@@ -27,7 +27,7 @@ namespace Apex::Physic
 
 		ColliderType GetType() const override { return ColliderType::Mesh; }
 		MeshColliderType GetMeshColliderType() const { return m_type; }
-		const char* GetTypeName() const override { return "MeshCollider"; };
+		const char* GetTypeName() const override { return "MeshCollider"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 		void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
