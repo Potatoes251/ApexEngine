@@ -109,6 +109,7 @@ namespace Apex::Editor
 		bool	m_isFullScreen = false;
 		bool	m_isFirstFullScreen = false;
 		bool	m_showGrid = false;
+		bool	m_showColliders = false;
 	};
 }
 

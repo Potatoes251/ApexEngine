@@ -10,6 +10,10 @@
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
+#include "Lighting/DirectionalLightComponent.h"
+#include "Lighting/PointLightComponent.h"
+#include "Lighting/SpotLightComponent.h"
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -43,6 +47,31 @@ namespace Apex::Rendering
 		}
 
 		return copy;
+	}
+
+	Lighting::VisibleLights Scene::GetVisibleLights()
+	{
+		Lighting::VisibleLights visibleLights;
+
+		for (std::unique_ptr<Object>& obj : m_objects)
+		{
+			Lighting::DirectionalLightComponent* dirLight = obj->GetComponent<Lighting::DirectionalLightComponent>();
+
+			if (dirLight)
+				visibleLights.m_directionalLights.push_back(dirLight);
+
+			Lighting::SpotLightComponent* spotLight = obj->GetComponent<Lighting::SpotLightComponent>();
+
+			if (spotLight)
+				visibleLights.m_spotLights.push_back(spotLight);
+
+			Lighting::PointLightComponent* pointLight = obj->GetComponent<Lighting::PointLightComponent>();
+			
+			if (pointLight)
+				visibleLights.m_pointLights.push_back(pointLight);
+		}
+
+		return visibleLights;
 	}
 
 	Object* Scene::CreateObject()

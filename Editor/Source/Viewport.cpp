@@ -340,7 +340,7 @@ void Viewport::Draw()
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
-	pass.m_showCollider = m_editor->GetEditorState() != EditorState::Play;
+	pass.m_showCollider = m_editor->GetEditorState() != EditorState::Play && m_showColliders;
 
 	if (m_isFirstFullScreen)
 	{
@@ -423,6 +423,8 @@ void Viewport::DrawUI()
 	}
 	m_gui->SameLine();
 	m_gui->Checkbox("Grid", &m_showGrid);
+	m_gui->SameLine();
+	m_gui->Checkbox("Colliders", &m_showColliders);
 
 	if (m_editor->GetEditorState() != EditorState::Edit) return;
 

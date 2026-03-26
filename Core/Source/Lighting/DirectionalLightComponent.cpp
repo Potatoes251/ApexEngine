@@ -29,7 +29,7 @@ void DirectionalLightComponent::FillGpuData(void* data_out)
 {
     GPUDirectionalLight* data = (GPUDirectionalLight*)data_out;
 
-    data->m_color = m_color;
-    data->m_intensity = m_intensity;
-    data->m_direction = GetOwner()->GetGlobalTransform().getForward();
+    data->m_color = { m_color, 0 };
+    data->m_param = { m_intensity, 0, 0, 0 };
+    data->m_direction = { GetOwner()->GetGlobalTransform().getForward(), 0 };
 }

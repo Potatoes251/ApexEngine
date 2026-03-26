@@ -22,8 +22,8 @@ void FirstPersonCamera::ProcessKeyboard(bool moveForward, bool moveBackward, boo
 	if (moveBackward) m_position -= m_front * velocity;
 	if (moveLeft) m_position -= m_right * velocity;
 	if (moveRight) m_position += m_right * velocity;
-	if (moveUp) m_position += m_up * velocity;
-	if (moveDown) m_position -= m_up * velocity;
+	if (moveUp) m_position += LibMath::Vector3::up() * velocity;
+	if (moveDown) m_position -= LibMath::Vector3::up() *velocity;
 
 	m_dirty = true;
 }

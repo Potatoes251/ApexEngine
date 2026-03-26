@@ -34,8 +34,7 @@ void PointLightComponent::FillGpuData(void* data_out)
 {
     GPUPointLight* data = (GPUPointLight*)data_out;
 
-    data->m_color = m_color;
-    data->m_intensity = m_intensity;
-    data->m_position = GetOwner()->GetGlobalTransform().getPosition();
-    data->m_radius = m_radius;
+    data->m_color = { m_color, 0 };
+    data->m_param = { m_intensity, m_radius, 0, 0 };
+    data->m_position = { GetOwner()->GetGlobalTransform().getForward(), 0 };
 }

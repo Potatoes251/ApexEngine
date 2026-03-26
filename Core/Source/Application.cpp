@@ -8,7 +8,7 @@
 #include "SceneGraph.h"
 #include "Object.h"
 
-#include "Lighting/PointLightComponent.h"
+#include "Lighting/SpotLightComponent.h"
 
 #include "SceneLoader.h"
 
@@ -31,6 +31,8 @@
 #include "UI.h"
 #include "Hud.h"
 
+#include "Lighting/LightManager.h"
+
 #include <chrono>
 #include <iostream>
 
@@ -45,6 +47,7 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
+using namespace Apex::Lighting;
 
 namespace Apex
 {
@@ -69,6 +72,7 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitResourceManager()  
     || !InitCamera()
     || !InitRHI()  
+    || !InitLighting()
     || !InitRendering()
     || !InitUI(gui)
     || !InitAudio()
@@ -173,6 +177,12 @@ bool Apex::Application::InitUI(IGUI* gui)
 
     m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
+    return true;
+}
+
+bool Apex::Application::InitLighting()
+{
+    m_lightManager = std::make_unique<LightManager>(m_rhi.get());
     return true;
 }
 
@@ -298,19 +308,21 @@ void Apex::Application::Update()
 void Apex::Application::Render(Camera* cam)
 {
     if (!cam) cam = m_camera.get();
-    m_rhi->Clear();
 
     RenderPassInfo pass;
     pass.m_aspectRatio = m_window->GetAspectRatio();
     pass.m_camera = cam;
 
-    m_scene->Render(pass);
-
+    Render(pass);
 }
 
 void Apex::Application::Render(RenderPassInfo pass)
 {
     m_rhi->Clear();
+
+    VisibleLights visibleLights = m_scene->GetVisibleLights();
+
+    m_lightManager->UploadToGpu(visibleLights);
 
     m_scene->Render(pass);
 

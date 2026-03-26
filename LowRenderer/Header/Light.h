@@ -1,37 +1,55 @@
 #ifndef LIGHT
 #define LIGHT
 
-#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Vector/Vector4.h"
 
 // structs to hold gpu datas
+// use only vec4 to avoid padding mismatch between cpu and gpu structs
 
 namespace Apex::Lighting
 {
-	struct GPUPointLight
+	constexpr int MAX_POINT_LIGHTS = 10;
+	constexpr int MAX_DIR_LIGHTS = 10;
+	constexpr int MAX_SPOT_LIGHTS = 10;
+
+	struct alignas(16) GPUPointLight
 	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_color;
-		float m_intensity;
-		float m_radius;
+		LibMath::Vector4 m_position;
+		LibMath::Vector4 m_color;
+		LibMath::Vector4 m_param; // x = intensity, y = radius
 	};
 
-	struct GPUDirectionalLight
+	struct alignas(16) GPUPointLightBuffer
 	{
-		LibMath::Vector3 m_direction;
-		LibMath::Vector3 m_color;
-		float m_intensity;
+		LibMath::Vector4 m_count;
+		GPUPointLight m_lights[MAX_POINT_LIGHTS];
 	};
 
-	struct GPUSpotLight
+	struct alignas(16) GPUDirectionalLight
 	{
-		LibMath::Vector3 m_position;
-		LibMath::Vector3 m_direction;
-		LibMath::Vector3 m_color;
+		LibMath::Vector4 m_direction;
+		LibMath::Vector4 m_color;
+		LibMath::Vector4 m_param; // x = intensity
+	};
 
-		float m_intensity;
+	struct alignas(16) GPUDirectionalLightBuffer
+	{
+		LibMath::Vector4 m_count;
+		GPUDirectionalLight m_lights[MAX_DIR_LIGHTS];
+	};
 
-		float m_innerCutoff;
-		float m_outerCutoff;
+	struct alignas(16) GPUSpotLight
+	{
+		LibMath::Vector4 m_position;
+		LibMath::Vector4 m_direction;
+		LibMath::Vector4 m_color;
+		LibMath::Vector4 m_param; // x = intensity, y = innerCutoff, z = outerCutoff
+	};
+
+	struct alignas(16) GPUSpotLightBuffer
+	{
+		LibMath::Vector4 m_count;
+		GPUSpotLight m_lights[MAX_SPOT_LIGHTS];
 	};
 }
 

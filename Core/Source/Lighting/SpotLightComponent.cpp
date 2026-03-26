@@ -26,8 +26,8 @@ std::vector<ExposedVar> SpotLightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
-    exposedVec.push_back({ "Inner angle", ExposedVar::Vector3, &m_innerCutoff });
-    exposedVec.push_back({ "Outer angle", ExposedVar::Vector3, &m_outerCutoff });
+    exposedVec.push_back({ "Inner angle", ExposedVar::Float, &m_innerCutoff });
+    exposedVec.push_back({ "Outer angle", ExposedVar::Float, &m_outerCutoff });
 
     return exposedVec;
 }
@@ -36,10 +36,8 @@ void SpotLightComponent::FillGpuData(void* data_out)
 {
     GPUSpotLight* data = (GPUSpotLight*)data_out;
 
-    data->m_color = m_color;
-    data->m_intensity = m_intensity;
-    data->m_direction = GetOwner()->GetGlobalTransform().getForward();
-    data->m_position = GetOwner()->GetGlobalTransform().getPosition();
-    data->m_innerCutoff = m_innerCutoff;
-    data->m_outerCutoff = m_outerCutoff;
+    data->m_color = { m_color, 0 };
+    data->m_direction = { GetOwner()->GetGlobalTransform().getForward(), 0 };
+    data->m_position = { GetOwner()->GetGlobalTransform().getPosition(), 0 };
+    data->m_param = { m_intensity, m_innerCutoff, m_outerCutoff,0 };
 }

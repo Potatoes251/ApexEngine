@@ -16,14 +16,9 @@ LightManager::LightManager(Rendering::IRHI* rhi)
 
 	assert(m_rhi != nullptr && "the rhi shouldn't be nullptr");
 
-	m_pointLightBuffer = rhi->CreateUniformBuffer(0, sizeof(GPUPointLight) * m_maxPointLights);
-	m_spotLightBuffer = rhi->CreateUniformBuffer(1, sizeof(GPUSpotLight) * m_maxSpotLights);
-	m_directionalLightBuffer = rhi->CreateUniformBuffer(2, sizeof(GPUDirectionalLight) * m_maxDirectionalLights);
-
-	
-	m_gpuPointLights.reserve(m_maxPointLights);
-	m_gpuSpotLights.reserve(m_maxSpotLights);
-	m_gpuDirectionalLights.reserve(m_maxDirectionalLights);
+	m_pointLightBuffer = rhi->CreateUniformBuffer(0, sizeof(GPUPointLightBuffer));
+	m_directionalLightBuffer = rhi->CreateUniformBuffer(1, sizeof(GPUDirectionalLightBuffer));
+	m_spotLightBuffer = rhi->CreateUniformBuffer(2, sizeof(GPUSpotLightBuffer));
 }
 
 LightManager::~LightManager()
@@ -38,52 +33,46 @@ LightManager::~LightManager()
 
 void LightManager::UploadToGpu(VisibleLights const& lights)
 {
-	m_gpuPointLights.clear();
-	m_gpuSpotLights.clear();
-	m_gpuDirectionalLights.clear();
-
-	for (PointLightComponent* light : lights.m_pointLights)
+	GPUPointLightBuffer bufferP;
+	bufferP.m_count[0] = std::min(lights.m_pointLights.size(), m_maxPointLights);
+	for (int i = 0; i < bufferP.m_count[0]; i++)
 	{
-		GPUPointLight gpuLight =
+		PointLightComponent* light = lights.m_pointLights[i];
+		bufferP.m_lights[i] =
 		{
-			.m_position = light->GetOwner()->GetGlobalTransform().getPosition(),
-			.m_color = light->GetColor(),
-			.m_intensity = light->GetIntensity(),
-			.m_radius = light->GetRadius()
+			.m_position = { light->GetOwner()->GetGlobalTransform().getPosition(), 0 },
+			.m_color = { light->GetColor(), 0 },
+			.m_param = { light->GetIntensity(), light->GetRadius(), 0, 0 }
 		};
-
-		m_gpuPointLights.push_back(gpuLight);
 	}
-	size_t nbLights = std::min(m_gpuPointLights.size(), m_maxPointLights);
-	m_rhi->BindUniformBuffer(m_pointLightBuffer, sizeof(GPUPointLight) * nbLights, m_gpuPointLights.data());
+	m_rhi->BindUniformBuffer(m_pointLightBuffer, sizeof(GPUPointLightBuffer), &bufferP);
 
-	for (SpotLightComponent* light : lights.m_spotLights)
+	GPUSpotLightBuffer bufferS;
+	bufferS.m_count[0] = std::min(lights.m_spotLights.size(), m_maxSpotLights);
+	for (int i = 0; i < bufferS.m_count[0]; i++)
 	{
-		GPUSpotLight gpuLight =
+		SpotLightComponent* light = lights.m_spotLights[i];
+		bufferS.m_lights[i] =
 		{
-			.m_position = light->GetOwner()->GetGlobalTransform().getPosition(),
-			.m_direction = light->GetOwner()->GetGlobalTransform().getForward(),
-			.m_color = light->GetColor(),
-			.m_intensity = light->GetIntensity(),
-			.m_innerCutoff = light->GetInnerCutoff(),
-			.m_outerCutoff = light->GetOuterCutoff()
+			.m_position = { light->GetOwner()->GetGlobalTransform().getPosition(), 0 },
+			.m_direction = { light->GetOwner()->GetGlobalTransform().getForward(),0 },
+			.m_color = { light->GetColor(), 0 },
+			.m_param = { light->GetIntensity(), light->GetInnerCutoff(), light->GetOuterCutoff(), 0 }
 		};
-		m_gpuSpotLights.push_back(gpuLight);
 	}
-	nbLights = std::min(m_gpuSpotLights.size(), m_maxSpotLights);
-	m_rhi->BindUniformBuffer(m_spotLightBuffer, sizeof(GPUSpotLight) * nbLights, m_gpuSpotLights.data());
+	m_rhi->BindUniformBuffer(m_spotLightBuffer, sizeof(GPUSpotLightBuffer), &bufferS);
 
-	for (DirectionalLightComponent* light : lights.m_directionalLights)
+	GPUDirectionalLightBuffer bufferD;
+	bufferD.m_count[0] = std::min(lights.m_directionalLights.size(), m_maxDirectionalLights);
+	for (int i = 0; i < bufferD.m_count[0]; i++)
 	{
-		GPUDirectionalLight gpuLight =
+		DirectionalLightComponent* light = lights.m_directionalLights[i];
+		bufferD.m_lights[i] =
 		{
-			.m_direction = light->GetOwner()->GetGlobalTransform().getForward(),
-			.m_color = light->GetColor(),
-			.m_intensity = light->GetIntensity()
+			.m_direction = { light->GetOwner()->GetGlobalTransform().getForward(),0 },
+			.m_color = { light->GetColor(), 0 },
+			.m_param = { light->GetIntensity(), 0, 0, 0 }
 		};
-
-		m_gpuDirectionalLights.push_back(gpuLight);
 	}
-	nbLights = std::min(m_gpuDirectionalLights.size(), m_maxDirectionalLights);
-	m_rhi->BindUniformBuffer(m_directionalLightBuffer, sizeof(GPUDirectionalLight) * nbLights, m_gpuDirectionalLights.data());
+	m_rhi->BindUniformBuffer(m_directionalLightBuffer, sizeof(GPUDirectionalLightBuffer), &bufferD);
 }

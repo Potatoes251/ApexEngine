@@ -30,9 +30,15 @@ namespace Apex::UserInterface
     class UIManager;
     class IGUI;
 }
+
 namespace Apex::Scripting
 {
     class LuaManager;
+}
+
+namespace Apex::Lighting
+{
+    class LightManager;
 }
 
 namespace Apex
@@ -72,6 +78,7 @@ namespace Apex
         bool InitAudio();
         bool InitScene();
         bool InitUI(UserInterface::IGUI* gui);
+        bool InitLighting();
         
         void UpdateAudioListener();
         void Update();
@@ -84,6 +91,7 @@ namespace Apex
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
         std::unique_ptr<Scripting::LuaManager> m_luaManager;
+        std::unique_ptr<Lighting::LightManager> m_lightManager;
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 

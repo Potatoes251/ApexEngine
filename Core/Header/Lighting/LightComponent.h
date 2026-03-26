@@ -23,7 +23,7 @@ namespace Apex::Lighting
 		LibMath::Vector3	GetColor() const { return m_color; }
 		float				GetIntensity() const { return m_intensity; }
 	protected:
-		LibMath::Vector3 m_color;
+		LibMath::Vector3 m_color = LibMath::Vector3(1.f, 1.f, 1.f);
 		float m_intensity = 10.f;
 	};
 }
