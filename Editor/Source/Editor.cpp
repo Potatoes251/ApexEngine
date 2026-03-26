@@ -36,7 +36,7 @@ namespace Apex::Editor
 
         if (!m_app->GetAudio() || !m_gui) return false;
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
 
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"), 

@@ -8,6 +8,10 @@
 
 #include "UI.h"
 #include "Window.h"
+#include "RHI.h"
+#include "ResourceManager.h"
+
+#include "ThumbnailRenderer.h"
 
 #include <string>
 #include <vector>
@@ -26,6 +30,7 @@ namespace Apex::Editor
 		fs::path m_path;
 		AssetType m_type = AssetType::Unknown;
 		bool m_isFolder = false;
+		uint32_t  m_thumbnailTextureID = 0;
 	};
 
 	// Called when the user double-clicks an asset to load it.
@@ -38,7 +43,9 @@ namespace Apex::Editor
 		// rootPath - assets root directory (e.g. "Assets/").
 		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, 
 								Apex::Windowing::IWindow& window, 
-								const fs::path& rootPath);
+								const fs::path& rootPath,
+								Apex::Rendering::IRHI& rhi,
+								Apex::Resources::ResourceManager& resourceManager);
 		~ContentBrowser() = default;
 		ContentBrowser(const ContentBrowser&) = delete;
 		ContentBrowser& operator=(const ContentBrowser&) = delete;
@@ -104,10 +111,12 @@ namespace Apex::Editor
 		static const char* TypeLabel(AssetType type);
 		static uint32_t    TypeColor(AssetType type);   // returns PackColor value
 		static AssetEntry  ClassifyEntry(const fs::directory_entry& entry);
+		static const char* IconPathForType(AssetType type);
 
 		// State
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Windowing::IWindow&  m_window;
+		ThumbnailRenderer          m_thumbnails;
 		fs::path                   m_rootPath;
 		fs::path                   m_currentPath;
 		std::vector<AssetEntry>    m_entries;
