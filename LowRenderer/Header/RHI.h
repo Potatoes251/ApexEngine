@@ -15,6 +15,7 @@
 
 namespace Apex::Rendering
 {
+	using RHIUniformBufferHandle = uint32_t;
 	using RHIFrameBufferHandle = uint32_t;
 	using RHIBufferHandle = uint32_t;
 	using RHIVAOHandle = uint32_t;
@@ -69,6 +70,10 @@ namespace Apex::Rendering
 		virtual void					UnBindFrameBuffer() = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 		virtual int						GetPixelData(int x, int y) = 0;
+
+		virtual RHIUniformBufferHandle	CreateUniformBuffer(unsigned int bindingPoint, size_t sizeBytes) = 0;
+		virtual void					BindUniformBuffer(RHIUniformBufferHandle buffer, size_t sizeBytes, void* data) = 0;
+		virtual void					DeleteUniformBuffer(RHIUniformBufferHandle buffer) = 0;
 
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;

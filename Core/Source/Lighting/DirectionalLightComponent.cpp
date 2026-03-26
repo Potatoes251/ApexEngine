@@ -1,5 +1,8 @@
 #include "Lighting/DirectionalLightComponent.h"
 
+#include "Light.h"
+#include "Object.h"
+
 using namespace Apex;
 using namespace Apex::Lighting;
 
@@ -20,4 +23,13 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
 std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()
 {
     return LightComponent::GetExposedVariables();
+}
+
+void DirectionalLightComponent::FillGpuData(void* data_out)
+{
+    GPUDirectionalLight* data = (GPUDirectionalLight*)data_out;
+
+    data->m_color = m_color;
+    data->m_intensity = m_intensity;
+    data->m_direction = GetOwner()->GetGlobalTransform().getForward();
 }

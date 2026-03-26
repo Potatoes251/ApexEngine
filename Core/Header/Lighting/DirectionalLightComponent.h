@@ -18,8 +18,8 @@ namespace Apex::Lighting
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "DirectionalLightComponent"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
-		void DrawVariables(Apex::UserInterface::IGUI& gui) override {}
 
+		void FillGpuData(void* data_out) override;
 	private:
 
 	};

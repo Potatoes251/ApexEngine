@@ -19,10 +19,14 @@ namespace Apex::Lighting
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "SpotLightComponent"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
-		void DrawVariables(Apex::UserInterface::IGUI& gui) override {}
+
+		void FillGpuData(void* data_out) override;
+
+		float GetInnerCutoff() const { return m_innerCutoff; }
+		float GetOuterCutoff() const { return m_outerCutoff; }
 	private:
-		float m_innerCutOff = 50.f;
-		float m_outerCutOff = 75.f;
+		float m_innerCutoff = 50.f;
+		float m_outerCutoff = 75.f;
 	};
 }
 

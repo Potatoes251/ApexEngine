@@ -164,6 +164,35 @@ namespace Apex::Rendering
 		return (int(pixel[0]) << 16) | (int(pixel[1]) << 8) | int(pixel[2]);
 	}
 
+	RHIUniformBufferHandle OpenGLRHI::CreateUniformBuffer(unsigned int bindingPoint, size_t sizeBytes)
+	{
+		GLuint ubo;
+
+		glGenBuffers(1, &ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+		glBufferData(GL_UNIFORM_BUFFER, sizeBytes, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		RHIUniformBufferHandle buffer = NewHandle();
+		m_uniformBuffers[buffer] = ubo;
+		return buffer;
+	}
+
+	void OpenGLRHI::BindUniformBuffer(RHIUniformBufferHandle buffer, size_t sizeBytes, void* data)
+	{
+		glBindBuffer(GL_UNIFORM_BUFFER, GetuniformeBuffer(buffer));
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeBytes, data);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	void OpenGLRHI::DeleteUniformBuffer(RHIUniformBufferHandle buffer)
+	{
+		GLuint glFrameBuffer = GetuniformeBuffer(buffer);
+		glDeleteBuffers(1, &glFrameBuffer);
+		m_uniformBuffers.erase(buffer);
+	}
+
 	// ── Textures ─────────────────────────────────────────────────
 	RHITextureHandle OpenGLRHI::CreateTexture(const TextureDescription& desc)
 	{
@@ -357,6 +386,7 @@ namespace Apex::Rendering
 	// ── Helpers ───────────────────────────────────────────────────
 	uint32_t OpenGLRHI::GetBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
 	uint32_t OpenGLRHI::GetFrameBuffer(RHIFrameBufferHandle handle) const { return m_frameBuffers.at(handle); }
+	uint32_t OpenGLRHI::GetuniformeBuffer(RHIUniformBufferHandle handle) const { return m_uniformBuffers.at(handle); }
 	uint32_t OpenGLRHI::GetShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
 	uint32_t OpenGLRHI::GetTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
 	uint32_t OpenGLRHI::GetVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }

@@ -18,7 +18,10 @@ namespace Apex::Lighting
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "PointLightComponent"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
-		void DrawVariables(Apex::UserInterface::IGUI& gui) override {}
+
+		void FillGpuData(void* data_out) override;
+
+		float GetRadius() const { return m_radius; }
 	private:
 		float m_radius = 10.f;
 	};

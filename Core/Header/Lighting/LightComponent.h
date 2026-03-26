@@ -16,7 +16,12 @@ namespace Apex::Lighting
 		LightComponent& operator=(LightComponent const&) = delete;
 
 		virtual std::vector<ExposedVar> GetExposedVariables() override;
+		void DrawVariables(Apex::UserInterface::IGUI& gui) override {}
 
+		virtual void FillGpuData(void* data_out) = 0;
+
+		LibMath::Vector3	GetColor() const { return m_color; }
+		float				GetIntensity() const { return m_intensity; }
 	protected:
 		LibMath::Vector3 m_color;
 		float m_intensity = 10.f;

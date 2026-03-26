@@ -37,6 +37,10 @@ namespace Apex::Rendering
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 		int						GetPixelData(int x, int y) override;
 
+		RHIUniformBufferHandle	CreateUniformBuffer(unsigned int bindingPoint, size_t sizeBytes) override;
+		void					BindUniformBuffer(RHIUniformBufferHandle buffer, size_t sizeBytes, void* data) override;
+		void					DeleteUniformBuffer(RHIUniformBufferHandle buffer) override;
+
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
@@ -63,6 +67,7 @@ namespace Apex::Rendering
 
 		uint32_t GetBuffer(RHIBufferHandle handle)  const;
 		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;
+		uint32_t GetuniformeBuffer(RHIUniformBufferHandle handle)  const;
 		uint32_t GetVAO(RHIVAOHandle handle)		const;
 		uint32_t GetTexture(RHITextureHandle handle) const override;
 		uint32_t GetShader(RHIShaderHandle handle)  const;
@@ -70,6 +75,7 @@ namespace Apex::Rendering
 	private:
 		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
 		std::unordered_map<RHIFrameBufferHandle, GLuint>	m_frameBuffers;
+		std::unordered_map<RHIUniformBufferHandle, GLuint>	m_uniformBuffers;
 		std::unordered_map<RHIVAOHandle, GLuint>			m_vaos;
 		std::unordered_map<RHITextureHandle, GLuint>		m_textures;
 		std::unordered_map<RHIShaderHandle, GLuint>			m_shaders;
