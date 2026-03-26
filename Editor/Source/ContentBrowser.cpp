@@ -95,7 +95,7 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
-            if (!entry.is_directory() && entry.path().extension() == ".meta")
+            if (!entry.is_directory() && (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh"))
                 continue;
 
             AssetEntry assetEntry = ClassifyEntry(entry);
@@ -306,7 +306,7 @@ namespace Apex::Editor
     void ContentBrowser::Draw()
     {
         m_gui.PushFont(FontID::Default);
-        m_gui.BeginPanel("Content Browser", nullptr, false);
+        m_gui.BeginPanel("Content Browser");
         m_gui.PopFont();
 
         DrawToolbar();

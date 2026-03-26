@@ -14,20 +14,28 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
-# Collect assets
+# --- Existing Assets ---
 file(GLOB_RECURSE ASSET_FILES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/assets/*
+    ${CMAKE_SOURCE_DIR}/Assets/*
 )
 
-# Group them properly in Visual Studio
-source_group(TREE ${CMAKE_SOURCE_DIR}/assets
+source_group(TREE ${CMAKE_SOURCE_DIR}/Assets
              PREFIX "Assets"
              FILES ${ASSET_FILES})
 
-add_custom_target(Assets SOURCES
-    ${ASSET_FILES}
+# --- Apex Assets ---
+file(GLOB_RECURSE APEX_ASSET_FILES CONFIGURE_DEPENDS
+    ${CMAKE_SOURCE_DIR}/ApexAssets/*
 )
 
+source_group(TREE ${CMAKE_SOURCE_DIR}/ApexAssets
+             PREFIX "ApexAssets"
+             FILES ${APEX_ASSET_FILES})
+
+add_custom_target(Assets SOURCES
+    ${ASSET_FILES}
+    ${APEX_ASSET_FILES}
+)
 
 add_subdirectory(Dependencies)
 add_subdirectory(LibMath)

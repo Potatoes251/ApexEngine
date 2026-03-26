@@ -95,7 +95,8 @@ namespace Apex::UserInterface
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
+        ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
         ImGui::StyleColorsDark();
         ImGuiStyle& style = ImGui::GetStyle();
         style.FrameRounding = 6.f;   // rounded buttons, inputs, sliders
@@ -147,6 +148,23 @@ namespace Apex::UserInterface
     {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void ImGUIManager::StartDockSpace()
+    {
+        // Configure window flags for main dockspace
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoDocking;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        
+        ImGui::Begin("MainDockSpace", nullptr, window_flags);
+        ImGui::DockSpace(ImGui::GetID("MainDockSpace"));
+        ImGui::End();
     }
 
     bool ImGUIManager::WantCaptureMouse()    const { return ImGui::GetIO().WantCaptureMouse; }
@@ -248,12 +266,17 @@ namespace Apex::UserInterface
         return LibMath::Vector2(size.x, size.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool noMove)
+    void ImGUIManager::BeginPanel(const std::string& title, bool dock, bool* open)
     {
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
-        if (noMove)
-            flags |= ImGuiWindowFlags_NoMove;
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+        if (!dock)
+            flags |= ImGuiWindowFlags_NoDocking;
         ImGui::Begin(title.c_str(), open, flags);
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        if (!window->DockIsActive)
+        {
+            ImGui::DockBuilderDockWindow(title.c_str(), ImGui::GetID("MainDockSpace"));
+        }
     }
 
     Vector2 ImGUIManager::GetScreenSize()
@@ -313,12 +336,12 @@ namespace Apex::UserInterface
 
     void ImGUIManager::SetNextWindowSize(LibMath::Vector2 size)
     {
-        ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_Always);
     }
 
     void ImGUIManager::SetNextWindowPos(LibMath::Vector2 pos)
     {
-        ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Appearing);
+        ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Always);
     }
 
     void ImGUIManager::BeginTooltip() { ImGui::BeginTooltip(); }

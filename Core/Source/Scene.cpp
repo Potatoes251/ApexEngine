@@ -94,8 +94,6 @@ namespace Apex::Rendering
 	{
 		for (auto& obj : m_objects)
 			obj->Update(deltaTime_s);
-
-		m_physics.SyncFromPhysx();
 	}
 
 	void Scene::FixedUpdate(float deltaTime_s)

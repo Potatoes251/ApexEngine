@@ -9,7 +9,7 @@
 ],
 "objects": [
   {
-    "id": 0,
+    "id": 9,
     "parent": null,
     "name": "Sphere",
     "position": [0.000000,3.000000,0.000000],
@@ -20,7 +20,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/sphere.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -37,7 +37,7 @@
     }
   },
   {
-    "id": 1,
+    "id": 10,
     "parent": null,
     "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
@@ -48,7 +48,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/padoru.obj",
         "texture": "Assets/Textures/padoru.png",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -64,7 +64,7 @@
     }
   },
   {
-    "id": 2,
+    "id": 11,
     "parent": null,
     "name": "Floor",
     "position": [0.000000,5.000000,0.000000],
@@ -75,7 +75,7 @@
         "enabled": true,
         "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
       },
       "RigidBody": {
         "enabled": true,
@@ -84,7 +84,7 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
+        "mesh": "Assets/Meshes/floor.obj",
         "type": "Convex",
         "isTrigger": false,
         "material": 0

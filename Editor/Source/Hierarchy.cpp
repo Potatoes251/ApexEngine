@@ -1,5 +1,9 @@
 #include "Hierarchy.h"
 
+#include "Viewport.h"
+#include "Scene.h"
+#include "Object.h"
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
@@ -15,7 +19,7 @@ Hierarchy::Hierarchy(IGUI& gui,
 void Hierarchy::Draw()
 {
     m_gui.PushFont(FontID::Default);
-    m_gui.BeginPanel("Hierarchy", nullptr, false);
+    m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.Button(" + Add "))
         m_gui.OpenPopup("AddObject");
@@ -25,7 +29,7 @@ void Hierarchy::Draw()
         if (m_gui.MenuItem("Empty"))
         {
             Object* obj = m_scene->CreateObject();
-            m_selected = obj;
+            SelectObject(obj);
         }
         m_gui.EndPopup();
     }
@@ -73,6 +77,16 @@ void Hierarchy::Draw()
     ApplyPendingOp();
 }
 
+void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
+{
+    m_selected = selected;
+    if (send && m_viewport)
+        m_viewport->SelectObject(selected, false);
+
+    if (selected && m_componentsViewer)
+        m_componentsViewer->SetSelectedObject(selected);
+}
+
 void Hierarchy::DrawNode(SceneNode* node)
 {
     Object* obj = node->GetObject();
@@ -98,7 +112,7 @@ void Apex::Editor::Hierarchy::HandlePending()
     {
         Object* newObj = m_scene->CreateObject();
         m_pendingParent->AddChild(newObj->GetSceneNode());
-        m_selected = newObj;
+        SelectObject(newObj);
         m_pendingParent = nullptr;
     }
 
@@ -111,7 +125,7 @@ void Apex::Editor::Hierarchy::HandlePending()
     if (m_pendingClone)
     {
         Object* clone = DuplicateObject(m_pendingClone);
-        m_selected = clone;
+        SelectObject(clone);
         m_pendingClone = nullptr;
     }
 }
@@ -192,10 +206,7 @@ void Hierarchy::HandleSelection(Object* obj)
 {
     if (m_gui.IsItemClicked())
     {
-        m_selected = obj;
-
-        if (m_componentsViewer)
-            m_componentsViewer->SetSelectedObject(obj);
+        SelectObject(obj);
     }
 }
 
@@ -384,5 +395,5 @@ void Hierarchy::DestroyObject(Object* obj)
     m_scene->DestroyObject(obj);
 
     if (m_selected == obj)
-        m_selected = nullptr;
+        SelectObject(nullptr);
 }

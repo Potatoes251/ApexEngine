@@ -15,13 +15,11 @@
 #include "Camera.h"
 #include "Audio.h"
 
-
 #include "ResourceManager.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Cubemap.h"
-#include "Scene.h"
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "MeshCollider.h"
@@ -135,7 +133,8 @@ bool Apex::Application::InitRHI()
 
 bool Apex::Application::InitRendering()
 {
-    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"), m_rhi.get());
+    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>
+        ("ApexAssets/Shaders/LineVert.glsl|ApexAssets/Shaders/LineFrag.glsl"), m_rhi.get());
 
     return true;
 }
@@ -184,11 +183,11 @@ bool Apex::Application::InitLua()
 void Apex::Application::LoadScene()
 {
     Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
-        "Assets/Textures/Skybox/px.png|Assets/Textures/Skybox/nx.png|\
-Assets/Textures/Skybox/ny.png|Assets/Textures/Skybox/py.png|\
-Assets/Textures/Skybox/pz.png|Assets/Textures/Skybox/nz.png");
+        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
+ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
+ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
     Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkyboxVert.glsl|Assets/Shaders/SkyboxFrag.glsl");
+    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl");
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
 

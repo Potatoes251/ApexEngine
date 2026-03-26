@@ -26,6 +26,20 @@ namespace Apex::Rendering
 		return LibMath::Matrix4::perspective(fovRad.radian(), aspect, near, far);
 	}
 
+	void Camera::SetPosition(LibMath::Vector3 pos) { m_position = pos; }
+
+	void Camera::SetYaw(float yawDegrees)
+	{
+		m_yaw = yawDegrees;   
+		UpdateVectors();
+	}
+
+	void Camera::SetPitch(float pitchDegrees)
+	{
+		m_pitch = LibMath::clamp(pitchDegrees, -89.f, 89.f); 
+		UpdateVectors();
+	}
+
 	void Camera::ProcessKeyboard(bool moveForward, bool moveBackward, bool moveLeft, 
 								 bool moveRight, bool moveUp, bool moveDown, float deltaTime)
 	{

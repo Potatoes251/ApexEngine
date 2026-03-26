@@ -16,7 +16,7 @@ namespace Apex::Windowing
 	// ── Input types ──────────────────────────────────────────────
 	enum class Key
 	{
-		W, A, S, D, Q, E, P,
+		W, A, S, D, Q, E, P, F,
 		Up, Down, Left, Right,
 		Escape, Space,
 		Unknown

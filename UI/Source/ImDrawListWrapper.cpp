@@ -56,7 +56,7 @@ namespace Apex::UserInterface
 	{
 		// Scale the default text size by the ratio of requested vs default font size
 		ImFont* font = ImGui::GetFont();
-		float   defaultSize = font ? font->FontSize : 13.f;
+		float   defaultSize = font ? ImGui::GetFontSize() : 13.f;
 		float   scale = (defaultSize > 0.f) ? (fontSize / defaultSize) : 1.f;
 		ImVec2  size = ImGui::CalcTextSize(text.c_str());
 		return LibMath::Vector2(size.x * scale, size.y * scale);
