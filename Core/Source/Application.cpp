@@ -50,17 +50,6 @@ namespace Apex
     Application::~Application() = default;
 }
 
-void Apex::Application::Run()
-{
-    while (!m_window->ShouldClose())
-    {   
-        PollAllEvents();
-        Tick();
-    }
-
-    Shutdown();
-}
-
 bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
     if (!InitWindow(window)
@@ -70,7 +59,7 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitRendering()
     || !InitUI(gui)
     || !InitAudio()
-    || !InitScene())
+    || !InitLua())
         return false;
 
     return true;
@@ -143,19 +132,8 @@ bool Apex::Application::InitAudio()
     m_audio = std::unique_ptr<IAudioEngine>(CreateAudioEngine());
 
     if (m_audio)
-    {
         m_audio->Preload("fragments of hope.ogg");
 
-        //m_audio->Play2D("fragments of hope.ogg",
-        //    { .m_loop = true, .m_volume = 1.f });
-    }
-
-    return true;
-}
-
-bool Apex::Application::InitScene()
-{
-    m_scene = std::make_unique<Apex::Rendering::Scene>();
     return true;
 }
 
@@ -171,6 +149,12 @@ bool Apex::Application::InitUI(IGUI* gui)
     m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
     return true;
+}
+
+bool Apex::Application::InitLua()
+{
+    m_luaManager = std::make_unique<Scripting::LuaManager>();
+    return m_luaManager != nullptr;
 }
 
 void Apex::Application::LoadScene()
@@ -233,15 +217,8 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
     }
 }
 
-void Apex::Application::Shutdown()
-{
-    std::cout << "Application Shutdown\n" << std::endl;
-}
-
 void Apex::Application::Tick()
 {
-    //m_window->UpdateDeltaTime();
-
     constexpr float fixedUpdateTime_s = 1.f / 60.f;
 
     m_deltaTime_s = m_window->GetDeltaTime();

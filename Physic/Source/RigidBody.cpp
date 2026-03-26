@@ -37,28 +37,6 @@ std::vector<ExposedVar> RigidBodyComponent::GetExposedVariables()
 	};
 }
 
-void RigidBodyComponent::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-	std::string bodyType;
-	switch (m_bodyType)
-	{
-	case Apex::Physic::BodyType::Static:
-		bodyType = "Static";
-		break;
-	case Apex::Physic::BodyType::Dynamic:
-		bodyType = "Dynamic";
-		break;
-	case Apex::Physic::BodyType::Kinematic:
-		bodyType = "Kinematic";
-		break;
-	default:
-		break;
-	}
-
-	gui.Text("Body type: " + bodyType);
-	gui.SliderFloat("Mass", &m_mass, -1000.f, 1000.f);
-}
-
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();

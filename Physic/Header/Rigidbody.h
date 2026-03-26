@@ -42,7 +42,6 @@ namespace Apex::Physic
 
 		const char* GetTypeName() const override { return "Rigidbody"; };
 		std::vector<ExposedVar> GetExposedVariables() override;
-		void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }

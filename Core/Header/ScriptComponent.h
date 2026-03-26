@@ -19,10 +19,10 @@ namespace Apex::Scripting
         std::unique_ptr<Component> Clone() const override;
 
         void SetScript(const std::string& path);
+        const std::string GetScriptPath() const { return m_scriptPath; }
 
         const char* GetTypeName() const override { return "ScriptComponent"; };
         std::vector<ExposedVar> GetExposedVariables() override;
-        void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
         int GetInstanceRef() const { return m_instanceRef; }
 

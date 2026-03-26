@@ -33,6 +33,7 @@ namespace Apex::Rendering
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 		void DestroyObject(Object* obj);
 
+		void Start();
 		void Update(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);

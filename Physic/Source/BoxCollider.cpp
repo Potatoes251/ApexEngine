@@ -29,13 +29,6 @@ std::vector<ExposedVar> BoxCollider::GetExposedVariables()
     return exposedVec;
 }
 
-void BoxCollider::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-    gui.Text("Half extents: (" + std::to_string(m_halfExtents[0]) + 
-        ", " + std::to_string(m_halfExtents[1]) + 
-        ", " + std::to_string(m_halfExtents[2]) + ")");
-}
-
 void BoxCollider::Serialize(std::ostream& out) const
 {
     auto size = m_halfExtents;

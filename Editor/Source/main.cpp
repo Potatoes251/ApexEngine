@@ -58,7 +58,7 @@ int main(int /*argc*/, char* argv[])
     if (!app->Init(editor.GetWindow(), editor.GetGUI()))
         return 1;
 
-	app->LoadScene();
+	//app->LoadScene();
 
     if (!editor.InitPanels(*app))
         return 1;
@@ -69,14 +69,12 @@ int main(int /*argc*/, char* argv[])
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();
         editor.Update();
-        // Editor render — always runs while editor window is open.
+        // Editor render - always runs while editor window is open.
         editor.Render();
         app->GetResourceManager()->ProcessGpuUploads();
     }
 
     editor.Shutdown();
-    if (app)
-        app->Shutdown();
 
 	return 0;
 }
