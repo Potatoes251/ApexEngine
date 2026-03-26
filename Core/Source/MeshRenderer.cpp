@@ -53,18 +53,14 @@ std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
     };
 }
 
-void Apex::Rendering::MeshRenderer::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-    gui.Text("Mesh: " + m_mesh->GetPath());
-    gui.Text("Texture: " + m_texture->GetPath());
-}
-
 std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
 {
     auto clone = std::make_unique<MeshRenderer>();
+
     clone->m_mesh = m_mesh;
     clone->m_shader = m_shader;
     clone->m_texture = m_texture;
+
     return clone;
 }
 

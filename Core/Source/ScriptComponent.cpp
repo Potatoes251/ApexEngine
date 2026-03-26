@@ -14,6 +14,7 @@ ScriptComponent::~ScriptComponent()
 std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);
+    clone->m_scriptPath = m_scriptPath;
     clone->SetScript(m_scriptPath);
     return clone;
 }
@@ -39,12 +40,13 @@ void ScriptComponent::SetScript(const std::string& path)
 
 std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
 {
-    return std::vector<ExposedVar>();
-}
-
-void ScriptComponent::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-    
+    return {
+        {
+            "Script",
+            ExposedVar::Script,
+            this
+        }
+    };
 }
 
 void ScriptComponent::OnStart()

@@ -13,7 +13,7 @@ namespace Apex
     struct ExposedVar
     {
         std::string name;
-        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture } type;
+        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Script } type;
         void* data;
         std::vector<std::string> enumNames;
     };  
@@ -37,8 +37,6 @@ namespace Apex
 
         virtual const char* GetTypeName() const = 0;
         virtual std::vector<ExposedVar> GetExposedVariables() = 0;
-
-        virtual void DrawVariables(Apex::UserInterface::IGUI& gui) = 0;
 
         void SetEnabled(bool enabled) { m_enabled = enabled; }
         bool IsEnabled() const { return m_enabled; }

@@ -32,25 +32,6 @@ std::vector<ExposedVar> MeshCollider::GetExposedVariables()
     return exposedVec;
 }
 
-void MeshCollider::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-	std::string type;
-	switch (m_type)
-	{
-	case Apex::Physic::MeshColliderType::Triangle:
-        type = "Static";
-		break;
-	case Apex::Physic::MeshColliderType::Convex:
-        type = "Dynamic";
-		break;
-	default:
-		break;
-	}
-
-	gui.Text("Body type: " + type);
-    gui.Text("Mesh: " + m_mesh->GetPath());
-}
-
 void MeshCollider::Serialize(std::ostream& out) const
 {
     out << "      \"MeshCollider\": {\n";

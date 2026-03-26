@@ -72,7 +72,8 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitRendering()
     || !InitUI(gui)
     || !InitAudio()
-    || !InitScene())
+    //|| !InitScene()
+    || !InitLua())
         return false;
 
     return true;
@@ -154,11 +155,11 @@ bool Apex::Application::InitAudio()
     return true;
 }
 
-bool Apex::Application::InitScene()
-{
-    m_scene = std::make_unique<Apex::Rendering::Scene>();
-    return true;
-}
+//bool Apex::Application::InitScene()
+//{
+//    m_scene = std::make_unique<Apex::Rendering::Scene>();
+//    return true;
+//}
 
 bool Apex::Application::InitUI(IGUI* gui)
 {
@@ -172,6 +173,12 @@ bool Apex::Application::InitUI(IGUI* gui)
     m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
     return true;
+}
+
+bool Apex::Application::InitLua()
+{
+    m_luaManager = std::make_unique<Scripting::LuaManager>();
+    return m_luaManager != nullptr;
 }
 
 void Apex::Application::LoadScene()

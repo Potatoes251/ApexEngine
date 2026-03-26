@@ -75,8 +75,9 @@ namespace Apex::Editor
 		std::unique_ptr<ContentBrowser>				m_contentBrowser;
 		std::unique_ptr<Hierarchy>					m_hierarchy;
 		std::vector<std::unique_ptr<TextureEditor>> m_textureEditors;
-		std::unique_ptr<Viewport>					m_viewport;
+		std::unique_ptr<Viewport>					m_viewport; 
 		std::unique_ptr<Rendering::Scene>			m_editScene;
+		std::unique_ptr<Rendering::Scene>			m_runtimeScene;
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;
 
 		EditorState	m_editorState = EditorState::Edit;

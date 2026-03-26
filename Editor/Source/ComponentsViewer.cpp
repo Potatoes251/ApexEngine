@@ -5,16 +5,23 @@
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "Rigidbody.h"
+#include "ScriptComponent.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
 using namespace Apex::Physic;
+using namespace Apex::Scripting;
 
-ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, Apex::Resources::ResourceManager& resourceManager, Apex::Physic::PhysicSystem& phys)
-	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), m_phys(phys)
+ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
+	Apex::Resources::ResourceManager& resourceManager, 
+	Apex::Physic::PhysicSystem& phys, LuaManager& lua)
+	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), 
+	m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), 
+	m_phys(phys), m_luaManager(lua), m_scriptPicker(gui)
 {
+	printf("LuaManager ptr: %p\n", &m_luaManager);
 }
 
 void ComponentsViewer::Draw()
@@ -30,7 +37,8 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
 			m_gui.MenuItem("Mesh"))
 		{
-			m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
+			auto& comp = m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
+			comp.SetEnabled(true);
 		}
 
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
@@ -69,6 +77,11 @@ void ComponentsViewer::Draw()
 			}
 		}
 
+		if (m_gui.MenuItem("Lua Script"))
+		{
+			m_selectedObj->AddComponent<ScriptComponent>(m_luaManager);
+		}
+
 		m_gui.EndPopup();
 	}
 
@@ -76,6 +89,11 @@ void ComponentsViewer::Draw()
 	{
 		for (Component* comp : m_selectedObj->GetComponents())
 		{
+			if (!comp)
+			{
+				std::cerr << "NULL component in original object!\n";
+				continue;
+			}
 			DrawComponent(comp);
 		}
 	}
@@ -84,6 +102,7 @@ void ComponentsViewer::Draw()
 
 	m_meshPicker.Draw();
 	m_texturePicker.Draw();
+	m_scriptPicker.Draw();
 
 	m_gui.PopFont();
 }
@@ -146,13 +165,15 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 				DrawComponentTexture(var);
 				break;
 			}
+
+			case ExposedVar::Script:
+				DrawComponentScript(var);
+				break;
 		}
 	}
 
 	m_gui.EndTreeNode();
 }
-
-
 
 bool Apex::Editor::ComponentsViewer::DrawTreeComp(Apex::Component* comp)
 {
@@ -225,4 +246,16 @@ void Apex::Editor::ComponentsViewer::DrawComponentTexture(ExposedVar var)
 
 	if (m_gui.Button(("Select##" + var.name).c_str()))
 		m_texturePicker.Open(texture);
+}
+
+void ComponentsViewer::DrawComponentScript(ExposedVar var)
+{
+	auto* script = (ScriptComponent*)var.data;
+
+	m_gui.Text("Script: " + script->GetScriptPath());
+
+	if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
+	{
+		m_scriptPicker.Open(script);
+	}
 }

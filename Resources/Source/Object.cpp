@@ -39,6 +39,14 @@ std::unique_ptr<Object> Object::Clone()
 	for (auto* comp : GetComponents())
 	{
 		std::unique_ptr<Component> newComp = comp->Clone();
+
+		if (!newComp)
+		{
+			std::cerr << "Clone returned nullptr for component: "
+				<< comp->GetTypeName() << std::endl;
+			continue;
+		}
+
 		clone->AddComponentDirect(std::move(newComp));
 	}
 
@@ -101,6 +109,7 @@ void Object::UpdateGlobalTransform()
 
 void Object::Start()
 {
+	printf("Start\n");
 	for (auto& comp : m_components)
 		if (comp->IsEnabled())
 			comp->OnStart();

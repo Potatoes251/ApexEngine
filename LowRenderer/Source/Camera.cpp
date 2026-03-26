@@ -8,6 +8,8 @@ namespace Apex::Rendering
 {
 	Camera::Camera(LibMath::Vector3 position)
 	{
+		m_up = { 0, -1, 0 };
+		m_up = { 0, 1, 0 };
 		m_position = position;
 		UpdateVectors();
 	}
@@ -62,6 +64,6 @@ namespace Apex::Rendering
 		m_front.normalize();
 
 		m_right = m_front.cross(LibMath::Vector3::up()).normalize();
-		m_up = m_right.cross(m_front).normalize();
+		//m_up = m_right.cross(m_front).normalize();
 	}
 }
