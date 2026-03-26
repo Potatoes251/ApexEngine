@@ -75,8 +75,6 @@ int main(int /*argc*/, char* argv[])
     }
 
     editor.Shutdown();
-    if (app)
-        app->Shutdown();
 
 	return 0;
 }

@@ -21,7 +21,6 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene,
 	m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), 
 	m_phys(phys), m_luaManager(lua), m_scriptPicker(gui)
 {
-	printf("LuaManager ptr: %p\n", &m_luaManager);
 }
 
 void ComponentsViewer::Draw()
@@ -87,14 +86,20 @@ void ComponentsViewer::Draw()
 
 	if (m_selectedObj)
 	{
+		Component* toRemove = nullptr;
+
 		for (Component* comp : m_selectedObj->GetComponents())
 		{
 			if (!comp)
-			{
-				std::cerr << "NULL component in original object!\n";
 				continue;
-			}
+
 			DrawComponent(comp);
+		}
+
+		if (m_pendingDelete)
+		{
+			m_selectedObj->RemoveComponent(m_pendingDelete, m_phys);
+			m_pendingDelete = nullptr;
 		}
 	}
 
@@ -112,6 +117,16 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	bool open = DrawTreeComp(comp);
 	
 	HandleSelection(comp);
+
+	if (m_gui.BeginContextMenu(std::to_string(comp->GetId()).c_str()))
+	{
+		if (m_gui.MenuItem("Delete"))
+		{
+			m_pendingDelete = comp;
+		}
+
+		m_gui.EndPopup();
+	}
 
 	if (!open)
 		return;

@@ -54,6 +54,8 @@ namespace Apex::Editor
 
 		Apex::Data::Object* m_selectedObj = nullptr;
 		Apex::Component* m_selectedComp = nullptr;
+
+		Apex::Component* m_pendingDelete = nullptr;
 	};
 }
 

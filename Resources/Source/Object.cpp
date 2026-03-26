@@ -1,8 +1,11 @@
 #include "Object.h"
 
+#include "../../Physic/Header/Rigidbody.h"
+
 using namespace Apex::Data;
 using namespace LibMath;
 using namespace Apex::SceneGraph;
+using namespace Apex;
 	
 size_t Apex::Data::Object::m_nextId = 0;
 
@@ -109,7 +112,6 @@ void Object::UpdateGlobalTransform()
 
 void Object::Start()
 {
-	printf("Start\n");
 	for (auto& comp : m_components)
 		if (comp->IsEnabled())
 			comp->OnStart();
@@ -135,5 +137,23 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	else
 	{
 		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+	}
+}
+
+void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys)
+{
+	for (size_t i = 0; i < m_components.size(); i++)
+	{
+		if (m_components[i].get() == compToRemove)
+		{
+			auto* rb = dynamic_cast<Apex::Physic::RigidBodyComponent*>(m_components[i].get());
+
+			if (rb)
+				phys.RemoveActor(*rb);
+
+			m_components.erase(m_components.begin() + i);
+
+			return;
+		}
 	}
 }

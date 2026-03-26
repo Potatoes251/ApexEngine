@@ -38,7 +38,7 @@ namespace Apex::Editor
 
         if (!m_gui) return false;
 
-        // 🔥 1. Créer la scène editor
+        // Create editor scene
         m_editScene = std::make_unique<Apex::Rendering::Scene>();
 
         Apex::Resources::ResourceHandle<Cubemap> cubemap = m_app->GetResourceManager()->CreateAsync<Cubemap>(
@@ -52,7 +52,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
 
         m_editScene->SetSkybox(sk);
 
-        // 🔥 2. Charger la scène dedans
+        // Load scene
         SceneLoader loader(*app.GetResourceManager(), *m_editScene->GetPhysic());
         loader.LoadScene(*m_editScene, "Assets/Scenes/scene.level");
 
@@ -70,12 +70,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
                 {
                     auto& mesh = renderer->GetMesh();
 
-                    if (!mesh.IsValid())
-                    {
-                        std::cout << "INVALID MESH on object: " << obj->GetName() << std::endl;
-                    }
-
-                    if (!mesh.IsValid() || !mesh.IsReady())
+                    if (!mesh.IsReady())
                         ready = false;
                 }
 
@@ -83,7 +78,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
                 {
                     auto mesh = collider->GetMesh();
 
-                    if (!mesh.IsValid() || !mesh.IsReady())
+                    if (!mesh.IsReady())
                         ready = false;
                 }
             }
@@ -91,7 +86,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
             m_app->GetResourceManager()->ProcessGpuUploads();
         }
 
-        // 🔥 3. Initialiser physique (comme dans Application::LoadScene)
+        // Init physics
         for (auto& objPtr : m_editScene->GetObjects())
         {
             Object* obj = objPtr.get();
@@ -103,10 +98,10 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
                 m_editScene->GetPhysic()->CreateActor(*collider, *body);
         }
 
-        // 🔥 4. Donner la scène à l’application
+        // Give scene to Application
         m_app->SetScene(m_editScene.get());
 
-        // 🔥 5. Tous les panels utilisent EDIT SCENE
+        // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
             *m_editScene,
@@ -124,7 +119,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"),
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"),
-            m_editScene.get(), // 🔥 IMPORTANT
+            m_editScene.get(),
             app.GetRhi(),
             m_gui.get(),
             this

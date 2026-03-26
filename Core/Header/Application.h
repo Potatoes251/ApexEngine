@@ -47,10 +47,8 @@ namespace Apex
         Application& operator=(const Application&) = delete;
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
-        void Run();
         void Tick();
         void LoadScene();
-        void Shutdown();
         void ProcessInput();
         void Render(Rendering::Camera* cam = nullptr);
 
@@ -70,7 +68,6 @@ namespace Apex
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
-        //bool InitScene();
         bool InitUI(UserInterface::IGUI* gui);
         bool InitLua();
         

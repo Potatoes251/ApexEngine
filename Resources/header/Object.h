@@ -6,6 +6,7 @@
 
 #include "Component.h"
 #include "../../LowRenderer/Header/SceneGraph.h"
+#include "../../Physic/Header/Physic.h"
 
 #include <vector>
 #include <memory>
@@ -105,6 +106,8 @@ namespace Apex::Data
 				comps.push_back(c.get());
 			return comps;
 		}
+
+		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys);
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 

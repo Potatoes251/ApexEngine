@@ -14,7 +14,6 @@ ScriptComponent::~ScriptComponent()
 std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);
-    clone->m_scriptPath = m_scriptPath;
     clone->SetScript(m_scriptPath);
     return clone;
 }

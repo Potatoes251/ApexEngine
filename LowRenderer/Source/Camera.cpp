@@ -8,8 +8,6 @@ namespace Apex::Rendering
 {
 	Camera::Camera(LibMath::Vector3 position)
 	{
-		m_up = { 0, -1, 0 };
-		m_up = { 0, 1, 0 };
 		m_position = position;
 		UpdateVectors();
 	}
@@ -49,8 +47,8 @@ namespace Apex::Rendering
 		if (moveBackward) m_position -= m_front * velocity;
 		if (moveLeft) m_position -= m_right * velocity;
 		if (moveRight) m_position += m_right * velocity;
-		if (moveUp) m_position += m_up * velocity;
-		if (moveDown) m_position -= m_up * velocity;
+		if (moveUp) m_position += LibMath::Vector3::up() * velocity;
+		if (moveDown) m_position -= LibMath::Vector3::up() * velocity;
 	}
 
 	void Camera::ProcessMouse(double dx, double dy, float sensitivity)
@@ -78,6 +76,6 @@ namespace Apex::Rendering
 		m_front.normalize();
 
 		m_right = m_front.cross(LibMath::Vector3::up()).normalize();
-		//m_up = m_right.cross(m_front).normalize();
+		m_up = m_right.cross(m_front).normalize();
 	}
 }

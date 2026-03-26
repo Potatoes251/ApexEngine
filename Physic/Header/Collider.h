@@ -21,13 +21,7 @@ namespace Apex::Physic
 	class Collider : public Apex::Component
 	{
 	public:
-		Collider(PhysMatHandle material, bool isTrigger) : m_material(material), m_isTrigger(isTrigger) {
-			//if ((uintptr_t)m_material.operator->() < 0x1000)
-			//{
-			//	std::cout << "INVALID MATERIAL IN COLLIDER\n";
-			//	__debugbreak();
-			//}
-		}
+		Collider(PhysMatHandle material, bool isTrigger) : m_material(material), m_isTrigger(isTrigger) {}
 		virtual ~Collider() = default;
 
 		virtual ColliderType GetType() const = 0;
