@@ -10,14 +10,15 @@ namespace Apex::Lighting
 	{
 	public:
 		SpotLightComponent() = default;
+		SpotLightComponent(LibMath::Vector3 color, float intensity, float innerCutoff, float outerCutoff);
 		~SpotLightComponent() = default;
-		SpotLightComponent(SpotLightComponent const&) {}
-		SpotLightComponent& operator=(SpotLightComponent const&) {}
+		SpotLightComponent(SpotLightComponent const& other);
+		SpotLightComponent& operator=(SpotLightComponent const& other);
 
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<SpotLightComponent>(*this); }
 
 		void Serialize(std::ostream& out) const override;
-		const char* GetTypeName() const override { return "SpotLightComponent"; }
+		const char* GetTypeName() const override { return "SpotLight"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 		void FillGpuData(void* data_out) override;

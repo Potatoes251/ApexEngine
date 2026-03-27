@@ -53,10 +53,8 @@ namespace Apex
         Application& operator=(const Application&) = delete;
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
-        void Run();
         void Tick();
         void LoadScene();
-        void Shutdown();
         void ProcessInput();
         void Render(Rendering::Camera* cam = nullptr);
         void Render(Rendering::RenderPassInfo pass);
@@ -68,6 +66,7 @@ namespace Apex
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
         Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
+        Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
     private:
         bool InitWindow(Windowing::IWindow* window);
@@ -76,9 +75,10 @@ namespace Apex
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
-        bool InitScene();
         bool InitUI(UserInterface::IGUI* gui);
         bool InitLighting();
+        bool InitLua();
+        bool InitScene();
         
         void UpdateAudioListener();
         void Update();
@@ -100,7 +100,7 @@ namespace Apex
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;
-        std::unique_ptr<Rendering::Scene> m_scene;
+        std::unique_ptr<Rendering::Scene> m_scene = nullptr;
 	};
 }
 

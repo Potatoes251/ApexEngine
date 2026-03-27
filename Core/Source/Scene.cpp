@@ -37,13 +37,16 @@ namespace Apex::Rendering
 			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
 			Collider* collider = newObj->GetComponent<Collider>();
 
-			PhysMatHandle mat = collider->GetMaterial();
-			if (mat.IsValid())
-				collider->SetMaterial(copy->m_physics.CreateMaterial(
-					mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
-
 			if (body && collider)
+			{
+				PhysMatHandle mat = collider->GetMaterial();
+
+				if (mat.IsValid())
+					collider->SetMaterial(copy->m_physics.CreateMaterial(
+						mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
+				
 				copy->m_physics.CreateActor(*collider, *body);
+			}
 		}
 
 		return copy;
@@ -110,6 +113,12 @@ namespace Apex::Rendering
 			m_objects.erase(it);
 	}
 		
+	void Scene::Start()
+	{
+		for (auto& obj : m_objects)
+			obj->Start();
+	}
+
 	void Scene::Update(float deltaTime_s)
 	{
 		for (auto& obj : m_objects)

@@ -1,10 +1,14 @@
 #include "SceneLoader.h"
+#include "SceneLoader.h"
 #include "Object.h"
 
 #include "MeshRenderer.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 #include "MeshCollider.h"
+#include "Lighting/DirectionalLightComponent.h"
+#include "Lighting/SpotLightComponent.h"
+#include "Lighting/PointLightComponent.h"
 
 #include <fstream>
 #include <sstream>
@@ -183,7 +187,6 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto& comp = obj->AddComponent<Apex::Physic::RigidBodyComponent>(mass, StringToBodyType(type));
             comp.SetEnabled(enabled);
         }
-        
         else if (compName == "MeshCollider")
         {
             parser.ParseString(); parser.Expect(':');
@@ -252,6 +255,98 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             }
 
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "DirectionalLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::DirectionalLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "SpotLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float innerCutoff = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float outerCutoff = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::SpotLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, innerCutoff, outerCutoff);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "PointLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float radius = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
             comp.SetEnabled(enabled);
         }
 

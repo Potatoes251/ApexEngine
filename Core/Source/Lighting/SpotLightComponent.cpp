@@ -6,9 +6,34 @@
 using namespace Apex;
 using namespace Apex::Lighting;
 
+SpotLightComponent::SpotLightComponent(LibMath::Vector3 color, float intensity, float innerCutoff, float outerCutoff)
+    : LightComponent(color, intensity) 
+{
+    m_innerCutoff = innerCutoff;
+    m_outerCutoff = outerCutoff;
+}
+
+SpotLightComponent::SpotLightComponent(SpotLightComponent const& other)
+{
+    m_color = other.m_color;
+    m_intensity = other.m_intensity;
+    m_innerCutoff = other.m_innerCutoff;
+    m_outerCutoff = other.m_outerCutoff;
+}
+
+SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& other)
+{
+    m_color = other.m_color;
+    m_intensity = other.m_intensity;
+    m_innerCutoff = other.m_innerCutoff;
+    m_outerCutoff = other.m_outerCutoff;
+
+    return *this;
+}
+
 void SpotLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"DirectionalLightComponent\": {\n";
+    out << "      \"SpotLight\": {\n";
 
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"color\": ["

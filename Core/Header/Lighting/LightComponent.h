@@ -11,12 +11,12 @@ namespace Apex::Lighting
 	{
 	public:
 		LightComponent() = default;
+		LightComponent(LibMath::Vector3 color, float intensity);
 		virtual ~LightComponent() = default;
 		LightComponent(LightComponent const&) = delete;
 		LightComponent& operator=(LightComponent const&) = delete;
 
 		virtual std::vector<ExposedVar> GetExposedVariables() override;
-		void DrawVariables(Apex::UserInterface::IGUI& gui) override {}
 
 		virtual void FillGpuData(void* data_out) = 0;
 

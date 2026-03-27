@@ -6,16 +6,20 @@
 #include "Audio.h"
 #include "ResourceManager.h"
 #include "Scene.h"
+#include "SceneLoader.h"
+
+#include "Rigidbody.h"
 
 
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
 using namespace Apex::Audio;
 using namespace Apex::Rendering;
+using namespace Apex::Serialization;
+using namespace Apex::Physic;
 
 namespace Apex::Editor 
 {
-
     bool Editor::InitWindow()
     {
         m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Editor", 1280, 720));
@@ -29,19 +33,39 @@ namespace Apex::Editor
     bool Editor::InitPanels(Apex::Application& app)
     {
         m_app = &app;
-		m_audio = app.GetAudio();
+        m_audio = app.GetAudio();
         m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
+
+        if (!m_gui) return false;
 
         m_editScene = app.GetScene()->Clone();
 
-        if (!m_app->GetAudio() || !m_gui) return false;
+        // All panels use m_editScene
+        m_componentsViewer = std::make_unique<ComponentsViewer>(
+            *m_gui,
+            *m_editScene,
+            *m_app->GetResourceManager(),
+            *m_editScene->GetPhysic(),
+            *m_app->GetLuaManager()
+        );
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
+        m_hierarchy = std::make_unique<Hierarchy>(
+            *m_gui,
+            m_editScene.get(),
+            m_componentsViewer.get()
+        );
 
         m_viewport = std::make_unique<Viewport>(
-            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"), 
-            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"), 
-            app.GetRhi(), m_gui.get(), this);
+            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"),
+            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"),
+            app.GetRhi(),
+            m_gui.get(),
+            this
+        );
+        m_viewport->SetHierarchy(m_hierarchy.get());
+        m_hierarchy->SetViewport(m_viewport.get());
+
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
@@ -93,12 +117,6 @@ namespace Apex::Editor
                     break;
                 }
             });
-
-        m_componentsViewer = std::make_unique<ComponentsViewer>(*m_gui, *m_app->GetScene(), *m_app->GetResourceManager());
-        m_hierarchy = std::make_unique<Hierarchy>(*m_gui, m_app->GetScene(), m_componentsViewer.get());
-
-        m_hierarchy->SetViewport(m_viewport.get());
-        m_viewport->SetHierarchy(m_hierarchy.get());
 
         return true;
     }
@@ -192,6 +210,9 @@ namespace Apex::Editor
 
     void Editor::SetEditorState(EditorState newState)
     {
+        if (m_editorState == newState)
+            return;
+        
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
             m_editScene = m_app->GetScene()->Clone();
@@ -199,13 +220,14 @@ namespace Apex::Editor
 
             m_hierarchy->SetScene(m_app->GetScene());
         }
+        
         else if (newState == EditorState::Edit)
         {
-            // Restore editor scene
             m_app->SetScene(m_editScene->Clone());
 
             m_hierarchy->SetScene(m_app->GetScene());
         }
+
         m_editorState = newState;
     }
 

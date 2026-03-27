@@ -12,7 +12,7 @@
     "id": 9,
     "parent": null,
     "name": "Sphere",
-    "position": [0.000000,0.000000,0.000000],
+    "position": [0.000000,3.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
@@ -33,6 +33,19 @@
         "type": "Convex",
         "isTrigger": false,
         "material": 0
+      },
+      "SpotLight": {
+        "enabled": true,
+        "color": [-436.031006, 321.148987, -785.901001],
+        "intensity": 0.000000,
+        "innerCutOff": 4.386000,
+        "outerCutOff": 5.405000
+      },
+      "PointLight": {
+        "enabled": true,
+        "color": [1.000000, -383.812012, 1.000000],
+        "intensity": 4.830000,
+        "radius": 10.000000
       }
     }
   },

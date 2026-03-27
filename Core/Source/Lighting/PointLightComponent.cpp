@@ -6,9 +6,31 @@
 using namespace Apex;
 using namespace Apex::Lighting;
 
+PointLightComponent::PointLightComponent(LibMath::Vector3 color, float intensity, float radius)
+    : LightComponent(color, intensity) 
+{
+    m_radius = radius;
+}
+
+PointLightComponent::PointLightComponent(PointLightComponent const& other)
+{
+    m_color = other.m_color;
+    m_intensity = other.m_intensity;
+    m_radius = other.m_radius;
+}
+
+PointLightComponent& PointLightComponent::operator=(PointLightComponent const& other)
+{
+    m_color = other.m_color;
+    m_intensity = other.m_intensity;
+    m_radius = other.m_radius;
+
+    return *this;
+}
+
 void PointLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"DirectionalLightComponent\": {\n";
+    out << "      \"PointLight\": {\n";
 
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"color\": ["

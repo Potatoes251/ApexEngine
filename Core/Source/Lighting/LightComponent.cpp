@@ -3,6 +3,12 @@
 using namespace Apex;
 using namespace Apex::Lighting;
 
+LightComponent::LightComponent(LibMath::Vector3 color, float intensity)
+{
+    m_color = color;
+    m_intensity = intensity;
+}
+
 std::vector<ExposedVar> LightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec;
