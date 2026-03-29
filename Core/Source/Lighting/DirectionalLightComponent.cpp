@@ -1,6 +1,6 @@
 #include "Lighting/DirectionalLightComponent.h"
 
-#include "Light.h"
+#include "GpuLightStructs.h"
 #include "Object.h"
 
 using namespace Apex;

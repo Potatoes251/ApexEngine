@@ -4,7 +4,7 @@
 #include "VisibleLights.h"
 #include "RHI.h"
 
-#include "Light.h"
+#include "GpuLightStructs.h"
 
 namespace Apex::Lighting
 {

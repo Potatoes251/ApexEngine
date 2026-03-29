@@ -8,8 +8,6 @@
 #include "SceneGraph.h"
 #include "Object.h"
 
-#include "Lighting/DirectionalLightComponent.h"
-
 #include "SceneLoader.h"
 
 #include "Window.h"
@@ -32,6 +30,7 @@
 #include "Hud.h"
 
 #include "Lighting/LightManager.h"
+#include "Lighting/Lights.h"
 
 #include <chrono>
 #include <iostream>

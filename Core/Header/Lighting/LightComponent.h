@@ -10,7 +10,7 @@ namespace Apex::Lighting
 	class LightComponent : public Component
 	{
 	public:
-		LightComponent() = default;
+		LightComponent() { m_lightId = m_nextLightId++; }
 		LightComponent(LibMath::Vector3 color, float intensity);
 		virtual ~LightComponent() = default;
 		LightComponent(LightComponent const&) = delete;
@@ -22,9 +22,15 @@ namespace Apex::Lighting
 
 		LibMath::Vector3	GetColor() const { return m_color; }
 		float				GetIntensity() const { return m_intensity; }
+		bool				IsCastingShadow() const { return m_castShadows; }
 	protected:
+		static inline int m_nextLightId = 0;
+
 		LibMath::Vector3 m_color = LibMath::Vector3(1.f, 1.f, 1.f);
 		float m_intensity = 10.f;
+		int m_shadowIdx = -1;
+		int m_lightId = -1;
+		bool m_castShadows = true;
 	};
 }
 

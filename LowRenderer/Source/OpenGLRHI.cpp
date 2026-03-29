@@ -98,7 +98,7 @@ namespace Apex::Rendering
 		m_buffers.erase(buffer);
 	}
 
-	RHIFrameBufferHandle OpenGLRHI::CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out)
+	RHIFrameBufferHandle OpenGLRHI::CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out)
 	{
 		GLuint glFbo;
 		GLuint colorTexture;
@@ -138,7 +138,25 @@ namespace Apex::Rendering
 		return fbo;
 	}
 
-	void OpenGLRHI::BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight)
+	RHIFrameBufferHandle OpenGLRHI::CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height)
+	{
+		GLuint glFbo;
+
+		glGenFramebuffers(1, &glFbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, glFbo);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, GetTexture(texture), 0);
+
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		RHIFrameBufferHandle fbo = NewHandle();
+		m_frameBuffers[fbo] = glFbo;
+		return fbo;
+	}
+
+	void OpenGLRHI::BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, GetFrameBuffer(buffer));
 		glViewport(0, 0, viewportWidth, viewportHeight);
@@ -239,6 +257,54 @@ namespace Apex::Rendering
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		RHITextureHandle texture = NewHandle();
+		m_textures[texture] = glTexture;
+		return texture;
+	}
+
+	RHITextureHandle OpenGLRHI::CreateShadowMap(unsigned width, unsigned height)
+	{
+		GLuint glTexture;
+		glGenTextures(1, &glTexture);
+		glBindTexture(GL_TEXTURE_2D, glTexture);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+			width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.f, 1.f, 1.f, 1.f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		RHITextureHandle texture = NewHandle();
+		m_textures[texture] = glTexture;
+		return texture;
+	}
+
+	RHITextureHandle OpenGLRHI::CreateShadowCubeMap(unsigned width, unsigned height)
+	{
+		GLuint glTexture;
+		glGenTextures(1, &glTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, glTexture);
+
+		for (int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+				width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		float borderColor[] = { 1.f, 1.f, 1.f, 1.f };
+		glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 		RHITextureHandle texture = NewHandle();
 		m_textures[texture] = glTexture;

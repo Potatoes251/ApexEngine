@@ -65,8 +65,9 @@ namespace Apex::Rendering
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
 		
-		virtual RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) = 0;
-		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) = 0;
+		virtual RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) = 0;
+		virtual RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) = 0;
+		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) = 0;
 		virtual void					UnBindFrameBuffer() = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 		virtual int						GetPixelData(int x, int y) = 0;
@@ -78,6 +79,8 @@ namespace Apex::Rendering
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
 		virtual RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) = 0;
+		virtual RHITextureHandle	CreateShadowMap(unsigned width, unsigned height) = 0;
+		virtual RHITextureHandle	CreateShadowCubeMap(unsigned width, unsigned height) = 0;
 		virtual void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) = 0;
 		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
 

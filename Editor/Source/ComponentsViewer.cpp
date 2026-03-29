@@ -6,9 +6,7 @@
 #include "CapsuleCollider.h"
 #include "Rigidbody.h"
 #include "ScriptComponent.h"
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/PointLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
+#include "Lighting/Lights.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;

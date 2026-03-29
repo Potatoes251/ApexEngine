@@ -31,8 +31,9 @@ namespace Apex::Rendering
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
 		
-		RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) override;
-		void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) override;
+		RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) override;
+		RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) override;
+		void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) override;
 		void					UnBindFrameBuffer() override;
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 		int						GetPixelData(int x, int y) override;
@@ -43,6 +44,8 @@ namespace Apex::Rendering
 
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
+		RHITextureHandle	CreateShadowMap(unsigned width, unsigned height) override;
+		RHITextureHandle	CreateShadowCubeMap(unsigned width, unsigned height) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 

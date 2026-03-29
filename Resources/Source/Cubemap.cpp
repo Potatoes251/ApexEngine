@@ -19,7 +19,7 @@ void Cubemap::LoadFromFile()
 		{
 			std::cout << "Failed to load texture: " << item << std::endl;
 			SetState(ResourceState::Failed);
-			for (Apex::Rendering::TextureDescription& desc : m_descs) stbi_image_free(desc.m_data);
+			for (Apex::Rendering::TextureDescription& description : m_descs) stbi_image_free(description.m_data);
 
 			m_descs.clear();
 			m_descs.shrink_to_fit();
