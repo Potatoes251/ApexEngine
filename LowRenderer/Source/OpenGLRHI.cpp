@@ -269,8 +269,7 @@ namespace Apex::Rendering
 		glGenTextures(1, &glTexture);
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-			width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT24, GL_FLOAT, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -293,8 +292,8 @@ namespace Apex::Rendering
 
 		for (int i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
-				width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT24,
+				width, height, 0, GL_DEPTH_COMPONENT24, GL_FLOAT, nullptr);
 		}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -302,13 +301,28 @@ namespace Apex::Rendering
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		float borderColor[] = { 1.f, 1.f, 1.f, 1.f };
-		glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
+
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 		RHITextureHandle texture = NewHandle();
 		m_textures[texture] = glTexture;
 		return texture;
+	}
+	
+	void OpenGLRHI::AttachDepthTexture(RHITextureHandle depthTexture)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, GetTexture(depthTexture), 0);
+
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+	}
+
+	void OpenGLRHI::AttachDepthCubeTexture(RHITextureHandle depthTexture)
+	{
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 	}
 
 	void OpenGLRHI::BindTexture(RHITextureHandle texture, uint32_t unit)
@@ -344,6 +358,50 @@ namespace Apex::Rendering
 		}
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
+
+		GLuint blockIndex = glGetUniformBlockIndex(program, "PointLightBuffer");
+		if (blockIndex != GL_INVALID_INDEX)
+		{
+			glUniformBlockBinding(program, blockIndex, 0);
+		}
+		blockIndex = glGetUniformBlockIndex(program, "DirLightBuffer");
+		if (blockIndex != GL_INVALID_INDEX)
+		{
+			glUniformBlockBinding(program, blockIndex, 1);
+		}
+		blockIndex = glGetUniformBlockIndex(program, "SpotLightBuffer");
+		if (blockIndex != GL_INVALID_INDEX)
+		{
+			glUniformBlockBinding(program, blockIndex, 2);
+		}
+
+		RHIShaderHandle shader = NewHandle();
+		m_shaders[shader] = program;
+		return shader;
+	}
+
+	RHIShaderHandle OpenGLRHI::CreateShaderGeo(const ShaderSource& source)
+	{
+		GLuint vertexShader = CompileShader(source.vertexPath, GL_VERTEX_SHADER);
+		GLuint fragmentShader = CompileShader(source.fragmentPath, GL_FRAGMENT_SHADER);
+		GLuint geometryShader = CompileShader(source.geometryPath, GL_GEOMETRY_SHADER);
+		GLuint program = glCreateProgram();
+		glAttachShader(program, vertexShader);
+		glAttachShader(program, fragmentShader);
+		glAttachShader(program, geometryShader);
+		glLinkProgram(program);
+
+		GLint success;
+		glGetProgramiv(program, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			GLchar infoLog[512];
+			glGetProgramInfoLog(program, 512, nullptr, infoLog);
+			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		}
+		glDeleteShader(vertexShader);
+		glDeleteShader(fragmentShader);
+		glDeleteShader(geometryShader);
 
 		GLuint blockIndex = glGetUniformBlockIndex(program, "PointLightBuffer");
 		if (blockIndex != GL_INVALID_INDEX)

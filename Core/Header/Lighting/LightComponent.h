@@ -22,6 +22,9 @@ namespace Apex::Lighting
 
 		LibMath::Vector3	GetColor() const { return m_color; }
 		float				GetIntensity() const { return m_intensity; }
+		int					GetShadowIdx() const { return m_shadowIdx; }
+		void				SetShadowIdx(int newIdx) { m_shadowIdx = newIdx; }
+		int					GetLightId() const { return m_lightId; }
 		bool				IsCastingShadow() const { return m_castShadows; }
 	protected:
 		static inline int m_nextLightId = 0;

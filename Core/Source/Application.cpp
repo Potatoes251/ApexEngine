@@ -30,6 +30,7 @@
 #include "Hud.h"
 
 #include "Lighting/LightManager.h"
+#include "Lighting/ShadowManager.h"
 #include "Lighting/Lights.h"
 
 #include <chrono>
@@ -161,6 +162,9 @@ bool Apex::Application::InitUI(IGUI* gui)
 bool Apex::Application::InitLighting()
 {
     m_lightManager = std::make_unique<LightManager>(m_rhi.get());
+    m_shadowManager = std::make_unique<ShadowManager>(m_rhi.get(), 
+        m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/DirShadowVert.glsl|ApexAssets/Shaders/DirShadowFrag.glsl"), 
+        m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
     return true;
 }
 
@@ -304,9 +308,16 @@ void Apex::Application::Render(RenderPassInfo pass)
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get());
+    m_shadowManager->BindShadowMaps();
+
+    if (pass.m_target != RHI_INVALID)
+    {
+        m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+    }
 
     m_scene->Render(pass);
 
-    if (pass.m_showCollider)
+    if (pass.m_flags & ShowCollider)
         DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

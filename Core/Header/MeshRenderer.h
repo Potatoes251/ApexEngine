@@ -45,6 +45,7 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Shader> m_shader;
         Apex::Resources::ResourceHandle<Texture> m_texture;
+        bool m_castShadow = true;
     };
 }
 

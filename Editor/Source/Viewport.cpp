@@ -202,12 +202,13 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	RenderPassInfo picking;
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
-	picking.m_useIdAsColor = true;
-	picking.m_useModelShader = false;
+	picking.m_flags |= Flags::UseIdAsColor;
+	picking.m_flags |= Flags::IgnoreModelShader;
 	picking.m_shader = m_pickingshader;
+	picking.m_target = m_fbo;
 
 	m_pickingshader->Use();
-	m_editor->GetApp()->Render(picking);
+	m_editor->GetApp()->GetScene()->Render(picking);
 
 	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
@@ -340,7 +341,9 @@ void Viewport::Draw()
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
-	pass.m_showCollider = m_editor->GetEditorState() != EditorState::Play && m_showColliders;
+	pass.m_target = m_fbo;
+	if (m_showColliders)
+		pass.m_flags |= Flags::ShowCollider;
 
 	if (m_isFirstFullScreen)
 	{

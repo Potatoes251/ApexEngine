@@ -39,6 +39,7 @@ namespace Apex::Scripting
 namespace Apex::Lighting
 {
     class LightManager;
+    class ShadowManager;
 }
 
 namespace Apex
@@ -92,6 +93,7 @@ namespace Apex
 
         std::unique_ptr<Scripting::LuaManager> m_luaManager;
         std::unique_ptr<Lighting::LightManager> m_lightManager;
+        std::unique_ptr<Lighting::ShadowManager> m_shadowManager;
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 

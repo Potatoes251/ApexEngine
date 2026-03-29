@@ -2,20 +2,32 @@
 #define RENDER_PASS_INFO
 
 #include "ResourceHandle.h"
+#include "RHI.h"
 
 class Shader;
 namespace Apex::Rendering
 {
 	class Camera;
+
+	enum Flags : uint8_t
+	{
+		ShowCollider = 1 << 0,
+		ShadowPass = 1 << 1,
+		IgnoreModelShader = 1 << 2,
+		UseIdAsColor = 1 << 3,
+		RenderSkybox = 1 << 4,
+	};
+
 	struct RenderPassInfo
 	{
 		Resources::ResourceHandle<Shader> m_shader = Resources::ResourceHandle<Shader>(nullptr);
 		Camera* m_camera = nullptr;
 		float m_aspectRatio = 16.f / 9.f;
-		bool m_useModelShader = true;
-		bool m_useIdAsColor = false;
-		bool m_showCollider = false;
+		RHIFrameBufferHandle m_target = RHI_INVALID;
+		unsigned m_width = 1280;
+		unsigned m_height = 720;
 		int m_id = -1;
+		uint8_t m_flags = RenderSkybox;
 	};
 }
 

@@ -141,12 +141,15 @@ namespace Apex::Rendering
 
 			renderer->Render(passInfo);
 		}
-		LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
-		view[3][0] = 0;
-		view[3][1] = 0;
-		view[3][2] = 0;
-		m_skybox->Render(passInfo.m_camera->GetProjection() * view);
-		if (passInfo.m_showCollider)
+		if (passInfo.m_flags & RenderSkybox)
+		{
+			LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
+			view[3][0] = 0;
+			view[3][1] = 0;
+			view[3][2] = 0;
+			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
+		}
+		if (passInfo.m_flags & ShowCollider)
 			m_physics.DrawColliders();
 	}
 

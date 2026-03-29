@@ -49,7 +49,8 @@ std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
     return
     {
         { "Mesh", ExposedVar::Mesh, &m_mesh },
-        { "Texture", ExposedVar::Texture, &m_texture }
+        { "Texture", ExposedVar::Texture, &m_texture },
+        { "Cast Shadow", ExposedVar::Bool, &m_castShadow }
     };
 }
 
@@ -60,6 +61,7 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
     clone->m_mesh = m_mesh;
     clone->m_shader = m_shader;
     clone->m_texture = m_texture;
+    clone->m_castShadow = m_castShadow;
 
     return clone;
 }
@@ -68,27 +70,31 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
 {
     if (!m_shader.IsReady() ||
         !m_mesh.IsReady() ||
-        !m_texture.IsReady())
+        !m_texture.IsReady() ||
+        (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
     ResourceHandle<Shader> currentShader;
-    if (passInfo.m_useModelShader)
-    {
-        currentShader = m_shader;
-        m_shader->Use();
-    }
-    else
+    if (passInfo.m_flags & IgnoreModelShader)
     {
         currentShader = passInfo.m_shader;
         passInfo.m_shader->Use();
+    }
+    else
+    {
+        currentShader = m_shader;
+        m_shader->Use();
     }
 
     Matrix4 model = GetOwner()->GetGlobalTransform();
 
     currentShader->SetUniform("uModel", model);
-    currentShader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
-    currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
+    if (passInfo.m_camera)
+    {
+        currentShader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
+        currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
+    }
 
-    if (passInfo.m_useIdAsColor) 
+    if (passInfo.m_flags & UseIdAsColor) 
     {
         LibMath::Vector3 color;
         color[0] = (passInfo.m_id >> 16) & 0xFF; // highest byte

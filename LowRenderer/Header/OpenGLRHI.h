@@ -46,10 +46,13 @@ namespace Apex::Rendering
 		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
 		RHITextureHandle	CreateShadowMap(unsigned width, unsigned height) override;
 		RHITextureHandle	CreateShadowCubeMap(unsigned width, unsigned height) override;
+		void				AttachDepthTexture(RHITextureHandle depthTexture) override;
+		void				AttachDepthCubeTexture(RHITextureHandle depthTexture) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 
 		RHIShaderHandle		CreateShader(const ShaderSource& source) override;
+		RHIShaderHandle		CreateShaderGeo(const ShaderSource& source) override;
 		void				BindShader(RHIShaderHandle shader) override;
 		void				DeleteShader(RHIShaderHandle shader) override;
 
