@@ -6,6 +6,8 @@
 
 #include "Object.h"
 
+#include "LibMath/Trigonometry.h"
+
 #include <cassert>
 
 using namespace Apex::Lighting;
@@ -57,7 +59,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 			.m_position = { light->GetOwner()->GetGlobalTransform().getPosition(), 0 },
 			.m_direction = { light->GetOwner()->GetGlobalTransform().getForward(),0 },
 			.m_color = { light->GetColor(), 0 },
-			.m_param = { light->GetIntensity(), light->GetInnerCutoff(), light->GetOuterCutoff(), 0 }
+			.m_param = { light->GetIntensity(), LibMath::cos(LibMath::Degree(light->GetInnerCutoff())), LibMath::cos(LibMath::Degree(light->GetOuterCutoff())), 0 }
 		};
 	}
 	m_rhi->BindUniformBuffer(m_spotLightBuffer, sizeof(GPUSpotLightBuffer), &bufferS);

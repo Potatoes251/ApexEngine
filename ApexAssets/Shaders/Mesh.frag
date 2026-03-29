@@ -161,7 +161,7 @@ void main()
 	{
 		color += CalcDirectionalLight(DirLights[i], baseColor, baseColor);
 	}
-	for (int i = 0; i < PointCount.x; i++)
+	for (int i = 0; i < SpotCount.x; i++)
 	{
 		color += CalcSpotLight(SpotLights[i], baseColor, baseColor);
 	}
