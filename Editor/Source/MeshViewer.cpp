@@ -2,7 +2,6 @@
 #include "EditorIcon.h"
 
 #include "Mesh.h"
-#include "MeshImporter.h"
 
 #include "LibMath/Trigonometry.h"
 #include "LibMath/Arithmetic.h"
@@ -84,7 +83,7 @@ namespace Apex::Editor
             m_pendingFocus = false;
         }
 
-        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open);
+        m_gui.BeginPanel("Mesh Viewer - " + m_filename, &m_open, false, true);
 
         if (!m_open)
         {
@@ -768,11 +767,11 @@ namespace Apex::Editor
     void MeshViewer::UpdateOrbitCamera()
     {
         // Keep m_camera position in sync for the uCamPos lighting uniform
-        float yawR = m_orbitYaw * g_Pi / 180.f;
-        float pitchR = m_orbitPitch * g_Pi / 180.f;
-        float x = m_orbitTarget[0] + m_orbitDistance * cosf(pitchR) * sinf(yawR);
-        float y = m_orbitTarget[1] + m_orbitDistance * sinf(pitchR);
-        float z = m_orbitTarget[2] + m_orbitDistance * cosf(pitchR) * cosf(yawR);
+        LibMath::Radian yaw = LibMath::Degree(m_orbitYaw);
+        LibMath::Radian pitch = LibMath::Degree(m_orbitPitch);
+        float x = m_orbitTarget[0] + m_orbitDistance * LibMath::cos(pitch) * LibMath::sin(yaw);
+        float y = m_orbitTarget[1] + m_orbitDistance * LibMath::sin(pitch);
+        float z = m_orbitTarget[2] + m_orbitDistance * LibMath::cos(pitch) * LibMath::cos(yaw);
         m_camera.SetPosition({ x, y, z });
     }
 
@@ -784,11 +783,11 @@ namespace Apex::Editor
     LibMath::Matrix4 MeshViewer::GetViewProj() const
     {
         // Compute camera position from spherical coordinates
-        float yawR = m_orbitYaw * g_Pi / 180.f;
-        float pitchR = m_orbitPitch * g_Pi / 180.f;
-        float x = m_orbitTarget[0] + m_orbitDistance * cosf(pitchR) * sinf(yawR);
-        float y = m_orbitTarget[1] + m_orbitDistance * sinf(pitchR);
-        float z = m_orbitTarget[2] + m_orbitDistance * cosf(pitchR) * cosf(yawR);
+        LibMath::Radian yaw = LibMath::Degree(m_orbitYaw);
+        LibMath::Radian pitch = LibMath::Degree(m_orbitPitch);
+        float x = m_orbitTarget[0] + m_orbitDistance * LibMath::cos(pitch) * LibMath::sin(yaw);
+        float y = m_orbitTarget[1] + m_orbitDistance * LibMath::sin(pitch);
+        float z = m_orbitTarget[2] + m_orbitDistance * LibMath::cos(pitch) * LibMath::cos(yaw);
 
         LibMath::Vector3 eye = { x, y, z };
         LibMath::Vector3 target = m_orbitTarget;

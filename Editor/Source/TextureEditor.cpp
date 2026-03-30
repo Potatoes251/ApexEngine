@@ -86,7 +86,7 @@ namespace Apex::Editor
             m_pendingFocus = false;
         }
 
-        m_gui.BeginPanel("Texture Editor - " + m_filename, &m_open);
+        m_gui.BeginPanel("Texture Editor - " + m_filename, &m_open, false, true);
 
         if (!m_open)
         {
