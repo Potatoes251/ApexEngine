@@ -164,7 +164,7 @@ namespace Apex::Audio
     {
         irrklang::ISound* sound = GetSound(handle);
         if (!sound) return 0.f;
-        return static_cast<float>(sound->getPlayPosition()) / 1000.f;
+        return static_cast<float>(sound->getPlayPosition()) / 1000.f; // divide by 1000 because it's in milliseconds
     }
 
     float IrrKlangAudio::GetDuration(SoundHandle handle) const
@@ -173,7 +173,7 @@ namespace Apex::Audio
         if (!sound) return 0.f;
         irrklang::ISoundSource* source = sound->getSoundSource();
         if (!source) return 0.f;
-        return static_cast<float>(source->getPlayLength()) / 1000.f;
+        return static_cast<float>(source->getPlayLength()) / 1000.f; // divide by 1000 because it's in milliseconds
     }
 
     std::vector<float> IrrKlangAudio::GetSampleData(const std::string& filePath) const
@@ -192,7 +192,12 @@ namespace Apex::Audio
         result.reserve(totalSamples / format.ChannelCount);
 
         for (int i = 0; i < totalSamples; i += format.ChannelCount)
+        {
+            // Convert 16-bit signed integer (-32768 to 32767) to float range (-1.0 to 1.0).
+            // 32768 is 2^15, the standard divisor for normalizing 16-bit PCM audio.
             result.push_back(raw[i] / 32768.f);
+        }
+            
 
         return result;
     }
