@@ -4,6 +4,12 @@
 #include "Component.h"
 
 #include "LibMath/Vector/Vector3.h"
+#include "LibMath/Matrix/Matrix4.h"
+
+namespace Apex::Rendering
+{
+	class Camera;
+}
 
 namespace Apex::Lighting
 {
@@ -19,6 +25,9 @@ namespace Apex::Lighting
 		virtual std::vector<ExposedVar> GetExposedVariables() override;
 
 		virtual void FillGpuData(void* data_out) = 0;
+
+		virtual LibMath::Matrix4	GetProjMatrix() const = 0;
+		virtual std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera* camera) const = 0;
 
 		LibMath::Vector3	GetColor() const { return m_color; }
 		float				GetIntensity() const { return m_intensity; }

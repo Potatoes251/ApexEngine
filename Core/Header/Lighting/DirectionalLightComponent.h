@@ -21,8 +21,11 @@ namespace Apex::Lighting
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 		void FillGpuData(void* data_out) override;
-	private:
 
+		LibMath::Matrix4	GetProjMatrix() const override;
+		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera* camera) const override;
+	private:
+		float m_shadowDistance = 25.f;
 	};
 }
 

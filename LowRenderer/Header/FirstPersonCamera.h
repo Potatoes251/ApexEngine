@@ -15,7 +15,7 @@ namespace Apex::Rendering
 			bool moveUp, bool moveDown,
 			float deltaTime);
 
-		LibMath::Vector3 GetFront() const { return m_front; }
+		LibMath::Vector3 GetFront() const override { return m_front; }
 		LibMath::Vector3 GetRight() const { return m_right; }
 		LibMath::Vector3 GetUp() const { return m_up; }
 

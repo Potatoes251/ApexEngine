@@ -60,6 +60,7 @@ namespace Apex::Rendering
 		void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) override;
 		void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) override;
 		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) override;
+		void SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix, int count) override;
 
 		void SetupVertexLayout() override;
 		void SetupVector3Layout() override;

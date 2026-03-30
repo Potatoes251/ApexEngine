@@ -23,11 +23,17 @@ namespace Apex::Lighting
 
 		void FillGpuData(void* data_out) override;
 
+		LibMath::Matrix4	GetProjMatrix() const override;
+		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera*) const override;
+
+
 		float GetInnerCutoff() const { return m_innerCutoff; }
 		float GetOuterCutoff() const { return m_outerCutoff; }
 	private:
 		float m_innerCutoff = 50.f;
 		float m_outerCutoff = 75.f;
+		float m_nearShadow = .1f;
+		float m_farShadow = 10.f;
 	};
 }
 

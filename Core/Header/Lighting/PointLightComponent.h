@@ -23,8 +23,14 @@ namespace Apex::Lighting
 		void FillGpuData(void* data_out) override;
 
 		float GetRadius() const { return m_radius; }
+		float GetFarPlane() const { return m_farShadow; }
+
+		LibMath::Matrix4	GetProjMatrix() const override;
+		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera*) const override;
 	private:
 		float m_radius = 10.f;
+		float m_nearShadow = .1f;
+		float m_farShadow = 10.f;
 	};
 }
 

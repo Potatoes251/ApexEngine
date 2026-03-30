@@ -303,13 +303,15 @@ void Apex::Application::Render(Camera* cam)
 
 void Apex::Application::Render(RenderPassInfo pass)
 {
+    assert(pass.m_camera && "Application::Render(RenderPassInfo) needs to have a camera set in RenderPassInfo to be able to render the scene");
+
     m_rhi->Clear();
 
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
-    m_shadowManager->RenderShadows(visibleLights, m_scene.get());
-    m_shadowManager->BindShadowMaps();
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    //m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {

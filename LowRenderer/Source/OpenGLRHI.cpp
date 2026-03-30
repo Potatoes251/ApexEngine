@@ -269,7 +269,7 @@ namespace Apex::Rendering
 		glGenTextures(1, &glTexture);
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT24, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -292,8 +292,8 @@ namespace Apex::Rendering
 
 		for (int i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT24,
-				width, height, 0, GL_DEPTH_COMPONENT24, GL_FLOAT, nullptr);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+				width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 		}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -319,7 +319,7 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::AttachDepthCubeTexture(RHITextureHandle depthTexture)
 	{
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GetTexture(depthTexture), 0);
 
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -459,6 +459,12 @@ namespace Apex::Rendering
 	{
 		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
+	}
+
+	void OpenGLRHI::SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix, int count)
+	{
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		glUniformMatrix4fv(location, count, GL_FALSE, matrix.data());
 	}
 
 	void OpenGLRHI::SetupVertexLayout()

@@ -19,13 +19,14 @@ namespace Apex::Rendering
 		LibMath::Matrix4 GetProjection();
 		LibMath::Matrix4 GetViewMatrix();
 		LibMath::Vector3 GetPosition() const { return m_position; }
+		virtual LibMath::Vector3 GetFront() const = 0;
 
 		void SetPosition(LibMath::Vector3 pos);
 
 		virtual void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) = 0;
 
 	protected:
-		virtual void UpdateMatrices() {}
+		virtual void UpdateMatrices() = 0;
 
 		LibMath::Matrix4 m_viewProj;
 		LibMath::Matrix4 m_proj;

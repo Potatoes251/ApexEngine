@@ -10,8 +10,10 @@ namespace Apex::Rendering
 	public:
 		ThirdPersonCamera(LibMath::Vector3 target, float distance);
 
-
 		void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) override;
+
+		LibMath::Vector3 GetTarget() const { return m_target; }
+		LibMath::Vector3 GetFront() const override { return m_target - m_position; }
 
 	private:
 		void UpdateMatrices() override;

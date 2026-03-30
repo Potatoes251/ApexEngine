@@ -57,7 +57,8 @@ namespace Apex
         void Tick();
         void LoadScene();
         void ProcessInput();
-        void Render(Rendering::Camera* cam = nullptr);
+        // default rendering pass
+        void Render(Rendering::Camera* cam);
         void Render(Rendering::RenderPassInfo pass);
 
         Windowing::IWindow*         GetWindow() { return m_window; }

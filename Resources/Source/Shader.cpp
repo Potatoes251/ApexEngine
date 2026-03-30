@@ -73,3 +73,8 @@ void Shader::SetUniform(std::string const& name, LibMath::Matrix4 const& value)
 {
 	m_rhi->SetUniformMat4(m_shader, name, value);
 }
+
+void Shader::SetUniform(std::string const& name, LibMath::Matrix4 const& value, int count)
+{
+	m_rhi->SetUniformMat4Array(m_shader, name, value, count);
+}

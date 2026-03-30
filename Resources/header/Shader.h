@@ -23,6 +23,7 @@ public:
 	void SetUniform(std::string const& name, float value);
 	void SetUniform(std::string const& name, LibMath::Vector3 const& value);
 	void SetUniform(std::string const& name, LibMath::Matrix4 const& value);
+	void SetUniform(std::string const& name, LibMath::Matrix4 const& value, int count);
 
 private:
 	std::string m_name;

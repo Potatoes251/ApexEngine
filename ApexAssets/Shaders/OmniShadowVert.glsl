@@ -7,5 +7,5 @@ out vec4 WorldPos;
 void main()
 {
     WorldPos = uModel * vec4(aPos, 1.0);
-    gl_Position = WorldPos;
+    //gl_Position = WorldPos;
 }  

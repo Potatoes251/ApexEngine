@@ -51,6 +51,8 @@ std::vector<ExposedVar> SpotLightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
+    exposedVec.push_back({ "Near plane shadow", ExposedVar::Float, &m_nearShadow });
+    exposedVec.push_back({ "Far plane shadow", ExposedVar::Float, &m_farShadow });
     exposedVec.push_back({ "Inner angle", ExposedVar::Float, &m_innerCutoff });
     exposedVec.push_back({ "Outer angle", ExposedVar::Float, &m_outerCutoff });
 
@@ -65,4 +67,24 @@ void SpotLightComponent::FillGpuData(void* data_out)
     data->m_direction = { GetOwner()->GetGlobalTransform().getForward(), 0 };
     data->m_position = { GetOwner()->GetGlobalTransform().getPosition(), 0 };
     data->m_param = { m_intensity, m_innerCutoff, m_outerCutoff,0 };
+}
+
+LibMath::Matrix4 Apex::Lighting::SpotLightComponent::GetProjMatrix() const
+{
+    return LibMath::Matrix4::perspective(LibMath::Radian(m_outerCutoff), 1.f, m_nearShadow, m_farShadow);
+}
+
+std::vector<LibMath::Matrix4> Apex::Lighting::SpotLightComponent::GetViewMatrix(Rendering::Camera*) const
+{
+    LibMath::Vector3 pos = GetOwner()->GetGlobalTransform().getPosition();
+    LibMath::Vector3 forward = GetOwner()->GetGlobalTransform().getForward();
+
+    LibMath::Vector3 worldUp = LibMath::Vector3::up();
+
+    if (fabs(forward.dot(worldUp)) > 0.999f)
+    {
+        worldUp = LibMath::Vector3(0.f, 0.f, 1.f); // fallback axis
+    }
+
+    return { LibMath::Matrix4::lookAt(pos, pos + forward, worldUp) };
 }

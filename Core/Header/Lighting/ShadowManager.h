@@ -9,7 +9,11 @@
 
 #include "LibMath/Matrix/Matrix4.h"
 
-namespace Apex::Rendering { class Scene; }
+namespace Apex::Rendering 
+{
+	class Scene;
+	class Camera;
+}
 
 namespace Apex::Lighting
 {
@@ -17,16 +21,14 @@ namespace Apex::Lighting
 
 	struct ShadowMap
 	{
-		LibMath::Matrix4 m_view;
-		LibMath::Matrix4 m_proj;
+		LibMath::Matrix4 m_viewProj;
 		Rendering::RHITextureHandle m_shadowTexture = Rendering::RHI_INVALID;
 		int m_ownerLightId = -1;
 	};
 
 	struct ShadowCubeMap
 	{
-		LibMath::Matrix4 m_view[6];
-		LibMath::Matrix4 m_proj;
+		LibMath::Matrix4 m_viewProj[6];
 		Rendering::RHITextureHandle m_shadowTexture = Rendering::RHI_INVALID;
 		int m_ownerLightId = -1;
 	};
@@ -37,8 +39,8 @@ namespace Apex::Lighting
 		ShadowManager(Rendering::IRHI* rhi, Resources::ResourceHandle<Shader> dirShader, Resources::ResourceHandle<Shader> omniShader);
 		~ShadowManager();
 
-		void RenderShadows(VisibleLights const& lights, Rendering::Scene* scene);
-		void BindShadowMaps() const;
+		void RenderShadows(VisibleLights const& lights, Rendering::Scene* scene, Rendering::Camera* camera);
+		void BindShadowMaps(Resources::ResourceHandle<Shader> shader) const;
 
 		void ResetShadowMapId(int shadowIdx) { m_shadowMaps[shadowIdx].m_ownerLightId = -1; }
 
@@ -46,15 +48,15 @@ namespace Apex::Lighting
 		// return the idx of the first available shadowmap 
 		// may create a new one if no map is available
 		// return -1 if the max amount of shadow map has been reached
-		int AcquireShadowMap(LightComponent* light);
+		int AcquireShadowMap(LightComponent* light, Rendering::Camera* camera);
 		int AcquireShadowCubeMap(LightComponent* light);
 
-		static inline constexpr unsigned SHADOW_WIDTH = 1048;
-		static inline constexpr unsigned SHADOW_HEIGHT = 1048;
-		static inline constexpr unsigned MAX_SHADOW_2D = 5;
-		static inline constexpr unsigned MAX_SHADOW_CUBE = 5;
-		static inline constexpr unsigned FIRST_SHADOW_2D_SLOT = 5;
-		static inline constexpr unsigned FIRST_SHADOW_CUBE_SLOT = FIRST_SHADOW_2D_SLOT + MAX_SHADOW_2D;
+		static constexpr unsigned SHADOW_WIDTH = 1024;
+		static constexpr unsigned SHADOW_HEIGHT = 1024;
+		static constexpr unsigned MAX_SHADOW_2D = 5;
+		static constexpr unsigned MAX_SHADOW_CUBE = 5;
+		static constexpr unsigned FIRST_SHADOW_2D_SLOT = 5;
+		static constexpr unsigned FIRST_SHADOW_CUBE_SLOT = FIRST_SHADOW_2D_SLOT + MAX_SHADOW_2D;
 
 
 		std::vector<ShadowMap>		m_shadowMaps;
