@@ -59,6 +59,8 @@ namespace Apex::Editor
 		// Call once per frame between gui.BeginFrame() and gui.EndFrame().
 		void Draw();
 
+		void PrepareThumbnails();
+
 		// Force a re-scan of the current folder (call after import / delete).
 		void Refresh();
 
@@ -112,16 +114,18 @@ namespace Apex::Editor
 		static uint32_t    TypeColor(AssetType type);   // returns PackColor value
 		static AssetEntry  ClassifyEntry(const fs::directory_entry& entry);
 		static const char* IconPathForType(AssetType type);
+		static void		   PopulateThumbnailsForList(std::vector<AssetEntry>& entries, ThumbnailRenderer& thumbnails);
 
 		// State
-		Apex::UserInterface::IGUI& m_gui;
-		Apex::Windowing::IWindow&  m_window;
-		ThumbnailRenderer          m_thumbnails;
-		fs::path                   m_rootPath;
-		fs::path                   m_currentPath;
-		std::vector<AssetEntry>    m_entries;
-		std::vector<AssetEntry>    m_searchEntries;
-		char                       m_lastSearch[256] = {};
+		Apex::UserInterface::IGUI&			m_gui;
+		Apex::Windowing::IWindow&			m_window;
+		Apex::Resources::ResourceManager&	m_resourceManager;
+		ThumbnailRenderer					m_thumbnails;
+		fs::path							m_rootPath;
+		fs::path							m_currentPath;
+		std::vector<AssetEntry>				m_entries;
+		std::vector<AssetEntry>				m_searchEntries;
+		char								m_lastSearch[256] = {};
 
 		char   m_searchBuffer[256] = {};
 		int    m_tileSize = 120;
@@ -155,5 +159,4 @@ namespace Apex::Editor
 		fs::path m_externalDropDest;
 	};
 }
-
 #endif

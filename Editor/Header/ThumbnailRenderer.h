@@ -22,6 +22,7 @@ namespace Apex::Editor
         ThumbnailRenderer(const ThumbnailRenderer&) = delete;
         ThumbnailRenderer& operator=(const ThumbnailRenderer&) = delete;
 
+        uint32_t GetCached(const fs::path& meshPath) const;
         uint32_t GetOrRender(const fs::path& meshPath);
 
         void Clear();
@@ -35,6 +36,8 @@ namespace Apex::Editor
 
         Apex::Rendering::IRHI& m_rhi;
         Apex::Resources::ResourceManager& m_resourceManager;
+
+        std::unordered_map<std::string, Apex::Resources::ResourceHandle<Mesh>> m_loadingHandles;
 
         std::unordered_map<std::string, uint32_t> m_cache;
 

@@ -80,6 +80,28 @@ namespace Apex::Editor
 
     }
 
+    void ContentBrowser::PopulateThumbnailsForList(std::vector<AssetEntry>& entries, ThumbnailRenderer& thumbnails)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.m_thumbnailTextureID != 0)
+                continue;
+
+            if (entry.m_type == AssetType::Mesh)
+            {
+                uint32_t id = thumbnails.GetOrRender(entry.m_path);
+                if (id != 0)
+                    entry.m_thumbnailTextureID = id;
+            }
+            else if (entry.m_type == AssetType::Texture)
+            {
+                uint32_t id = EditorIcon::Get(entry.m_path.string());
+                if (id != 0)
+                    entry.m_thumbnailTextureID = id;
+            }
+        }
+    }
+
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui,
                                    Apex::Windowing::IWindow& window,
                                    const fs::path& rootPath,
@@ -89,6 +111,7 @@ namespace Apex::Editor
         m_window(window),
         m_rootPath(fs::weakly_canonical(rootPath)),
         m_currentPath(fs::weakly_canonical(rootPath)),
+        m_resourceManager(resourceManager),
         m_thumbnails(rhi, resourceManager)
     {
         Refresh();
@@ -96,12 +119,12 @@ namespace Apex::Editor
 
     void ContentBrowser::Refresh() 
     { 
-        m_thumbnails.Clear();
         ScanCurrentDirectory(); 
     }
 
     void ContentBrowser::NavigateTo(const fs::path& dir)
     {
+        m_thumbnails.Clear();
         m_currentPath = fs::weakly_canonical(dir);
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
@@ -135,6 +158,9 @@ namespace Apex::Editor
 
         m_entries.insert(m_entries.end(), folders.begin(), folders.end());
         m_entries.insert(m_entries.end(), files.begin(), files.end());
+
+        for (auto& entry : m_entries)
+            entry.m_thumbnailTextureID = m_thumbnails.GetCached(entry.m_path);
     }
 
     void ContentBrowser::ScanSearch(const std::string& filter)
@@ -146,7 +172,7 @@ namespace Apex::Editor
         for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
-            if (entry.path().extension() == ".meta") continue;
+            if (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh") continue;
 
             std::string name = entry.path().filename().string();
             std::string low = name;
@@ -160,6 +186,9 @@ namespace Apex::Editor
         auto byName = [](const AssetEntry& a, const AssetEntry& b)
             { return a.m_path.filename() < b.m_path.filename(); };
         std::sort(m_searchEntries.begin(), m_searchEntries.end(), byName);
+
+        for (auto& entry : m_searchEntries)
+            entry.m_thumbnailTextureID = m_thumbnails.GetCached(entry.m_path);
     }
 
     void ContentBrowser::MoveEntry(const fs::path& from, const fs::path& toDirectory)
@@ -377,6 +406,12 @@ namespace Apex::Editor
         m_gui.EndPanel();
     }
 
+    void ContentBrowser::PrepareThumbnails()
+    {
+        PopulateThumbnailsForList(m_entries, m_thumbnails);
+        PopulateThumbnailsForList(m_searchEntries, m_thumbnails);
+    }
+
     fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
         for (const auto& rect : m_breadcrumbRects)
@@ -589,19 +624,8 @@ namespace Apex::Editor
 
         m_pendingNavigate.clear();
 
-        for (auto& entry : source)
+        for (auto& entry : const_cast<std::vector<AssetEntry>&>(source))
         {
-            if (entry.m_thumbnailTextureID == 0)
-            {
-                if (entry.m_type == AssetType::Mesh)
-                    entry.m_thumbnailTextureID = m_thumbnails.GetOrRender(entry.m_path);
-                else if (entry.m_type == AssetType::Texture)
-                {
-                    uint32_t id = EditorIcon::Get(entry.m_path.string());
-                    if (id != 0) entry.m_thumbnailTextureID = id;
-                }
-            }
-
             if (col > 0 && col % columns != 0)
                 m_gui.SameLine();
             DrawTile(entry);
@@ -661,9 +685,6 @@ namespace Apex::Editor
         m_gui.PushID(entry.m_path.string());
 
         bool isSelected = (!m_selectedPath.empty() && m_selectedPath == entry.m_path);
-        if (isSelected)
-            m_gui.PushColor(Apex::UserInterface::StyleColor::ChildBackground,
-                { 0.26f, 0.42f, 0.60f, 0.5f });
 
         m_gui.BeginChildPanel("##tile", m_tileSize, totalHeight, false);
 
@@ -671,16 +692,22 @@ namespace Apex::Editor
 
         DrawTileIcon(entry, pos);
         DrawTileInteraction(entry, pos, m_tileSize);
-        // Show rename input instead of the static label while renaming this entry
+
+        if (isSelected)
+        {
+            IDrawList* drawList = m_gui.GetDrawList();
+            LibMath::Vector2 thumbnailMin(pos[0], pos[1]);
+            LibMath::Vector2 thumbnailMax(pos[0] + m_tileSize, pos[1] + totalHeight);
+            drawList->DrawRectFilled(thumbnailMin, thumbnailMax, 0x336699FF, 0.f);
+            drawList->DrawRect(thumbnailMin, thumbnailMax, 0xFF6699FF, 0.f, 2.f);
+        }
+
         if (m_renamingPath == entry.m_path)
             DrawRenameInline(entry, pos);
         else
             DrawTileLabel(entry, pos);
 
         m_gui.EndChildPanel();
-
-        if (isSelected)
-            m_gui.PopColor();
 
         m_gui.PopID();
     }

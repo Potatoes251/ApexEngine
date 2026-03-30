@@ -119,6 +119,9 @@ namespace Apex::Editor
 
         if (!m_gui) return;
 
+        if (m_contentBrowser)
+            m_contentBrowser->PrepareThumbnails();
+
         m_gui->BeginFrame();
 
         m_gui->StartDockSpace();

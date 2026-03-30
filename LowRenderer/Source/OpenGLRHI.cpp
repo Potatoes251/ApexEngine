@@ -224,9 +224,12 @@ namespace Apex::Rendering
 
 	void OpenGLRHI::DeleteTexture(RHITextureHandle texture)
 	{
-		GLuint glTexture = GetTexture(texture);
-		glDeleteTextures(1, &glTexture);
-		m_textures.erase(texture);
+		auto it = m_textures.find(texture);
+		if (it != m_textures.end())
+		{
+			glDeleteTextures(1, &it->second); 
+			m_textures.erase(it);             
+		}
 	}
 
 	// ── Shaders ──────────────────────────────────────────────────
@@ -344,11 +347,31 @@ namespace Apex::Rendering
 
 
 	// ── Helpers ───────────────────────────────────────────────────
-	uint32_t OpenGLRHI::GetBuffer(RHIBufferHandle handle) const { return m_buffers.at(handle); }
-	uint32_t OpenGLRHI::GetFrameBuffer(RHIFrameBufferHandle handle) const { return m_frameBuffers.at(handle); }
-	uint32_t OpenGLRHI::GetShader(RHIShaderHandle handle) const { return m_shaders.at(handle); }
-	uint32_t OpenGLRHI::GetTexture(RHITextureHandle handle) const { return m_textures.at(handle); }
-	uint32_t OpenGLRHI::GetVAO(RHIVAOHandle handle) const { return m_vaos.at(handle); }
+	uint32_t OpenGLRHI::GetBuffer(RHIBufferHandle handle) const 
+	{
+		auto it = m_buffers.find(handle);
+		return (it != m_buffers.end()) ? it->second : 0;
+	}
+	uint32_t OpenGLRHI::GetFrameBuffer(RHIFrameBufferHandle handle) const 
+	{
+		auto it = m_frameBuffers.find(handle);
+		return (it != m_frameBuffers.end()) ? it->second : 0;
+	}
+	uint32_t OpenGLRHI::GetShader(RHIShaderHandle handle) const 
+	{
+		auto it = m_shaders.find(handle);
+		return (it != m_shaders.end()) ? it->second : 0;
+	}
+	uint32_t OpenGLRHI::GetTexture(RHITextureHandle handle) const 
+	{
+		auto it = m_textures.find(handle);
+		return (it != m_textures.end()) ? it->second : 0;
+	}
+	uint32_t OpenGLRHI::GetVAO(RHIVAOHandle handle) const 
+	{
+		auto it = m_vaos.find(handle);
+		return (it != m_vaos.end()) ? it->second : 0;
+	}
 
 	GLuint OpenGLRHI::CompileShader(const std::string& path, GLenum type)
 	{

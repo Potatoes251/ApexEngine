@@ -26,25 +26,40 @@ namespace Apex::Editor
     uint32_t ThumbnailRenderer::GetOrRender(const fs::path& meshPath)
     {
         std::string key = meshPath.generic_string();
+
         auto it = m_cache.find(key);
         if (it != m_cache.end())
             return it->second;
 
-        auto handle = m_resourceManager.CreateAsync<Mesh>(key);
-        m_cache[key] = 0; 
-
-        if (!handle.IsReady())
+        auto loadIt = m_loadingHandles.find(key);
+        if (loadIt == m_loadingHandles.end())
+        {
+            m_loadingHandles[key] = m_resourceManager.CreateAsync<Mesh>(key);
             return 0;
+        }
 
-        uint32_t textureID = Render(meshPath, handle);
-        m_cache[key] = textureID;
-        return textureID;
+        auto& handle = loadIt->second;
+        if (handle.IsReady())
+        {
+            uint32_t textureID = Render(meshPath, handle);
+            m_cache[key] = textureID;
+
+            m_loadingHandles.erase(key);
+            return textureID;
+        }
+
+        return 0;
+    }
+
+    uint32_t ThumbnailRenderer::GetCached(const fs::path& meshPath) const
+    {
+        auto it = m_cache.find(meshPath.generic_string());
+        return (it != m_cache.end()) ? it->second : 0;
     }
 
     uint32_t ThumbnailRenderer::Render(const fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle)
     {
-        if (m_shader == 0) return 0;
-        if (!handle.IsReady()) return 0;
+        if (m_shader == 0 || !handle.IsReady()) return 0;
 
         Apex::Rendering::RHITextureHandle colorTexture = 0;
         Apex::Rendering::RHIFrameBufferHandle fbo = m_rhi.CreateFrameBuffer(SIZE, SIZE, colorTexture);
@@ -109,6 +124,7 @@ namespace Apex::Editor
 
     void ThumbnailRenderer::Clear()
     {
+        m_loadingHandles.clear();
         m_cache.clear();
     }
 
