@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "../../Core/Header/Scene.h"
 
 #include "../../Physic/Header/Rigidbody.h"
 
@@ -26,7 +27,7 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 }
 
 Object::Object(const Object& other) :
-	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform) 
+	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform)
 {
 	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
@@ -69,12 +70,22 @@ void Object::SetLocalTransform(const Transform& transform)
 {
 	m_localTransform = transform;
 	m_owner->MarkDirty();
+
+	OnChanged();
 }
 
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 {
 	m_globalTransform = transform;
 	m_owner->MarkDirty();
+
+	OnChanged();
+}
+
+void Apex::Data::Object::SetName(std::string name)
+{
+	m_name = name;
+	OnChanged();
 }
 
 Transform& Object::GetLocalTransform()
@@ -138,6 +149,8 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	{
 		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
 	}
+
+	OnChanged();
 }
 
 void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys)
@@ -153,7 +166,20 @@ void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem
 
 			m_components.erase(m_components.begin() + i);
 
+			OnChanged();
+
 			return;
 		}
 	}
+}
+
+void Object::SetOnChangedCallback(std::function<void()> callback)
+{
+	m_onChanged = std::move(callback);
+}
+
+void Object::OnChanged()
+{
+	if (m_onChanged)
+		m_onChanged();
 }

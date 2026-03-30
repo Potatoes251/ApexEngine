@@ -53,6 +53,11 @@ namespace Apex::Rendering
 		auto obj = std::make_unique<Object>();
 		Object* ptr = obj.get();
 
+		obj->SetOnChangedCallback([this]()
+			{
+				MarkDirty();
+			});
+
 		m_objects.push_back(std::move(obj));
 		MarkDirty();
 

@@ -69,7 +69,7 @@ namespace Apex::Resources
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg"
             || ext == ".hdr" || ext == ".tga";
         else
-            return true;  // unknown type — show everything
+            return true;  // unknown type - show everything
     }
 
     template<typename T>

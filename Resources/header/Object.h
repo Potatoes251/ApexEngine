@@ -5,12 +5,13 @@
 #include "LibMath/Transform.h"
 
 #include "Component.h"
-#include "../../LowRenderer/Header/SceneGraph.h"
+#include "SceneGraph.h"
 #include "../../Physic/Header/Physic.h"
 
 #include <vector>
 #include <memory>
 #include <utility>
+#include <functional>	
 
 namespace Apex::Data
 {
@@ -29,7 +30,7 @@ namespace Apex::Data
 		void			SetId(size_t id) { m_id = id; }
 
 		std::string&	GetName() { return m_name; }
-		void			SetName(std::string name) { m_name = name; }
+		void			SetName(std::string name);
 
 
 				LibMath::Transform&		GetLocalTransform();
@@ -47,27 +48,29 @@ namespace Apex::Data
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
 
-				void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
+		void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
 
-				template<typename T, typename... Args>
-				T& AddComponent(Args&&... args)
-				{
-					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
+		template<typename T, typename... Args>
+		T& AddComponent(Args&&... args)
+		{
+			std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
 
-					component->m_owner = this;
+			component->m_owner = this;
 
-					T& ref = *component;
-					m_components.push_back(std::move(component));
+			T& ref = *component;
+			m_components.push_back(std::move(component));
 
-					if (m_components.size() == 1)
-						m_components.back()->SetId(0);
-					else
-					{
-						m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
-					}
+			if (m_components.size() == 1)
+				m_components.back()->SetId(0);
+			else
+			{
+				m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+			}
 
-					return ref;
-				}
+			OnChanged();
+
+			return ref;
+		}
 
 		template<typename T>
 		T* GetComponent()
@@ -111,6 +114,9 @@ namespace Apex::Data
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
+		void OnChanged();
+		void SetOnChangedCallback(std::function<void()> callback);
+
 	private:
 		size_t			m_id;
 		static size_t	m_nextId;
@@ -118,6 +124,8 @@ namespace Apex::Data
 
 		LibMath::Transform				m_localTransform;
 		LibMath::Transform				m_globalTransform;
+
+		std::function<void()> m_onChanged;
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;
