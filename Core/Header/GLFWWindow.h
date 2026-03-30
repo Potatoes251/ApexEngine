@@ -38,6 +38,8 @@ namespace Apex::Windowing
 		int		GetHeight() const override;
 		float	GetAspectRatio() const override;
 		float	GetDeltaTime() const override;
+		
+		void	SetWindowTitle(const std::string& title) override;
 
 		// Input
 		bool			IsKeyPressed(Key key) const override;

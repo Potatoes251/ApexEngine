@@ -33,6 +33,10 @@ namespace Apex::Rendering
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 		void DestroyObject(Object* obj);
 
+		void MarkDirty() { m_isDirty = true; }
+		void ClearDirty() { m_isDirty = false; }
+		bool IsDirty() const { return m_isDirty; }
+
 		void Start();
 		void Update(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
@@ -50,6 +54,8 @@ namespace Apex::Rendering
 
 		std::vector<std::unique_ptr<Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
+
+		bool m_isDirty = false;
 	};
 }
 

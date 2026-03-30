@@ -111,6 +111,11 @@ namespace Apex::Windowing
     float GLFWWindow::GetAspectRatio() const { return m_height ? (float)m_width / m_height : 1.f; }
 	float GLFWWindow::GetDeltaTime() const { return m_deltaTime; }
 
+    void GLFWWindow::SetWindowTitle(const std::string& title)
+    {
+        glfwSetWindowTitle(m_window, title.c_str());
+    }
+
 	// ── Input ────────────────────────────────────────────────────
     bool GLFWWindow::IsKeyPressed(Key key) const
     {

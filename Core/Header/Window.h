@@ -71,6 +71,8 @@ namespace Apex::Windowing
 		virtual float	GetAspectRatio() const = 0;
 		virtual float	GetDeltaTime() const = 0;
 
+		virtual void	SetWindowTitle(const std::string& title) = 0;
+
 		// Input
 		virtual bool			IsKeyPressed(Key key) const = 0;
 		virtual bool			IsMousButtonPressed(MouseButton key) const = 0;

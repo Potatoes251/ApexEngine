@@ -101,6 +101,8 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         // Give scene to Application
         m_app->SetScene(m_editScene.get());
 
+        m_editScene->ClearDirty();
+
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
@@ -113,7 +115,8 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         m_hierarchy = std::make_unique<Hierarchy>(
             *m_gui,
             m_editScene.get(),
-            m_componentsViewer.get()
+            m_componentsViewer.get(),
+            *m_window
         );
 
         m_viewport = std::make_unique<Viewport>(
