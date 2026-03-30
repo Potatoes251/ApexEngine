@@ -28,7 +28,7 @@ namespace Apex::Physic
 		virtual std::vector<ExposedVar> GetExposedVariables() override;
 
 		void SetMaterial(PhysMatHandle material) { m_material = material; }
-		PhysMatHandle GetMaterial() const { return m_material; }
+		const PhysMatHandle GetMaterial() const { return m_material; }
 
 		bool IsTrigger() const { return m_isTrigger; }
 

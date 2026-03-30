@@ -6,6 +6,7 @@
 
 #include "Component.h"
 #include "../../LowRenderer/Header/SceneGraph.h"
+#include "../../Physic/Header/Physic.h"
 
 #include <vector>
 #include <memory>
@@ -53,10 +54,10 @@ namespace Apex::Data
 				{
 					std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
 
-			component->m_owner = this;
+					component->m_owner = this;
 
-			T& ref = *component;
-			m_components.push_back(std::move(component));
+					T& ref = *component;
+					m_components.push_back(std::move(component));
 
 					if (m_components.size() == 1)
 						m_components.back()->SetId(0);
@@ -82,6 +83,22 @@ namespace Apex::Data
 			return nullptr;
 		}
 
+		template<typename T>
+		std::vector<T*> GetComponentsByType()
+		{
+			std::vector<T*> comps;
+
+			for (auto& comp : m_components)
+			{
+				T* casted = dynamic_cast<T*>(comp.get());
+
+				if (casted)
+					comps.push_back(casted);
+			}
+
+			return comps;
+		}
+
 		std::vector<Component*> GetComponents() const
 		{
 			std::vector<Component*> comps;
@@ -89,6 +106,8 @@ namespace Apex::Data
 				comps.push_back(c.get());
 			return comps;
 		}
+
+		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys);
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 

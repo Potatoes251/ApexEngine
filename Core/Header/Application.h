@@ -47,20 +47,19 @@ namespace Apex
         Application& operator=(const Application&) = delete;
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
-        void Run();
         void Tick();
         void LoadScene();
-        void Shutdown();
         void ProcessInput();
         void Render(Rendering::Camera* cam = nullptr);
 
         Windowing::IWindow*         GetWindow() { return m_window; }
-        Rendering::Scene*           GetScene() { return m_scene.get(); }
-        void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
+        Rendering::Scene*           GetScene() { return m_scene; }
+        void                        SetScene(Rendering::Scene* scene) { m_scene = scene; }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
         Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
+        Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
     private:
         bool InitWindow(Windowing::IWindow* window);
@@ -69,8 +68,8 @@ namespace Apex
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
-        bool InitScene();
         bool InitUI(UserInterface::IGUI* gui);
+        bool InitLua();
         
         void UpdateAudioListener();
         void Update();
@@ -91,7 +90,7 @@ namespace Apex
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;
-        std::unique_ptr<Rendering::Scene> m_scene;
+        Rendering::Scene* m_scene = nullptr;
 	};
 }
 

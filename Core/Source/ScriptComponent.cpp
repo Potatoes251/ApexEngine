@@ -39,12 +39,13 @@ void ScriptComponent::SetScript(const std::string& path)
 
 std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
 {
-    return std::vector<ExposedVar>();
-}
-
-void ScriptComponent::DrawVariables(Apex::UserInterface::IGUI& gui)
-{
-    
+    return {
+        {
+            "Script",
+            ExposedVar::Script,
+            this
+        }
+    };
 }
 
 void ScriptComponent::OnStart()

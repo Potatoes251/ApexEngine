@@ -8,6 +8,7 @@
 #include "LibMath/Vector/Vector3.h"
 
 #include "ResourceHandle.h"
+#include "ResourceManager.h"
 
 #include "Object.h"
 
@@ -20,6 +21,9 @@ namespace Apex::Rendering
     class MeshRenderer : public Apex::Component
     {
     public:
+        MeshRenderer() = default;
+        MeshRenderer(Apex::Resources::ResourceManager& resourceManager);
+
         void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
         void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
         void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
@@ -30,7 +34,6 @@ namespace Apex::Rendering
 
         const char* GetTypeName() const override { return "MeshRenderer"; };
         std::vector<ExposedVar> GetExposedVariables() override;
-        void DrawVariables(Apex::UserInterface::IGUI& gui) override;
 
         std::unique_ptr<Apex::Component> Clone() const override;
 
