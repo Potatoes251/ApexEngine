@@ -61,10 +61,10 @@ LibMath::Matrix4 DirectionalLightComponent::GetProjMatrix() const
 
 std::vector<LibMath::Matrix4> DirectionalLightComponent::GetViewMatrix(Rendering::Camera* camera) const
 {
-    LibMath::Vector3 forward = camera->GetFront();
+    LibMath::Vector3 forward = GetOwner()->GetGlobalTransform().getForward();
     LibMath::Vector3 sceneCenter = camera->GetPosition() + forward * m_shadowDistance / 2.f;
 
-    LibMath::Vector3 eye = camera->GetPosition() - GetOwner()->GetGlobalTransform().getForward() * m_shadowDistance;
+    LibMath::Vector3 eye = camera->GetPosition() - forward * m_shadowDistance;
 
     LibMath::Vector3 worldUp = LibMath::Vector3::up();
 
