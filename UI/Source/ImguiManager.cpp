@@ -378,6 +378,16 @@ namespace Apex::UserInterface
     bool ImGUIManager::SmallButton(const std::string& label) { return ImGui::SmallButton(label.c_str()); }
     bool ImGUIManager::Checkbox(const std::string& label, bool* value) { return ImGui::Checkbox(label.c_str(), value); }
 
+    bool ImGUIManager::CheckboxFormat(const std::string& label, bool* value)
+    {
+        ImGui::Text(label.c_str());
+        ImGui::SameLine();
+
+        std::string checkboxLabel = "##" + label;
+
+        return ImGui::Checkbox(checkboxLabel.c_str(), value);
+    }
+
     bool ImGUIManager::SliderFloat(const std::string& label, float* value, float min, float max)
     {
         return ImGui::SliderFloat(label.c_str(), value, min, max);
@@ -385,6 +395,36 @@ namespace Apex::UserInterface
     bool ImGUIManager::SliderInt(const std::string& label, int* value, int min, int max)
     {
         return ImGui::SliderInt(label.c_str(), value, min, max);
+    }
+    bool ImGUIManager::SliderFloatFormat(const std::string& label, float* value, float min, float max, float size, float sliderPos, float spacing)
+    {
+        ImGui::Text(label.c_str());
+
+        if (sliderPos >= 0.f)
+            ImGui::SameLine(sliderPos);
+        else if (spacing >= 0.f)
+            ImGui::SameLine(0.f, spacing);
+        else
+            ImGui::SameLine();
+
+        ImGui::SetNextItemWidth(size);
+        std::string sliderLabel = "##" + label;
+        return ImGui::SliderFloat(sliderLabel.c_str(), value, min, max);
+    }
+    bool ImGUIManager::SliderIntFormat(const std::string& label, int* value, int min, int max, float size, float sliderPos, float spacing)
+    {
+        ImGui::Text(label.c_str());
+
+        if (sliderPos >= 0.f)
+            ImGui::SameLine(sliderPos);
+        else if (spacing >= 0.f)
+            ImGui::SameLine(0.f, spacing);
+        else
+            ImGui::SameLine();
+
+        ImGui::SetNextItemWidth(size);
+        std::string sliderLabel = "##" + label;
+        return ImGui::SliderInt(sliderLabel.c_str(), value, min, max);
     }
     bool ImGUIManager::ColorEdit3(const std::string& label, float colors[3])
     {
@@ -405,6 +445,16 @@ namespace Apex::UserInterface
     bool ImGUIManager::Combo(const std::string& label, int* currentItem, const char* items)
     {
         return ImGui::Combo(label.c_str(), currentItem, items);
+    }
+
+    bool ImGUIManager::ComboFormat(const std::string& label, int* currentItem, const char* items)
+    {
+        ImGui::Text(label.c_str());
+        ImGui::SameLine();
+
+        std::string comboLabel = "##" + label;
+
+        return ImGui::Combo(comboLabel.c_str(), currentItem, items);
     }
 
     bool ImGUIManager::CollapsingHeader(const std::string& label, bool defaultOpen)
