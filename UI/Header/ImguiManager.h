@@ -161,6 +161,9 @@ namespace Apex::UserInterface
 
         void SetManagesCursor(bool manages) override;
 
+        void BeginModalBlock(const std::string& name) override;
+        void EndModalBlock() override;
+
 	private:
         static int ToImGuiMouseButton(MouseButton button);
         static int ToImGuiTreeFlags(TreeNodeFlags flags);
@@ -171,6 +174,9 @@ namespace Apex::UserInterface
         ImDrawListWrapper m_drawListWrapper;
 
 		static const std::vector<FontInitializer> m_fontDefinitions;
+
+        bool m_hasModal = false;
+        std::string m_modalName;
 	};
 }
 

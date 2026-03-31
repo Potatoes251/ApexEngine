@@ -81,6 +81,8 @@ namespace Apex::Resources
     {
         if (!m_isOpen) return;
 
+        m_gui.BeginModalBlock("Select Asset");
+
         m_gui.BeginPanel("Select Asset", &m_isOpen);
 
         if (m_gui.Button("Refresh"))
@@ -102,6 +104,9 @@ namespace Apex::Resources
         }
 
         m_gui.EndPanel();
+
+        if (!m_isOpen)
+            m_gui.EndModalBlock();
     }
 }
 

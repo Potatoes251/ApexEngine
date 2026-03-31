@@ -247,6 +247,9 @@ namespace Apex::UserInterface
         virtual Vector2 GetItemRectMax() const = 0;
 
         virtual void SetManagesCursor(bool manages) = 0;
+
+        virtual void BeginModalBlock(const std::string& name) = 0;
+        virtual void EndModalBlock() = 0;
 	private:
 	};
 

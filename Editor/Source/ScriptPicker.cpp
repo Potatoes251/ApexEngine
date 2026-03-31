@@ -13,6 +13,8 @@ void ScriptPicker::Draw()
     if (!m_isOpen)
         return;
 
+    m_gui.BeginModalBlock("Select Script");
+
     m_gui.BeginPanel("Select Script", &m_isOpen);
 
     m_gui.Text("Working dir: " + std::filesystem::current_path().string());
@@ -21,6 +23,8 @@ void ScriptPicker::Draw()
     {
         m_gui.Text("Path not found!");
         m_gui.EndPanel();
+        m_gui.EndModalBlock();
+        m_isOpen = false;
         return;
     }
 
@@ -59,4 +63,7 @@ void ScriptPicker::Draw()
     }
 
     m_gui.EndPanel();
+
+    if (!m_isOpen)
+        m_gui.EndModalBlock();
 }

@@ -271,12 +271,14 @@ namespace Apex::UserInterface
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
         if (!dock)
             flags |= ImGuiWindowFlags_NoDocking;
+
+        if (m_hasModal && title != m_modalName)
+            flags |= ImGuiWindowFlags_NoInputs;
+
         ImGui::Begin(title.c_str(), open, flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
         if (!window->DockIsActive)
-        {
             ImGui::DockBuilderDockWindow(title.c_str(), ImGui::GetID("MainDockSpace"));
-        }
     }
 
     Vector2 ImGUIManager::GetScreenSize()
@@ -569,6 +571,18 @@ namespace Apex::UserInterface
             io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
         else
             io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+    }
+
+    void ImGUIManager::BeginModalBlock(const std::string& name)
+    {
+        m_hasModal = true;
+        m_modalName = name;
+    }
+
+    void ImGUIManager::EndModalBlock()
+    {
+        m_hasModal = false;
+        m_modalName.clear();
     }
 }
 
