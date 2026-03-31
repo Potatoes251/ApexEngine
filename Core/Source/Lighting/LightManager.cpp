@@ -40,12 +40,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 	for (int i = 0; i < bufferP.m_count[0]; i++)
 	{
 		PointLightComponent* light = lights.m_pointLights[i];
-		bufferP.m_lights[i] =
-		{
-			.m_position = { light->GetOwner()->GetGlobalTransform().getPosition(), 0 },
-			.m_color = { light->GetColor(), 0 },
-			.m_param = { light->GetIntensity(), light->GetRadius(), 0, 0 }
-		};
+		light->FillGpuData(&bufferP.m_lights[i]);
 	}
 	m_rhi->BindUniformBuffer(m_pointLightBuffer, sizeof(GPUPointLightBuffer), &bufferP);
 
@@ -54,13 +49,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 	for (int i = 0; i < bufferS.m_count[0]; i++)
 	{
 		SpotLightComponent* light = lights.m_spotLights[i];
-		bufferS.m_lights[i] =
-		{
-			.m_position = { light->GetOwner()->GetGlobalTransform().getPosition(), 0 },
-			.m_direction = { light->GetOwner()->GetGlobalTransform().getForward(),0 },
-			.m_color = { light->GetColor(), 0 },
-			.m_param = { light->GetIntensity(), LibMath::cos(LibMath::Degree(light->GetInnerCutoff())), LibMath::cos(LibMath::Degree(light->GetOuterCutoff())), 0 }
-		};
+		light->FillGpuData(&bufferS.m_lights[i]);
 	}
 	m_rhi->BindUniformBuffer(m_spotLightBuffer, sizeof(GPUSpotLightBuffer), &bufferS);
 
@@ -69,12 +58,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 	for (int i = 0; i < bufferD.m_count[0]; i++)
 	{
 		DirectionalLightComponent* light = lights.m_directionalLights[i];
-		bufferD.m_lights[i] =
-		{
-			.m_direction = { light->GetOwner()->GetGlobalTransform().getForward(),0 },
-			.m_color = { light->GetColor(), 0 },
-			.m_param = { light->GetIntensity(), 0, 0, 0 }
-		};
+		light->FillGpuData(&bufferD.m_lights[i]);
 	}
 	m_rhi->BindUniformBuffer(m_directionalLightBuffer, sizeof(GPUDirectionalLightBuffer), &bufferD);
 }

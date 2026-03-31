@@ -11,12 +11,14 @@ DirectionalLightComponent::DirectionalLightComponent(DirectionalLightComponent c
 {
     m_color = other.m_color;
     m_intensity = other.m_intensity;
+    m_lightId = other.m_lightId;
 }
 
 DirectionalLightComponent& DirectionalLightComponent::operator=(DirectionalLightComponent const& other)
 {
     m_color = other.m_color;
     m_intensity = other.m_intensity;
+    m_lightId = other.m_lightId;
 
     return *this;
 }
@@ -50,7 +52,7 @@ void DirectionalLightComponent::FillGpuData(void* data_out)
     GPUDirectionalLight* data = (GPUDirectionalLight*)data_out;
 
     data->m_color = { m_color, 0 };
-    data->m_param = { m_intensity, 0, 0, 0 };
+    data->m_param = { m_intensity, (float)m_shadowIdx, 0, 0 };
     data->m_direction = { GetOwner()->GetGlobalTransform().getForward(), 0 };
 }
 

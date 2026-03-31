@@ -164,7 +164,8 @@ bool Apex::Application::InitLighting()
     m_lightManager = std::make_unique<LightManager>(m_rhi.get());
     m_shadowManager = std::make_unique<ShadowManager>(m_rhi.get(), 
         m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/DirShadowVert.glsl|ApexAssets/Shaders/DirShadowFrag.glsl"), 
-        m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
+        m_resourceManager->CreateAsync<Shader>(
+            "ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
     return true;
 }
 
@@ -189,7 +190,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
     Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
     Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl");
 
-    auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
 
     m_scene->SetSkybox(sk);
     
@@ -311,11 +312,12 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     m_lightManager->UploadToGpu(visibleLights);
     m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    //m_shadowManager->BindShadowMaps();
+    m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {
         m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+        m_rhi->Clear();
     }
 
     m_scene->Render(pass);

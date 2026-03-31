@@ -138,7 +138,6 @@ namespace Apex::Rendering
 			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
 			if (!renderer)
 				continue;
-
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox)

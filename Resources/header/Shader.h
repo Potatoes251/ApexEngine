@@ -26,8 +26,6 @@ public:
 	void SetUniform(std::string const& name, LibMath::Matrix4 const& value, int count);
 
 private:
-	std::string m_name;
-
 	uint32_t m_shader = 0;
 };
 

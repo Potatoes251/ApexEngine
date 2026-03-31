@@ -104,7 +104,6 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     }
 
     m_texture->Bind(0);
-    currentShader->SetUniform("uTexture", 0);
     currentShader->SetUniform("uUseTexture", 1);
     m_mesh->Draw();
 }
@@ -122,7 +121,9 @@ void MeshRenderer::Serialize(std::ostream& out) const
         out << "        \"texture\": \"" << m_texture->GetPath() << "\",\n";
 
     if (m_shader.IsValid() && m_shader->GetPath().size())
-        out << "        \"shader\": \"" << m_shader->GetPath() << "\"\n";
+        out << "        \"shader\": \"" << m_shader->GetPath() << "\",\n";
+
+    out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
 
     out << "      }";
 }

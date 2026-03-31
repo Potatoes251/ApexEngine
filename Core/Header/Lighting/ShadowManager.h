@@ -40,7 +40,7 @@ namespace Apex::Lighting
 		~ShadowManager();
 
 		void RenderShadows(VisibleLights const& lights, Rendering::Scene* scene, Rendering::Camera* camera);
-		void BindShadowMaps(Resources::ResourceHandle<Shader> shader) const;
+		void BindShadowMaps() const;
 
 		void ResetShadowMapId(int shadowIdx) { m_shadowMaps[shadowIdx].m_ownerLightId = -1; }
 
@@ -53,7 +53,7 @@ namespace Apex::Lighting
 
 		static constexpr unsigned SHADOW_WIDTH = 1024;
 		static constexpr unsigned SHADOW_HEIGHT = 1024;
-		static constexpr unsigned MAX_SHADOW_2D = 5;
+		static constexpr unsigned MAX_SHADOW_2D = 10;
 		static constexpr unsigned MAX_SHADOW_CUBE = 5;
 		static constexpr unsigned FIRST_SHADOW_2D_SLOT = 5;
 		static constexpr unsigned FIRST_SHADOW_CUBE_SLOT = FIRST_SHADOW_2D_SLOT + MAX_SHADOW_2D;

@@ -7,6 +7,7 @@ LightComponent::LightComponent(LibMath::Vector3 color, float intensity)
 {
     m_color = color;
     m_intensity = intensity;
+    m_lightId = m_nextLightId++;
 }
 
 std::vector<ExposedVar> LightComponent::GetExposedVariables()

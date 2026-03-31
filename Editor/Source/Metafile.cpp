@@ -59,7 +59,7 @@ namespace Apex::Editor
         if (!file.is_open())
             return false;
 
-        file << "# Apex Engine meta file — do not edit manually\n";
+        file << "# Apex Engine meta file - do not edit manually\n";
 
         for (const auto& [key, value] : m_entries)
             file << key << '=' << value << '\n';

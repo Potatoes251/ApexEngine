@@ -359,22 +359,6 @@ namespace Apex::Rendering
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 
-		GLuint blockIndex = glGetUniformBlockIndex(program, "PointLightBuffer");
-		if (blockIndex != GL_INVALID_INDEX)
-		{
-			glUniformBlockBinding(program, blockIndex, 0);
-		}
-		blockIndex = glGetUniformBlockIndex(program, "DirLightBuffer");
-		if (blockIndex != GL_INVALID_INDEX)
-		{
-			glUniformBlockBinding(program, blockIndex, 1);
-		}
-		blockIndex = glGetUniformBlockIndex(program, "SpotLightBuffer");
-		if (blockIndex != GL_INVALID_INDEX)
-		{
-			glUniformBlockBinding(program, blockIndex, 2);
-		}
-
 		RHIShaderHandle shader = NewHandle();
 		m_shaders[shader] = program;
 		return shader;

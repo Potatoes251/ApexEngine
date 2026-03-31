@@ -16,7 +16,7 @@ namespace Apex::Lighting
 	{
 		LibMath::Vector4 m_position;
 		LibMath::Vector4 m_color;
-		LibMath::Vector4 m_param; // x = intensity, y = radius
+		LibMath::Vector4 m_param; // x = intensity, y = shadowIdx, z = radius, w = farPlane
 	};
 
 	struct alignas(16) GPUPointLightBuffer
@@ -29,7 +29,7 @@ namespace Apex::Lighting
 	{
 		LibMath::Vector4 m_direction;
 		LibMath::Vector4 m_color;
-		LibMath::Vector4 m_param; // x = intensity
+		LibMath::Vector4 m_param; // x = intensity, y = shadowIdx
 	};
 
 	struct alignas(16) GPUDirectionalLightBuffer
@@ -43,7 +43,7 @@ namespace Apex::Lighting
 		LibMath::Vector4 m_position;
 		LibMath::Vector4 m_direction;
 		LibMath::Vector4 m_color;
-		LibMath::Vector4 m_param; // x = intensity, y = innerCutoff, z = outerCutoff
+		LibMath::Vector4 m_param; // x = intensity, y = shadowIdx, z = innerCutoff, w = outerCutoff
 	};
 
 	struct alignas(16) GPUSpotLightBuffer

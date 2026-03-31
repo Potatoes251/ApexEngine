@@ -336,8 +336,6 @@ void Viewport::Draw()
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjection();
 
-	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;

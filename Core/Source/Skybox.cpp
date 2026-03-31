@@ -4,8 +4,8 @@
 using namespace Apex::Rendering;
 
 Skybox::Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHandle<Mesh> mesh, 
-	Resources::ResourceHandle<Shader> shader, IRHI* rhi) 
-	: m_cubemap(cubemap), m_mesh(mesh), m_shader(shader), m_rhi(rhi)
+	Resources::ResourceHandle<Shader> shader) 
+	: m_cubemap(cubemap), m_mesh(mesh), m_shader(shader)
 {}
 
 Skybox::Skybox(Skybox const& other)

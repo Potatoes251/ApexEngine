@@ -159,6 +159,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
             std::string shader = parser.ParseString();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            bool shadow = parser.ParseBool();
 
             auto& comp = obj->AddComponent<Apex::Rendering::MeshRenderer>();
             comp.SetEnabled(enabled);
@@ -170,6 +174,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             comp.SetMesh(a);
             comp.SetTexture(b);
             comp.SetShader(c);
+            comp.SetCastShadow(shadow);
         }
         else if (compName == "RigidBody")
         {

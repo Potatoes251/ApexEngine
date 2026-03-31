@@ -57,7 +57,9 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 		if (light->GetShadowIdx() == -1) continue;
 
-		ShadowMap const& shadow = m_shadowMaps[light->GetShadowIdx()];
+		ShadowMap& shadow = m_shadowMaps[light->GetShadowIdx()];
+
+		shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
 
 		m_rhi->AttachDepthTexture(shadow.m_shadowTexture);
 		m_rhi->ClearDepth();
@@ -74,7 +76,9 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 		if (light->GetShadowIdx() == -1) continue;
 
-		ShadowMap const& shadow = m_shadowMaps[light->GetShadowIdx()];
+		ShadowMap& shadow = m_shadowMaps[light->GetShadowIdx()];
+
+		shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
 
 		m_rhi->AttachDepthTexture(shadow.m_shadowTexture);
 		m_rhi->ClearDepth();
@@ -94,7 +98,17 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 		if (light->GetShadowIdx() == -1) continue;
 
-		ShadowCubeMap const& shadow = m_shadowCubeMaps[light->GetShadowIdx()];
+		ShadowCubeMap& shadow = m_shadowCubeMaps[light->GetShadowIdx()];
+
+		LibMath::Matrix4 proj = light->GetProjMatrix();
+		std::vector<LibMath::Matrix4> views = light->GetViewMatrix(nullptr);
+
+		assert(views.size() == 6 && "incorrect amount of view matrices for a cubemap");
+
+		for (int i = 0; i < 6; i++)
+		{
+			shadow.m_viewProj[i] = proj * views[i];
+		}
 
 		m_rhi->AttachDepthCubeTexture(shadow.m_shadowTexture);
 		m_rhi->ClearDepth();
@@ -109,7 +123,7 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	m_rhi->UnBindFrameBuffer();
 }
 
-void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader) const
+void ShadowManager::BindShadowMaps() const
 {
 	for (int i = 0; i < m_shadowMaps.size(); i++)
 	{
@@ -119,7 +133,6 @@ void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader) con
 		{
 			int textureUnit = FIRST_SHADOW_2D_SLOT + i;
 			m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
-			shader->SetUniform(("shadowMap[" + std::to_string(i) + "]").c_str(), textureUnit);
 		}
 	}
 
@@ -131,7 +144,6 @@ void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader) con
 		{
 			int textureUnit = FIRST_SHADOW_CUBE_SLOT + i;
 			m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
-			shader->SetUniform(("shadowCubeMap[" + std::to_string(i) + "]").c_str(), textureUnit);
 		}
 	}
 }

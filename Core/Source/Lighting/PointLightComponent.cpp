@@ -17,6 +17,7 @@ PointLightComponent::PointLightComponent(PointLightComponent const& other)
     m_color = other.m_color;
     m_intensity = other.m_intensity;
     m_radius = other.m_radius;
+    m_lightId = other.m_lightId;
 }
 
 PointLightComponent& PointLightComponent::operator=(PointLightComponent const& other)
@@ -24,6 +25,7 @@ PointLightComponent& PointLightComponent::operator=(PointLightComponent const& o
     m_color = other.m_color;
     m_intensity = other.m_intensity;
     m_radius = other.m_radius;
+    m_lightId = other.m_lightId;
 
     return *this;
 }
@@ -59,7 +61,7 @@ void PointLightComponent::FillGpuData(void* data_out)
     GPUPointLight* data = (GPUPointLight*)data_out;
 
     data->m_color = { m_color, 0 };
-    data->m_param = { m_intensity, m_radius, 0, 0 };
+    data->m_param = { m_intensity, (float)m_shadowIdx, m_radius, m_farShadow };
     data->m_position = { GetOwner()->GetGlobalTransform().getForward(), 0 };
 }
 

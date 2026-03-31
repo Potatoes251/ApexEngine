@@ -19,6 +19,7 @@ SpotLightComponent::SpotLightComponent(SpotLightComponent const& other)
     m_intensity = other.m_intensity;
     m_innerCutoff = other.m_innerCutoff;
     m_outerCutoff = other.m_outerCutoff;
+    m_lightId = other.m_lightId;
 }
 
 SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& other)
@@ -27,6 +28,7 @@ SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& othe
     m_intensity = other.m_intensity;
     m_innerCutoff = other.m_innerCutoff;
     m_outerCutoff = other.m_outerCutoff;
+    m_lightId = other.m_lightId;
 
     return *this;
 }
@@ -66,7 +68,7 @@ void SpotLightComponent::FillGpuData(void* data_out)
     data->m_color = { m_color, 0 };
     data->m_direction = { GetOwner()->GetGlobalTransform().getForward(), 0 };
     data->m_position = { GetOwner()->GetGlobalTransform().getPosition(), 0 };
-    data->m_param = { m_intensity, m_innerCutoff, m_outerCutoff,0 };
+    data->m_param = { m_intensity, (float)m_shadowIdx, m_innerCutoff, m_outerCutoff  };
 }
 
 LibMath::Matrix4 Apex::Lighting::SpotLightComponent::GetProjMatrix() const

@@ -9,7 +9,7 @@
 ],
 "objects": [
   {
-    "id": 9,
+    "id": 12,
     "parent": null,
     "name": "Sphere",
     "position": [0.000000,3.000000,0.000000],
@@ -20,7 +20,8 @@
         "enabled": true,
         "mesh": "Assets/Meshes/sphere.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
       },
       "RigidBody": {
         "enabled": true,
@@ -46,11 +47,16 @@
         "color": [1.000000, -383.812012, 1.000000],
         "intensity": 4.830000,
         "radius": 10.000000
+      },
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 10.000000
       }
     }
   },
   {
-    "id": 10,
+    "id": 13,
     "parent": null,
     "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
@@ -61,7 +67,8 @@
         "enabled": true,
         "mesh": "Assets/Meshes/padoru.obj",
         "texture": "Assets/Textures/padoru.png",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
       },
       "RigidBody": {
         "enabled": true,
@@ -77,7 +84,7 @@
     }
   },
   {
-    "id": 11,
+    "id": 14,
     "parent": null,
     "name": "Floor",
     "position": [0.000000,5.000000,0.000000],
@@ -88,7 +95,8 @@
         "enabled": true,
         "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
       },
       "RigidBody": {
         "enabled": true,
