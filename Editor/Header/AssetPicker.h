@@ -24,11 +24,15 @@ namespace Apex::Resources
 
         void Draw();
 
+        bool HasNewAsset() { return m_newAsset; }
+        void ResetNewAsset() { m_newAsset = false; }
+
     private:
         void ScanAssets();
         static bool MatchesType(const std::filesystem::path& path);
 
         bool m_isOpen = false;
+        bool m_newAsset = false;
         ResourceHandle<T>* m_target = nullptr;
         std::vector<std::string> m_cachedPaths;
 
@@ -88,7 +92,11 @@ namespace Apex::Resources
         {
             if (m_gui.Button(pathStr.c_str()))
             {
-                *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                if (!m_target->IsValid() || (*m_target)->GetPath() != pathStr)
+                {
+                    *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                    m_newAsset = true;
+                }
                 m_isOpen = false;
             }
         }
