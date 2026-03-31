@@ -382,6 +382,26 @@ namespace Apex::Windowing
         self->m_dropCallback(std::move(result));
     }
 
+    void GLFWWindow::SetCloseCallback(CloseCallback callback)
+    {
+        m_closeCallback = std::move(callback);
+
+        glfwSetWindowUserPointer(m_window, this);
+
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* win)
+            {
+                auto* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(win));
+
+                if (self->m_closeCallback)
+                    self->m_closeCallback();
+            });
+    }
+
+    void GLFWWindow::SetShouldClose(bool close)
+    {
+        glfwSetWindowShouldClose(m_window, close);
+    }
+
     // ── Translation helpers ───────────────────────────────────────
     Key GLFWWindow::TranslateKey(int glfwKey)
     {

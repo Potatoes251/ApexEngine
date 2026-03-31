@@ -27,6 +27,16 @@ namespace Apex::Editor
         if (!m_window) return false;
 
         m_window->Maximize();
+
+        m_window->SetCloseCallback([this]()
+            {
+                m_window->SetShouldClose(false);
+                if (m_editScene && m_editScene->IsDirty())
+                    m_confirmClosePopup = true;
+                else
+                    m_requestClose = true;
+            });
+
         return true;
     }
 
@@ -236,6 +246,8 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         if (m_componentsViewer)
             m_componentsViewer->Draw();
 
+        HandleEditorClosing();
+
         m_gui->EndFrame();
 
         m_window->SwapBuffers();
@@ -262,6 +274,49 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         default:
             break;
         }
+
+        if (m_requestClose)
+            m_window->SetShouldClose(true);
+    }
+
+    void Editor::HandleEditorClosing()
+    {
+        m_gui->PushFont(FontID::Default);
+
+        if (m_confirmClosePopup)
+        {
+            m_gui->OpenPopup("ConfirmExit");
+            m_confirmClosePopup = false;
+        }
+
+        if (m_gui->BeginPopupModal("ConfirmExit", { 400.f, 0.f }))
+        {
+            m_gui->Text("\nUnsaved changes.\nExit anyway?\n\n");
+
+            if (m_gui->Button("Save & Exit"))
+            {
+                m_editScene->Save("Assets/Scenes/scene.level");
+                m_requestClose = true;
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Exit"))
+            {
+                m_requestClose = true;
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Cancel"))
+                m_gui->CloseCurrentPopup();
+
+            m_gui->EndPopup();
+        }
+
+        m_gui->PopFont();
     }
 
     void Editor::Shutdown()
