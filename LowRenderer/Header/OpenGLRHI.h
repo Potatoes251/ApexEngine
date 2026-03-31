@@ -49,6 +49,7 @@ namespace Apex::Rendering
 		void				AttachDepthTexture(RHITextureHandle depthTexture) override;
 		void				AttachDepthCubeTexture(RHITextureHandle depthTexture) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
+		void				BindTextureCube(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 
 		RHIShaderHandle		CreateShader(const ShaderSource& source) override;

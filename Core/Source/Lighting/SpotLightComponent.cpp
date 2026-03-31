@@ -19,7 +19,6 @@ SpotLightComponent::SpotLightComponent(SpotLightComponent const& other)
     m_intensity = other.m_intensity;
     m_innerCutoff = other.m_innerCutoff;
     m_outerCutoff = other.m_outerCutoff;
-    m_lightId = other.m_lightId;
 }
 
 SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& other)
@@ -28,7 +27,6 @@ SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& othe
     m_intensity = other.m_intensity;
     m_innerCutoff = other.m_innerCutoff;
     m_outerCutoff = other.m_outerCutoff;
-    m_lightId = other.m_lightId;
 
     return *this;
 }

@@ -27,7 +27,6 @@ void Skybox::Render(LibMath::Matrix4 viewProj)
 {
 	if (!m_cubemap.IsReady() || !m_shader.IsReady() || !m_mesh.IsReady()) return;
 
-	//m_rhi->SetDepthTest(false)
 	m_shader->Use();
 	m_shader->SetUniform("viewProjection", viewProj);
 

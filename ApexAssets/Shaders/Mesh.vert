@@ -6,7 +6,6 @@ layout(location = 2) in vec2 aTexCoord;
 
 uniform mat4 uModel;
 uniform mat4 uViewProj;
-uniform mat4 lightSpaceMatrix[10];
 
 out vec3 vFragPos;
 out vec3 vNormal;
@@ -38,6 +37,11 @@ layout(std140, binding = 2) uniform SpotLightBuffer
 {
     vec4 SpotCount; // x = count
     SpotLight SpotLights[10];
+};
+
+layout(std140, binding = 3) uniform LightSpaceMatrix
+{
+    mat4 lightSpaceMatrix[10];
 };
 
 void main() 

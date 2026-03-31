@@ -24,6 +24,8 @@ ShadowManager::ShadowManager(IRHI* rhi, Resources::ResourceHandle<Shader> dirSha
 	m_shadowFbo = rhi->CreateEmptyFrameBuffer(shadow.m_shadowTexture, SHADOW_WIDTH, SHADOW_HEIGHT);
 
 	m_shadowMaps.push_back(shadow);
+
+	m_lightMatrixBuffer = rhi->CreateUniformBuffer(3, sizeof(LibMath::Matrix4) * 10);
 }
 
 ShadowManager::~ShadowManager()
@@ -35,6 +37,7 @@ ShadowManager::~ShadowManager()
 			m_rhi->DeleteTexture(shadow.m_shadowTexture);
 		}
 		m_rhi->DeleteFrameBuffer(m_shadowFbo);
+		m_rhi->DeleteUniformBuffer(m_lightMatrixBuffer);
 	}
 }
 
@@ -49,17 +52,13 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	pass.m_flags &= ~RenderSkybox;
 	pass.m_shader = m_dirShader;
 	m_dirShader->Use();
+
+	int shadowCount = 0;
 	for (DirectionalLightComponent* light : lights.m_directionalLights)
 	{
-		if (!light->IsCastingShadow()) continue;
+		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
 
-		if (light->GetShadowIdx() == -1)	light->SetShadowIdx(AcquireShadowMap(light, camera));
-
-		if (light->GetShadowIdx() == -1) continue;
-
-		ShadowMap& shadow = m_shadowMaps[light->GetShadowIdx()];
-
-		shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
+		ShadowMap& shadow = m_shadowMaps[shadowCount];
 
 		m_rhi->AttachDepthTexture(shadow.m_shadowTexture);
 		m_rhi->ClearDepth();
@@ -67,18 +66,14 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 		m_dirShader->SetUniform("lightSpaceMatrix", shadow.m_viewProj);
 
 		scene->Render(pass);
+
+		shadowCount++;
 	}
 	for (SpotLightComponent* light : lights.m_spotLights)
 	{
-		if (!light->IsCastingShadow()) continue;
+		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
 
-		if (light->GetShadowIdx() == -1)	light->SetShadowIdx(AcquireShadowMap(light, camera));
-
-		if (light->GetShadowIdx() == -1) continue;
-
-		ShadowMap& shadow = m_shadowMaps[light->GetShadowIdx()];
-
-		shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
+		ShadowMap& shadow = m_shadowMaps[shadowCount];
 
 		m_rhi->AttachDepthTexture(shadow.m_shadowTexture);
 		m_rhi->ClearDepth();
@@ -86,19 +81,17 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 		m_dirShader->SetUniform("lightSpaceMatrix", shadow.m_viewProj);
 
 		scene->Render(pass);
-	}
 
+		shadowCount++;
+	}
+	shadowCount = 0;
 	pass.m_shader = m_omniShader;
 	m_omniShader->Use();
 	for (PointLightComponent* light : lights.m_pointLights)
 	{
-		if (!light->IsCastingShadow()) continue;
+		if (!light->IsCastingShadow() || !AcquireShadowCubeMap(light, shadowCount)) continue;
 
-		if (light->GetShadowIdx() == -1)	light->SetShadowIdx(AcquireShadowCubeMap(light));
-
-		if (light->GetShadowIdx() == -1) continue;
-
-		ShadowCubeMap& shadow = m_shadowCubeMaps[light->GetShadowIdx()];
+		ShadowCubeMap& shadow = m_shadowCubeMaps[shadowCount];
 
 		LibMath::Matrix4 proj = light->GetProjMatrix();
 		std::vector<LibMath::Matrix4> views = light->GetViewMatrix(nullptr);
@@ -118,90 +111,81 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 		m_omniShader->SetUniform("farPlane", light->GetFarPlane());
 
 		scene->Render(pass);
+
+		shadowCount++;
 	}
 
 	m_rhi->UnBindFrameBuffer();
 }
 
-void ShadowManager::BindShadowMaps() const
+void ShadowManager::BindShadowMaps()
 {
-	for (int i = 0; i < m_shadowMaps.size(); i++)
-	{
-		ShadowMap const& shadow = m_shadowMaps[i];
-
-		if (shadow.m_ownerLightId != -1)
-		{
-			int textureUnit = FIRST_SHADOW_2D_SLOT + i;
-			m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
-		}
-	}
-
-	for (int i = 0; i < m_shadowCubeMaps.size(); i++)
-	{
-		ShadowCubeMap const& shadow = m_shadowCubeMaps[i];
-
-		if (shadow.m_ownerLightId != -1)
-		{
-			int textureUnit = FIRST_SHADOW_CUBE_SLOT + i;
-			m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
-		}
-	}
-}
-
-int ShadowManager::AcquireShadowMap(LightComponent* light, Camera* camera)
-{
+	LibMath::Matrix4 lightSpaceMatrix[10];
 	for (int i = 0; i < m_shadowMaps.size(); i++)
 	{
 		ShadowMap& shadow = m_shadowMaps[i];
 
-		if (shadow.m_ownerLightId == -1) 
-		{
-			shadow.m_ownerLightId = light->GetLightId();
-			shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
-			return i;
-		}
+		int textureUnit = FIRST_SHADOW_2D_SLOT + i;
+		m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
+
+		lightSpaceMatrix[i] = shadow.m_viewProj;
 	}
 
-	if (m_shadowMaps.size() >= MAX_SHADOW_2D)
-		return -1;
+	m_rhi->BindUniformBuffer(m_lightMatrixBuffer, sizeof(LibMath::Matrix4) * 10, &lightSpaceMatrix);
 
-	ShadowMap shadow;
-	shadow.m_ownerLightId = light->GetLightId();
-	shadow.m_shadowTexture = m_rhi->CreateShadowMap(SHADOW_WIDTH, SHADOW_HEIGHT);
-	shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
-
-	m_shadowMaps.push_back(shadow);
-
-	return m_shadowMaps.size() - 1;
-}
-
-int ShadowManager::AcquireShadowCubeMap(LightComponent* light)
-{
 	for (int i = 0; i < m_shadowCubeMaps.size(); i++)
 	{
 		ShadowCubeMap& shadow = m_shadowCubeMaps[i];
 
-		if (shadow.m_ownerLightId == -1)
-		{
-			shadow.m_ownerLightId = light->GetLightId();
-			LibMath::Matrix4 proj = light->GetProjMatrix();
-			std::vector<LibMath::Matrix4> views = light->GetViewMatrix(nullptr);
+		int textureUnit = FIRST_SHADOW_CUBE_SLOT + i;
+		m_rhi->BindTextureCube(shadow.m_shadowTexture, textureUnit);
+	}
+}
 
-			assert(views.size() == 6 && "incorrect amount of view matrices for a cubemap");
+bool ShadowManager::AcquireShadowMap(LightComponent* light, Camera* camera, int idx)
+{
+	if (idx < 0 || idx >= MAX_SHADOW_2D) return false;
 
-			for (int i = 0; i < 6; i++)
-			{
-				shadow.m_viewProj[i] = proj * views[i];
-			}
-			return i;
-		}
+	if (idx < m_shadowMaps.size())
+	{
+		m_shadowMaps[idx].m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
+		light->SetShadowIdx(idx);
+		return true;
 	}
 
-	if (m_shadowCubeMaps.size() >= MAX_SHADOW_CUBE)
-		return -1;
+	ShadowMap shadow;
+	shadow.m_shadowTexture = m_rhi->CreateShadowMap(SHADOW_WIDTH, SHADOW_HEIGHT);
+	shadow.m_viewProj = light->GetProjMatrix() * light->GetViewMatrix(camera)[0];
+
+	m_shadowMaps.push_back(shadow);
+	light->SetShadowIdx(m_shadowMaps.size() - 1);
+
+	return true;
+}
+
+bool ShadowManager::AcquireShadowCubeMap(LightComponent* light, int idx)
+{
+	if (idx < 0 || idx >= MAX_SHADOW_CUBE) return false;
+
+	if (idx < m_shadowCubeMaps.size())
+	{
+		ShadowCubeMap& shadow = m_shadowCubeMaps[idx];
+
+		light->SetShadowIdx(idx);
+		LibMath::Matrix4 proj = light->GetProjMatrix();
+		std::vector<LibMath::Matrix4> views = light->GetViewMatrix(nullptr);
+
+		assert(views.size() == 6 && "incorrect amount of view matrices for a cubemap");
+
+		for (int i = 0; i < 6; i++)
+		{
+			shadow.m_viewProj[i] = proj * views[i];
+		}		
+
+		return true;
+	}
 
 	ShadowCubeMap shadow;
-	shadow.m_ownerLightId = light->GetLightId();
 	shadow.m_shadowTexture = m_rhi->CreateShadowCubeMap(SHADOW_WIDTH, SHADOW_HEIGHT);
 
 	LibMath::Matrix4 proj = light->GetProjMatrix();
@@ -215,6 +199,7 @@ int ShadowManager::AcquireShadowCubeMap(LightComponent* light)
 	}
 
 	m_shadowCubeMaps.push_back(shadow);
+	light->SetShadowIdx(m_shadowCubeMaps.size() - 1);
 
-	return m_shadowCubeMaps.size() - 1;
+	return true;
 }

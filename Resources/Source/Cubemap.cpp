@@ -51,5 +51,5 @@ void Cubemap::UploadToGpu()
 
 void Cubemap::Bind(uint32_t slot)
 {
-	m_rhi->BindTexture(m_id, slot);
+	m_rhi->BindTextureCube(m_id, slot);
 }

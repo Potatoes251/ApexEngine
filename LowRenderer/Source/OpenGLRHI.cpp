@@ -331,6 +331,12 @@ namespace Apex::Rendering
 		glBindTexture(GL_TEXTURE_2D, GetTexture(texture));
 	}
 
+	void OpenGLRHI::BindTextureCube(RHITextureHandle texture, uint32_t unit)
+	{
+		glActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, GetTexture(texture));
+	}
+
 	void OpenGLRHI::DeleteTexture(RHITextureHandle texture)
 	{
 		GLuint glTexture = GetTexture(texture);

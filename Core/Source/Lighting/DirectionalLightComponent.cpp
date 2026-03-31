@@ -11,14 +11,12 @@ DirectionalLightComponent::DirectionalLightComponent(DirectionalLightComponent c
 {
     m_color = other.m_color;
     m_intensity = other.m_intensity;
-    m_lightId = other.m_lightId;
 }
 
 DirectionalLightComponent& DirectionalLightComponent::operator=(DirectionalLightComponent const& other)
 {
     m_color = other.m_color;
     m_intensity = other.m_intensity;
-    m_lightId = other.m_lightId;
 
     return *this;
 }

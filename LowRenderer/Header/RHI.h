@@ -85,6 +85,7 @@ namespace Apex::Rendering
 		virtual void				AttachDepthTexture(RHITextureHandle depthTexture) = 0;
 		virtual void				AttachDepthCubeTexture(RHITextureHandle depthTexture) = 0;
 		virtual void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) = 0;
+		virtual void				BindTextureCube(RHITextureHandle texture, uint32_t unit = 0) = 0;
 		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
 
 		// Shaders

@@ -113,7 +113,7 @@ float ShadowCalculation(SpotLight light)
     if (projCoords.z > 1.0)
         return 0.0;
 
-    //float closestDepth  = texture(shadowMap[light.shadowIdx], projCoords.xy).r;
+    float closestDepth  = texture(shadowMap[shadowIdx], projCoords.xy).r;
     float currentDepth  = projCoords.z;
 
 	float texelSize = 1.0 / textureSize(shadowMap[shadowIdx], 0).x;
@@ -298,6 +298,5 @@ void main()
 		color += CalcSpotLight(SpotLights[i], baseColor, baseColor);
 	}
 
-	//FragColor = vec4(vNormal, 1);
     FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }

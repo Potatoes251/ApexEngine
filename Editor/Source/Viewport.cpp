@@ -202,8 +202,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	RenderPassInfo picking;
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
-	picking.m_flags |= Flags::UseIdAsColor;
-	picking.m_flags |= Flags::IgnoreModelShader;
+	picking.m_flags |= UseIdAsColor;
+	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
 
@@ -341,7 +342,7 @@ void Viewport::Draw()
 	pass.m_camera = &m_camera;
 	pass.m_target = m_fbo;
 	if (m_showColliders)
-		pass.m_flags |= Flags::ShowCollider;
+		pass.m_flags |= ShowCollider;
 
 	if (m_isFirstFullScreen)
 	{

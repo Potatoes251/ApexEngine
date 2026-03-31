@@ -23,14 +23,12 @@ namespace Apex::Lighting
 	{
 		LibMath::Matrix4 m_viewProj;
 		Rendering::RHITextureHandle m_shadowTexture = Rendering::RHI_INVALID;
-		int m_ownerLightId = -1;
 	};
 
 	struct ShadowCubeMap
 	{
 		LibMath::Matrix4 m_viewProj[6];
 		Rendering::RHITextureHandle m_shadowTexture = Rendering::RHI_INVALID;
-		int m_ownerLightId = -1;
 	};
 
 	class ShadowManager
@@ -40,16 +38,14 @@ namespace Apex::Lighting
 		~ShadowManager();
 
 		void RenderShadows(VisibleLights const& lights, Rendering::Scene* scene, Rendering::Camera* camera);
-		void BindShadowMaps() const;
-
-		void ResetShadowMapId(int shadowIdx) { m_shadowMaps[shadowIdx].m_ownerLightId = -1; }
+		void BindShadowMaps();
 
 	private:
 		// return the idx of the first available shadowmap 
 		// may create a new one if no map is available
 		// return -1 if the max amount of shadow map has been reached
-		int AcquireShadowMap(LightComponent* light, Rendering::Camera* camera);
-		int AcquireShadowCubeMap(LightComponent* light);
+		bool AcquireShadowMap(LightComponent* light, Rendering::Camera* camera, int idx);
+		bool AcquireShadowCubeMap(LightComponent* light, int idx);
 
 		static constexpr unsigned SHADOW_WIDTH = 1024;
 		static constexpr unsigned SHADOW_HEIGHT = 1024;
@@ -64,8 +60,11 @@ namespace Apex::Lighting
 
 		Resources::ResourceHandle<Shader>	m_dirShader;
 		Resources::ResourceHandle<Shader>	m_omniShader;
+
 		Rendering::IRHI*					m_rhi;
 		Rendering::RHIFrameBufferHandle		m_shadowFbo;
+
+		Rendering::RHIUniformBufferHandle	m_lightMatrixBuffer;
 	};
 }
 

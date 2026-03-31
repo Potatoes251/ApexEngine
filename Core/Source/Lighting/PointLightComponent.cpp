@@ -17,7 +17,6 @@ PointLightComponent::PointLightComponent(PointLightComponent const& other)
     m_color = other.m_color;
     m_intensity = other.m_intensity;
     m_radius = other.m_radius;
-    m_lightId = other.m_lightId;
 }
 
 PointLightComponent& PointLightComponent::operator=(PointLightComponent const& other)
@@ -25,7 +24,6 @@ PointLightComponent& PointLightComponent::operator=(PointLightComponent const& o
     m_color = other.m_color;
     m_intensity = other.m_intensity;
     m_radius = other.m_radius;
-    m_lightId = other.m_lightId;
 
     return *this;
 }
