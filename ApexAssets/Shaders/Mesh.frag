@@ -196,9 +196,7 @@ vec3 CalcDirectionalLight(DirLight light, vec3 diffuseTex, vec3 specTex)
 	if (light.param.y >= 0)
 		shadow = ShadowCalculation(light); 
 
-	shadow = 1 - shadow;
-
-	vec3 result = ambient * shadow * 0.5 + (diffuse + specular) * shadow;
+	vec3 result = ambient * (1 - (shadow * 0.5)) + (diffuse + specular) * (1 - shadow);
 
 	return result * light.param.x;
 }
@@ -232,9 +230,7 @@ vec3 CalcPointLight(PointLight light, vec3 diffuseTex, vec3 specTex)
 	if (light.param.y >= 0)
 		shadow = ShadowCalculation(light); 
 
-	shadow = 1 - shadow;
-
-	vec3 result = ambient * shadow + diffuse + specular;
+	vec3 result = ambient * (1 - (shadow * 0.25)) + (diffuse + specular) * (1 - shadow);
 
 	return result * light.param.x;
 }
@@ -267,9 +263,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 diffuseTex, vec3 specTex)
 	if (light.param.y >= 0)
 		shadow = ShadowCalculation(light); 
 
-	shadow = 1 - shadow;
-
-	vec3 result = ambient * shadow * 0.5 + (diffuse + specular) * shadow;
+	vec3 result = ambient * (1 - (shadow * 0.25)) + (diffuse + specular) * (1 - shadow);
 
 	return result * light.param.x;
 }

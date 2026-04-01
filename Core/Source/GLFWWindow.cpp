@@ -91,7 +91,6 @@ namespace Apex::Windowing
     void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
     void GLFWWindow::Clear()
     {
-        glClearColor(1.1f, 1.1f, 1.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
     void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }

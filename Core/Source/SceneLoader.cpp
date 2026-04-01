@@ -283,9 +283,19 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.ParseString(); 
             parser.Expect(':');
             float intensity = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float distance = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float extent = parser.ParseFloat();
 
             auto& comp = obj->AddComponent<Apex::Lighting::DirectionalLightComponent>(
-                LibMath::Vector3{ xColor, yColor, zColor }, intensity);
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, distance, extent);
             comp.SetEnabled(enabled);
         }
         else if (compName == "SpotLight")

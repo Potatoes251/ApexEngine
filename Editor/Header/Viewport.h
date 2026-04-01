@@ -50,7 +50,6 @@ namespace Apex::Editor
 	private:
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
-		bool				IsOnGizmo(double mouseX, double mouseY);
 		void				PerformPicking(LibMath::Vector2 mousePos);
 
 		LibMath::Vector3	GetAxis();

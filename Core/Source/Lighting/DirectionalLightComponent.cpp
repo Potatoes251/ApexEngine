@@ -30,8 +30,8 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
         << m_color[0] << ", "
         << m_color[1] << ", "
         << m_color[2] << "],\n";
-    out << "        \"intensity\": " << m_intensity << "\n";
-    out << "        \"shadowDistance\": " << m_shadowDistance << "\n";
+    out << "        \"intensity\": " << m_intensity << ",\n";
+    out << "        \"shadowDistance\": " << m_shadowDistance << ",\n";
     out << "        \"shadowExtent\": " << m_shadowExtents << "\n";
 
     out << "      }";

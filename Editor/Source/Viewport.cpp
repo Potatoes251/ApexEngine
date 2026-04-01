@@ -168,36 +168,37 @@ int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 	return m_rhi->GetPixelData((int)fboX, (int)fboY);
 }
 
-bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
-{
-	if (!m_selectedObject) return false;
-
-	LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
-	m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode, 
-		center, m_camera.GetViewProj(), m_panelPos, m_panelSize);
-
-	if (m_selectedAxis == Axis::None) return false;
-
-	m_initialTransform = m_selectedObject->GetGlobalTransform();
-
-	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, m_camera.GetViewProj(), m_panelPos, m_panelSize);
-	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint)) return false;
-	
-	if (m_currentGizmoMode != GizmoMode::Rotation)
-	{
-		m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
-	}
-	return true;
-}
-
 void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 {
 	if (!m_pickingshader.IsReady()) return;
 
-	if (IsOnGizmo(mousePos[0], mousePos[1])) return;
-
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
 	m_rhi->Clear();
+
+	LibMath::Matrix4 view = m_camera.GetViewMatrix();
+	LibMath::Matrix4 proj = m_camera.GetProjection();
+	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true);
+
+	int id = GetMousePixelInFbo(mousePos[0], mousePos[1]);
+
+	if (id >= static_cast<int>(Axis::X) && id < static_cast<int>(Axis::None))
+	{
+		m_selectedAxis = static_cast<Axis>(id);
+
+		LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
+
+		m_initialTransform = m_selectedObject->GetGlobalTransform();
+
+		if (m_currentGizmoMode != GizmoMode::Rotation)
+		{
+			m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
+		}
+
+		m_rhi->UnBindFrameBuffer();
+		return;
+	}
+
+	m_selectedAxis = Axis::None;
 
 	RenderPassInfo picking;
 	picking.m_aspectRatio = m_width / m_height;
@@ -334,9 +335,6 @@ void Viewport::Draw()
 {
 	float aspectRatio = m_width / m_height;
 
-	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjection();
-
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
@@ -373,7 +371,10 @@ void Viewport::Draw()
 	{
 		if (m_showGrid) DrawGrid();
 		m_rhi->ClearDepth();
-		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
+
+		LibMath::Matrix4 view = m_camera.GetViewMatrix();
+		LibMath::Matrix4 proj = m_camera.GetProjection();
+		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false);
 	}
 	m_rhi->UnBindFrameBuffer();
 

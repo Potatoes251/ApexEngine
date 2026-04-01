@@ -9,7 +9,8 @@ namespace Apex::Lighting
 	{
 	public:
 		DirectionalLightComponent() = default;
-		DirectionalLightComponent(LibMath::Vector3 color, float intensity) : LightComponent(color, intensity) {}
+		DirectionalLightComponent(LibMath::Vector3 color, float intensity, float shadowDistance, float shadowExtent) 
+			: LightComponent(color, intensity), m_shadowDistance(shadowDistance), m_shadowExtents(shadowExtent) {}
 		~DirectionalLightComponent() = default;
 		DirectionalLightComponent(DirectionalLightComponent const&);
 		DirectionalLightComponent& operator=(DirectionalLightComponent const& other);

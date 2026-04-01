@@ -37,21 +37,23 @@
       },
       "SpotLight": {
         "enabled": true,
-        "color": [-436.031006, 321.148987, -785.901001],
+        "color": [0.000000, 1.000000, 0.000000],
         "intensity": 0.000000,
         "innerCutOff": 4.386000,
         "outerCutOff": 5.405000
       },
       "PointLight": {
         "enabled": true,
-        "color": [1.000000, -383.812012, 1.000000],
+        "color": [1.000000, 0.000000, 1.000000],
         "intensity": 4.830000,
         "radius": 10.000000
       },
       "DirectionalLight": {
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
-        "intensity": 10.000000
+        "intensity": 10.000000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
       }
     }
   },
