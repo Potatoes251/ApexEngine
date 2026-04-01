@@ -26,6 +26,7 @@ namespace Apex::Lighting
 		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera* camera) const override;
 	private:
 		float m_shadowDistance = 25.f;
+		float m_shadowExtents = 10.f;
 	};
 }
 

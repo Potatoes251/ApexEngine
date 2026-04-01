@@ -31,6 +31,8 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
         << m_color[1] << ", "
         << m_color[2] << "],\n";
     out << "        \"intensity\": " << m_intensity << "\n";
+    out << "        \"shadowDistance\": " << m_shadowDistance << "\n";
+    out << "        \"shadowExtent\": " << m_shadowExtents << "\n";
 
     out << "      }";
 }
@@ -40,7 +42,7 @@ std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
     exposedVec.push_back({ "Shadow distance", ExposedVar::Float, &m_shadowDistance });
-
+    exposedVec.push_back({ "Shadow extent", ExposedVar::Float, &m_shadowExtents });
 
     return exposedVec;
 }
@@ -56,7 +58,7 @@ void DirectionalLightComponent::FillGpuData(void* data_out)
 
 LibMath::Matrix4 DirectionalLightComponent::GetProjMatrix() const
 {
-    return LibMath::Matrix4::orthogonal(-10.0f, 10.0f, -10.0f, 10.0f, .1f, m_shadowDistance * 2.f);
+    return LibMath::Matrix4::orthogonal(-m_shadowExtents, m_shadowExtents, -m_shadowExtents, m_shadowExtents, .1f, m_shadowDistance * 2.f);
 }
 
 std::vector<LibMath::Matrix4> DirectionalLightComponent::GetViewMatrix(Rendering::Camera* camera) const

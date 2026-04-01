@@ -85,7 +85,7 @@ float ShadowCalculation(DirLight light)
 	
 	// fix acne
 	float bias = 0;
-	//bias = max(0.005 * (1.0 - dot(Normal, -light.direction)), 0.0005);
+	bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
 
 	// make shadow smoother
 	float shadow = 0.0;
@@ -119,7 +119,7 @@ float ShadowCalculation(SpotLight light)
 	float texelSize = 1.0 / textureSize(shadowMap[shadowIdx], 0).x;
 	
 	// fix acne
-	//float bias = max(0.005 * (1.0 - dot(Normal, -light.lightDir)), 0.0005);
+	float bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
 
 	// make shadow smoother
 	float shadow = 0.0;
@@ -128,7 +128,7 @@ float ShadowCalculation(SpotLight light)
 	    for(int y = -1; y <= 1; ++y)
 	    {
 	        float pcfDepth = texture(shadowMap[shadowIdx], projCoords.xy + vec2(x, y) * texelSize).r; 
-	        shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
+	        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
 	    }    
 	}
 	shadow /= 9.0;
