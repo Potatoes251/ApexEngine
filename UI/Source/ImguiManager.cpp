@@ -556,6 +556,12 @@ namespace Apex::UserInterface
         return &m_drawListWrapper;
     }
 
+    IDrawList* ImGUIManager::GetBackgroundDrawList()
+    {
+        m_drawListWrapper.Reset(ImGui::GetBackgroundDrawList());
+        return &m_drawListWrapper;
+    }
+
     Vector2 ImGUIManager::GetItemRectMin() const
     {
         ImVec2 v = ImGui::GetItemRectMin();

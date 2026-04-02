@@ -509,7 +509,7 @@ namespace Apex::Editor
                 float localX = origin[0] + col * displayWidth - panelPos[0] + cursorStart[0];
                 float localY = origin[1] + row * displayHeight - panelPos[1] + cursorStart[1];
                 m_gui.SetCursorPos(LibMath::Vector2(localX, localY));
-                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, false);
+                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, true);
             }
         }
     }

@@ -157,6 +157,7 @@ namespace Apex::UserInterface
         void DrawImage(uint32_t textureID, LibMath::Vector2 size, bool flipY = true) override;
         void DrawImageTinted(uint32_t textureID, LibMath::Vector2 size, Color tint, bool flipY = true) override;
         IDrawList* GetDrawList();
+        IDrawList* GetBackgroundDrawList();
         Vector2 GetItemRectMin() const override;
         Vector2 GetItemRectMax() const override;
 
