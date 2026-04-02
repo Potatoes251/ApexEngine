@@ -132,6 +132,9 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
+		if (!passInfo.m_camera) passInfo.m_camera = m_mainCamera;
+
+
 		for (auto& obj : m_objects)
 		{
 			passInfo.m_id++;
@@ -140,7 +143,7 @@ namespace Apex::Rendering
 				continue;
 			renderer->Render(passInfo);
 		}
-		if (passInfo.m_flags & RenderSkybox)
+		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)
 		{
 			LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
 			view[3][0] = 0;

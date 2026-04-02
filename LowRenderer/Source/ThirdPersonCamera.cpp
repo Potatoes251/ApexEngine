@@ -12,6 +12,28 @@ ThirdPersonCamera::ThirdPersonCamera(LibMath::Vector3 target, float distance)
 	m_distance = distance;
 }
 
+ThirdPersonCamera::ThirdPersonCamera(ThirdPersonCamera const& other)
+{
+	m_target = other.m_target;
+	m_distance = other.m_distance;
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+}
+
+ThirdPersonCamera& Apex::Rendering::ThirdPersonCamera::operator=(ThirdPersonCamera const& other)
+{
+	m_target = other.m_target;
+	m_distance = other.m_distance;
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+
+	return *this;
+}
+
 void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 {
 	m_yaw += LibMath::Degree((float)dx * sensitivity);
@@ -19,6 +41,11 @@ void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 	m_pitch = LibMath::Degree(LibMath::clamp(m_pitch.raw(), -89.f, 89.f));
 
 	m_dirty = true;
+}
+
+std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
+{
+	return { { "distance to target" ,Apex::ExposedVar::Float, &m_distance } };
 }
 
 void ThirdPersonCamera::UpdateMatrices()

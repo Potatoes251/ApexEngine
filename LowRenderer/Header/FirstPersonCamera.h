@@ -9,6 +9,8 @@ namespace Apex::Rendering
 	{
 	public:
 		FirstPersonCamera(LibMath::Vector3 position = LibMath::Vector3(0.f, 0.f, 10.f));
+		FirstPersonCamera(FirstPersonCamera const& other);
+		FirstPersonCamera& operator=(FirstPersonCamera const& other);
 
 		void ProcessKeyboard(bool moveForward, bool moveBackward,
 			bool moveLeft, bool moveRight,
@@ -21,6 +23,12 @@ namespace Apex::Rendering
 
 		void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) override;
 		void ProcessScroll(double yoffset);
+
+		const char* GetTypeName() const override { return "FirstPersonCamera"; }
+		void Serialize(std::ostream& out) const override {}
+		std::vector<ExposedVar> GetExposedVariables() override;
+
+		std::unique_ptr<Component> Clone() const override { return std::make_unique<FirstPersonCamera>(*this); }
 
 	private:
 		void UpdateVectors();

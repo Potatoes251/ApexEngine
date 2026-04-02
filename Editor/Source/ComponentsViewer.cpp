@@ -7,6 +7,8 @@
 #include "Rigidbody.h"
 #include "ScriptComponent.h"
 #include "Lighting/Lights.h"
+#include "FirstPersonCamera.h"
+#include "ThirdPersonCamera.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -96,6 +98,16 @@ void ComponentsViewer::Draw()
 		if (m_gui.MenuItem("Spot Light"))
 		{
 			m_selectedObj->AddComponent<SpotLightComponent>();
+		}
+
+		if (m_gui.MenuItem("First Person Camera"))
+		{
+			m_selectedObj->AddComponent<FirstPersonCamera>();
+		}
+
+		if (m_gui.MenuItem("Third Person Camera"))
+		{
+			m_selectedObj->AddComponent<ThirdPersonCamera>();
 		}
 
 		m_gui.EndPopup();

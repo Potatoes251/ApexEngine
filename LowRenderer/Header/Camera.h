@@ -4,9 +4,11 @@
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
 
+#include "../../Resources/Header/Component.h"
+
 namespace Apex::Rendering
 {
-	class Camera
+	class Camera : public Component
 	{
 	public:
 		Camera(LibMath::Vector3 position = LibMath::Vector3(0.f, 0.f, 10.f));
@@ -38,7 +40,7 @@ namespace Apex::Rendering
 		LibMath::Degree m_pitch = LibMath::Degree(0.f);
 		LibMath::Degree m_yaw = LibMath::Degree(-90.f);
 
-		float m_speed = 2.5f;
+		float			m_speed = 2.5f;
 
 		bool			m_dirty = true;
 	private:

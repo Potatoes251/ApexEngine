@@ -10,7 +10,6 @@ namespace Apex::Rendering
 {
     class IRHI;
     class Scene;
-    class FirstPersonCamera;
 }
 namespace Apex::Windowing
 {
@@ -57,9 +56,8 @@ namespace Apex
         void Tick();
         void LoadScene();
         void ProcessInput();
-        // default rendering pass
-        void Render(Rendering::Camera* cam);
-        void Render(Rendering::RenderPassInfo pass);
+
+        void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -73,7 +71,6 @@ namespace Apex
     private:
         bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
-        bool InitCamera();
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
@@ -99,7 +96,6 @@ namespace Apex
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 
         Windowing::IWindow* m_window = nullptr;
-        std::unique_ptr<Rendering::FirstPersonCamera> m_camera;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;

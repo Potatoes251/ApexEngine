@@ -13,6 +13,7 @@
 #include "Skybox.h"
 
 #include "Lighting/VisibleLights.h"
+#include "Camera.h"
 
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
@@ -44,6 +45,8 @@ namespace Apex::Rendering
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
+		Camera* GetCamera() const { return m_mainCamera; }
+
 		void InsertBefore(Object* dragged, Object* target);
 		void InsertAfter(Object* dragged, Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
@@ -54,6 +57,8 @@ namespace Apex::Rendering
 
 		std::vector<std::unique_ptr<Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
+
+		Camera* m_mainCamera = nullptr;
 	};
 }
 
