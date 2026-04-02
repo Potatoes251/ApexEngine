@@ -20,17 +20,19 @@ using std::unordered_map;
 
 struct BoneInfo
 {
-	int parentIndex;
-	Matrix4 offsetMatrix;
+	int			m_parentIndex;
+	Matrix4		m_offsetMatrix;
 };
 
 struct KeyFrame
 {
 public:
+	//default local
 	Vector3		m_position;
 	Quaternion	m_rotation;
 	Vector3		m_scale;
 
+	//global
 	Matrix4		m_matrix;
 };
 
@@ -64,7 +66,7 @@ public:
 
 	GLsizei GetIndexCount()  const { return m_indexCount; }
 
-	std::vector<BoneInfo>			m_bones;		//offsetMatrix | inverse bind pose
+	std::vector<BoneInfo>			m_bones;		//m_offsetMatrix | inverse bind pose
  	unordered_map<std::string, int> m_boneMap;
 	std::vector<Animation>			m_animations;
 

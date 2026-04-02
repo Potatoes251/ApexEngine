@@ -137,11 +137,10 @@ bool Apex::Application::InitAnimation()
 {
     m_animationMesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/Withered_Freddy.fbx");
     m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkinningVert.glsl|Assets/Shaders/SkinningFrag.glsl");
-    //m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
 
     m_animator = std::make_shared<Apex::Rendering::Animator>(m_animationMesh, m_animationShader, 30.f);
 
-    m_animator->Play(16);
+    m_animator->PlayRepeat(8);
     
     return true;
 }

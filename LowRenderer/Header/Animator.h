@@ -15,13 +15,6 @@ using std::vector;
 
 namespace Apex::Rendering
 {
-	enum AnimatorState
-	{
-		WAITING_FOR_LOADED_RESSOURCE,
-		PLAY_NO_ANIMATION,
-		PLAY_SINGLE_ANIMATION
-	};
-
 	class Animator
 	{
 	public:
@@ -39,35 +32,66 @@ namespace Apex::Rendering
 		//during update
 		void Update(float deltaTime);
 
-		void Play(int animationIndex);
+		void Stop();
+
+		void PlayRepeat(int animationIndex);													//Play_single_animation_repeat
+		void PlayRepeatInterpolated(int animationIndex);										//Play_single_animation_repeat_interpolated
+		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);		//Play_cross_fade_animation
 
 	private:
+		enum AnimatorState
+		{
+			//Play + animation type + repeat or once? + interpolated?
 
-		void ExtractTransforms(vector<KeyFrame>& keyframe_out, const Animation& animation, int currentFrame);
-		void ConvertSkeletonToMatrix(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform);
+			Waiting_for_loaded_ressources,
+			Play_no_animation,
+			Play_single_animation_repeat,
+			Play_single_animation_repeat_interpolated,
+			Play_cross_fade_animation
+		};
 
-		void SendSkeletonToGPU(vector<Matrix4>& skeletonMatrix);
+		void WaitForResourcesToBeLoaded();
 
-		void PlaySingleAnimation();
+		//help
+		void ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame);
+		void GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& localSkeleton);
+		void ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform);
+		void InterlopeSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t);
 
-		AnimatorState			m_state = WAITING_FOR_LOADED_RESSOURCE;
-		AnimatorState			m_nextState = WAITING_FOR_LOADED_RESSOURCE;
-		int						m_animationIndex = -1;
+		//gpu
+		void SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix);
 
+		//animations
+		void PlaySingleAnimation(float deltaTime);						//Play_single_animation_repeat
+		void PlaySingleAnimationInterpolated(float deltaTime);			//Play_single_animation_repeat_interpolated
+		void PlayCrossFadeAnimation(float deltaTime);	//Play_cross_fade_animation
+
+		//
+		AnimatorState			m_state = Waiting_for_loaded_ressources;
+		AnimatorState			m_nextState = Play_no_animation;
+		int						m_animationIndexA = -1;
+		int						m_animationIndexB = -1;
+
+		//shadder
 		ResourceHandle<Shader>	m_shader;
+
+		//speed
 		float					m_fps = 30.f;
 
+		//mesh infos
 		ResourceHandle<Mesh>	m_mesh;
 		int						m_boneCount = 0;
-
+		
+		//elapse times
 		float					m_timeA = 0.0f;
-		float					m_timeB = 0.0f;
 
+		//animations
 		const Animation*		m_animationA = nullptr; //in cross fade, the original animation
 		const Animation*		m_animationB = nullptr;	//in cross fade, the next animation
 
-		bool					m_crossFade = false;
-		bool					m_layerBlend = false;
+		//cross fade
+		float					m_crossFadeDuration = 0.f;
+		float					m_crossFadeElapseTime = 0.f;
 	};
 }
 
