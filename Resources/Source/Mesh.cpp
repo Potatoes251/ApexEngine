@@ -16,6 +16,15 @@ void Mesh::LoadFromFile()
 {
 	MeshImporter importer;
 	importer.Import(m_path, *this);
+
+	for (const auto& v : m_vertices)
+	{
+		for (int c = 0; c < 3; ++c)
+		{
+			if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
+			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
+		}
+	}
 }
 
 void Mesh::UploadToGpu()
@@ -26,28 +35,16 @@ void Mesh::UploadToGpu()
 		return;
 	}
 
+	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
+	m_indexCount = static_cast<uint32_t>(m_indices.size());
+
 	m_VAO = m_rhi->CreateVAO();
 	m_rhi->BindVAO(m_VAO);
 
-	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertices.size() * sizeof(Vertex));
-	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indices.size() * sizeof(int));
+	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertexCount * sizeof(Vertex));
+	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indexCount * sizeof(int));
 
 	m_rhi->SetupVertexLayout();
-
-	m_indexCount = static_cast<uint32_t>(m_indices.size());
-	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
-
-	// Compute AABB now while vertices are still in CPU memory
-	m_boundsMin = { 1e9f,  1e9f,  1e9f };
-	m_boundsMax = { -1e9f, -1e9f, -1e9f };
-	for (const auto& v : m_vertices)
-	{
-		for (int c = 0; c < 3; ++c)
-		{
-			if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
-			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
-		}
-	}
 }
 
 void Mesh::ClearVertices()

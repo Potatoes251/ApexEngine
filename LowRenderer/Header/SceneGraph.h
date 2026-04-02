@@ -23,31 +23,33 @@ namespace Apex::SceneGraph
 		SceneNode&						operator=(const SceneNode& other) = delete;
 
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
-		SceneNode*	GetParent() const;
+		std::shared_ptr<SceneNode> const& GetParent() const;
 		Object*		GetParentObj() const;
 		Object*		GetObject() const;
 
-		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a unique pointer, to use children use ' .get() ' on each children
+		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a shared pointer, to use children use ' .get() ' on each children
 		void		AddChild(shared_ptr<SceneNode> child);
-		void		DestroyChild(SceneNode* child);
+		void		DestroyChild(std::shared_ptr<SceneNode> const& child);
 
 		void		Destroy();
+		void		SetParent(std::shared_ptr<SceneNode> const& newParent);
 		void		SetParent(SceneNode* newParent);
 		void		MarkDirty();
 		bool		IsDirty() const;
 		void		CleanDirty();
 		
-		bool		IsDescendantOf(SceneNode& otherNode);
+		bool		IsDescendantOf(std::shared_ptr<SceneNode> const& otherNode) const;
+		bool		IsDescendantOf(SceneNode* otherNode) const;
 
-		void		InsertBefore(SceneNode* other);
-		void		InsertAfter(SceneNode* other);
+		void		InsertBefore(std::shared_ptr<SceneNode> const& other);
+		void		InsertAfter(std::shared_ptr<SceneNode> const& other);
 	private:
 
 		bool							m_dirty = true;
 
 		Object*							m_object;
 
-		SceneNode*						m_parent = nullptr;	
+		std::shared_ptr<SceneNode>		m_parent;
 		vector<shared_ptr<SceneNode>>	m_children;
 	};
 }

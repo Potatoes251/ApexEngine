@@ -15,6 +15,7 @@
 
 namespace Apex::Rendering
 {
+	using RHIUniformBufferHandle = uint32_t;
 	using RHIFrameBufferHandle = uint32_t;
 	using RHIBufferHandle = uint32_t;
 	using RHIVAOHandle = uint32_t;
@@ -41,6 +42,7 @@ namespace Apex::Rendering
 	{
 		std::string vertexPath;
 		std::string fragmentPath;
+		std::string geometryPath;
 	};
 	// ── RHI abstract interface ────────────────────────────────────
 	class IRHI
@@ -64,20 +66,31 @@ namespace Apex::Rendering
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				DeleteBuffer(RHIBufferHandle buffer) = 0;
 		
-		virtual RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) = 0;
-		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) = 0;
+		virtual RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) = 0;
+		virtual RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) = 0;
+		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) = 0;
 		virtual void					UnBindFrameBuffer() = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 		virtual int						GetPixelData(int x, int y) = 0;
 
+		virtual RHIUniformBufferHandle	CreateUniformBuffer(unsigned int bindingPoint, size_t sizeBytes) = 0;
+		virtual void					BindUniformBuffer(RHIUniformBufferHandle buffer, size_t sizeBytes, void* data) = 0;
+		virtual void					DeleteUniformBuffer(RHIUniformBufferHandle buffer) = 0;
+
 		// Textures
 		virtual RHITextureHandle	CreateTexture(const TextureDescription& desc) = 0;
 		virtual RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) = 0;
+		virtual RHITextureHandle	CreateShadowMap(unsigned width, unsigned height) = 0;
+		virtual RHITextureHandle	CreateShadowCubeMap(unsigned width, unsigned height) = 0;
+		virtual void				AttachDepthTexture(RHITextureHandle depthTexture) = 0;
+		virtual void				AttachDepthCubeTexture(RHITextureHandle depthTexture) = 0;
 		virtual void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) = 0;
+		virtual void				BindTextureCube(RHITextureHandle texture, uint32_t unit = 0) = 0;
 		virtual void				DeleteTexture(RHITextureHandle texture) = 0;
 
 		// Shaders
 		virtual RHIShaderHandle		CreateShader(const ShaderSource& source) = 0;
+		virtual RHIShaderHandle		CreateShaderGeo(const ShaderSource& source) = 0;
 		virtual void				BindShader(RHIShaderHandle shader) = 0;
 		virtual void				DeleteShader(RHIShaderHandle shader) = 0;
 
@@ -86,10 +99,12 @@ namespace Apex::Rendering
 		virtual void SetUniformFloat(RHIShaderHandle program, const std::string& name, float value) = 0;
 		virtual void SetUniformVec3(RHIShaderHandle program, const std::string& name, const LibMath::Vector3& vec) = 0;
 		virtual void SetUniformMat4(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
+		virtual void SetUniformMat4Array(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix, int count) = 0;
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;
 		virtual void SetupVector3Layout() = 0;
+		virtual void DrawEmpty() = 0;
 		virtual void DrawIndexed(uint32_t indexCount) = 0;
 		virtual void DrawArrays(uint32_t vertexCount) = 0;
 		virtual void DrawLineArrays(uint32_t vertexCount) = 0;

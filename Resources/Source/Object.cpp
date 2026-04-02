@@ -38,7 +38,6 @@ std::unique_ptr<Object> Object::Clone()
 	std::unique_ptr<Object> clone = std::make_unique<Object>();
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
-	clone->SetGlobalTransform(m_globalTransform);
 
 	for (auto* comp : GetComponents())
 	{
@@ -54,14 +53,15 @@ std::unique_ptr<Object> Object::Clone()
 		clone->AddComponentDirect(std::move(newComp));
 	}
 
-	SceneNode* originalNode = GetSceneNodeRaw();
-	SceneNode* cloneNode = clone->GetSceneNodeRaw();
-	for (auto& child : originalNode->GetChildren())
+	std::shared_ptr<SceneNode> cloneNode = clone->GetSceneNode();
+	for (auto& child : m_owner->GetChildren())
 	{
 		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
 		if (childClone)
 			cloneNode->AddChild(childClone->GetSceneNode());
 	}
+
+	//clone->SetOnChangedCallback(m_onChanged);
 
 	return clone;
 }
@@ -88,11 +88,6 @@ void Apex::Data::Object::SetName(std::string name)
 	OnChanged();
 }
 
-Transform& Object::GetLocalTransform()
-{
-	return m_localTransform;
-}
-
 const Transform& Object::GetLocalTransform() const
 {
 	return m_localTransform;
@@ -114,6 +109,7 @@ void Object::UpdateGlobalTransform()
 	if (!parent) 
 	{
 		m_globalTransform = m_localTransform;
+		m_owner->CleanDirty();
 		return;
 	}
 

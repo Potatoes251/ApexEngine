@@ -85,7 +85,7 @@ namespace Apex::Audio
     {
         if (!m_engine) return INVALID_SOUND;
 
-		const std::string path = "Assets/Sounds/" + filePath;
+		const std::string path = filePath;
 
         irrklang::ISound* sound = m_engine->play2D(
             path.c_str(),
@@ -109,7 +109,7 @@ namespace Apex::Audio
 
         irrklang::vec3df pos(position[0], position[1], position[2]);
 
-		const std::string path = "Assets/Sounds/" + filePath;
+		const std::string path = filePath;
 
         irrklang::ISound* sound = m_engine->play3D(
             path.c_str(),
@@ -158,6 +158,48 @@ namespace Apex::Audio
     {
         irrklang::ISound* sound = GetSound(handle);
         return sound && !sound->isFinished() && sound->getIsPaused();
+    }
+
+    float IrrKlangAudio::GetPlayPosition(SoundHandle handle) const
+    {
+        irrklang::ISound* sound = GetSound(handle);
+        if (!sound) return 0.f;
+        return static_cast<float>(sound->getPlayPosition()) / 1000.f; // divide by 1000 because it's in milliseconds
+    }
+
+    float IrrKlangAudio::GetDuration(SoundHandle handle) const
+    {
+        irrklang::ISound* sound = GetSound(handle);
+        if (!sound) return 0.f;
+        irrklang::ISoundSource* source = sound->getSoundSource();
+        if (!source) return 0.f;
+        return static_cast<float>(source->getPlayLength()) / 1000.f; // divide by 1000 because it's in milliseconds
+    }
+
+    std::vector<float> IrrKlangAudio::GetSampleData(const std::string& filePath) const
+    {
+        if (!m_engine) return {};
+
+        irrklang::ISoundSource* source = m_engine->getSoundSource(filePath.c_str(), true);
+        if (!source) return {};
+
+        irrklang::SAudioStreamFormat format = source->getAudioFormat();
+        irrklang::ik_s16* raw = static_cast<irrklang::ik_s16*>(source->getSampleData());
+        if (!raw) return {};
+
+        int totalSamples = format.FrameCount * format.ChannelCount;
+        std::vector<float> result;
+        result.reserve(totalSamples / format.ChannelCount);
+
+        for (int i = 0; i < totalSamples; i += format.ChannelCount)
+        {
+            // Convert 16-bit signed integer (-32768 to 32767) to float range (-1.0 to 1.0).
+            // 32768 is 2^15, the standard divisor for normalizing 16-bit PCM audio.
+            result.push_back(raw[i] / 32768.f);
+        }
+            
+
+        return result;
     }
 
     // ── Listener ─────────────────────────────────────────────────────

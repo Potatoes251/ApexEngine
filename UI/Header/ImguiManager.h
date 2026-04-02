@@ -72,7 +72,7 @@ namespace Apex::UserInterface
         LibMath::Vector2 GetPanelPos()      const override;
         LibMath::Vector2 GetPanelSize()     const override;
 
-        void BeginPanel(const std::string& title, bool dock, bool* open) override;
+        void BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar) override;
         void EndPanel() override;
 
         void BeginChildPanel(const std::string& id,
@@ -141,6 +141,7 @@ namespace Apex::UserInterface
         bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
         bool IsMouseClicked(MouseButton button = MouseButton::Left) const override;
         bool IsWindowHovered() const override;
+        bool IsWindowDocked() const override;
         bool IsAnyItemHovered() const override;
         bool IsDragDropActive() const override;
         const char* GetDragDropPayloadType() const override;

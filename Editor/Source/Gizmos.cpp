@@ -18,21 +18,28 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_cone.SetRhi(rhi);
     m_cylinder.SetRhi(rhi);
     m_circle.SetRhi(rhi);
+    m_thorus.SetRhi(rhi);
+
     CreateCube();
     CreateCone();
     CreateCircle();
+    CreateThorus();
     CreateCylinder();
+
     m_cube.UploadToGpu();
     m_cone.UploadToGpu();
     m_cylinder.UploadToGpu();
     m_circle.UploadToGpu();
+    m_thorus.UploadToGpu();
+
     m_cube.ClearVertices();
     m_cone.ClearVertices();
     m_cylinder.ClearVertices();
     m_circle.ClearVertices();
+    m_thorus.ClearVertices();
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos)
+void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
 {
     if (!object || !m_shader.IsReady()) return;
 
@@ -46,13 +53,13 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	switch (mode)
 	{
 	case GizmoMode::Translation:
-		DrawTranslation(object);
+		DrawTranslation(object, picking, local);
 		break;
 	case GizmoMode::Rotation:
-		DrawRotation(object);
+		DrawRotation(object, picking, local);
 		break;
 	case GizmoMode::Scale:
-		DrawScale(object);
+		DrawScale(object, picking);
 		break;
 	default:
 		assert(false && "Unhandled gizmo mode");
@@ -60,175 +67,197 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	}
 }
 
-Axis Gizmos::IsOnGizmo(
-    LibMath::Vector2 mousePosOnScreen, GizmoMode mode, LibMath::Vector3 worldPos, 
-    LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
+void Gizmos::DrawTranslation(Data::Object* object, bool picking, bool local)
 {
-    switch (mode)
-    {
-    case GizmoMode::Translation:    return IsOnTranslation(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
-    case GizmoMode::Rotation:       return IsOnRotation(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
-    case GizmoMode::Scale:          return IsOnScale(mousePosOnScreen, worldPos, viewProj, panelOffset, panelSize);
-    default:
-        assert(false && "Unhandled gizmo mode");
-        break;
-    }
-    return Axis::None;
+    LibMath::Transform trans = object->GetGlobalTransform();
+    trans.setScale(LibMath::Vector3(1.f));
+
+    if (!local) trans.setRotation(LibMath::Radian(0.f), LibMath::Radian(0.f), LibMath::Radian(0.f));
+
+    LibMath::Matrix4 transMatrix = trans;
+
+    DrawTranslationPlanes(transMatrix, picking);
+    DrawTranslationCenter(transMatrix, picking);
+    DrawTranslationArrows(transMatrix, picking);
 }
 
-void Gizmos::DrawTranslation(Data::Object* object)
+void Gizmos::DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking)
 {
-    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
-
     float planeSize = 0.25f * m_distanceToCamera;
     float planeOffset = planeSize * 0.5f;
     float planeThickness = 0.02f * m_distanceToCamera;
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(planeOffset, planeOffset, 0),
+            LibMath::Vector3(planeOffset, planeOffset, 0),
             { 0,0,1 }, LibMath::Degree(0),
             { planeSize, planeSize, planeThickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,1,0 }); // yellow
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::XY, picking));
         m_cube.Draw();
     }
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(planeOffset, 0, planeOffset),
+            LibMath::Vector3(planeOffset, 0, planeOffset),
             { 0,0,1 }, LibMath::Degree(0),
             { planeSize, planeThickness, planeSize });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,0,1 }); // magenta
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::XZ, picking));
         m_cube.Draw();
     }
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, planeOffset, planeOffset),
+            LibMath::Vector3(0, planeOffset, planeOffset),
             { 0,0,1 }, LibMath::Degree(0),
             { planeThickness, planeSize, planeSize });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,1,1 }); // cyan
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::YZ, picking));
         m_cube.Draw();
     }
+}
+
+void Gizmos::DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking)
+{
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
     constexpr float handleScale = 2.f;
 
-    // central part (WHITE)
+    // (WHITE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, 0),
+            LibMath::Vector3(0, 0, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale * 1.5f, thickness * handleScale * 1.5f, thickness * handleScale * 1.5f });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,1,1 });
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::XYZ, picking));
         m_cube.Draw();
     }
+}
+
+void Gizmos::DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking)
+{
+    float length = 1.0f * m_distanceToCamera;
+    float thickness = 0.05f * m_distanceToCamera;
+    constexpr float handleScale = 2.f;
+
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,0,0 });
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length, 0, 0),
+            LibMath::Vector3(length, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            LibMath::Vector3(0, length * 0.5f, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,1,0 });
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length, 0),
+            LibMath::Vector3(0, length, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            LibMath::Vector3(0, 0, length * 0.5f),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,0,1 });
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length),
+            LibMath::Vector3(0, 0, length),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object)
+void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
 {
-    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+    LibMath::Transform trans = object->GetGlobalTransform();
+    trans.setScale(LibMath::Vector3(1.f));
+
+    if (!local) trans.setRotation(LibMath::Radian(0.f), LibMath::Radian(0.f), LibMath::Radian(0.f));
+    LibMath::Matrix4 transMatrix = trans;
 
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 0,0,1 }, LibMath::Degree(90),
             LibMath::Vector3( 1, 1, 1 ) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,0,0 });
-        m_circle.DrawLineLoop();
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
+
+        if (picking)    m_thorus.Draw();
+        else            m_circle.DrawLineLoop();
     }
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 0,1,0 }, LibMath::Degree(0),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,1,0 });
-        m_circle.DrawLineLoop();
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
+
+        if (picking)    m_thorus.Draw();
+        else            m_circle.DrawLineLoop();
     }
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 1,0,0 }, LibMath::Degree(-90),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,0,1 });
-        m_circle.DrawLineLoop();
+        m_shader->SetUniform("uModel", transMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
+
+        if (picking)    m_thorus.Draw();
+        else            m_circle.DrawLineLoop();
     }
 }
 
-void Gizmos::DrawScale(Data::Object* object)
+void Gizmos::DrawScale(Data::Object* object, bool picking)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+
+    LibMath::Transform transform = object->GetGlobalTransform();
+    transform.setScale(LibMath::Vector3(1.f));
+    LibMath::Matrix4 transformMatrix = transform;
 
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
@@ -237,245 +266,100 @@ void Gizmos::DrawScale(Data::Object* object)
     // central part (WHITE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, 0),
+            LibMath::Vector3(0, 0, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,1,1 });
+        m_shader->SetUniform("uModel", transformMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::XYZ, picking));
         m_cube.Draw();
     }
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 1,0,0 });
+        m_shader->SetUniform("uModel", transformMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length, 0, 0),
+            LibMath::Vector3(length, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            LibMath::Vector3(0, length * 0.5f, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,1,0 });
+        m_shader->SetUniform("uModel", transformMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length, 0),
+            LibMath::Vector3(0, length, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            LibMath::Vector3(0, 0, length * 0.5f),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
-        m_shader->SetUniform("uColor", { 0,0,1 });
+        m_shader->SetUniform("uModel", transformMatrix * model);
+        m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length),
+            LibMath::Vector3(0, 0, length),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
 }
 
-bool PointInQuad(LibMath::Vector2 p,
-    LibMath::Vector2 a,
-    LibMath::Vector2 b,
-    LibMath::Vector2 c)
+LibMath::Vector3 Gizmos::GetColor(Axis axis, bool picking)
 {
-    LibMath::Vector2 ab = b - a;
-    LibMath::Vector2 ac = c - a;
-    LibMath::Vector2 ap = p - a;
-
-    float d1 = ap.dotProduct(ab);
-    float d2 = ap.dotProduct(ac);
-
-    return d1 >= 0 && d2 >= 0 &&
-        d1 <= ab.dotProduct(ab) &&
-        d2 <= ac.dotProduct(ac);
-}
-
-Axis Gizmos::IsOnTranslation(
-    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
-    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
-{
-    const float planeSize = 0.25f * m_distanceToCamera * 1.2f;
-    const float planeOffset = planeSize * 0.5f;
-
-    float mouseRadius = 15.0f * m_distanceToCamera;
-
-    LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
-    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
-
-    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1] }, mouse))
+    if (picking)
     {
-        return Axis::XYZ;
+        int id = static_cast<int>(axis);
+        LibMath::Vector3 color;
+        color[0] = (id >> 16) & 0xFF; // highest byte
+        color[1] = (id >> 8) & 0xFF;  // middle byte
+        color[2] = id & 0xFF;         // lowest byte
+        return color / 255.f;
     }
 
-    struct PlaneAxes
+    switch (axis)
     {
-        LibMath::Vector3 m_a;
-        LibMath::Vector3 m_b;
-        Axis m_axis;
-    };
+    case Apex::Editor::Axis::X:     return LibMath::Vector3(1.0f, 0.0f, 0.0f);
+    case Apex::Editor::Axis::Y:     return LibMath::Vector3(0.0f, 1.0f, 0.0f);
+    case Apex::Editor::Axis::Z:     return LibMath::Vector3(0.0f, 0.0f, 1.0f);
+    case Apex::Editor::Axis::XY:    return LibMath::Vector3(1.0f, 1.0f, 0.0f);
+    case Apex::Editor::Axis::XZ:    return LibMath::Vector3(1.0f, 0.0f, 1.0f);
+    case Apex::Editor::Axis::YZ:    return LibMath::Vector3(0.0f, 1.0f, 1.0f);
+    case Apex::Editor::Axis::XYZ:   return LibMath::Vector3(1.0f, 1.0f, 1.0f);
 
-    PlaneAxes planes[3] =
-    {
-        { {1,0,0}, {0,1,0}, Axis::XY },
-        { {1,0,0}, {0,0,1}, Axis::XZ },
-        { {0,1,0}, {0,0,1}, Axis::YZ }
-    };
-
-    for (const PlaneAxes& plane : planes)
-    {
-        LibMath::Vector3 base = worldPos + (plane.m_a + plane.m_b) * planeOffset;
-
-        LibMath::Vector2 p0 = GetScreenPos(base, viewProj, panelOffset, panelSize);
-        LibMath::Vector2 px = GetScreenPos(base + plane.m_a * planeSize, viewProj, panelOffset, panelSize);
-        LibMath::Vector2 py = GetScreenPos(base + plane.m_b * planeSize, viewProj, panelOffset, panelSize);
-
-        if (PointInQuad(mousePosOnScreen, p0, px, py))
-            return plane.m_axis;
+    case Apex::Editor::Axis::None:
+    default:
+        assert(false && "Unhandled axis type");
+        break;
     }
-
-    float axisLength = 1.0f * m_distanceToCamera;
-
-    const LibMath::Vector3 axes[3] = {
-    { axisLength, 0, 0 },
-    { 0, axisLength, 0 },
-    { 0, 0, axisLength }
-    };
-
-    for (int i = 0; i < 3; ++i)
-    {
-        LibMath::Vector2 endPos = GetScreenPos(worldPos + axes[i], viewProj, panelOffset, panelSize);
-        LibMath::Line2D line(LibMath::Point2D(screenCenter[0], screenCenter[1]),
-            LibMath::Point2D(endPos[0], endPos[1]));
-
-        if (LibMath::colisionLineCircle(line, mouse))
-        {
-            return static_cast<Axis>(i);
-        }
-    }
-
-    return Axis::None;
-}
-
-Axis Gizmos::IsOnRotation(
-    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
-    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
-{
-    float axisLength = 1.0f * m_distanceToCamera;
-
-    float tolerance = 0.15f * axisLength;
-
-    LibMath::Line3D ray = ScreenToWorldRay(mousePosOnScreen, viewProj, panelOffset, panelSize);
-
-    LibMath::Vector3 hit;
-
-    const LibMath::Vector3 axes[3] = {
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    };
-
-    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
-    LibMath::Circle mouseCircle(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), 15.0f * m_distanceToCamera);
-
-    for (int i = 0; i < 3; ++i)
-    {
-        LibMath::Plane plane(axes[i], -worldPos[i]);
-
-        // circle is almost a line
-        if (std::fabs((ray.getDirection().dot(axes[i]))) < 0.05f)
-        {
-            LibMath::Vector3 tangent;
-
-            if (i == 0) tangent = { 0,1,0 };
-            if (i == 1) tangent = { 1,0,0 };
-            if (i == 2) tangent = { 1,0,0 };
-            // Use simple 2D line-circle collision instead
-            LibMath::Vector2 startPos = GetScreenPos(worldPos - tangent * axisLength, viewProj, panelOffset, panelSize);
-            LibMath::Vector2 endPos = GetScreenPos(worldPos + tangent * axisLength, viewProj, panelOffset, panelSize);
-            LibMath::Line2D axisLine(LibMath::Point2D(startPos[0], startPos[1]), LibMath::Point2D(endPos[0], endPos[1]));
-
-            if (LibMath::colisionLineCircle(axisLine, mouseCircle))
-                return static_cast<Axis>(i);
-            continue;
-        }
-
-        if (LibMath::intersectionRayPlane(ray, plane, hit))
-        {
-            if (std::fabs(hit.distanceFrom(worldPos) - axisLength) < tolerance)
-            {
-                return static_cast<Axis>(i);
-            }
-        }
-    }
-
-    return Axis::None;
-}
-
-Axis Gizmos::IsOnScale(
-    LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
-    LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const
-{
-    float axisLength = 1.0f * m_distanceToCamera;
-    float mouseRadius = 15.0f * m_distanceToCamera;
-
-    LibMath::Circle mouse(LibMath::Point2D(mousePosOnScreen[0], mousePosOnScreen[1]), mouseRadius);
-    LibMath::Vector2 screenCenter = GetScreenPos(worldPos, viewProj, panelOffset, panelSize);
-
-    if (LibMath::colisionPointCircle({ screenCenter[0], screenCenter[1]}, mouse))
-    {
-        return Axis::XYZ;
-    }
-
-    const LibMath::Vector3 axes[3] = {
-        {axisLength, 0, 0},
-        {0, axisLength, 0},
-        {0, 0, axisLength}
-    };
-
-    for (int i = 0; i < 3; ++i)
-    {
-        LibMath::Vector2 endPos = GetScreenPos(worldPos + axes[i], viewProj, panelOffset, panelSize);
-        LibMath::Line2D line(LibMath::Point2D(screenCenter[0], screenCenter[1]),
-            LibMath::Point2D(endPos[0], endPos[1]));
-
-        if (LibMath::colisionLineCircle(line, mouse))
-        {
-            return static_cast<Axis>(i);
-        }
-    }
-
-    return Axis::None;
 }
 
 void Gizmos::CreateCube()
@@ -642,6 +526,57 @@ void Gizmos::CreateCircle()
         // connect current to next
         m_circle.m_indices.push_back(i);
         m_circle.m_indices.push_back((i + 1) % segments);
+    }
+}
+
+void Gizmos::CreateThorus()
+{
+    constexpr float circleRadius = 1.0f;
+    constexpr float thickness = 0.05f;
+
+    constexpr int ringSegment = 64;
+    constexpr int tubeSegment = 16;
+
+    for (int i = 0; i <= ringSegment; ++i)
+    {
+        float u = (float)i / ringSegment * 2.0f * M_PI;
+
+        for (int j = 0; j <= tubeSegment; ++j)
+        {
+            float v = (float)j / tubeSegment * 2.0f * M_PI;
+
+            float cosU = cos(u);
+            float sinU = sin(u);
+            float cosV = cos(v);
+            float sinV = sin(v);
+
+            float x = (circleRadius + thickness * cosV) * cosU;
+            float y = thickness * sinV;
+            float z = (circleRadius + thickness * cosV) * sinU;
+
+            LibMath::Vector3 pos(x, y, z);
+
+            m_thorus.m_vertices.push_back({ pos });
+        }
+    }
+
+    for (int i = 0; i < ringSegment; ++i)
+    {
+        for (int j = 0; j < ringSegment; ++j)
+        {
+            int a = i * (tubeSegment + 1) + j;
+            int b = (i + 1) * (tubeSegment + 1) + j;
+            int c = (i + 1) * (tubeSegment + 1) + (j + 1);
+            int d = i * (tubeSegment + 1) + (j + 1);
+
+            m_thorus.m_indices.push_back(a);
+            m_thorus.m_indices.push_back(b);
+            m_thorus.m_indices.push_back(d);
+
+            m_thorus.m_indices.push_back(b);
+            m_thorus.m_indices.push_back(c);
+            m_thorus.m_indices.push_back(d);
+        }
     }
 }
 

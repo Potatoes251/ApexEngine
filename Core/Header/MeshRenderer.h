@@ -27,6 +27,7 @@ namespace Apex::Rendering
         void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
         void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
         void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
+        void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
         Apex::Resources::ResourceHandle<Mesh>& GetMesh();
         Apex::Resources::ResourceHandle<Texture>& GetTexture();
@@ -45,6 +46,7 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Shader> m_shader;
         Apex::Resources::ResourceHandle<Texture> m_texture;
+        bool m_castShadow = true;
     };
 }
 

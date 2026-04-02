@@ -31,7 +31,7 @@ namespace Apex::Editor
         m_window->SetCloseCallback([this]()
             {
                 m_window->SetShouldClose(false);
-                if (m_editScene && m_editScene->IsDirty())
+                if (m_app->GetScene() && m_app->GetScene()->IsDirty())
                     m_confirmClosePopup = true;
                 else
                     m_requestClose = true;
@@ -48,83 +48,22 @@ namespace Apex::Editor
 
         if (!m_gui) return false;
 
-        // Create editor scene
-        m_editScene = std::make_unique<Apex::Rendering::Scene>();
+        m_editScene = app.GetScene()->Clone();
 
-        Apex::Resources::ResourceHandle<Cubemap> cubemap = m_app->GetResourceManager()->CreateAsync<Cubemap>(
-            "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
-ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
-ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
-        Apex::Resources::ResourceHandle<Mesh> cube = m_app->GetResourceManager()->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-        Apex::Resources::ResourceHandle<Shader> shader = m_app->GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl");
-
-        auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_app->GetRhi());
-
-        m_editScene->SetSkybox(sk);
-
-        // Load scene
-        SceneLoader loader(*app.GetResourceManager(), *m_editScene->GetPhysic());
-        loader.LoadScene(*m_editScene, "Assets/Scenes/scene.level");
-
-        bool ready = false;
-
-        while (!ready)
-        {
-            ready = true;
-
-            for (auto& objPtr : m_editScene->GetObjects())
-            {
-                Object* obj = objPtr.get();
-
-                if (auto* renderer = obj->GetComponent<MeshRenderer>())
-                {
-                    auto& mesh = renderer->GetMesh();
-
-                    if (!mesh.IsReady())
-                        ready = false;
-                }
-
-                if (auto* collider = obj->GetComponent<MeshCollider>())
-                {
-                    auto mesh = collider->GetMesh();
-
-                    if (!mesh.IsReady())
-                        ready = false;
-                }
-            }
-
-            m_app->GetResourceManager()->ProcessGpuUploads();
-        }
-
-        // Init physics
-        for (auto& objPtr : m_editScene->GetObjects())
-        {
-            Object* obj = objPtr.get();
-
-            auto* body = obj->GetComponent<RigidBodyComponent>();
-            auto* collider = obj->GetComponent<Collider>();
-
-            if (body && collider)
-                m_editScene->GetPhysic()->CreateActor(*collider, *body);
-        }
-
-        // Give scene to Application
-        m_app->SetScene(m_editScene.get());
-
-        m_editScene->ClearDirty();
+        app.GetScene()->ClearDirty();
 
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
-            *m_editScene,
+            *app.GetScene(),
             *m_app->GetResourceManager(),
-            *m_editScene->GetPhysic(),
+            *app.GetScene()->GetPhysic(),
             *m_app->GetLuaManager()
         );
 
         m_hierarchy = std::make_unique<Hierarchy>(
             *m_gui,
-            m_editScene.get(),
+            app.GetScene(),
             m_componentsViewer.get(),
             *m_window
         );
@@ -132,18 +71,14 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         m_viewport = std::make_unique<Viewport>(
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"),
             app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"),
-            m_editScene.get(),
             app.GetRhi(),
             m_gui.get(),
             this
         );
+        m_viewport->SetHierarchy(m_hierarchy.get());
+        m_hierarchy->SetViewport(m_viewport.get());
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
-
-        m_viewport = std::make_unique<Viewport>(
-            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GizmoVert.glsl|ApexAssets/Shaders/GizmoFrag.glsl"),
-            app.GetResourceManager()->CreateAsync<Shader>("ApexAssets/Shaders/GridVert.glsl|ApexAssets/Shaders/GridFrag.glsl"),
-            app.GetScene(), app.GetRhi(), m_gui.get(), this);
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
@@ -191,6 +126,9 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
                 case AssetType::Mesh:
                     OpenMeshViewer(entry.m_path);
                     break;
+                case AssetType::Sound:
+                    OpenSoundPlayer(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -211,6 +149,9 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         m_window->Clear();
 
         if (!m_gui) return;
+
+        if (m_contentBrowser)
+            m_contentBrowser->PrepareThumbnails();
 
         m_gui->BeginFrame();
 
@@ -235,6 +176,14 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
                     [](const std::unique_ptr<MeshViewer>& meshViewer) 
                     { return !meshViewer->IsOpen(); }),
                 m_meshViewers.end());
+            // Draw all open sound players, then remove closed ones
+            for (auto& soundPlayer : m_soundPlayers)
+                soundPlayer->Draw();
+            m_soundPlayers.erase(
+                std::remove_if(m_soundPlayers.begin(), m_soundPlayers.end(),
+                    [](const std::unique_ptr<SoundPlayer>& sp) 
+                    { return !sp->IsOpen(); }),
+                m_soundPlayers.end());
         }
 
         if (m_viewport)
@@ -295,7 +244,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_editScene->Save("Assets/Scenes/scene.level");
+                m_app->GetScene()->Save("Assets/Scenes/scene.level");
                 m_requestClose = true;
                 m_gui->CloseCurrentPopup();
             }
@@ -323,6 +272,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
     {
         m_textureEditors.clear();
         m_meshViewers.clear();
+        m_soundPlayers.clear();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -335,28 +285,20 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
     {
         if (m_editorState == newState)
             return;
-
         
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
-            m_runtimeScene = m_editScene->Clone();
+            m_editScene = m_app->GetScene()->Clone();
+            m_app->SetScene(m_editScene->Clone());
 
-            m_app->SetScene(m_runtimeScene.get());
-
-            m_viewport->ChangeScene(m_runtimeScene.get());
-            m_hierarchy->SetScene(m_runtimeScene.get());
-
-            m_runtimeScene->Start();
+            m_hierarchy->SetScene(m_app->GetScene());
         }
         
         else if (newState == EditorState::Edit)
         {
-            m_runtimeScene.reset();
+            m_app->SetScene(m_editScene->Clone());
 
-            m_app->SetScene(m_editScene.get());
-
-            m_viewport->ChangeScene(m_editScene.get());
-            m_hierarchy->SetScene(m_editScene.get());
+            m_hierarchy->SetScene(m_app->GetScene());
         }
 
         m_editorState = newState;
@@ -370,6 +312,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         case AssetType::Texture: return "Texture";
         case AssetType::Sound:   return "Sound";
         case AssetType::Level:   return "Level";
+        case AssetType::Script:  return "Script";
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
@@ -425,5 +368,20 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         auto meshViewer = std::make_unique<MeshViewer>(*m_gui, *m_window, *m_app->GetRhi(), *m_app->GetResourceManager());
         meshViewer->Open(path, static_cast<int>(m_meshViewers.size()));
         m_meshViewers.push_back(std::move(meshViewer));
+    }
+
+    void Editor::OpenSoundPlayer(const fs::path& path)
+    {
+        for (auto& soundPlayer : m_soundPlayers)
+        {
+            if (soundPlayer->GetPath() == path)
+            {
+                soundPlayer->Focus();
+                return;
+            }
+        }
+        auto soundPlayer = std::make_unique<SoundPlayer>(*m_gui, *m_window, *m_audio);
+        soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
+        m_soundPlayers.push_back(std::move(soundPlayer));
     }
 }

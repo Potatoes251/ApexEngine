@@ -32,8 +32,6 @@ namespace Apex::Data
 		std::string&	GetName() { return m_name; }
 		void			SetName(std::string name);
 
-
-				LibMath::Transform&		GetLocalTransform();
 		const	LibMath::Transform&		GetLocalTransform() const;
 		const	LibMath::Transform&		GetGlobalTransform();
 

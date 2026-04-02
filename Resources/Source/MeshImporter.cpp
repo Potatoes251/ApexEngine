@@ -36,7 +36,6 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
 
 bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
 {
-    if (IsBigEndian()) return false;
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::ifstream file(binaryPath, std::ios::binary);
@@ -61,6 +60,12 @@ bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
     MeshHeader header;
     file.read((char*)&header, sizeof(header));
 
+    if constexpr (IsBigEndian())
+    {
+        header.m_magic = _byteswap_ulong(header.m_magic);
+        header.m_version = _byteswap_ulong(header.m_version);
+    }
+
     if (header.m_magic != 0x4D455348)
     {
         std::cout << "Invalid file format\n";
@@ -80,6 +85,12 @@ bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
     if (!file.read((char*)&indexCount, sizeof(indexCount)))
         return false;
 
+    if constexpr (IsBigEndian())
+    {
+        vertexCount = _byteswap_ulong(vertexCount);
+        indexCount = _byteswap_ulong(indexCount);
+    }
+
     std::vector<Apex::Rendering::Vertex> vertices(vertexCount);
 
     if (!file.read((char*)vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex)))
@@ -89,6 +100,26 @@ bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
 
     if (!file.read((char*)indices.data(), indexCount * sizeof(uint32_t)))
         return false;
+
+    // swap all byte if big endian
+    if constexpr (IsBigEndian())
+    {
+        uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
+
+        for (size_t i = 0; i < indices.size(); i++)
+        {
+            data[i] = _byteswap_ulong(data[i]);
+        }
+
+        // only works if vertices uses only 4 bytes types
+        data = reinterpret_cast<uint32_t*>(vertices.data());
+        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
+
+        for (size_t i = 0; i < totalU32; i++)
+        {
+            data[i] = _byteswap_ulong(data[i]);
+        }
+    }
 
     mesh.m_vertices = vertices;
     mesh.m_indices = indices;
@@ -114,18 +145,59 @@ bool MeshImporter::ExportBin(std::string path, Mesh& mesh)
     header.m_magic = 0x4D455348; // "MESH"
     header.m_version = CURRENT_VERSION;
 
+    if constexpr (IsBigEndian())
+    {
+        header.m_magic = _byteswap_ulong(header.m_magic);
+        header.m_version = _byteswap_ulong(header.m_version);
+    }
+
     file.write((char*)&header, sizeof(header));
 
     // Counts
     uint32_t vertexCount = mesh.m_vertices.size();
     uint32_t indexCount = mesh.m_indices.size();
 
+    if constexpr (IsBigEndian())
+    {
+        vertexCount = _byteswap_ulong(vertexCount);
+        indexCount = _byteswap_ulong(indexCount);
+    }
+
     file.write((char*)&vertexCount, sizeof(vertexCount));
     file.write((char*)&indexCount, sizeof(indexCount));
 
     // Data
-    file.write((char*)mesh.m_vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex));
-    file.write((char*)mesh.m_indices.data(), indexCount * sizeof(uint32_t));
+    // swap all byte if big endian
+    if constexpr (IsBigEndian())
+    {
+        std::vector<Apex::Rendering::Vertex> vertices = mesh.m_vertices;
+        std::vector<uint32_t> indices = mesh.m_indices;
+
+        // only works if vertices uses only 4 bytes types
+        uint32_t* data = reinterpret_cast<uint32_t*>(vertices.data());
+        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
+
+        for (size_t i = 0; i < totalU32; i++)
+        {
+            data[i] = _byteswap_ulong(data[i]);
+        }
+
+        file.write((char*)data, vertexCount * sizeof(Apex::Rendering::Vertex));
+
+        data = reinterpret_cast<uint32_t*>(indices.data());
+
+        for (size_t i = 0; i < indices.size(); i++)
+        {
+            data[i] = _byteswap_ulong(data[i]);
+        }
+
+        file.write((char*)data, indexCount * sizeof(uint32_t));
+    }
+    else
+    {
+        file.write((char*)mesh.m_vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex));
+        file.write((char*)mesh.m_indices.data(), indexCount * sizeof(uint32_t));
+    }
 
     return true;
 }
@@ -241,15 +313,4 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
             mesh.m_indices.push_back(vertexCounter++);
         }
     }
-}
-
-bool IsBigEndian()
-{
-    union
-    {
-        int in;
-        char ch[4];
-    } bint = { 0x01020304 };
-
-    return bint.ch[0] == 1;
 }

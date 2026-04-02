@@ -8,6 +8,7 @@
 // ============================================================
 
 #include <string>
+#include <vector>
 
 #include "LibMath/Vector/Vector3.h"
 
@@ -58,6 +59,14 @@ namespace Apex::Audio
         virtual void  SetVolume(SoundHandle handle, float volume) = 0;
         virtual bool  IsPlaying(SoundHandle handle) const = 0;
         virtual bool  IsPaused(SoundHandle handle) const = 0;
+
+        virtual float GetPlayPosition(SoundHandle handle) const = 0;
+        virtual float GetDuration(SoundHandle handle) const = 0;
+
+        // Returns normalized [-1, 1] PCM samples for the given file.
+        // irrKlang decodes all supported formats (OGG, WAV, MP3, FLAC...).
+        // Returns empty vector if the file cannot be decoded.
+        virtual std::vector<float> GetSampleData(const std::string& filePath) const = 0;
 
         // Listener transform (for 3-D audio)
         virtual void SetListenerPosition(const LibMath::Vector3& position,

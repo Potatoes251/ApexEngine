@@ -1,4 +1,5 @@
 #include "ContentBrowser.h"
+#include "EditorIcon.h"
 
 #include <iostream>
 
@@ -16,6 +17,8 @@ namespace Apex::Editor
             return AssetType::Sound;
         if (ext == ".level")                                 
             return AssetType::Level;
+        if (ext == ".lua")
+            return AssetType::Script;
         return AssetType::Unknown;
     }
 
@@ -23,11 +26,12 @@ namespace Apex::Editor
     {
         switch (type)
         {
-        case AssetType::Mesh:    return "[M]";
-        case AssetType::Texture: return "[T]";
-        case AssetType::Sound:   return "[S]";
-        case AssetType::Level:   return "[L]";
-        case AssetType::Folder:  return "[/]";
+        case AssetType::Mesh:    return "Mesh";
+        case AssetType::Texture: return "Texture";
+        case AssetType::Sound:   return "Sound";
+        case AssetType::Level:   return "Level";
+        case AssetType::Script:  return "Lua";
+        case AssetType::Folder:  return "Folder";
         default:                 return "[ ]";
         }
     }
@@ -41,6 +45,7 @@ namespace Apex::Editor
         case AssetType::Texture: return PackColor(120, 230, 120);  // green
         case AssetType::Sound:   return PackColor(220, 120, 255);  // purple
         case AssetType::Level:   return PackColor(255, 100, 100);  // red
+        case AssetType::Script:  return PackColor(255, 140, 60);   // orange
         case AssetType::Folder:  return PackColor(255, 210, 100);  // gold
         default:                 return PackColor(160, 160, 160);  // grey
         }
@@ -62,13 +67,52 @@ namespace Apex::Editor
         return assetEntry;
     }
 
+    const char* ContentBrowser::IconPathForType(AssetType type)
+    {
+        switch (type)
+        {
+        case AssetType::Folder: return "ApexAssets/Icons/folder.png";
+        case AssetType::Level:  return "ApexAssets/Icons/level.png";
+        case AssetType::Script: return "ApexAssets/Icons/script.png";
+        case AssetType::Sound:  return "ApexAssets/Icons/sound.png";
+        default:                return "";
+        }
+
+    }
+
+    void ContentBrowser::PopulateThumbnailsForList(std::vector<AssetEntry>& entries, ThumbnailRenderer& thumbnails)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.m_thumbnailTextureID != 0)
+                continue;
+
+            if (entry.m_type == AssetType::Mesh)
+            {
+                uint32_t id = thumbnails.GetOrRender(entry.m_path);
+                if (id != 0)
+                    entry.m_thumbnailTextureID = id;
+            }
+            else if (entry.m_type == AssetType::Texture)
+            {
+                uint32_t id = EditorIcon::Get(entry.m_path.string());
+                if (id != 0)
+                    entry.m_thumbnailTextureID = id;
+            }
+        }
+    }
+
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui,
                                    Apex::Windowing::IWindow& window,
-                                   const fs::path& rootPath)
+                                   const fs::path& rootPath,
+                                   Apex::Rendering::IRHI& rhi,
+                                   Apex::Resources::ResourceManager& resourceManager)
         : m_gui(gui),
         m_window(window),
         m_rootPath(fs::weakly_canonical(rootPath)),
-        m_currentPath(fs::weakly_canonical(rootPath))
+        m_currentPath(fs::weakly_canonical(rootPath)),
+        m_resourceManager(resourceManager),
+        m_thumbnails(rhi, resourceManager)
     {
         Refresh();
     }
@@ -80,6 +124,7 @@ namespace Apex::Editor
 
     void ContentBrowser::NavigateTo(const fs::path& dir)
     {
+        m_thumbnails.Clear();
         m_currentPath = fs::weakly_canonical(dir);
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
@@ -113,6 +158,9 @@ namespace Apex::Editor
 
         m_entries.insert(m_entries.end(), folders.begin(), folders.end());
         m_entries.insert(m_entries.end(), files.begin(), files.end());
+
+        for (auto& entry : m_entries)
+            entry.m_thumbnailTextureID = m_thumbnails.GetCached(entry.m_path);
     }
 
     void ContentBrowser::ScanSearch(const std::string& filter)
@@ -124,7 +172,7 @@ namespace Apex::Editor
         for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
-            if (entry.path().extension() == ".meta") continue;
+            if (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh") continue;
 
             std::string name = entry.path().filename().string();
             std::string low = name;
@@ -138,6 +186,9 @@ namespace Apex::Editor
         auto byName = [](const AssetEntry& a, const AssetEntry& b)
             { return a.m_path.filename() < b.m_path.filename(); };
         std::sort(m_searchEntries.begin(), m_searchEntries.end(), byName);
+
+        for (auto& entry : m_searchEntries)
+            entry.m_thumbnailTextureID = m_thumbnails.GetCached(entry.m_path);
     }
 
     void ContentBrowser::MoveEntry(const fs::path& from, const fs::path& toDirectory)
@@ -355,6 +406,12 @@ namespace Apex::Editor
         m_gui.EndPanel();
     }
 
+    void ContentBrowser::PrepareThumbnails()
+    {
+        PopulateThumbnailsForList(m_entries, m_thumbnails);
+        PopulateThumbnailsForList(m_searchEntries, m_thumbnails);
+    }
+
     fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
         for (const auto& rect : m_breadcrumbRects)
@@ -559,7 +616,7 @@ namespace Apex::Editor
             std::memset(m_lastSearch, 0, sizeof(m_lastSearch));
         }
 
-        const std::vector<AssetEntry>& source = searching ? m_searchEntries : m_entries;
+        std::vector<AssetEntry>& source = searching ? m_searchEntries : m_entries;
 
         LibMath::Vector2 availableSize = m_gui.GetAvailableSize();
         int columns = std::max(1, static_cast<int>(availableSize[0] / (m_tileSize + 16.f)));
@@ -567,7 +624,7 @@ namespace Apex::Editor
 
         m_pendingNavigate.clear();
 
-        for (const auto& entry : source)
+        for (auto& entry : const_cast<std::vector<AssetEntry>&>(source))
         {
             if (col > 0 && col % columns != 0)
                 m_gui.SameLine();
@@ -621,21 +678,30 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawTile(const AssetEntry& entry)
     {
+        using Apex::UserInterface::PackColor;
+        constexpr float LABEL_HEIGHT = 32.f;
+        float totalHeight = m_tileSize + LABEL_HEIGHT;
+
         m_gui.PushID(entry.m_path.string());
 
         bool isSelected = (!m_selectedPath.empty() && m_selectedPath == entry.m_path);
-        if (isSelected)
-            m_gui.PushColor(Apex::UserInterface::StyleColor::ChildBackground,
-                { 0.26f, 0.42f, 0.60f, 0.5f });
 
-        m_gui.BeginChildPanel("##tile", m_tileSize, m_tileSize + 26.f, false);
+        m_gui.BeginChildPanel("##tile", m_tileSize, totalHeight, false);
 
         LibMath::Vector2 pos = m_gui.GetCursorPos();
-        float iconSize = m_tileSize - 6.f * 2.f;
 
         DrawTileIcon(entry, pos);
-        DrawTileInteraction(entry, pos, iconSize);
-        // Show rename input instead of the static label while renaming this entry
+        DrawTileInteraction(entry, pos, m_tileSize);
+
+        if (isSelected)
+        {
+            IDrawList* drawList = m_gui.GetDrawList();
+            LibMath::Vector2 thumbnailMin(pos[0], pos[1]);
+            LibMath::Vector2 thumbnailMax(pos[0] + m_tileSize, pos[1] + totalHeight);
+            drawList->DrawRectFilled(thumbnailMin, thumbnailMax, 0x336699FF, 0.f);
+            drawList->DrawRect(thumbnailMin, thumbnailMax, 0xFF6699FF, 0.f, 2.f);
+        }
+
         if (m_renamingPath == entry.m_path)
             DrawRenameInline(entry, pos);
         else
@@ -643,41 +709,56 @@ namespace Apex::Editor
 
         m_gui.EndChildPanel();
 
-        if (isSelected)
-            m_gui.PopColor();
-
         m_gui.PopID();
     }
 
     void ContentBrowser::DrawTileIcon(const AssetEntry& entry, LibMath::Vector2 pos)
     {
         using Apex::UserInterface::PackColor;
+        IDrawList* drawList = m_gui.GetDrawList();
+        float      iconSize = m_tileSize;
+        uint32_t   color = TypeColor(entry.m_type);
 
-        Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
-        float pad = 6.f;
-        float iconSize = m_tileSize - pad * 2.f;
-        uint32_t col = TypeColor(entry.m_type);
+        LibMath::Vector2 thumbnailMin(pos[0], pos[1]);
+        LibMath::Vector2 thumbnailMax(pos[0] + iconSize, pos[1] + iconSize);
 
-        // Dark rounded background
-        drawList->DrawRectFilled(
-            LibMath::Vector2(pos[0] + pad, pos[1] + pad),
-            LibMath::Vector2(pos[0] + pad + iconSize, pos[1] + pad + iconSize),
-            PackColor(30, 30, 35), 8.f);
+        bool hasThumb = (entry.m_thumbnailTextureID != 0);
+        if (hasThumb)
+        {
+            m_gui.SetCursorPos(thumbnailMin);
+            m_gui.DrawImageTinted(entry.m_thumbnailTextureID,
+                LibMath::Vector2(iconSize, iconSize), { 1.f,1.f,1.f,1.f }, true);
+        }
+        else
+        {
+            uint32_t icon = EditorIcon::Get(IconPathForType(entry.m_type));
+            if (icon != 0)
+            {
+                drawList->DrawRectFilled(thumbnailMin, thumbnailMax, PackColor(30, 30, 35), 6.f);
+                m_gui.SetCursorPos(LibMath::Vector2(thumbnailMin[0] + iconSize * 0.15f, thumbnailMin[1] + iconSize * 0.15f));
+                m_gui.DrawImageTinted(icon,
+                    LibMath::Vector2(iconSize * 0.7f, iconSize * 0.7f), { 1.f,1.f,1.f,1.f }, true);
+            }
+            else
+            {
+                drawList->DrawRectFilled(thumbnailMin, thumbnailMax, PackColor(30, 30, 35), 6.f);
+                LibMath::Vector2 lblSize = drawList->CalculateTextSize(TypeLabel(entry.m_type));
+                drawList->DrawText(
+                    LibMath::Vector2(thumbnailMin[0] + (iconSize - lblSize[0]) * 0.5f,
+                        thumbnailMin[1] + (iconSize - lblSize[1]) * 0.5f), color, TypeLabel(entry.m_type));
+            }
+        }
 
-        // Colored accent bar at top
-        drawList->DrawRectFilled(
-            LibMath::Vector2(pos[0] + pad, pos[1] + pad),
-            LibMath::Vector2(pos[0] + pad + iconSize, pos[1] + pad + 6.f),
-            col, 8.f);
-
-        // Type label centered in icon box
-        const char* label = TypeLabel(entry.m_type);
-        LibMath::Vector2 labelSize = drawList->CalculateTextSize(label);
-        drawList->DrawText(
-            LibMath::Vector2(
-                pos[0] + pad + (iconSize - labelSize[0]) * 0.5f,
-                pos[1] + pad + (iconSize - labelSize[1]) * 0.5f + 4.f),
-            col, label);
+        constexpr float BADGE_H = 18.f;
+        constexpr float BADGE_PAD = 5.f;
+        const char* badgeTxt = TypeLabel(entry.m_type);
+        LibMath::Vector2 badgeTxtSz = drawList->CalculateTextSize(badgeTxt);
+        LibMath::Vector2 badgeMin(thumbnailMin[0] + 4.f, thumbnailMin[1] + 4.f);
+        LibMath::Vector2 badgeMax(badgeMin[0] + badgeTxtSz[0] + BADGE_PAD * 2.f, badgeMin[1] + BADGE_H);
+        drawList->DrawRectFilled(badgeMin, badgeMax, color, 4.f);
+        drawList->DrawText(LibMath::Vector2(badgeMin[0] + BADGE_PAD,
+            badgeMin[1] + (BADGE_H - badgeTxtSz[1]) * 0.5f),
+            0xFF000000, badgeTxt);
     }
 
 
@@ -751,24 +832,26 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawTileLabel(const AssetEntry& entry, LibMath::Vector2 pos)
     {
-        // Show stem only
-        std::string name = entry.m_isFolder ? entry.m_path.filename().string() : entry.m_path.stem().string();
+        IDrawList* drawList = m_gui.GetDrawList();
+        std::string name = entry.m_isFolder
+            ? entry.m_path.filename().string()
+            : entry.m_path.stem().string();
+        if (name.size() > 14) name = name.substr(0, 13) + "~";
 
-        if (name.size() > 18)
-            name = name.substr(0, 17) + "...";
+        float labelY = pos[1] + m_tileSize;
+        LibMath::Vector2 bgMin(pos[0], labelY);
+        LibMath::Vector2 bgMax(pos[0] + m_tileSize, labelY + 32.f);
+        drawList->DrawRectFilled(bgMin, bgMax, 0xFF1E1E1E);
 
-        LibMath::Vector2 textSize = m_gui.GetDrawList()->CalculateTextSize(name.c_str());
+        LibMath::Vector2 textSize = drawList->CalculateTextSize(name.c_str());
         float centeredX = pos[0] + (m_tileSize - textSize[0]) * 0.5f;
-        float labelY = pos[1] + m_tileSize + 4.f;
+        float centeredY = labelY + (32.f - textSize[1]) * 0.5f;
 
-        // Invisible button over the label area so we can detect double-click
-        m_gui.SetCursorPos(LibMath::Vector2(centeredX, labelY));
+        m_gui.SetCursorPos(LibMath::Vector2(centeredX, centeredY));
         m_gui.InvisibleButton("##label", textSize);
-        if (m_gui.IsItemDoubleClicked())
-            BeginRename(entry.m_path);
+        if (m_gui.IsItemDoubleClicked()) BeginRename(entry.m_path);
 
-        // Draw the text on top of the button
-        m_gui.GetDrawList()->DrawText(LibMath::Vector2(centeredX, labelY), 0xFFAAAAAA, name);
+        drawList->DrawText(LibMath::Vector2(centeredX, centeredY), 0xFFDDDDDD, name);
     }
 
     void ContentBrowser::DrawEntryContextMenu(const AssetEntry& entry)

@@ -17,7 +17,7 @@ using LibMath::Vector2;
 using Apex::UserInterface::FontID;
 using Apex::Resources::ResourceHandle;
 
-namespace Apex::UserInterface		// can't be 'HUD' as used on top
+namespace Apex::UserInterface
 {
 	enum class UIAnchor
 	{

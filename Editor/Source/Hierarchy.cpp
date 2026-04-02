@@ -22,7 +22,9 @@ void Hierarchy::Draw()
     m_gui.PushFont(FontID::Default);
 
     if (m_scene->IsDirty())
+    {
         m_window.SetWindowTitle("Apex Editor *");
+    }
 
     m_gui.BeginPanel("Hierarchy");
 
@@ -295,7 +297,7 @@ void Hierarchy::HandleAcceptDrop(SceneNode* node)
         {
             SetPending(dragged, node, PendingOp::After);
         }
-        else if (!node->IsDescendantOf(*dragged))
+        else if (!node->IsDescendantOf(dragged))
         {
             SetPending(dragged, node, PendingOp::Parent);
         }
@@ -392,7 +394,7 @@ Object* Hierarchy::DuplicateObject(Object* original)
 
 void Hierarchy::DestroyObject(Object* obj)
 {
-    SceneNode* node = obj->GetSceneNodeRaw();
+    std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
     if (node->GetParent())
         node->GetParent()->DestroyChild(node);

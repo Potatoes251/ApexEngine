@@ -12,6 +12,8 @@
 
 #include "Skybox.h"
 
+#include "Lighting/VisibleLights.h"
+
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
@@ -28,6 +30,8 @@ namespace Apex::Rendering
 		std::unique_ptr<Scene> Clone();
 
 		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
+
+		Lighting::VisibleLights GetVisibleLights();
 
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;

@@ -266,7 +266,7 @@ namespace Apex::UserInterface
         return LibMath::Vector2(size.x, size.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title, bool dock, bool* open)
+    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar)
     {
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
         if (!dock)
@@ -496,6 +496,11 @@ namespace Apex::UserInterface
     bool ImGUIManager::IsWindowHovered() const
     {
         return ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_NoPopupHierarchy);
+    }
+
+    bool ImGUIManager::IsWindowDocked() const
+    {
+        return ImGui::IsWindowDocked();
     }
 
     bool ImGUIManager::IsAnyItemHovered() const

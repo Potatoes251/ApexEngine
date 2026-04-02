@@ -7,10 +7,10 @@ uniform float near = 0.01;
 uniform float far = 100;
 uniform float gridScale = 10;
 uniform float minorThickness = 0.01;
-uniform float majorThickness = 0.01;
+uniform float majorThickness = 0.001;
 uniform float fadeStart = 20.0; // distance where fading begins
 uniform float fadeEnd   = 100.0; // distance where grid fully disappears
-uniform vec3 minorColor = vec3(0.2);
+uniform vec3 minorColor = vec3(0.1);
 uniform vec3 majorColor = vec3(0.5);
 
 in vec2 vUV;
@@ -47,17 +47,19 @@ void main()
     float minorGridScale = gridScale * .1;
     vec2 grid = abs(fract(coord * minorGridScale - 0.5) - 0.5);
     float line = min(grid.x, grid.y);
-    float minor = 1.0 - smoothstep(0, minorThickness, line);
+    float aa = fwidth(line);   
+    float minor = 1.0 - smoothstep(0, minorThickness + aa, line);
     minor = min(minor, 0.25);
 
     vec2 majorCoord = coord;
     vec2 majorGrid = abs(fract(majorCoord / gridScale - 0.5) - 0.5);
     float majorLine = min(majorGrid.x, majorGrid.y);
-    float major = 1.0 - smoothstep(0, majorThickness, majorLine);
+    aa = fwidth(majorLine);   
+    float major = 1.0 - smoothstep(0, majorThickness + aa, majorLine);
 
 
-    float axisX = smoothstep(0, majorThickness, abs(coord.y));
-    float axisZ = smoothstep(0, majorThickness, abs(coord.x));
+    float axisX = smoothstep(0, majorThickness * 10, abs(coord.y));
+    float axisZ = smoothstep(0, majorThickness * 10, abs(coord.x));
 
     float dist = length(hit - uCameraPos);
     float fade = 1.0 - smoothstep(fadeStart, fadeEnd, dist); // invert
