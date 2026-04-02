@@ -18,38 +18,38 @@ void UIText::Draw(IGUI& gui)
 
 Vector2 UIElement::ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screenSize)
 {
-	Vector2 anchorOffset{ 0,0 };
+	Vector2 anchorOffset{ 0, 0 };
 
 	switch (anchor)
 	{
 	case UIAnchor::TopLeft:
-		anchorOffset = { 0						,0 }; 
+		anchorOffset = { 0,0 }; 
 		break;
 	case UIAnchor::TopCenter:
-		anchorOffset = { screenSize[0] * 0.5f	, 0 }; 
+		anchorOffset = { screenSize[0] * 0.5f, 0 }; 
 		break;
 	case UIAnchor::TopRight:
-		anchorOffset = { screenSize[0]			, 0 }; 
+		anchorOffset = { screenSize[0], 0 }; 
 		break;
 
 	case UIAnchor::MiddleLeft:	
-		anchorOffset = { 0						, screenSize[1] * 0.5f }; 
+		anchorOffset = { 0, screenSize[1] * 0.5f }; 
 		break;
 	case UIAnchor::Center:
-		anchorOffset = { screenSize[0] * 0.5f	, screenSize[1] * 0.5f }; 
+		anchorOffset = { screenSize[0] * 0.5f, screenSize[1] * 0.5f }; 
 		break;
 	case UIAnchor::MiddleRight:
-		anchorOffset = { screenSize[0]			, screenSize[1] * 0.5f }; 
+		anchorOffset = { screenSize[0], screenSize[1] * 0.5f }; 
 		break;
 
 	case UIAnchor::BottomLeft:
-		anchorOffset = { 0						, screenSize[1] }; 
+		anchorOffset = { 0, screenSize[1] }; 
 		break;
 	case UIAnchor::BottomCenter:
-		anchorOffset = { screenSize[0] * 0.5f	, screenSize[1] }; 
+		anchorOffset = { screenSize[0] * 0.5f, screenSize[1] }; 
 		break;
 	case UIAnchor::BottomRight:
-		anchorOffset = { screenSize[0]			, screenSize[1] }; 
+		anchorOffset = { screenSize[0], screenSize[1] }; 
 		break;
 	}
 
@@ -82,14 +82,10 @@ void UICanvas::Render(IGUI& gui)
 	for (auto& element : m_elements) element->Draw(gui);
 }
 
-
 //UIManager
 UIManager::UIManager(IGUI* gui)
 {
 	m_gui = gui;
-
-	// mess with the rest of rendering
-	//glDisable(GL_DEPTH_TEST);	//TOO SEE IF IYT AFFECT 3D RENDERING
 }
 
 UICanvas& Apex::UserInterface::UIManager::GetCanvas()

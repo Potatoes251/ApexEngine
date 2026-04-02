@@ -65,7 +65,7 @@ namespace Apex::Editor
         m_viewport->SetHierarchy(m_hierarchy.get());
         m_hierarchy->SetViewport(m_viewport.get());
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/");
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
 
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
@@ -113,6 +113,9 @@ namespace Apex::Editor
                 case AssetType::Mesh:
                     OpenMeshViewer(entry.m_path);
                     break;
+                case AssetType::Sound:
+                    OpenSoundPlayer(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -133,6 +136,9 @@ namespace Apex::Editor
         m_window->Clear();
 
         if (!m_gui) return;
+
+        if (m_contentBrowser)
+            m_contentBrowser->PrepareThumbnails();
 
         m_gui->BeginFrame();
 
@@ -157,6 +163,14 @@ namespace Apex::Editor
                     [](const std::unique_ptr<MeshViewer>& meshViewer) 
                     { return !meshViewer->IsOpen(); }),
                 m_meshViewers.end());
+            // Draw all open sound players, then remove closed ones
+            for (auto& soundPlayer : m_soundPlayers)
+                soundPlayer->Draw();
+            m_soundPlayers.erase(
+                std::remove_if(m_soundPlayers.begin(), m_soundPlayers.end(),
+                    [](const std::unique_ptr<SoundPlayer>& sp) 
+                    { return !sp->IsOpen(); }),
+                m_soundPlayers.end());
         }
 
         if (m_viewport)
@@ -200,6 +214,7 @@ namespace Apex::Editor
     {
         m_textureEditors.clear();
         m_meshViewers.clear();
+        m_soundPlayers.clear();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -239,6 +254,7 @@ namespace Apex::Editor
         case AssetType::Texture: return "Texture";
         case AssetType::Sound:   return "Sound";
         case AssetType::Level:   return "Level";
+        case AssetType::Script:  return "Script";
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
@@ -294,5 +310,20 @@ namespace Apex::Editor
         auto meshViewer = std::make_unique<MeshViewer>(*m_gui, *m_window, *m_app->GetRhi(), *m_app->GetResourceManager());
         meshViewer->Open(path, static_cast<int>(m_meshViewers.size()));
         m_meshViewers.push_back(std::move(meshViewer));
+    }
+
+    void Editor::OpenSoundPlayer(const fs::path& path)
+    {
+        for (auto& soundPlayer : m_soundPlayers)
+        {
+            if (soundPlayer->GetPath() == path)
+            {
+                soundPlayer->Focus();
+                return;
+            }
+        }
+        auto soundPlayer = std::make_unique<SoundPlayer>(*m_gui, *m_window, *m_audio);
+        soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
+        m_soundPlayers.push_back(std::move(soundPlayer));
     }
 }

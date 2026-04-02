@@ -48,6 +48,10 @@ namespace Apex::Audio
         bool  IsPlaying(SoundHandle handle) const        override;
 		bool  IsPaused(SoundHandle handle) const         override;
 
+        float GetPlayPosition(SoundHandle handle) const override;
+        float GetDuration(SoundHandle handle) const override;
+        std::vector<float> GetSampleData(const std::string& filePath) const override;
+
         void SetListenerPosition(const LibMath::Vector3& position,
                                  const LibMath::Vector3& lookDirection,
                                  const LibMath::Vector3& up) override;

@@ -22,7 +22,7 @@ namespace Apex::UserInterface
         LibMath::Vector2 CalculateTextSize(const std::string& text) override;
         LibMath::Vector2 CalculateTextSizeEx(const std::string& text, float fontSize) override;
 
-        void AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness);
+        void AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness) override;
 
         void Reset(ImDrawList* drawList) { m_drawList = drawList; }
 

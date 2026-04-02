@@ -132,7 +132,7 @@ namespace Apex::UserInterface
 
         //  Panels & children 
         // BeginPanel / EndPanel - top-level named window
-        virtual void BeginPanel(const std::string& title, bool* open = nullptr, bool dock = true) = 0;
+        virtual void BeginPanel(const std::string& title, bool* open = nullptr, bool dock = true, bool titleBar = false) = 0;
         virtual void EndPanel() = 0;
 
         // BeginChildPanel / EndChildPanel - scrollable sub-region
@@ -216,6 +216,7 @@ namespace Apex::UserInterface
         virtual bool IsMouseReleased(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsMouseClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsWindowHovered() const = 0;
+        virtual bool IsWindowDocked() const = 0;
         virtual bool IsAnyItemHovered()   const = 0;
         virtual bool IsDragDropActive() const = 0;
         virtual const char* GetDragDropPayloadType() const = 0;
