@@ -209,6 +209,7 @@ namespace Apex::Editor
             break;
         case Apex::Editor::EditorState::Play:
             m_app->Tick();
+            if (m_window->IsKeyPressed(Key::Escape)) SetEditorState(EditorState::Pause);
             break;
         case Apex::Editor::EditorState::Pause:
             break;
@@ -247,6 +248,7 @@ namespace Apex::Editor
 
             m_app->GetScene()->Start();
 
+            m_window->SetCursorCaptured(true);
             m_hierarchy->SetScene(m_app->GetScene());
         }
         // stop
@@ -256,6 +258,9 @@ namespace Apex::Editor
 
             m_hierarchy->SetScene(m_app->GetScene());
         }
+
+        if (newState != EditorState::Play)
+            m_window->SetCursorCaptured(false);
 
         m_editorState = newState;
     }
