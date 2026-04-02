@@ -131,6 +131,16 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	if (!open)
 		return;
 
+	if (auto* script = dynamic_cast<ScriptComponent*>(comp))
+	{
+		m_gui.Text("Script: " + script->GetScriptPath());
+
+		if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
+		{
+			m_scriptPicker.Open(script);
+		}
+	}
+
 	for (auto& var : comp->GetExposedVariables())
 	{
 		switch (var.type)
