@@ -279,15 +279,15 @@ void main()
 	vec3 color = vec3(0.0);
 	
 
-	for (int i = 0; i < PointCount.x; i++)
+	for (int i = 0; i < int(PointCount.x); i++)
 	{
 		color += CalcPointLight(PointLights[i], baseColor, baseColor);
 	}
-	for (int i = 0; i < DirCount.x; i++)
+	for (int i = 0; i < int(DirCount.x); i++)
 	{
 		color += CalcDirectionalLight(DirLights[i], baseColor, baseColor);
 	}
-	for (int i = 0; i < SpotCount.x; i++)
+	for (int i = 0; i < int(SpotCount.x); i++)
 	{
 		color += CalcSpotLight(SpotLights[i], baseColor, baseColor);
 	}

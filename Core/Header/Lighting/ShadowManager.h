@@ -41,9 +41,6 @@ namespace Apex::Lighting
 		void BindShadowMaps();
 
 	private:
-		// return the idx of the first available shadowmap 
-		// may create a new one if no map is available
-		// return -1 if the max amount of shadow map has been reached
 		bool AcquireShadowMap(LightComponent* light, Rendering::Camera* camera, int idx);
 		bool AcquireShadowCubeMap(LightComponent* light, int idx);
 
