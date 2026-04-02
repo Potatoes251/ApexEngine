@@ -13,13 +13,14 @@
 #include "Skybox.h"
 
 #include "Lighting/VisibleLights.h"
-#include "Camera.h"
 
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
 namespace Apex::Rendering
 {
+	class Camera;
+
 	class Scene
 	{
 	public:
@@ -45,7 +46,8 @@ namespace Apex::Rendering
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
-		Camera* GetCamera() const { return m_mainCamera; }
+		Camera* GetMainCamera() const { return m_mainCamera; }
+		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
 
 		void InsertBefore(Object* dragged, Object* target);
 		void InsertAfter(Object* dragged, Object* target);

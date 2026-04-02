@@ -13,6 +13,7 @@
 #include "Window.h"
 #include "RHI.h"
 #include "Audio.h"
+#include "Camera.h"
 
 #include "ResourceManager.h"
 #include "Mesh.h"
@@ -258,8 +259,8 @@ void Apex::Application::UpdateAudioListener()
 {
     if (m_audio)
     {
-        LibMath::Vector3 pos = m_scene->GetCamera()->GetPosition();
-        LibMath::Vector3 front = m_scene->GetCamera()->GetFront();
+        LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
+        LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
         m_audio->SetListenerPosition(
             { pos[0],   pos[1],   pos[2] },
             { front[0], front[1], front[2] }

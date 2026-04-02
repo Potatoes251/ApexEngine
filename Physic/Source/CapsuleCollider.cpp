@@ -19,8 +19,27 @@ CapsuleCollider& Apex::Physic::CapsuleCollider::operator=(CapsuleCollider const&
 	return *this;
 }
 
-void Apex::Physic::CapsuleCollider::Serialize(std::ostream& out) const
+void CapsuleCollider::Serialize(std::ostream& out) const
 {
+    out << "      \"BoxCollider\": {\n";
+    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+
+    out << "        \"halfHeight\": " << m_halfHeight<< ",\n";
+    out << "        \"radius\": " << m_radius<< ",\n";
+    out << "        \"isTrigger\": " << (m_isTrigger ? "true" : "false") << ",\n";
+
+    out << "        \"material\": ";
+
+    if (m_material.IsValid())
+    {
+        out << m_material->GetId() << "\n";
+    }
+    else
+    {
+        out << "null" << "\n";
+    }
+
+    out << "      }";
 }
 
 std::vector<ExposedVar> Apex::Physic::CapsuleCollider::GetExposedVariables()
