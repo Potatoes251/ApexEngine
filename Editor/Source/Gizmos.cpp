@@ -39,7 +39,7 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_thorus.ClearVertices();
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking)
+void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
 {
     if (!object || !m_shader.IsReady()) return;
 
@@ -53,10 +53,10 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	switch (mode)
 	{
 	case GizmoMode::Translation:
-		DrawTranslation(object, picking);
+		DrawTranslation(object, picking, local);
 		break;
 	case GizmoMode::Rotation:
-		DrawRotation(object, picking);
+		DrawRotation(object, picking, local);
 		break;
 	case GizmoMode::Scale:
 		DrawScale(object, picking);
@@ -67,53 +67,58 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	}
 }
 
-void Gizmos::DrawTranslation(Data::Object* object, bool picking)
+void Gizmos::DrawTranslation(Data::Object* object, bool picking, bool local)
 {
-    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+    LibMath::Transform trans = object->GetGlobalTransform();
+    trans.setScale(LibMath::Vector3(1.f));
 
-    DrawTranslationPlanes(pos, picking);
-    DrawTranslationCenter(pos, picking);
-    DrawTranslationArrows(pos, picking);
+    if (!local) trans.setRotation(LibMath::Radian(0.f), LibMath::Radian(0.f), LibMath::Radian(0.f));
+
+    LibMath::Matrix4 transMatrix = trans;
+
+    DrawTranslationPlanes(transMatrix, picking);
+    DrawTranslationCenter(transMatrix, picking);
+    DrawTranslationArrows(transMatrix, picking);
 }
 
-void Gizmos::DrawTranslationPlanes(LibMath::Vector3 pos, bool picking)
+void Gizmos::DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking)
 {
     float planeSize = 0.25f * m_distanceToCamera;
     float planeOffset = planeSize * 0.5f;
     float planeThickness = 0.02f * m_distanceToCamera;
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(planeOffset, planeOffset, 0),
+            LibMath::Vector3(planeOffset, planeOffset, 0),
             { 0,0,1 }, LibMath::Degree(0),
             { planeSize, planeSize, planeThickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::XY, picking));
         m_cube.Draw();
     }
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(planeOffset, 0, planeOffset),
+            LibMath::Vector3(planeOffset, 0, planeOffset),
             { 0,0,1 }, LibMath::Degree(0),
             { planeSize, planeThickness, planeSize });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::XZ, picking));
         m_cube.Draw();
     }
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, planeOffset, planeOffset),
+            LibMath::Vector3(0, planeOffset, planeOffset),
             { 0,0,1 }, LibMath::Degree(0),
             { planeThickness, planeSize, planeSize });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::YZ, picking));
         m_cube.Draw();
     }
 }
 
-void Gizmos::DrawTranslationCenter(LibMath::Vector3 pos, bool picking)
+void Gizmos::DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking)
 {
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
@@ -122,17 +127,17 @@ void Gizmos::DrawTranslationCenter(LibMath::Vector3 pos, bool picking)
     // (WHITE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, 0),
+            LibMath::Vector3(0, 0, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale * 1.5f, thickness * handleScale * 1.5f, thickness * handleScale * 1.5f });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::XYZ, picking));
         m_cube.Draw();
     }
 }
 
-void Gizmos::DrawTranslationArrows(LibMath::Vector3 pos, bool picking)
+void Gizmos::DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking)
 {
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
@@ -141,74 +146,78 @@ void Gizmos::DrawTranslationArrows(LibMath::Vector3 pos, bool picking)
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length, 0, 0),
+            LibMath::Vector3(length, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            LibMath::Vector3(0, length * 0.5f, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length, 0),
+            LibMath::Vector3(0, length, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            LibMath::Vector3(0, 0, length * 0.5f),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length),
+            LibMath::Vector3(0, 0, length),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_cone.Draw();
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object, bool picking)
+void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
 {
-    LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
+    LibMath::Transform trans = object->GetGlobalTransform();
+    trans.setScale(LibMath::Vector3(1.f));
+
+    if (!local) trans.setRotation(LibMath::Radian(0.f), LibMath::Radian(0.f), LibMath::Radian(0.f));
+    LibMath::Matrix4 transMatrix = trans;
 
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 0,0,1 }, LibMath::Degree(90),
             LibMath::Vector3( 1, 1, 1 ) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
 
         if (picking)    m_thorus.Draw();
@@ -217,11 +226,11 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking)
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 0,1,0 }, LibMath::Degree(0),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
 
         if (picking)    m_thorus.Draw();
@@ -230,11 +239,11 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking)
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos,
+            LibMath::Vector3(0.f),
             { 1,0,0 }, LibMath::Degree(-90),
             LibMath::Vector3(1, 1, 1) * m_distanceToCamera);
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
 
         if (picking)    m_thorus.Draw();
@@ -246,6 +255,10 @@ void Gizmos::DrawScale(Data::Object* object, bool picking)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
+    LibMath::Transform transform = object->GetGlobalTransform();
+    transform.setScale(LibMath::Vector3(1.f));
+    LibMath::Matrix4 transformMatrix = transform;
+
     float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
     constexpr float handleScale = 2.f;
@@ -253,69 +266,69 @@ void Gizmos::DrawScale(Data::Object* object, bool picking)
     // central part (WHITE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, 0),
+            LibMath::Vector3(0, 0, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::XYZ, picking));
         m_cube.Draw();
     }
     // X axis (RED)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length * 0.5f, 0, 0),
+            LibMath::Vector3(length * 0.5f, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(length, 0, 0),
+            LibMath::Vector3(length, 0, 0),
             { 0,0,1 }, LibMath::Degree(-90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
     // Y axis (GREEN)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length * 0.5f, 0),
+            LibMath::Vector3(0, length * 0.5f, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, length, 0),
+            LibMath::Vector3(0, length, 0),
             { 1,0,0 }, LibMath::Degree(0),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
     // Z axis (BLUE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length * 0.5f),
+            LibMath::Vector3(0, 0, length * 0.5f),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness, length, thickness });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
         m_cylinder.Draw();
 
         model = LibMath::Matrix4::createTransform(
-            pos + LibMath::Vector3(0, 0, length),
+            LibMath::Vector3(0, 0, length),
             { 1,0,0 }, LibMath::Degree(90),
             { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
-        m_shader->SetUniform("uModel", model);
+        m_shader->SetUniform("uModel", transformMatrix * model);
         m_cube.Draw();
     }
 }

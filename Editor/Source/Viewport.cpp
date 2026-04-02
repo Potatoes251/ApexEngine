@@ -61,9 +61,6 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	if (m_selectedAxis == Axis::None || !m_selectedObject)
 		return;
 
-	if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
-	else ComputePlaneRotation();
-
 	const LibMath::Vector3 axis = GetAxis();
 
 	LibMath::Matrix4 viewProj = m_camera.GetViewProj();
@@ -81,11 +78,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		float movement = delta.dot(axis);
 		movementVec = axis * movement;
 	}
-	else if (IsAxisPlane())
-	{
-		movementVec = delta;
-	}
-	else if (IsAxisFree())
+	else if (IsAxisPlane() || IsAxisFree())
 	{
 		movementVec = delta;
 	}
@@ -177,7 +170,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjection();
-	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true);
+	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true, m_localGizmo);
 
 	int id = GetMousePixelInFbo(mousePos[0], mousePos[1]);
 
@@ -191,8 +184,10 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 		if (m_currentGizmoMode != GizmoMode::Rotation)
 		{
+			ComputePlane();
 			m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
 		}
+		else ComputePlaneRotation();
 
 		m_rhi->UnBindFrameBuffer();
 		return;
@@ -219,27 +214,52 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 LibMath::Vector3 Viewport::GetAxis()
 {
+	LibMath::Vector3 axis;
 	switch (m_selectedAxis)
 	{
-	case Axis::X:		return { 1, 0, 0 };
-	case Axis::Y:		return { 0, 1, 0 };
-	case Axis::Z:		return { 0, 0, 1 };
+	case Axis::X:		
+		axis = { 1, 0, 0 };	
+		break;
+	case Axis::Y:		
+		axis = { 0, 1, 0 };	
+		break;
+	case Axis::Z:		
+		axis = { 0, 0, 1 };	
+		break;
 	case Axis::None:	return { 0, 0, 0 };
 	default:			return { 0, 0, 0 };
 	}
+
+	if (!m_localGizmo || !m_selectedObject) return axis;
+
+	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()
 {
+	LibMath::Vector3 axis;
+
 	switch (m_selectedAxis)
 	{
-	case Axis::XY:		return { 0, 0, 1 };
-	case Axis::XZ:		return { 0, 1, 0 };
-	case Axis::YZ:		return { 1, 0, 0 };
-	case Axis::XYZ:		return m_camera.GetFront();
+	case Axis::XY:		
+		axis = { 0, 0, 1 };
+		break;
+	case Axis::XZ:		
+		axis = { 0, 1, 0 };
+		break;
+	case Axis::YZ:		
+		axis = { 1, 0, 0 };
+		break;
+	case Axis::XYZ:		
+		axis = m_camera.GetFront();
+		break;
 	case Axis::None:	return { 0, 0, 0 };
 	default:			return { 0, 0, 0 };
 	}
+
+	if (!m_localGizmo || !m_selectedObject) return axis;
+
+	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis); 
 }
 
 bool Apex::Editor::Viewport::IsAxisSingle() const
@@ -374,7 +394,7 @@ void Viewport::Draw()
 
 		LibMath::Matrix4 view = m_camera.GetViewMatrix();
 		LibMath::Matrix4 proj = m_camera.GetProjection();
-		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false);
+		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
 	m_rhi->UnBindFrameBuffer();
 
@@ -431,6 +451,8 @@ void Viewport::DrawUI()
 
 	if (m_editor->GetEditorState() != EditorState::Edit) return;
 
+	m_gui->Checkbox("Local Gizmo", &m_localGizmo);
+	m_gui->SameLine();
 	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
 	m_gui->SameLine();
 	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);

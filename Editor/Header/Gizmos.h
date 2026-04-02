@@ -35,15 +35,15 @@ namespace Apex::Editor
 		Gizmos& operator=(Gizmos const&) = delete;
 		~Gizmos() = default;
 
-		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking);
+		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local);
 	private:
 
-		void DrawTranslation(Data::Object* object, bool picking);
-		void DrawTranslationPlanes(LibMath::Vector3 pos, bool picking);
-		void DrawTranslationCenter(LibMath::Vector3 pos, bool picking);
-		void DrawTranslationArrows(LibMath::Vector3 pos, bool picking);
+		void DrawTranslation(Data::Object* object, bool picking, bool local);
+		void DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking);
+		void DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking);
+		void DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking);
 
-		void DrawRotation(Data::Object* object, bool picking);
+		void DrawRotation(Data::Object* object, bool picking, bool local);
 		void DrawScale(Data::Object* object, bool picking);
 
 		LibMath::Vector3 GetColor(Axis axis, bool picking = false);

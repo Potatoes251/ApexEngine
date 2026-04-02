@@ -102,6 +102,7 @@ namespace Apex::Editor
 		float	m_rotateSnap = 2.f;
 		float	m_scaleSnap = 1.f;
 
+		bool	m_localGizmo = true;
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
 		bool	m_isScaleSnapping = true;
