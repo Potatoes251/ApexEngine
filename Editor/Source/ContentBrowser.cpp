@@ -19,6 +19,8 @@ namespace Apex::Editor
             return AssetType::Level;
         if (ext == ".lua")
             return AssetType::Script;
+        if (ext == ".hud")
+            return AssetType::Hud;
         return AssetType::Unknown;
     }
 
@@ -31,6 +33,7 @@ namespace Apex::Editor
         case AssetType::Sound:   return "Sound";
         case AssetType::Level:   return "Level";
         case AssetType::Script:  return "Lua";
+        case AssetType::Hud:     return "HUD";
         case AssetType::Folder:  return "Folder";
         default:                 return "[ ]";
         }
@@ -46,6 +49,7 @@ namespace Apex::Editor
         case AssetType::Sound:   return PackColor(220, 120, 255);  // purple
         case AssetType::Level:   return PackColor(255, 100, 100);  // red
         case AssetType::Script:  return PackColor(255, 140, 60);   // orange
+        case AssetType::Hud:     return PackColor(80, 220, 200);   // teal
         case AssetType::Folder:  return PackColor(255, 210, 100);  // gold
         default:                 return PackColor(160, 160, 160);  // grey
         }
@@ -75,6 +79,7 @@ namespace Apex::Editor
         case AssetType::Level:  return "ApexAssets/Icons/level.png";
         case AssetType::Script: return "ApexAssets/Icons/script.png";
         case AssetType::Sound:  return "ApexAssets/Icons/sound.png";
+        case AssetType::Hud:    return "ApexAssets/Icons/hud.png";
         default:                return "";
         }
 

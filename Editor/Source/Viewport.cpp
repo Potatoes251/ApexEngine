@@ -8,7 +8,7 @@
 #include "Window.h"
 #include "Scene.h"
 #include "RHI.h"
-#include "UI.h"
+#include "Hud.h"
 
 using namespace Apex::Data;
 
@@ -356,13 +356,20 @@ void Viewport::Draw()
 		}
 	}
 
-
 	m_gui->BeginPanel("Viewport");
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
 	m_editor->GetApp()->Render(&m_camera);
+
+	if (m_editor->GetEditorState() != EditorState::Edit)
+	{
+		auto* uiManager = m_editor->GetApp()->GetUI();
+		if (uiManager)
+			uiManager->RenderHUD(m_gui->GetDrawList());
+	}
+
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
 		DrawGrid();

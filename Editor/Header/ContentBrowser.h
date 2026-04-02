@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
 namespace Apex::Editor
 {
 	// Asset type 
-	enum class AssetType { Mesh, Texture, Sound, Level, Script, Folder, Unknown };
+	enum class AssetType { Mesh, Texture, Sound, Level, Script, Hud, Folder, Unknown };
 
 	struct AssetEntry
 	{

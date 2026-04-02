@@ -141,12 +141,10 @@ bool Apex::Application::InitUI(IGUI* gui)
 {
     if (!m_window) return false;
 
-    m_uiManager = std::make_unique<UIManager>(gui);
+    m_uiManager = std::make_unique<UIManager>(gui, m_resourceManager.get());
 
     if (!m_uiManager)
         return false;
-
-    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
     return true;
 }
