@@ -44,8 +44,8 @@ namespace Apex::Windowing
                 std::cout << "Failed to initialize GLFW" << std::endl;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, shareContext);
@@ -91,7 +91,6 @@ namespace Apex::Windowing
     void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
     void GLFWWindow::Clear()
     {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
     void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }

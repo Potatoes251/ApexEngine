@@ -1,10 +1,14 @@
 #include "SceneLoader.h"
+#include "SceneLoader.h"
 #include "Object.h"
 
 #include "MeshRenderer.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 #include "MeshCollider.h"
+#include "Lighting/DirectionalLightComponent.h"
+#include "Lighting/SpotLightComponent.h"
+#include "Lighting/PointLightComponent.h"
 
 #include <fstream>
 #include <sstream>
@@ -64,7 +68,7 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
 
         if (child && parent)
         {
-            child->GetSceneNodeRaw()->SetParent(parent->GetSceneNodeRaw());
+            child->GetSceneNodeRaw()->SetParent(parent->GetSceneNode());
         }
     }
 }
@@ -104,19 +108,21 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
     parser.Expect(',');
 
     // position
+    LibMath::Transform transform = obj->GetLocalTransform();
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setPosition(parser.ParseVector3());
+    transform.setPosition(parser.ParseVector3());
     parser.Expect(',');
 
     // rotation
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setRotation(parser.ParseQuaternion());
+    transform.setRotation(parser.ParseQuaternion());
     parser.Expect(',');
 
     // scale
     parser.ParseString(); parser.Expect(':');
-    obj->GetLocalTransform().setScale(parser.ParseVector3());
+    transform.setScale(parser.ParseVector3());
     parser.Expect(',');
+    obj->SetLocalTransform(transform);   
 
     // components
     parser.ParseString(); parser.Expect(':');
@@ -153,6 +159,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             parser.ParseString(); parser.Expect(':');
             std::string shader = parser.ParseString();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            bool shadow = parser.ParseBool();
 
             auto& comp = obj->AddComponent<Apex::Rendering::MeshRenderer>();
             comp.SetEnabled(enabled);
@@ -164,6 +174,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             comp.SetMesh(a);
             comp.SetTexture(b);
             comp.SetShader(c);
+            comp.SetCastShadow(shadow);
         }
         else if (compName == "RigidBody")
         {
@@ -181,7 +192,6 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto& comp = obj->AddComponent<Apex::Physic::RigidBodyComponent>(mass, StringToBodyType(type));
             comp.SetEnabled(enabled);
         }
-        
         else if (compName == "MeshCollider")
         {
             parser.ParseString(); parser.Expect(':');
@@ -250,6 +260,108 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             }
 
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "DirectionalLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float distance = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float extent = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::DirectionalLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, distance, extent);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "SpotLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float innerCutoff = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float outerCutoff = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::SpotLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, innerCutoff, outerCutoff);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "PointLight")
+        {
+            parser.ParseString(); 
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            parser.Expect('[');
+            float xColor = parser.ParseFloat();
+            parser.Expect(',');
+            float yColor = parser.ParseFloat();
+            parser.Expect(',');
+            float zColor = parser.ParseFloat();
+            parser.Expect(']');
+            parser.Expect(',');
+
+            parser.ParseString(); 
+            parser.Expect(':');
+            float intensity = parser.ParseFloat();
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float radius = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(
+                LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
             comp.SetEnabled(enabled);
         }
 

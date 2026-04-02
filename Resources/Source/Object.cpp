@@ -25,19 +25,11 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 	m_name = "Object" + std::to_string(m_id);
 }
 
-Object::Object(const Object& other) :
-	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform) 
-{
-	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
-}
-
 std::unique_ptr<Object> Object::Clone()
 {
 	std::unique_ptr<Object> clone = std::make_unique<Object>();
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
-	clone->SetGlobalTransform(m_globalTransform);
 
 	for (auto* comp : GetComponents())
 	{
@@ -53,9 +45,8 @@ std::unique_ptr<Object> Object::Clone()
 		clone->AddComponentDirect(std::move(newComp));
 	}
 
-	SceneNode* originalNode = GetSceneNodeRaw();
-	SceneNode* cloneNode = clone->GetSceneNodeRaw();
-	for (auto& child : originalNode->GetChildren())
+	std::shared_ptr<SceneNode> cloneNode = clone->GetSceneNode();
+	for (auto& child : m_owner->GetChildren())
 	{
 		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
 		if (childClone)
@@ -75,11 +66,6 @@ void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 {
 	m_globalTransform = transform;
 	m_owner->MarkDirty();
-}
-
-Transform& Object::GetLocalTransform()
-{
-	return m_localTransform;
 }
 
 const Transform& Object::GetLocalTransform() const
@@ -103,6 +89,7 @@ void Object::UpdateGlobalTransform()
 	if (!parent) 
 	{
 		m_globalTransform = m_localTransform;
+		m_owner->CleanDirty();
 		return;
 	}
 

@@ -25,7 +25,7 @@
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
 
-#include "Camera.h"
+#include "FirstPersonCamera.h"
 
 #include <filesystem>
 #include <string>
@@ -99,7 +99,7 @@ namespace Apex::Editor
 
         // Misc helpers
         void             UpdateOrbitCamera();
-        LibMath::Matrix4 GetViewProj() const;
+        LibMath::Matrix4 GetViewProj();
         LibMath::Vector3 GetCameraPosition() const;
         std::string      FileSizeString() const;
 
@@ -135,7 +135,7 @@ namespace Apex::Editor
         bool m_shadersReady = false;
 
         // Orbit camera
-        Apex::Rendering::Camera m_camera;
+        Apex::Rendering::FirstPersonCamera m_camera;
         float            m_orbitYaw = 45.f;
         float            m_orbitPitch = 25.f;
         float            m_orbitDistance = 3.f;

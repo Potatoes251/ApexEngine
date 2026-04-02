@@ -4,13 +4,13 @@
 #include "ThreadPool.h"
 #include "Physic.h"
 #include "Scene.h"
-
+#include "RenderPassInfo.h"
 
 namespace Apex::Rendering
 {
     class IRHI;
     class Scene;
-    class Camera;
+    class FirstPersonCamera;
 }
 namespace Apex::Windowing
 {
@@ -30,9 +30,16 @@ namespace Apex::UserInterface
     class UIManager;
     class IGUI;
 }
+
 namespace Apex::Scripting
 {
     class LuaManager;
+}
+
+namespace Apex::Lighting
+{
+    class LightManager;
+    class ShadowManager;
 }
 
 namespace Apex
@@ -50,11 +57,13 @@ namespace Apex
         void Tick();
         void LoadScene();
         void ProcessInput();
-        void Render(Rendering::Camera* cam = nullptr);
+        // default rendering pass
+        void Render(Rendering::Camera* cam);
+        void Render(Rendering::RenderPassInfo pass);
 
         Windowing::IWindow*         GetWindow() { return m_window; }
-        Rendering::Scene*           GetScene() { return m_scene; }
-        void                        SetScene(Rendering::Scene* scene) { m_scene = scene; }
+        Rendering::Scene*           GetScene() { return m_scene.get(); }
+        void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
         Rendering::IRHI*            GetRhi() { return m_rhi.get(); }
         Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
@@ -69,7 +78,9 @@ namespace Apex
         bool InitRendering();
         bool InitAudio();
         bool InitUI(UserInterface::IGUI* gui);
+        bool InitLighting();
         bool InitLua();
+        bool InitScene();
         
         void UpdateAudioListener();
         void Update();
@@ -82,15 +93,17 @@ namespace Apex
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
         std::unique_ptr<Scripting::LuaManager> m_luaManager;
+        std::unique_ptr<Lighting::LightManager> m_lightManager;
+        std::unique_ptr<Lighting::ShadowManager> m_shadowManager;
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 
         Windowing::IWindow* m_window = nullptr;
-        std::unique_ptr<Rendering::Camera> m_camera;
+        std::unique_ptr<Rendering::FirstPersonCamera> m_camera;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;
-        Rendering::Scene* m_scene = nullptr;
+        std::unique_ptr<Rendering::Scene> m_scene = nullptr;
 	};
 }
 

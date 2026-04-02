@@ -6,6 +6,7 @@
 #include "CapsuleCollider.h"
 #include "Rigidbody.h"
 #include "ScriptComponent.h"
+#include "Lighting/Lights.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -13,6 +14,7 @@ using namespace Apex::Rendering;
 using namespace Apex::Resources;
 using namespace Apex::Physic;
 using namespace Apex::Scripting;
+using namespace Apex::Lighting;
 
 ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
 	Apex::Resources::ResourceManager& resourceManager, 
@@ -28,7 +30,7 @@ void ComponentsViewer::Draw()
 	m_gui.PushFont(FontID::Default);
 	m_gui.BeginPanel("Components");
 
-	if (m_gui.Button(" + Add "))
+	if (m_selectedObj && m_gui.Button(" + Add "))
 		m_gui.OpenPopup("AddComponent");
 
 	if (m_gui.BeginPopup("AddComponent") && m_selectedObj)
@@ -81,13 +83,26 @@ void ComponentsViewer::Draw()
 			m_selectedObj->AddComponent<ScriptComponent>(m_luaManager);
 		}
 
+		if (m_gui.MenuItem("Directional Light"))
+		{
+			m_selectedObj->AddComponent<DirectionalLightComponent>();
+		}
+
+		if (m_gui.MenuItem("Point Light"))
+		{
+			m_selectedObj->AddComponent<PointLightComponent>();
+		}
+
+		if (m_gui.MenuItem("Spot Light"))
+		{
+			m_selectedObj->AddComponent<SpotLightComponent>();
+		}
+
 		m_gui.EndPopup();
 	}
 
 	if (m_selectedObj)
 	{
-		Component* toRemove = nullptr;
-
 		for (Component* comp : m_selectedObj->GetComponents())
 		{
 			if (!comp)
@@ -140,7 +155,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 				break;
 
 			case ExposedVar::Int:
-				m_gui.SliderInt(var.name, (int*)var.data, 0.0f, 10.0f);
+				m_gui.SliderInt(var.name, (int*)var.data, 0, 10);
 				break;
 
 			case ExposedVar::Bool:
@@ -223,9 +238,9 @@ void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 
 	m_gui.Text(var.name);
 
-	m_gui.SliderFloat("X", &v[0], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Y", &v[1], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Z", &v[2], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("X##" + var.name, &v[0], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Y##" + var.name, &v[1], -1000.0f, 1000.0f);
+	m_gui.SliderFloat("Z##" + var.name, &v[2], -1000.0f, 1000.0f);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)

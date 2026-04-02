@@ -51,7 +51,7 @@ namespace LibMath
 		static Matrix4		createRotationY(Radian);
 		static Matrix4		createRotationZ(Radian);
 
-		static Matrix4		perspective(float fovRadian, float aspectRatio, float near, float far);
+		static Matrix4		perspective(LibMath::Radian fovRadian, float aspectRatio, float near, float far);
 		static Matrix4		lookAt(Vector3 eye, Vector3 target, Vector3 up);
 		static Matrix4		orthogonal(float left, float right, float bottom, float top, float near, float far);
 

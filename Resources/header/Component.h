@@ -43,7 +43,7 @@ namespace Apex
 
         Apex::Data::Object* GetOwner() const { return m_owner; }
 
-        size_t GetId() { return m_id; }
+        size_t GetId() const { return m_id; }
         void SetId(size_t newId) { m_id = newId; }
 
     private:

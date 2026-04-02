@@ -98,7 +98,7 @@ namespace Apex::Editor
 
         float nearP = dist * 0.001f;
         float farP = dist * 100.f;
-        float fov = LibMath::Degree{ 45.f }.radian();
+        LibMath::Degree fov = LibMath::Degree(45.f);
 
         LibMath::Matrix4 proj = LibMath::Matrix4::perspective(fov, 1, nearP, farP);
 

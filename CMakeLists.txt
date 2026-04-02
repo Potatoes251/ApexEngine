@@ -11,6 +11,7 @@ project(${EXE_NAME} LANGUAGES C CXX)
 if (MSVC)
     add_compile_options(/W4)
     add_compile_options(/wd4505)
+    add_compile_options(/wd4100)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 

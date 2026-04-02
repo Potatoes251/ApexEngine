@@ -15,15 +15,14 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 
-Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader, 
-	Rendering::Scene* scene, Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
-	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_currentScene(scene), m_rhi(rhi), m_gui(gui) 
+Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
+	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
+	: m_gizmo(pickingShader, rhi), m_gridShader(gridShader), m_rhi(rhi), m_gui(gui) 
 {
 	m_fbo = m_rhi->CreateFrameBuffer(m_width, m_height, m_textureFbo);
 	m_pickingshader = pickingShader;
 	m_editor = editor;
-
-	CreateGrid();
+	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
 void Viewport::SelectObject(Data::Object* selected, bool send)
@@ -62,12 +61,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	if (m_selectedAxis == Axis::None || !m_selectedObject)
 		return;
 
-	if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
-	else ComputePlaneRotation();
-
 	const LibMath::Vector3 axis = GetAxis();
 
-	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) *m_camera.GetViewMatrix();
+	LibMath::Matrix4 viewProj = m_camera.GetViewProj();
 
 	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX, (float)mouseY }, viewProj, m_panelPos, m_panelSize);
 
@@ -82,11 +78,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		float movement = delta.dot(axis);
 		movementVec = axis * movement;
 	}
-	else if (IsAxisPlane())
-	{
-		movementVec = delta;
-	}
-	else if (IsAxisFree())
+	else if (IsAxisPlane() || IsAxisFree())
 	{
 		movementVec = delta;
 	}
@@ -96,7 +88,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-		m_selectedObject->GetLocalTransform().setPosition(m_initialTransform.getPosition() + movementVec);
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setPosition(m_initialTransform.getPosition() + movementVec);
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 
@@ -114,7 +108,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		m_selectedObject->GetLocalTransform().setRotation(deltaAngle * m_initialTransform.getRotation());
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setRotation(deltaAngle * m_initialTransform.getRotation());
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 	case GizmoMode::Scale:
@@ -128,7 +124,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		if (m_isScaleSnapping) Snap(scaleDelta);
 		LibMath::Vector3 newScale = m_initialTransform.getScale() + scaleDelta;
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
-		m_selectedObject->GetLocalTransform().setScale(newScale);
+		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
+		transform.setScale(newScale);
+		m_selectedObject->SetLocalTransform(transform);
 		break;
 	}
 	default:
@@ -163,75 +161,105 @@ int Viewport::GetMousePixelInFbo(float mouseX, float mouseY)
 	return m_rhi->GetPixelData((int)fboX, (int)fboY);
 }
 
-bool Apex::Editor::Viewport::IsOnGizmo(double mouseX, double mouseY)
-{
-	if (!m_selectedObject) return false;
-
-	LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
-	LibMath::Matrix4 viewProj = m_camera.GetProjectionMatrix(m_width / m_height) * m_camera.GetViewMatrix();
-	m_selectedAxis = m_gizmo.IsOnGizmo({ (float)mouseX, (float)mouseY }, m_currentGizmoMode, center, viewProj, m_panelPos, m_panelSize);
-
-	if (m_selectedAxis == Axis::None) return false;
-
-	m_initialTransform = m_selectedObject->GetGlobalTransform();
-
-	LibMath::Line3D ray = ScreenToWorldRay({ (float)mouseX ,(float)mouseY }, viewProj, m_panelPos, m_panelSize);
-	if (!LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint)) return false;
-	
-	if (m_currentGizmoMode != GizmoMode::Rotation)
-	{
-		m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
-	}
-	return true;
-}
-
 void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 {
 	if (!m_pickingshader.IsReady()) return;
 
-	if (IsOnGizmo(mousePos[0], mousePos[1])) return;
-
 	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
 	m_rhi->Clear();
+
+	LibMath::Matrix4 view = m_camera.GetViewMatrix();
+	LibMath::Matrix4 proj = m_camera.GetProjection();
+	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true, m_localGizmo);
+
+	int id = GetMousePixelInFbo(mousePos[0], mousePos[1]);
+
+	if (id >= static_cast<int>(Axis::X) && id < static_cast<int>(Axis::None))
+	{
+		m_selectedAxis = static_cast<Axis>(id);
+
+		LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
+
+		m_initialTransform = m_selectedObject->GetGlobalTransform();
+
+		if (m_currentGizmoMode != GizmoMode::Rotation)
+		{
+			ComputePlane();
+			m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
+		}
+		else ComputePlaneRotation();
+
+		m_rhi->UnBindFrameBuffer();
+		return;
+	}
+
+	m_selectedAxis = Axis::None;
 
 	RenderPassInfo picking;
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
-	picking.m_useIdAsColor = true;
-	picking.m_useModelShader = false;
+	picking.m_flags |= UseIdAsColor;
+	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
+	picking.m_target = m_fbo;
 
 	m_pickingshader->Use();
-	m_currentScene->Render(picking);
+	m_editor->GetApp()->GetScene()->Render(picking);
 
-	SelectObject(m_currentScene->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
+	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer();
 }
 
 LibMath::Vector3 Viewport::GetAxis()
 {
+	LibMath::Vector3 axis;
 	switch (m_selectedAxis)
 	{
-	case Axis::X:		return { 1, 0, 0 };
-	case Axis::Y:		return { 0, 1, 0 };
-	case Axis::Z:		return { 0, 0, 1 };
+	case Axis::X:		
+		axis = { 1, 0, 0 };	
+		break;
+	case Axis::Y:		
+		axis = { 0, 1, 0 };	
+		break;
+	case Axis::Z:		
+		axis = { 0, 0, 1 };	
+		break;
 	case Axis::None:	return { 0, 0, 0 };
 	default:			return { 0, 0, 0 };
 	}
+
+	if (!m_localGizmo || !m_selectedObject) return axis;
+
+	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()
 {
+	LibMath::Vector3 axis;
+
 	switch (m_selectedAxis)
 	{
-	case Axis::XY:		return { 0, 0, 1 };
-	case Axis::XZ:		return { 0, 1, 0 };
-	case Axis::YZ:		return { 1, 0, 0 };
-	case Axis::XYZ:		return m_camera.GetFront();
+	case Axis::XY:		
+		axis = { 0, 0, 1 };
+		break;
+	case Axis::XZ:		
+		axis = { 0, 1, 0 };
+		break;
+	case Axis::YZ:		
+		axis = { 1, 0, 0 };
+		break;
+	case Axis::XYZ:		
+		axis = m_camera.GetFront();
+		break;
 	case Axis::None:	return { 0, 0, 0 };
 	default:			return { 0, 0, 0 };
 	}
+
+	if (!m_localGizmo || !m_selectedObject) return axis;
+
+	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis); 
 }
 
 bool Apex::Editor::Viewport::IsAxisSingle() const
@@ -327,15 +355,12 @@ void Viewport::Draw()
 {
 	float aspectRatio = m_width / m_height;
 
-	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(aspectRatio);
-
-	m_rhi->BindFrameBuffer(m_fbo, m_width, m_height);
-	m_rhi->Clear();
-
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_camera = &m_camera;
+	pass.m_target = m_fbo;
+	if (m_showColliders)
+		pass.m_flags |= ShowCollider;
 
 	if (m_isFirstFullScreen)
 	{
@@ -356,23 +381,42 @@ void Viewport::Draw()
 		}
 	}
 
-
 	m_gui->BeginPanel("Viewport");
 
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_editor->GetApp()->Render(&m_camera);
+	m_editor->GetApp()->Render(pass);
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
-		DrawGrid();
+		if (m_showGrid) DrawGrid();
 		m_rhi->ClearDepth();
-		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition());
+
+		LibMath::Matrix4 view = m_camera.GetViewMatrix();
+		LibMath::Matrix4 proj = m_camera.GetProjection();
+		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
 	m_rhi->UnBindFrameBuffer();
 
 
-	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_gui->GetPanelPos(), m_gui->GetPanelPos() + m_gui->GetPanelSize());
+	float panelRatio = m_panelSize[0] / m_panelSize[1];
+	LibMath::Vector2 drawSize;
+	LibMath::Vector2 offset;
+
+	if (panelRatio > aspectRatio)
+	{
+		drawSize[1] = m_panelSize[1];
+		drawSize[0] = drawSize[1] * aspectRatio;
+		offset[0] = (m_panelSize[0] - drawSize[0]) * 0.5f;
+	}
+	else
+	{
+		drawSize[0] = m_panelSize[0];
+		drawSize[1] = drawSize[0] / aspectRatio;
+		offset[1] = (m_panelSize[1] - drawSize[1]) * 0.5f;
+	}
+
+	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_panelPos + offset, m_panelPos + offset + drawSize);
 
 	DrawUI();
 
@@ -385,7 +429,7 @@ void Viewport::DrawUI()
 
 	if (m_gui->Button("Play")) m_editor->SetEditorState(EditorState::Play);
 	m_gui->SameLine();
-	if (m_gui->Button("Pause")) 
+	if (m_gui->Button("Pause"))
 	{
 		if (m_editor->GetEditorState() == EditorState::Play)
 			m_editor->SetEditorState(EditorState::Pause);
@@ -395,10 +439,20 @@ void Viewport::DrawUI()
 	m_gui->SameLine();
 	if (m_gui->Button("Step") && m_editor->GetEditorState() == EditorState::Pause) m_editor->SetEditorState(EditorState::Step);
 	m_gui->SameLine();
-	if (m_gui->Button("Stop")) m_editor->SetEditorState(EditorState::Edit);
+	if (m_gui->Button("Stop")) 
+	{
+		m_editor->SetEditorState(EditorState::Edit);
+		SelectObject(nullptr);
+	}
+	m_gui->SameLine();
+	m_gui->Checkbox("Grid", &m_showGrid);
+	m_gui->SameLine();
+	m_gui->Checkbox("Colliders", &m_showColliders);
 
 	if (m_editor->GetEditorState() != EditorState::Edit) return;
 
+	m_gui->Checkbox("Local Gizmo", &m_localGizmo);
+	m_gui->SameLine();
 	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
 	m_gui->SameLine();
 	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);
@@ -429,27 +483,13 @@ void Viewport::DrawGrid()
 	m_gridShader->Use();
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
-	LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(m_width / m_height);
+	LibMath::Matrix4 proj = m_camera.GetProjection();
 	LibMath::Matrix4 invViewProj = proj * view;
 	m_gridShader->SetUniform("uViewProj", invViewProj);
 	invViewProj.inverse();
 	m_gridShader->SetUniform("uInvViewProj", invViewProj);
 
 	m_gridShader->SetUniform("uCameraPos", m_camera.GetPosition());
-	m_grid.Draw();
-}
 
-void Viewport::CreateGrid()
-{
-	m_grid.m_vertices.push_back(Vertex());
-
-	m_grid.m_indices =
-	{
-		0, 1, 2, // Triangle 1
-		0, 2, 3  // Triangle 2
-	};
-
-	m_grid.SetRhi(m_rhi);
-	m_grid.UploadToGpu();
-	m_grid.ClearVertices();
+	m_rhi->DrawEmpty();
 }
