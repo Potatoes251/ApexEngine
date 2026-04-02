@@ -10,9 +10,8 @@
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/PointLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
+#include "Lighting/Lights.h"
+#include "Controller/PlayerController.h"
 
 #include <fstream>
 #include <iostream>
@@ -28,6 +27,8 @@ namespace Apex::Rendering
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
+
+		copy->m_mainCamera = m_mainCamera;
 
 		for (const auto& obj : m_objects)
 		{
@@ -116,13 +117,28 @@ namespace Apex::Rendering
 	void Scene::Start()
 	{
 		for (auto& obj : m_objects)
+		{
 			obj->Start();
+
+			if (m_mainCamera) continue;
+
+			Controller::PlayerController* player = obj->GetComponent<Controller::PlayerController>();
+			if (player)
+			{
+				m_mainCamera = obj->GetComponent<Camera>();
+			}
+		}
 	}
 
 	void Scene::Update(float deltaTime_s)
 	{
 		for (auto& obj : m_objects)
 			obj->Update(deltaTime_s);
+
+		if (m_mainCamera)
+		{
+			m_mainCamera->SetPosition(m_mainCamera->GetOwner()->GetGlobalTransform().getPosition());
+		}
 	}
 
 	void Scene::FixedUpdate(float deltaTime_s)
@@ -132,9 +148,6 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
-		if (!passInfo.m_camera) passInfo.m_camera = m_mainCamera;
-
-
 		for (auto& obj : m_objects)
 		{
 			passInfo.m_id++;

@@ -17,25 +17,21 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_cube.SetRhi(rhi);
     m_cone.SetRhi(rhi);
     m_cylinder.SetRhi(rhi);
-    m_circle.SetRhi(rhi);
     m_thorus.SetRhi(rhi);
 
     CreateCube();
     CreateCone();
-    CreateCircle();
     CreateThorus();
     CreateCylinder();
 
     m_cube.UploadToGpu();
     m_cone.UploadToGpu();
     m_cylinder.UploadToGpu();
-    m_circle.UploadToGpu();
     m_thorus.UploadToGpu();
 
     m_cube.ClearVertices();
     m_cone.ClearVertices();
     m_cylinder.ClearVertices();
-    m_circle.ClearVertices();
     m_thorus.ClearVertices();
 }
 
@@ -220,8 +216,7 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
         m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::X, picking));
 
-        if (picking)    m_thorus.Draw();
-        else            m_circle.DrawLineLoop();
+        m_thorus.Draw();
     }
     // Y axis (GREEN)
     {
@@ -233,8 +228,7 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
         m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Y, picking));
 
-        if (picking)    m_thorus.Draw();
-        else            m_circle.DrawLineLoop();
+        m_thorus.Draw();
     }
     // Z axis (BLUE)
     {
@@ -246,8 +240,7 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
         m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::Z, picking));
 
-        if (picking)    m_thorus.Draw();
-        else            m_circle.DrawLineLoop();
+        m_thorus.Draw();
     }
 }
 
@@ -510,29 +503,10 @@ void Gizmos::CreateCylinder()
     }
 }
 
-void Gizmos::CreateCircle()
-{
-    constexpr float radius = 1.0f;
-    constexpr int segments = 32;
-
-    for (int i = 0; i < segments; i++)
-    {
-        float angle = (float)i / segments * g_twoPi;
-        float x = cos(angle) * radius;
-        float z = sin(angle) * radius;
-
-        m_circle.m_vertices.push_back({ {x, 0, z}, {0,0,0}, {0,0} });
-
-        // connect current to next
-        m_circle.m_indices.push_back(i);
-        m_circle.m_indices.push_back((i + 1) % segments);
-    }
-}
-
 void Gizmos::CreateThorus()
 {
     constexpr float circleRadius = 1.0f;
-    constexpr float thickness = 0.05f;
+    constexpr float thickness = 0.03f;
 
     constexpr int ringSegment = 64;
     constexpr int tubeSegment = 16;

@@ -34,6 +34,8 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
 {
+	if (!m_isFocus) return;
+
 	m_camera.ProcessKeyboard(
 		window->IsKeyPressed(Windowing::Key::W),
 		window->IsKeyPressed(Windowing::Key::S),
@@ -46,13 +48,13 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
-	if (m_editor->GetEditorState() != EditorState::Edit) return;
+	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
 	PerformPicking({ (float)mouseX, (float)mouseY });
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
-	if (m_editor->GetEditorState() != EditorState::Edit) return;
+	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
 	m_selectedAxis = Axis::None;
 }
 
@@ -357,10 +359,14 @@ void Viewport::Draw()
 
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
-	pass.m_camera = &m_camera;
 	pass.m_target = m_fbo;
 	if (m_showColliders)
 		pass.m_flags |= ShowCollider;
+
+	if (m_editor->GetEditorState() == EditorState::Play)
+		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	if (!pass.m_camera)
+		pass.m_camera = &m_camera;
 
 	if (m_isFirstFullScreen)
 	{
@@ -383,6 +389,7 @@ void Viewport::Draw()
 
 	m_gui->BeginPanel("Viewport");
 
+	m_isFocus = m_gui->IsPanelFocused();
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
@@ -443,6 +450,11 @@ void Viewport::DrawUI()
 	{
 		m_editor->SetEditorState(EditorState::Edit);
 		SelectObject(nullptr);
+		if (m_isFullScreen)
+		{
+			m_isFullScreen = false;
+			m_isFirstFullScreen = true;
+		}
 	}
 	m_gui->SameLine();
 	m_gui->Checkbox("Grid", &m_showGrid);

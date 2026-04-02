@@ -72,14 +72,25 @@ namespace Apex::Editor
                 if (key == Key::P && action == KeyAction::Press)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
 
-                if (key == Key::F && action == KeyAction::Press)
+                if (m_editorState == EditorState::Play && key == Key::F && action == KeyAction::Press)
                     m_viewport->ToggleFullScreen();
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
             {
-                if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
-                    m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
+                if (m_editorState == EditorState::Play)
+                {
+                    Camera* mainCam = m_app->GetScene()->GetMainCamera();
+                    if (mainCam)
+                        mainCam->ProcessMouse(mouseX, mouseY);
+                    else
+                        m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
+                }
+                else if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
+                {
+                    if (m_viewport->IsFocus())
+                        m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
+                }
                 else
                 {
                     Windowing::MousePosition pos = m_window->GetMousePosition();
@@ -228,14 +239,17 @@ namespace Apex::Editor
         if (m_editorState == newState)
             return;
         
+        // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
             m_editScene = m_app->GetScene()->Clone();
             m_app->SetScene(m_editScene->Clone());
 
+            m_app->GetScene()->Start();
+
             m_hierarchy->SetScene(m_app->GetScene());
         }
-        
+        // stop
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());

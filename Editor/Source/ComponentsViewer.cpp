@@ -1,14 +1,20 @@
 #include "ComponentsViewer.h"
 #include "ResourceHandle.h"
 #include "MeshRenderer.h"
+
 #include "MeshCollider.h"
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "Rigidbody.h"
+
 #include "ScriptComponent.h"
+
 #include "Lighting/Lights.h"
+
 #include "FirstPersonCamera.h"
 #include "ThirdPersonCamera.h"
+
+#include "Controller/PlayerController.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -108,6 +114,11 @@ void ComponentsViewer::Draw()
 		if (m_gui.MenuItem("Third Person Camera"))
 		{
 			m_selectedObj->AddComponent<ThirdPersonCamera>();
+		}
+
+		if (m_gui.MenuItem("Player Controller"))
+		{
+			m_selectedObj->AddComponent<Controller::PlayerController>();
 		}
 
 		m_gui.EndPopup();
