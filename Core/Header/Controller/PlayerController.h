@@ -15,12 +15,12 @@ namespace Apex::Controller
 		~PlayerController() = default;
 
 
-		virtual void Serialize(std::ostream& out) const {}
+		void Serialize(std::ostream& out) const override;
 
-		virtual std::unique_ptr<Component> Clone() const { return std::make_unique<PlayerController>(*this); }
+		std::unique_ptr<Component> Clone() const override { return std::make_unique<PlayerController>(*this); }
 
-		virtual const char* GetTypeName() const { return "PlayerController"; }
-		virtual std::vector<ExposedVar> GetExposedVariables() { return std::vector<ExposedVar>(); }
+		const char* GetTypeName() const override { return "PlayerController"; }
+		std::vector<ExposedVar> GetExposedVariables() override { return std::vector<ExposedVar>(); }
 
 	private:
 

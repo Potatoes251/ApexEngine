@@ -12,8 +12,8 @@
     "id": 12,
     "parent": null,
     "name": "Sphere",
-    "position": [0.000000,3.000000,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "position": [-0.000406,2.872014,0.000156],
+    "rotation": [-0.000129,-0.000064,-0.000176,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
@@ -54,6 +54,9 @@
         "intensity": 10.000000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
+      },
+      "PlayerController": {
+        "enabled": true
       }
     }
   },
@@ -89,8 +92,8 @@
     "id": 14,
     "parent": null,
     "name": "Floor",
-    "position": [0.000000,5.000000,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "position": [-0.000116,5.897200,-0.000184],
+    "rotation": [0.000229,-0.000007,-0.000208,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {

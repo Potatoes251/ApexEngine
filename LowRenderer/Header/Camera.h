@@ -16,7 +16,7 @@ namespace Apex::Rendering
 		Camera(const Camera&) = delete;
 		Camera& operator=(const Camera&) = delete;
 
-		void			 SetProjectionMatrix(float aspect, float near = 0.1f, float far = 100.f);
+		void			 SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
 		LibMath::Matrix4 GetViewProj();
 		LibMath::Matrix4 GetProjection();
 		LibMath::Matrix4 GetViewMatrix();
@@ -24,6 +24,8 @@ namespace Apex::Rendering
 		virtual LibMath::Vector3 GetFront() const = 0;
 
 		void SetPosition(LibMath::Vector3 pos);
+
+		virtual void OnStart() override;
 
 		virtual void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) = 0;
 

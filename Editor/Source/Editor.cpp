@@ -43,15 +43,15 @@ namespace Apex::Editor
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
-            *m_editScene,
+            *app.GetScene(),
             *m_app->GetResourceManager(),
-            *m_editScene->GetPhysic(),
+            *app.GetScene()->GetPhysic(),
             *m_app->GetLuaManager()
         );
 
         m_hierarchy = std::make_unique<Hierarchy>(
             *m_gui,
-            m_editScene.get(),
+            app.GetScene(),
             m_componentsViewer.get()
         );
 

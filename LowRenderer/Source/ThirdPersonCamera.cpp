@@ -1,5 +1,7 @@
 #include "ThirdPersonCamera.h"
 
+#include "../../Resources/Header/Object.h"
+
 #include "LibMath/Angle.h"
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
@@ -45,7 +47,19 @@ void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 
 std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 {
-	return { { "distance to target" ,Apex::ExposedVar::Float, &m_distance } };
+	return { { "distance to target" , Apex::ExposedVar::Float, &m_distance },
+			{ "follow speed" , Apex::ExposedVar::Float, &m_speed } };
+}
+
+void ThirdPersonCamera::OnUpdate(float deltatime_s)
+{
+	Object* owner = GetOwner();
+	if (owner)
+	{
+		float t = 1.0f - std::exp(-m_speed * deltatime_s);
+
+		m_target = LibMath::Vector3::lerp(m_target, owner->GetGlobalTransform().getPosition(), t);
+	}
 }
 
 void ThirdPersonCamera::UpdateMatrices()
@@ -57,5 +71,6 @@ void ThirdPersonCamera::UpdateMatrices()
 	direction.normalize();
 	m_position = m_target - direction * m_distance;
 	m_view = LibMath::Matrix4::lookAt(m_position, m_target, LibMath::Vector3::up());
+	m_viewProj = m_proj * m_view;
 	m_dirty = false;
 }

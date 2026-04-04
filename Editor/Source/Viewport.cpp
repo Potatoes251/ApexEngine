@@ -180,19 +180,24 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	{
 		m_selectedAxis = static_cast<Axis>(id);
 
-		LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
-
 		m_initialTransform = m_selectedObject->GetGlobalTransform();
 
-		if (m_currentGizmoMode != GizmoMode::Rotation)
-		{
-			ComputePlane();
-			m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
-		}
+		LibMath::Line3D ray = ScreenToWorldRay(mousePos, m_camera.GetViewProj(), m_panelPos, m_panelSize);
+
+		if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
 		else ComputePlaneRotation();
 
-		m_rhi->UnBindFrameBuffer();
-		return;
+		if (LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint))
+		{
+			if (m_currentGizmoMode != GizmoMode::Rotation)
+			{
+				LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
+				m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
+			}
+
+			m_rhi->UnBindFrameBuffer();
+			return;
+		}
 	}
 
 	m_selectedAxis = Axis::None;

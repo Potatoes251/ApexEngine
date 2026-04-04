@@ -29,8 +29,8 @@ namespace Apex
 
         virtual void OnStart() {}
         virtual void OnDestroy() {}
-        virtual void OnUpdate(float deltaTime) {}
-        virtual void OnFixedUpdate(float fixedDeltaTime) {}
+        virtual void OnUpdate(float deltatime_s) {}
+        virtual void OnFixedUpdate(float fixedDeltaTime_s) {}
         virtual void Serialize(std::ostream& out) const = 0;
 
         virtual std::unique_ptr<Component> Clone() const = 0;

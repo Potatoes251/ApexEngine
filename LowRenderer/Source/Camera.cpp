@@ -40,4 +40,9 @@ namespace Apex::Rendering
 		m_position = pos; 
 		m_dirty = true;
 	}
+
+	void Camera::OnStart()
+	{
+		SetProjectionMatrix();
+	}
 }

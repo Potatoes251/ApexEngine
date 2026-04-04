@@ -10,6 +10,7 @@
 #include "Lighting/DirectionalLightComponent.h"
 #include "Lighting/SpotLightComponent.h"
 #include "Lighting/PointLightComponent.h"
+#include "Controller/PlayerController.h"
 
 #include <fstream>
 #include <sstream>
@@ -397,6 +398,15 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(
                 LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
+            comp.SetEnabled(enabled);
+        }
+        else if (compName == "PlayerController")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+
+            auto& comp = obj->AddComponent<Apex::Controller::PlayerController>();
             comp.SetEnabled(enabled);
         }
 

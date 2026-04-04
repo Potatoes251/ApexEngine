@@ -116,16 +116,15 @@ void Gizmos::DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking)
 
 void Gizmos::DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking)
 {
-    float length = 1.0f * m_distanceToCamera;
     float thickness = 0.05f * m_distanceToCamera;
-    constexpr float handleScale = 2.f;
+    constexpr float handleScale = 4.f;
 
     // (WHITE)
     {
         LibMath::Matrix4 model = LibMath::Matrix4::createTransform(
             LibMath::Vector3(0, 0, 0),
             { 1,0,0 }, LibMath::Degree(0),
-            { thickness * handleScale * 1.5f, thickness * handleScale * 1.5f, thickness * handleScale * 1.5f });
+            { thickness * handleScale, thickness * handleScale, thickness * handleScale });
 
         m_shader->SetUniform("uModel", transMatrix * model);
         m_shader->SetUniform("uColor", GetColor(Axis::XYZ, picking));
@@ -332,9 +331,9 @@ LibMath::Vector3 Gizmos::GetColor(Axis axis, bool picking)
     {
         int id = static_cast<int>(axis);
         LibMath::Vector3 color;
-        color[0] = (id >> 16) & 0xFF; // highest byte
-        color[1] = (id >> 8) & 0xFF;  // middle byte
-        color[2] = id & 0xFF;         // lowest byte
+        color[0] = (float)((id >> 16) & 0xFF); // highest byte
+        color[1] = (float)((id >> 8) & 0xFF);  // middle byte
+        color[2] = (float)(id & 0xFF);         // lowest byte
         return color / 255.f;
     }
 
@@ -353,6 +352,8 @@ LibMath::Vector3 Gizmos::GetColor(Axis axis, bool picking)
         assert(false && "Unhandled axis type");
         break;
     }
+
+    return { 0.f, 0.f, 0.f };
 }
 
 void Gizmos::CreateCube()
@@ -513,11 +514,11 @@ void Gizmos::CreateThorus()
 
     for (int i = 0; i <= ringSegment; ++i)
     {
-        float u = (float)i / ringSegment * 2.0f * M_PI;
+        float u = (float)i / ringSegment * 2.0f * g_Pi;
 
         for (int j = 0; j <= tubeSegment; ++j)
         {
-            float v = (float)j / tubeSegment * 2.0f * M_PI;
+            float v = (float)j / tubeSegment * 2.0f * g_Pi;
 
             float cosU = cos(u);
             float sinU = sin(u);
