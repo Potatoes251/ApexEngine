@@ -21,7 +21,7 @@ CapsuleCollider& Apex::Physic::CapsuleCollider::operator=(CapsuleCollider const&
 
 void CapsuleCollider::Serialize(std::ostream& out) const
 {
-    out << "      \"BoxCollider\": {\n";
+    out << "      \"CapsuleCollider\": {\n";
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 
     out << "        \"halfHeight\": " << m_halfHeight<< ",\n";

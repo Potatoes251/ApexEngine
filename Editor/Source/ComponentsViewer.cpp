@@ -14,7 +14,7 @@
 #include "FirstPersonCamera.h"
 #include "ThirdPersonCamera.h"
 
-#include "Controller/PlayerController.h"
+#include "CharacterController.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -116,9 +116,9 @@ void ComponentsViewer::Draw()
 			m_selectedObj->AddComponent<ThirdPersonCamera>();
 		}
 
-		if (m_gui.MenuItem("Player Controller"))
+		if (m_gui.MenuItem("Character Controller"))
 		{
-			m_selectedObj->AddComponent<Controller::PlayerController>();
+			m_selectedObj->AddComponent<Controller::CharacterController>();
 		}
 
 		m_gui.EndPopup();

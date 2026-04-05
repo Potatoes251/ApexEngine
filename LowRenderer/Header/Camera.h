@@ -13,8 +13,8 @@ namespace Apex::Rendering
 	public:
 		Camera(LibMath::Vector3 position = LibMath::Vector3(0.f, 0.f, 10.f));
 		~Camera() = default;
-		Camera(const Camera&) = delete;
-		Camera& operator=(const Camera&) = delete;
+		Camera(const Camera&) = default;
+		Camera& operator=(const Camera&) = default;
 
 		void			 SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
 		LibMath::Matrix4 GetViewProj();
@@ -26,6 +26,8 @@ namespace Apex::Rendering
 		void SetPosition(LibMath::Vector3 pos);
 
 		virtual void OnStart() override;
+
+		virtual std::vector<ExposedVar> GetExposedVariables() override;
 
 		virtual void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) = 0;
 
@@ -45,6 +47,7 @@ namespace Apex::Rendering
 		float			m_speed = 2.5f;
 
 		bool			m_dirty = true;
+		bool			m_isMain = false;
 	private:
 	};
 }

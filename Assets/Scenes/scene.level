@@ -25,15 +25,8 @@
       },
       "RigidBody": {
         "enabled": true,
-        "type": "Dynamic",
+        "type": "Kinematic",
         "mass": 1.000000
-      },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": 0
       },
       "SpotLight": {
         "enabled": true,
@@ -55,8 +48,12 @@
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
       },
-      "PlayerController": {
-        "enabled": true
+      "CapsuleCollider": {
+        "enabled": true,
+        "halfHeight": 0.500000,
+        "radius": 0.200000,
+        "isTrigger": false,
+        "material": null
       }
     }
   },

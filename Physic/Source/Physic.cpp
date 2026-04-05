@@ -203,7 +203,8 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 }
 
 bool PhysicSystem::Sweep(
-	HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance)
+	HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, 
+	Collider const& collider, float distance)
 {
 	physx::PxTransform startPose(ToPxVec(position));
 
@@ -467,7 +468,12 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float halfHeight = capsule.GetHalfHeight();
 	float radius = capsule.GetRadius();
 
-	return m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
+	physx::PxShape* shape = m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
+
+	physx::PxQuat rotation(physx::PxHalfPi, physx::PxVec3(0, 0, 1));
+	shape->setLocalPose(physx::PxTransform(rotation));
+
+	return shape;
 }
 
 physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody)
@@ -516,9 +522,11 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 	physx::PxRigidDynamic* body = m_pxCtx.m_physics->createRigidDynamic(transform);
 
 	body->attachShape(*shape);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBody.m_lockRotationX);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidBody.m_lockRotationY);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidBody.m_lockRotationZ);
 
 	physx::PxRigidBodyExt::updateMassAndInertia(*body, rigidBody.GetMass());
-
 	m_scene->addActor(*body);
 
 	body->userData = &rigidBody;

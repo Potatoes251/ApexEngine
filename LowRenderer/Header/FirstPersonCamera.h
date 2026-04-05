@@ -26,7 +26,6 @@ namespace Apex::Rendering
 
 		const char* GetTypeName() const override { return "FirstPersonCamera"; }
 		void Serialize(std::ostream& out) const override {}
-		std::vector<ExposedVar> GetExposedVariables() override;
 
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<FirstPersonCamera>(*this); }
 

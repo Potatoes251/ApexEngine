@@ -24,8 +24,8 @@ namespace Apex
         Component() = default;
         virtual ~Component() = default;
 
-        Component(const Component&) = delete;
-        Component& operator=(const Component&) = delete;
+        Component(const Component&) = default;
+        Component& operator=(const Component&) = default;
 
         virtual void OnStart() {}
         virtual void OnDestroy() {}

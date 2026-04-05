@@ -46,11 +46,6 @@ void FirstPersonCamera::ProcessKeyboard(bool moveForward, bool moveBackward, boo
 	m_dirty = true;
 }
 
-std::vector<Apex::ExposedVar> FirstPersonCamera::GetExposedVariables()
-{
-	return std::vector<Apex::ExposedVar>();
-}
-
 void FirstPersonCamera::UpdateVectors()
 {
 	m_front[0] = LibMath::cos(m_yaw) * LibMath::cos(m_pitch);

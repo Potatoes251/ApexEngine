@@ -45,4 +45,9 @@ namespace Apex::Rendering
 	{
 		SetProjectionMatrix();
 	}
+
+	std::vector<Apex::ExposedVar> Camera::GetExposedVariables()
+	{
+		return { { "main camera" , Apex::ExposedVar::Bool, &m_isMain } };
+	}
 }

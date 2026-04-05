@@ -11,7 +11,7 @@
 #include "BoxCollider.h"
 
 #include "Lighting/Lights.h"
-#include "Controller/PlayerController.h"
+#include "CharacterController.h"
 
 #include <fstream>
 #include <iostream>
@@ -120,12 +120,19 @@ namespace Apex::Rendering
 		{
 			obj->Start();
 
+			Controller::CharacterController* character = obj->GetComponent<Controller::CharacterController>();
+
+			if (character) 
+			{
+				character->SetPhysic(&m_physics);
+			}
+
 			if (m_mainCamera) continue;
 
-			Controller::PlayerController* player = obj->GetComponent<Controller::PlayerController>();
-			if (player)
+			Camera* camera = obj->GetComponent<Camera>();
+			if (camera)
 			{
-				m_mainCamera = obj->GetComponent<Camera>();
+				m_mainCamera = camera;
 			}
 		}
 	}
@@ -133,7 +140,13 @@ namespace Apex::Rendering
 	void Scene::Update(float deltaTime_s)
 	{
 		for (auto& obj : m_objects)
+		{
 			obj->Update(deltaTime_s);
+			if (Apex::Controller::CharacterController* cc = obj->GetComponent<Apex::Controller::CharacterController>())
+			{
+				cc->Move({ 0,0,1 });
+			}
+		}
 
 		if (m_mainCamera)
 		{
@@ -144,6 +157,8 @@ namespace Apex::Rendering
 	void Scene::FixedUpdate(float deltaTime_s)
 	{
 		m_physics.Update(deltaTime_s);
+		for (auto& obj : m_objects)
+			obj->FixedUpdate(deltaTime_s);
 	}
 
 	void Scene::Render(RenderPassInfo passInfo)

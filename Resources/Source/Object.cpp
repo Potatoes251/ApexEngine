@@ -62,6 +62,24 @@ void Object::SetLocalTransform(const Transform& transform)
 	m_owner->MarkDirty();
 }
 
+void Object::SetLocalPosition(const LibMath::Vector3& position)
+{
+	m_localTransform.setPosition(position);
+	m_owner->MarkDirty();
+}
+
+void Object::SetLocalRotation(const LibMath::Quaternion& rotation)
+{
+	m_localTransform.setRotation(rotation);
+	m_owner->MarkDirty();
+}
+
+void Object::SetLocalScale(const LibMath::Vector3& scale)
+{
+	m_localTransform.setScale(scale);
+	m_owner->MarkDirty();
+}
+
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 {
 	m_globalTransform = transform;
@@ -104,14 +122,22 @@ void Object::Start()
 			comp->OnStart();
 }
 
-void Object::Update(float deltaTime)
+void Object::FixedUpdate(float deltaTime_s)
 {
 	for (auto& comp : m_components)
 	{
 		if (comp->IsEnabled())
-			comp->OnUpdate(deltaTime);
+			comp->OnFixedUpdate(deltaTime_s);
 	}
-	auto pos = m_localTransform.getPosition();
+}
+
+void Object::Update(float deltaTime_s)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnUpdate(deltaTime_s);
+	}
 }
 
 void Object::AddComponentDirect(std::unique_ptr<Component> comp)

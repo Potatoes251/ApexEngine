@@ -47,8 +47,12 @@ void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 
 std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 {
-	return { { "distance to target" , Apex::ExposedVar::Float, &m_distance },
-			{ "follow speed" , Apex::ExposedVar::Float, &m_speed } };
+	std::vector<Apex::ExposedVar> var = Camera::GetExposedVariables();
+
+	var.push_back({ "distance to target" , Apex::ExposedVar::Float, &m_distance });
+	var.push_back({ "follow speed" , Apex::ExposedVar::Float, &m_speed });
+
+	return var;
 }
 
 void ThirdPersonCamera::OnUpdate(float deltatime_s)
@@ -56,9 +60,9 @@ void ThirdPersonCamera::OnUpdate(float deltatime_s)
 	Object* owner = GetOwner();
 	if (owner)
 	{
-		float t = 1.0f - std::exp(-m_speed * deltatime_s);
+		float lerpFactor = 1.0f - std::exp(-m_speed * deltatime_s);
 
-		m_target = LibMath::Vector3::lerp(m_target, owner->GetGlobalTransform().getPosition(), t);
+		m_target = LibMath::Vector3::lerp(m_target, owner->GetGlobalTransform().getPosition(), lerpFactor);
 	}
 }
 

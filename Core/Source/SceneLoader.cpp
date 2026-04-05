@@ -10,7 +10,7 @@
 #include "Lighting/DirectionalLightComponent.h"
 #include "Lighting/SpotLightComponent.h"
 #include "Lighting/PointLightComponent.h"
-#include "Controller/PlayerController.h"
+#include "CharacterController.h"
 
 #include <fstream>
 #include <sstream>
@@ -400,13 +400,23 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
                 LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
             comp.SetEnabled(enabled);
         }
-        else if (compName == "PlayerController")
+        else if (compName == "CharacterController")
         {
             parser.ParseString();
             parser.Expect(':');
             bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float groundedDistance = parser.ParseFloat();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
 
-            auto& comp = obj->AddComponent<Apex::Controller::PlayerController>();
+            auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
             comp.SetEnabled(enabled);
         }
 
