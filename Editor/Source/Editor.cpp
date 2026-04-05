@@ -27,6 +27,16 @@ namespace Apex::Editor
         if (!m_window) return false;
 
         m_window->Maximize();
+
+        m_window->SetCloseCallback([this]()
+            {
+                m_window->SetShouldClose(false);
+                if (m_app->GetScene() && m_app->GetScene()->IsDirty())
+                    m_confirmClosePopup = true;
+                else
+                    m_window->SetShouldClose(true);
+            });
+
         return true;
     }
 
@@ -40,19 +50,27 @@ namespace Apex::Editor
 
         m_editScene = app.GetScene()->Clone();
 
+        app.GetScene()->ClearDirty();
+
+        app.GetScene()->SetOnMarkedDirtyCallback([this]()
+            {
+                m_window->SetWindowTitle("Apex Editor *");
+            });
+
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
-            *m_editScene,
+            *app.GetScene(),
             *m_app->GetResourceManager(),
-            *m_editScene->GetPhysic(),
+            *app.GetScene()->GetPhysic(),
             *m_app->GetLuaManager()
         );
 
         m_hierarchy = std::make_unique<Hierarchy>(
             *m_gui,
-            m_editScene.get(),
-            m_componentsViewer.get()
+            app.GetScene(),
+            m_componentsViewer.get(),
+            *m_window
         );
 
         m_viewport = std::make_unique<Viewport>(
@@ -70,7 +88,10 @@ namespace Apex::Editor
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
                 if (key == Key::P && action == KeyAction::Press)
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
 
                 if (key == Key::F && action == KeyAction::Press)
                     m_viewport->ToggleFullScreen();
@@ -182,6 +203,8 @@ namespace Apex::Editor
         if (m_componentsViewer)
             m_componentsViewer->Draw();
 
+        HandleEditorClosing();
+
         m_gui->EndFrame();
 
         m_window->SwapBuffers();
@@ -208,6 +231,46 @@ namespace Apex::Editor
         default:
             break;
         }
+    }
+
+    void Editor::HandleEditorClosing()
+    {
+        m_gui->PushFont(FontID::Default);
+
+        if (m_confirmClosePopup)
+        {
+            m_gui->OpenPopup("ConfirmExit");
+            m_confirmClosePopup = false;
+        }
+
+        if (m_gui->BeginPopupModal("ConfirmExit", { 400.f, 0.f }))
+        {
+            m_gui->Text("\nUnsaved changes.\nExit anyway?\n\n");
+
+            if (m_gui->Button("Save & Exit"))
+            {
+                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_window->SetShouldClose(true);
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Exit"))
+            {
+                m_window->SetShouldClose(true);
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Cancel"))
+                m_gui->CloseCurrentPopup();
+
+            m_gui->EndPopup();
+        }
+
+        m_gui->PopFont();
     }
 
     void Editor::Shutdown()

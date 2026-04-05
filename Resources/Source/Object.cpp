@@ -53,6 +53,8 @@ std::unique_ptr<Object> Object::Clone()
 			cloneNode->AddChild(childClone->GetSceneNode());
 	}
 
+	clone->SetOnChangedCallback(m_onChanged);
+
 	return clone;
 }
 
@@ -60,12 +62,22 @@ void Object::SetLocalTransform(const Transform& transform)
 {
 	m_localTransform = transform;
 	m_owner->MarkDirty();
+
+	OnChanged();
 }
 
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 {
 	m_globalTransform = transform;
 	m_owner->MarkDirty();
+
+	OnChanged();
+}
+
+void Apex::Data::Object::SetName(std::string name)
+{
+	m_name = name;
+	OnChanged();
 }
 
 const Transform& Object::GetLocalTransform() const
@@ -125,6 +137,8 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	{
 		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
 	}
+
+	OnChanged();
 }
 
 void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys)
@@ -140,7 +154,20 @@ void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem
 
 			m_components.erase(m_components.begin() + i);
 
+			OnChanged();
+
 			return;
 		}
 	}
+}
+
+void Object::SetOnChangedCallback(std::function<void()> callback)
+{
+	m_onChanged = std::move(callback);
+}
+
+void Object::OnChanged()
+{
+	if (m_onChanged)
+		m_onChanged();
 }

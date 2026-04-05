@@ -11,6 +11,8 @@
 // the rest of the engine should include.
 // ============================================================
 
+using CloseCallback = std::function<void()>;
+
 namespace Apex::Windowing
 {
 	// ── Input types ──────────────────────────────────────────────
@@ -71,6 +73,8 @@ namespace Apex::Windowing
 		virtual float	GetAspectRatio() const = 0;
 		virtual float	GetDeltaTime() const = 0;
 
+		virtual void	SetWindowTitle(const std::string& title) = 0;
+
 		// Input
 		virtual bool			IsKeyPressed(Key key) const = 0;
 		virtual bool			IsMousButtonPressed(MouseButton key) const = 0;
@@ -99,6 +103,9 @@ namespace Apex::Windowing
 		virtual std::vector<std::filesystem::path> OpenFileDialog(bool allowMultiple = true) = 0;
 		virtual std::filesystem::path OpenFolderDialog() = 0;
 		virtual std::filesystem::path SaveFileDialog(const std::string& defaultName = "") = 0;
+
+		virtual void SetCloseCallback(CloseCallback callback) = 0;
+		virtual void SetShouldClose(bool close) = 0;
 	};
 
 	// ── Factory ───────────────────────────────────────────────────

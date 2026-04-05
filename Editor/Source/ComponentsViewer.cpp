@@ -151,19 +151,23 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 		switch (var.type)
 		{
 			case ExposedVar::Float:
-				m_gui.SliderFloat(var.name, (float*)var.data, 0.0f, 10.0f);
+				if (m_gui.SliderFloatFormat(var.name, (float*)var.data, 0.0f, 10.0f, 50.f))
+					m_changed = true;
 				break;
 
 			case ExposedVar::Int:
-				m_gui.SliderInt(var.name, (int*)var.data, 0, 10);
+				if (m_gui.SliderIntFormat(var.name, (int*)var.data, 0, 10, 50.f))
+					m_changed = true;
 				break;
 
 			case ExposedVar::Bool:
-				m_gui.Checkbox(var.name, (bool*)var.data);
+				if (m_gui.CheckboxFormat(var.name, (bool*)var.data))
+					m_changed = true;
 				break;
 
 			case ExposedVar::String:
-				m_gui.InputText(var.name, (char*)var.data, 256);
+				if (m_gui.InputText(var.name, (char*)var.data, 256))
+					m_changed = true;
 				break;
 
 			case ExposedVar::Enum:
@@ -202,6 +206,27 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 		}
 	}
 
+	if (m_changed)
+		m_selectedObj->OnChanged();
+
+	if (m_meshPicker.HasNewAsset())
+	{
+		m_selectedObj->OnChanged();
+		m_meshPicker.ResetNewAsset();
+	}
+
+	if (m_texturePicker.HasNewAsset())
+	{
+		m_selectedObj->OnChanged();
+		m_texturePicker.ResetNewAsset();
+	}
+
+	if (m_scriptPicker.HasNewScript())
+	{
+		m_selectedObj->OnChanged();
+		m_scriptPicker.ResetNewScript();
+	}
+
 	m_gui.EndTreeNode();
 }
 
@@ -228,8 +253,11 @@ void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 	for (const auto& name : var.enumNames)
 		items += name + '\0';
 
-	if (m_gui.Combo(var.name, &value, items.c_str()))
+	if (m_gui.ComboFormat(var.name, &value, items.c_str()))
+	{
 		*(int*)var.data = value;
+		m_changed = true;
+	}
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
@@ -238,18 +266,21 @@ void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 
 	m_gui.Text(var.name);
 
-	m_gui.SliderFloat("X##" + var.name, &v[0], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Y##" + var.name, &v[1], -1000.0f, 1000.0f);
-	m_gui.SliderFloat("Z##" + var.name, &v[2], -1000.0f, 1000.0f);
+	m_gui.SameLine(150);
+	m_changed |= m_gui.SliderFloatFormat("X", &v[0], -1000.0f, 1000.0f, 50.0f);
+	m_gui.SameLine();
+	m_changed |= m_gui.SliderFloatFormat("Y", &v[1], -1000.0f, 1000.0f, 50.0f);
+	m_gui.SameLine();
+	m_changed |= m_gui.SliderFloatFormat("Z", &v[2], -1000.0f, 1000.0f, 50.0f);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
 {
 	PhysicMaterial* mat = (PhysicMaterial*)var.data;
 
-	m_gui.SliderFloat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f);
-	m_gui.SliderFloat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f);
-	m_gui.SliderFloat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f);
+	m_changed |= m_gui.SliderFloatFormat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f, 50.0f, 200.f);
+	m_changed |= m_gui.SliderFloatFormat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f, 50.0f, 200.f);
+	m_changed |= m_gui.SliderFloatFormat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f, 50.0f, 200.f);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
@@ -285,7 +316,5 @@ void ComponentsViewer::DrawComponentScript(ExposedVar var)
 	m_gui.Text("Script: " + script->GetScriptPath());
 
 	if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
-	{
 		m_scriptPicker.Open(script);
-	}
 }

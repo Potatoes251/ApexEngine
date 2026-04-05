@@ -114,14 +114,20 @@ namespace Apex::UserInterface
                          float padding = 2.f) override;
         bool SmallButton(const std::string& label) override;
         bool Checkbox(const std::string& label, bool* value) override;
+        bool CheckboxFormat(const std::string& label, bool* value) override;
         bool SliderFloat(const std::string& label, float* value, float min, float max) override;
         bool SliderInt(const std::string& label, int* value, int min, int max) override;
+        bool SliderFloatFormat(const std::string& label, float* value, float min, float max, float size, 
+                                float sliderPos = -1.f, float spacing = -1.f) override;
+        bool SliderIntFormat(const std::string& label, int* value, int min, int max, float size, 
+                                float sliderPos = -1.f, float spacing = -1.f) override;
         bool ColorEdit3(const std::string& label, float color[3]) override;
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
         bool InputFloat(const std::string& label, float* value) override;
 
         bool Combo(const std::string& label, int* currentItem, const char* items) override;
+        bool ComboFormat(const std::string& label, int* currentItem, const char* items) override;
         bool CollapsingHeader(const std::string& label, bool defaultOpen = false) override;
         bool InvisibleButton(const std::string& id, LibMath::Vector2 size) override;
 
@@ -162,6 +168,9 @@ namespace Apex::UserInterface
 
         void SetManagesCursor(bool manages) override;
 
+        void BeginModalBlock(const std::string& name) override;
+        void EndModalBlock() override;
+
 	private:
         static int ToImGuiMouseButton(MouseButton button);
         static int ToImGuiTreeFlags(TreeNodeFlags flags);
@@ -172,6 +181,9 @@ namespace Apex::UserInterface
         ImDrawListWrapper m_drawListWrapper;
 
 		static const std::vector<FontInitializer> m_fontDefinitions;
+
+        bool m_hasModal = false;
+        std::string m_modalName;
 	};
 }
 

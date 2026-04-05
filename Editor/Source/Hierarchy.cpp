@@ -9,16 +9,18 @@ using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Data;
+using namespace Apex::Windowing;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene* scene, ComponentsViewer* compViewer)
-    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer)
+    Scene* scene, ComponentsViewer* compViewer, IWindow& window)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_window(window)
 {
 }
 
 void Hierarchy::Draw()
 {
     m_gui.PushFont(FontID::Default);
+
     m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.Button(" + Add "))

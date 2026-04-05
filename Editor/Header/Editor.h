@@ -52,6 +52,8 @@ namespace Apex::Editor
 
 		void Update();
 
+		void HandleEditorClosing();
+
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
@@ -85,6 +87,8 @@ namespace Apex::Editor
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;
 
 		EditorState	m_editorState = EditorState::Edit;
+
+		bool m_confirmClosePopup = false;
 	};
 }
 
