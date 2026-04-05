@@ -34,7 +34,7 @@ namespace Apex::Editor
                 if (m_app->GetScene() && m_app->GetScene()->IsDirty())
                     m_confirmClosePopup = true;
                 else
-                    m_requestClose = true;
+                    m_window->SetShouldClose(true);
             });
 
         return true;
@@ -51,6 +51,11 @@ namespace Apex::Editor
         m_editScene = app.GetScene()->Clone();
 
         app.GetScene()->ClearDirty();
+
+        app.GetScene()->SetOnMarkedDirtyCallback([this]()
+            {
+                m_window->SetWindowTitle("Apex Editor *");
+            });
 
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
@@ -83,7 +88,10 @@ namespace Apex::Editor
         m_window->SetKeyCallback([&](Key key, KeyAction action)
             {
                 if (key == Key::P && action == KeyAction::Press)
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
 
                 if (key == Key::F && action == KeyAction::Press)
                     m_viewport->ToggleFullScreen();
@@ -223,9 +231,6 @@ namespace Apex::Editor
         default:
             break;
         }
-
-        if (m_requestClose)
-            m_window->SetShouldClose(true);
     }
 
     void Editor::HandleEditorClosing()
@@ -245,7 +250,7 @@ namespace Apex::Editor
             if (m_gui->Button("Save & Exit"))
             {
                 m_app->GetScene()->Save("Assets/Scenes/scene.level");
-                m_requestClose = true;
+                m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
 
@@ -253,7 +258,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Exit"))
             {
-                m_requestClose = true;
+                m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
 

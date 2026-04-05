@@ -8,7 +8,7 @@
 #include "ResourceManager.h"
 #include "Object.h"
 
-#include "../../Physic/Header/Physic.h"
+#include "Physic.h"
 
 #include "Skybox.h"
 
@@ -37,7 +37,7 @@ namespace Apex::Rendering
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 		void DestroyObject(Object* obj);
 
-		void MarkDirty() { m_isDirty = true; }
+		void MarkDirty();
 		void ClearDirty() { m_isDirty = false; }
 		bool IsDirty() const { return m_isDirty; }
 
@@ -53,6 +53,7 @@ namespace Apex::Rendering
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
 
 		void Save(const std::string& path);
+		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
 		Physic::PhysicSystem m_physics;
 
@@ -60,6 +61,8 @@ namespace Apex::Rendering
 		std::unique_ptr<Skybox> m_skybox;
 
 		bool m_isDirty = false;
+
+		std::function<void()> m_onMarkedDirty;
 	};
 }
 

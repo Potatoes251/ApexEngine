@@ -21,11 +21,6 @@ void Hierarchy::Draw()
 {
     m_gui.PushFont(FontID::Default);
 
-    if (m_scene->IsDirty())
-    {
-        m_window.SetWindowTitle("Apex Editor *");
-    }
-
     m_gui.BeginPanel("Hierarchy");
 
     if (m_gui.Button(" + Add "))

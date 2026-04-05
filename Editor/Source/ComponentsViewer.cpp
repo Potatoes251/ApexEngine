@@ -156,7 +156,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 				break;
 
 			case ExposedVar::Int:
-				if (m_gui.SliderIntFormat(var.name, (int*)var.data, 0.0f, 10.0f, 50.f))
+				if (m_gui.SliderIntFormat(var.name, (int*)var.data, 0, 10, 50.f))
 					m_changed = true;
 				break;
 

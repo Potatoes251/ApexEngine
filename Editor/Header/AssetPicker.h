@@ -83,7 +83,7 @@ namespace Apex::Resources
 
         m_gui.BeginModalBlock("Select Asset");
         
-        m_gui.BeginPanel("Select Asset", &m_isOpen, false);
+        m_gui.BeginPanel("Select Asset", &m_isOpen, false, true);
 
         if (m_gui.Button("Refresh"))
             ScanAssets();

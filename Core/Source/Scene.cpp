@@ -127,6 +127,13 @@ namespace Apex::Rendering
 			MarkDirty();
 		}
 	}
+
+	void Scene::MarkDirty()
+	{
+		m_isDirty = true;
+		if (m_onMarkedDirty)
+			m_onMarkedDirty();
+	}
 		
 	void Scene::Start()
 	{
@@ -320,6 +327,11 @@ namespace Apex::Rendering
 
 		std::cout << "Scene saved to " << path << std::endl;
 
-		MarkDirty();
+		ClearDirty();
+	}
+	void Scene::SetOnMarkedDirtyCallback(std::function<void()> callback)
+	{
+		if (callback)
+			m_onMarkedDirty = callback;
 	}
 }

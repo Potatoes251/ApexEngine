@@ -15,11 +15,9 @@ void ScriptPicker::Draw()
 
     m_gui.BeginModalBlock("Select Script");
 
-    m_gui.BeginPanel("Select Script", &m_isOpen);
+    m_gui.BeginPanel("Select Script", &m_isOpen, false, true);
 
-    m_gui.Text("Working dir: " + std::filesystem::current_path().string());
-
-    if (!std::filesystem::exists("Assets/Scripts/"))
+    if (!std::filesystem::exists("Assets/"))
     {
         m_gui.Text("Path not found!");
         m_gui.EndPanel();
@@ -30,12 +28,10 @@ void ScriptPicker::Draw()
 
     try
     {
-        for (auto& entry : std::filesystem::recursive_directory_iterator("Assets/Scripts/"))
+        for (auto& entry : std::filesystem::recursive_directory_iterator("Assets/"))
         {
             if (!entry.is_regular_file())
                 continue;
-
-            m_gui.Text(entry.path().string());
 
             if (entry.path().extension() != ".lua")
                 continue;

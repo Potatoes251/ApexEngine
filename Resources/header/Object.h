@@ -20,7 +20,7 @@ namespace Apex::Data
 	public:
 		Object();
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
-		Object(const Object& other);
+		Object(const Object& other) = delete;
 		Object&	operator=(const Object& other) = delete;
 		~Object() = default;
 
@@ -114,7 +114,7 @@ namespace Apex::Data
 
 		void OnChanged();
 		void SetOnChangedCallback(std::function<void()> callback);
-
+			
 	private:
 		size_t			m_id;
 		static size_t	m_nextId;
@@ -123,7 +123,7 @@ namespace Apex::Data
 		LibMath::Transform				m_localTransform;
 		LibMath::Transform				m_globalTransform;
 
-		std::function<void()> m_onChanged;
+		std::function<void()>			m_onChanged;
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;

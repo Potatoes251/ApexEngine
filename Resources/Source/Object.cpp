@@ -1,5 +1,4 @@
 #include "Object.h"
-#include "../../Core/Header/Scene.h"
 
 #include "../../Physic/Header/Rigidbody.h"
 
@@ -22,13 +21,6 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
-	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
-}
-
-Object::Object(const Object& other) :
-	m_localTransform(other.m_localTransform), m_globalTransform(other.m_globalTransform)
-{
 	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
 }
@@ -61,7 +53,7 @@ std::unique_ptr<Object> Object::Clone()
 			cloneNode->AddChild(childClone->GetSceneNode());
 	}
 
-	//clone->SetOnChangedCallback(m_onChanged);
+	clone->SetOnChangedCallback(m_onChanged);
 
 	return clone;
 }

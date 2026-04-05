@@ -268,12 +268,15 @@ namespace Apex::UserInterface
 
     void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar)
     {
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse;
         if (!dock)
             flags |= ImGuiWindowFlags_NoDocking;
 
         if (m_hasModal && title != m_modalName)
             flags |= ImGuiWindowFlags_NoInputs;
+
+        if (!titleBar) 
+            flags |= ImGuiWindowFlags_NoTitleBar;
 
         ImGui::Begin(title.c_str(), open, flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
