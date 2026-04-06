@@ -48,6 +48,7 @@ using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
 using namespace Apex::Lighting;
+using namespace Apex::Input;
 
 namespace Apex
 {
@@ -84,12 +85,12 @@ bool Apex::Application::InitWindow(IWindow* window)
     if (!m_window)
         return false;
 
-    m_window->SetKeyCallback([&](Key key, KeyAction action)
+    m_window->SetKeyCallback([&](Key key, bool down)
         {
-            if (key == Key::Escape && action == KeyAction::Press)
+            if (key == Key::Escape && down)
                 m_window->Close();
 
-            if (key == Key::P && action == KeyAction::Press)
+            if (key == Key::P && down)
                 m_scene->Save("Assets/Scenes/scene.level");
         });
 

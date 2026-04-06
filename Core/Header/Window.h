@@ -5,6 +5,8 @@
 #include <functional>
 #include <string>
 
+#include "InputSystem.h"
+
 // ============================================================
 // Window.h — Public windowing interface 
 // GLFW is NEVER referenced here. This is the only header
@@ -13,28 +15,6 @@
 
 namespace Apex::Windowing
 {
-	// ── Input types ──────────────────────────────────────────────
-	enum class Key
-	{
-		W, A, S, D, Q, E, P, F,
-		Up, Down, Left, Right,
-		Escape, Space,
-		Unknown
-	};
-
-	enum class KeyAction
-	{
-		Press,
-		Release,
-		Repeat
-	};
-
-	enum class MouseButton
-	{
-		Left,
-		Right,
-		Middle
-	};
 
 	struct MousePosition
 	{
@@ -43,9 +23,9 @@ namespace Apex::Windowing
 	};
 
 	// ── Callbacks ─────────────────────────────────────────────────
-	using KeyCallback = std::function<void(Key, KeyAction)>;
+	using KeyCallback = std::function<void(Input::Key, bool)>;
 	using MouseMoveCallback = std::function<void(double dx, double dy)>;
-	using MouseButtonCallback = std::function<void(MouseButton, bool)>;
+	using MouseButtonCallback = std::function<void(Input::MouseButton, bool)>;
 	using ScrollCallback = std::function<void(double xoffset, double yoffset)>;
 	using ResizeCallback = std::function<void(int width, int height)>;
 	using ExternalDropCallback = std::function<void(std::vector<std::filesystem::path>)>;
@@ -72,12 +52,9 @@ namespace Apex::Windowing
 		virtual float	GetDeltaTime() const = 0;
 
 		// Input
-		virtual bool			IsKeyPressed(Key key) const = 0;
-		virtual bool			IsMousButtonPressed(MouseButton key) const = 0;
-		virtual MousePosition	GetMousePosition() const = 0;
-		virtual void			SetCursorCaptured(bool captured) = 0;
-		virtual void			SetCrosshairCursor() = 0;
-		virtual void			ResetCursor() = 0;
+		virtual void	SetCursorCaptured(bool captured) = 0;
+		virtual void	SetCrosshairCursor() = 0;
+		virtual void	ResetCursor() = 0;
 
 		// Callbacks
 		virtual void SetKeyCallback(KeyCallback callback) = 0;

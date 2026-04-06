@@ -1,5 +1,7 @@
 ﻿#include "GLFWWindow.h"
 
+#include "InputSystem.h"
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -12,6 +14,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+using namespace Apex::Input;
 
 namespace Apex::Windowing 
 {
@@ -110,74 +113,6 @@ namespace Apex::Windowing
     float GLFWWindow::GetAspectRatio() const { return m_height ? (float)m_width / m_height : 1.f; }
 	float GLFWWindow::GetDeltaTime() const { return m_deltaTime; }
 
-	// ── Input ────────────────────────────────────────────────────
-    bool GLFWWindow::IsKeyPressed(Key key) const
-    {
-        int glfwKey = GLFW_KEY_UNKNOWN;
-        switch (key) 
-        {
-        case Key::W:      
-            glfwKey = GLFW_KEY_W;      
-            break;
-        case Key::A:      
-            glfwKey = GLFW_KEY_A;      
-            break;
-        case Key::S:      
-            glfwKey = GLFW_KEY_S;      
-            break;
-        case Key::D:      
-            glfwKey = GLFW_KEY_D;      
-            break;
-        case Key::Q:      
-            glfwKey = GLFW_KEY_Q;      
-            break;
-        case Key::E:      
-            glfwKey = GLFW_KEY_E;      
-            break;
-        case Key::P:
-            glfwKey = GLFW_KEY_P;
-            break;
-        case Key::F:
-            glfwKey = GLFW_KEY_F;
-            break;
-        case Key::Escape: 
-            glfwKey = GLFW_KEY_ESCAPE; 
-            break;
-        case Key::Space:  
-            glfwKey = GLFW_KEY_SPACE;  
-            break;
-        default: 
-            break;
-        }
-        return glfwGetKey(m_window, glfwKey) == GLFW_PRESS;
-	}
-
-    bool GLFWWindow::IsMousButtonPressed(MouseButton key) const
-    {
-        int glfwKey = GLFW_KEY_UNKNOWN;
-        switch (key)
-        {
-        case MouseButton::Left:
-            glfwKey = GLFW_MOUSE_BUTTON_LEFT;
-            break;
-        case MouseButton::Middle:
-            glfwKey = GLFW_MOUSE_BUTTON_MIDDLE;
-            break;
-        case MouseButton::Right:
-            glfwKey = GLFW_MOUSE_BUTTON_RIGHT;
-            break;
-        default:
-            break;
-        }
-        return glfwGetMouseButton(m_window, glfwKey) == GLFW_PRESS;
-    }
-
-    MousePosition GLFWWindow::GetMousePosition() const
-    {
-        double x, y;
-        glfwGetCursorPos(m_window, &x, &y);
-        return { x, y };
-	}
 
     void GLFWWindow::SetCursorCaptured(bool captured)
     {
@@ -297,24 +232,8 @@ namespace Apex::Windowing
         if (!self || !self->m_keyCallback)
             return;
 
-        KeyAction keyAction;
-
-        switch (action)
-        {
-        case GLFW_PRESS:
-            keyAction = KeyAction::Press;
-            break;
-        case GLFW_RELEASE:
-            keyAction = KeyAction::Release;
-            break;
-        case GLFW_REPEAT:
-            keyAction = KeyAction::Repeat;
-            break;
-        default:
-            return;
-        }
-
-        self->m_keyCallback(TranslateKey(key), keyAction);
+        Input::InputSystem::Get().SetKeyDown(TranslateKey(key), action != GLFW_RELEASE);
+        self->m_keyCallback(TranslateKey(key), action != GLFW_RELEASE);
 	}
 
     void GLFWWindow::GLFWCursorCallback(GLFWwindow* window, double xpos, double ypos)
@@ -334,6 +253,7 @@ namespace Apex::Windowing
             self->m_lastMouseY = ypos;
             self->m_mouseMoveCallback(dx, dy);
         }
+        Input::InputSystem::Get().SetMousePos({ (float)xpos, (float)ypos });
 	}
 
     void GLFWWindow::GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
@@ -341,6 +261,8 @@ namespace Apex::Windowing
         GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (self && self->m_mouseButtonCallback)
             self->m_mouseButtonCallback(TranslateMouseButton(button), action == GLFW_PRESS);
+
+        Input::InputSystem::Get().SetMouseButtonDown(TranslateMouseButton(button), action != GLFW_RELEASE);
     }
 
     void GLFWWindow::GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -348,6 +270,8 @@ namespace Apex::Windowing
         GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (self && self->m_scrollCallback)
             self->m_scrollCallback(xoffset, yoffset);
+
+        Input::InputSystem::Get().SetMouseScroll(yoffset);
     }
 
     void GLFWWindow::GLFWResizeCallback(GLFWwindow* window, int width, int height)

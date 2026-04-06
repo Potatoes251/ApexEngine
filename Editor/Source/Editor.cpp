@@ -17,6 +17,7 @@ using namespace Apex::Audio;
 using namespace Apex::Rendering;
 using namespace Apex::Serialization;
 using namespace Apex::Physic;
+using namespace Apex::Input;
 
 namespace Apex::Editor 
 {
@@ -67,12 +68,12 @@ namespace Apex::Editor
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
 
-        m_window->SetKeyCallback([&](Key key, KeyAction action)
+        m_window->SetKeyCallback([&](Input::Key key, bool down)
             {
-                if (key == Key::P && action == KeyAction::Press)
+                if (key == Input::Key::P && down)
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
 
-                if (m_editorState == EditorState::Play && key == Key::F && action == KeyAction::Press)
+                if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
             });
 
@@ -86,29 +87,28 @@ namespace Apex::Editor
                     else
                         m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
                 }
-                else if (m_window->IsMousButtonPressed(Windowing::MouseButton::Right))
+                else if (InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right))
                 {
                     if (m_viewport->IsFocus())
                         m_viewport->GetCamera().ProcessMouse(mouseX, mouseY);
                 }
                 else
                 {
-                    Windowing::MousePosition pos = m_window->GetMousePosition();
-                    m_viewport->OnMouseMove(pos.m_x, pos.m_y);
+                    LibMath::Vector2 pos = InputSystem::Get().GetMousePos();
+                    m_viewport->OnMouseClick(pos[0], pos[1]);
                 }
             });
 
-        m_window->SetMouseButtonCallback([&](Windowing::MouseButton button, bool press)
+        m_window->SetMouseButtonCallback([&](Input::MouseButton button, bool press)
             {
-                if (button == Windowing::MouseButton::Left && press)
+                LibMath::Vector2 pos = InputSystem::Get().GetMousePos();
+                if (button == Input::MouseButton::Left && press)
                 {
-                    Windowing::MousePosition pos = m_window->GetMousePosition();
-                    m_viewport->OnMouseClick(pos.m_x, pos.m_y);
+                    m_viewport->OnMouseClick(pos[0], pos[1]);
                 }
-                if (button == Windowing::MouseButton::Left && !press)
+                else
                 {
-                    Windowing::MousePosition pos = m_window->GetMousePosition();
-                    m_viewport->OnMouseRelease(pos.m_x, pos.m_y);
+                    m_viewport->OnMouseRelease(pos[0], pos[1]);
                 }
             });
 
@@ -209,7 +209,7 @@ namespace Apex::Editor
             break;
         case Apex::Editor::EditorState::Play:
             m_app->Tick();
-            if (m_window->IsKeyPressed(Key::Escape)) SetEditorState(EditorState::Pause);
+            if (InputSystem::Get().IsKeyDown(Key::Escape)) SetEditorState(EditorState::Pause);
             break;
         case Apex::Editor::EditorState::Pause:
             break;
@@ -282,18 +282,16 @@ namespace Apex::Editor
     {
         if (!m_contentBrowser) return;
 
-        auto  mouse = m_window->GetMousePosition();
-        float mouseX = static_cast<float>(mouse.m_x);
-        float mouseY = static_cast<float>(mouse.m_y);
+        LibMath::Vector2 pos = InputSystem::Get().GetMousePos();
 
-        fs::path dest = m_contentBrowser->GetExternalDropDest(mouseX, mouseY);
+        fs::path dest = m_contentBrowser->GetExternalDropDest(pos[0], pos[1]);
         if (!dest.empty())
         {
             m_contentBrowser->ImportFiles(std::move(paths), dest);
             return;
         }
 
-        if (m_contentBrowser->ContainsGridPoint(mouseX, mouseY))
+        if (m_contentBrowser->ContainsGridPoint(pos[0], pos[1]))
             m_contentBrowser->ImportFiles(std::move(paths));
     }
 

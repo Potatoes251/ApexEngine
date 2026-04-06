@@ -40,12 +40,9 @@ namespace Apex::Windowing
 		float	GetDeltaTime() const override;
 
 		// Input
-		bool			IsKeyPressed(Key key) const override;
-		bool			IsMousButtonPressed(MouseButton key) const override;
-		MousePosition	GetMousePosition() const override;
-		void			SetCursorCaptured(bool captured) override;
-		void			SetCrosshairCursor() override;
-		void			ResetCursor() override;
+		void	SetCursorCaptured(bool captured) override;
+		void	SetCrosshairCursor() override;
+		void	ResetCursor() override;
 
 
 		// Callbacks
@@ -95,8 +92,8 @@ namespace Apex::Windowing
 		static void	GLFWResizeCallback(GLFWwindow* window, int width, int height);
 		static void GLFWDropCallback(GLFWwindow* window, int count, const char** paths);
 
-		static Key TranslateKey(int glfwKey);
-		static MouseButton TranslateMouseButton(int glfwButton);
+		static Input::Key TranslateKey(int glfwKey);
+		static Input::MouseButton TranslateMouseButton(int glfwButton);
 
 	};
 } // namespace Apex::Windowing

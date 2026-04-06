@@ -3,6 +3,7 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
+#include "InputSystem.h"
 #include "Hierarchy.h"
 #include "Editor.h"
 #include "Window.h"
@@ -14,6 +15,7 @@ using namespace Apex::Data;
 
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
+using namespace Apex::Input;
 
 Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
 	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
@@ -36,14 +38,11 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 {
 	if (!m_isFocus) return;
 
-	m_camera.ProcessKeyboard(
-		window->IsKeyPressed(Windowing::Key::W),
-		window->IsKeyPressed(Windowing::Key::S),
-		window->IsKeyPressed(Windowing::Key::A),
-		window->IsKeyPressed(Windowing::Key::D),
-		window->IsKeyPressed(Windowing::Key::E),
-		window->IsKeyPressed(Windowing::Key::Q),
-		window->GetDeltaTime());
+	InputSystem& input = InputSystem::Get();
+
+	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
+		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
+		input.IsKeyDown(Key::E), input.IsKeyDown(Key::Q), window->GetDeltaTime());
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
