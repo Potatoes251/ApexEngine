@@ -1,5 +1,7 @@
 #include "LibMath/Transform.h"
 
+#include "LibMath/Vector/Vector4.h"
+
 LibMath::Transform::Transform(Transform const& other)
 {
 	m_rotation = other.m_rotation;
@@ -13,6 +15,11 @@ LibMath::Transform& LibMath::Transform::operator=(Transform const other)
 	m_position = other.m_position;
 	m_scale = other.m_scale;
 	return *this;
+}
+
+LibMath::Vector3 LibMath::Transform::getForward() const
+{
+	return m_rotation.rotate(LibMath::Vector3::front());
 }
 
 LibMath::Transform LibMath::Transform::operator*(Transform const& other) const

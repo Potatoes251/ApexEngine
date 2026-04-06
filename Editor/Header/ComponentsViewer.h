@@ -56,6 +56,8 @@ namespace Apex::Editor
 		Apex::Component* m_selectedComp = nullptr;
 
 		Apex::Component* m_pendingDelete = nullptr;
+
+		bool m_changed = false;
 	};
 }
 

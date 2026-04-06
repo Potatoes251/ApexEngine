@@ -12,6 +12,8 @@
 
 #include "Skybox.h"
 
+#include "Lighting/VisibleLights.h"
+
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 
@@ -29,9 +31,15 @@ namespace Apex::Rendering
 
 		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
 
+		Lighting::VisibleLights GetVisibleLights();
+
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
 		void DestroyObject(Object* obj);
+
+		void MarkDirty();
+		void ClearDirty() { m_isDirty = false; }
+		bool IsDirty() const { return m_isDirty; }
 
 		void Start();
 		void Update(float deltaTime_s);
@@ -45,11 +53,16 @@ namespace Apex::Rendering
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
 
 		void Save(const std::string& path);
+		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
 		Physic::PhysicSystem m_physics;
 
 		std::vector<std::unique_ptr<Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
+
+		bool m_isDirty = false;
+
+		std::function<void()> m_onMarkedDirty;
 	};
 }
 

@@ -44,8 +44,8 @@ namespace Apex::Windowing
                 std::cout << "Failed to initialize GLFW" << std::endl;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, shareContext);
@@ -91,7 +91,6 @@ namespace Apex::Windowing
     void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
     void GLFWWindow::Clear()
     {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
     void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
@@ -110,6 +109,11 @@ namespace Apex::Windowing
 	int GLFWWindow::GetHeight() const { return m_height; }
     float GLFWWindow::GetAspectRatio() const { return m_height ? (float)m_width / m_height : 1.f; }
 	float GLFWWindow::GetDeltaTime() const { return m_deltaTime; }
+
+    void GLFWWindow::SetWindowTitle(const std::string& title)
+    {
+        glfwSetWindowTitle(m_window, title.c_str());
+    }
 
 	// ── Input ────────────────────────────────────────────────────
     bool GLFWWindow::IsKeyPressed(Key key) const
@@ -375,6 +379,26 @@ namespace Apex::Windowing
             result.emplace_back(paths[i]);
 
         self->m_dropCallback(std::move(result));
+    }
+
+    void GLFWWindow::SetCloseCallback(CloseCallback callback)
+    {
+        m_closeCallback = std::move(callback);
+
+        glfwSetWindowUserPointer(m_window, this);
+
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* win)
+            {
+                auto* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(win));
+
+                if (self->m_closeCallback)
+                    self->m_closeCallback();
+            });
+    }
+
+    void GLFWWindow::SetShouldClose(bool close)
+    {
+        glfwSetWindowShouldClose(m_window, close);
     }
 
     // ── Translation helpers ───────────────────────────────────────

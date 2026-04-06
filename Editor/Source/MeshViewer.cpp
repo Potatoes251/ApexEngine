@@ -780,7 +780,7 @@ namespace Apex::Editor
         return m_camera.GetPosition();
     }
 
-    LibMath::Matrix4 MeshViewer::GetViewProj() const
+    LibMath::Matrix4 MeshViewer::GetViewProj()
     {
         // Compute camera position from spherical coordinates
         LibMath::Radian yaw = LibMath::Degree(m_orbitYaw);
@@ -799,9 +799,9 @@ namespace Apex::Editor
         float aspect = (m_fboHeight > 0.f) ? m_fboWidth / m_fboHeight : 1.f;
         float nearP = m_orbitDistance * 0.001f;
         float farP = m_orbitDistance * 100.f;
-        LibMath::Matrix4 proj = m_camera.GetProjectionMatrix(aspect, nearP, farP);
+        m_camera.SetProjectionMatrix(aspect, nearP, farP);
 
-        return proj * view;
+        return m_camera.GetProjection() * view;
     }
 
     // Misc

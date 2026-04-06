@@ -31,18 +31,29 @@ namespace Apex::Rendering
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
 		
-		RHIFrameBufferHandle	CreateFrameBuffer(float width, float height, RHITextureHandle& texture_out) override;
-		void					BindFrameBuffer(RHIFrameBufferHandle buffer, float viewportWidth, float viewportHeight) override;
+		RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) override;
+		RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) override;
+		void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) override;
 		void					UnBindFrameBuffer() override;
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 		int						GetPixelData(int x, int y) override;
 
+		RHIUniformBufferHandle	CreateUniformBuffer(unsigned int bindingPoint, size_t sizeBytes) override;
+		void					BindUniformBuffer(RHIUniformBufferHandle buffer, size_t sizeBytes, void* data) override;
+		void					DeleteUniformBuffer(RHIUniformBufferHandle buffer) override;
+
 		RHITextureHandle	CreateTexture(const TextureDescription& desc) override;
 		RHITextureHandle	CreateCubemap(const std::vector<TextureDescription>& desc) override;
+		RHITextureHandle	CreateShadowMap(unsigned width, unsigned height) override;
+		RHITextureHandle	CreateShadowCubeMap(unsigned width, unsigned height) override;
+		void				AttachDepthTexture(RHITextureHandle depthTexture) override;
+		void				AttachDepthCubeTexture(RHITextureHandle depthTexture) override;
 		void				BindTexture(RHITextureHandle texture, uint32_t unit = 0) override;
+		void				BindTextureCube(RHITextureHandle texture, uint32_t unit = 0) override;
 		void				DeleteTexture(RHITextureHandle texture) override;
 
 		RHIShaderHandle		CreateShader(const ShaderSource& source) override;
+		RHIShaderHandle		CreateShaderGeo(const ShaderSource& source) override;
 		void				BindShader(RHIShaderHandle shader) override;
 		void				DeleteShader(RHIShaderHandle shader) override;
 
@@ -50,9 +61,11 @@ namespace Apex::Rendering
 		void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) override;
 		void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) override;
 		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) override;
+		void SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix, int count) override;
 
 		void SetupVertexLayout() override;
 		void SetupVector3Layout() override;
+		void DrawEmpty() override;
 		void DrawIndexed(uint32_t indexCount) override;
 		void DrawArrays(uint32_t vertexCount) override;
 		void DrawLineArrays(uint32_t vertexCount) override;
@@ -62,6 +75,7 @@ namespace Apex::Rendering
 
 		uint32_t GetBuffer(RHIBufferHandle handle)  const;
 		uint32_t GetFrameBuffer(RHIFrameBufferHandle handle)  const;
+		uint32_t GetuniformeBuffer(RHIUniformBufferHandle handle)  const;
 		uint32_t GetVAO(RHIVAOHandle handle)		const;
 		uint32_t GetTexture(RHITextureHandle handle) const override;
 		uint32_t GetShader(RHIShaderHandle handle)  const;
@@ -69,6 +83,7 @@ namespace Apex::Rendering
 	private:
 		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
 		std::unordered_map<RHIFrameBufferHandle, GLuint>	m_frameBuffers;
+		std::unordered_map<RHIUniformBufferHandle, GLuint>	m_uniformBuffers;
 		std::unordered_map<RHIVAOHandle, GLuint>			m_vaos;
 		std::unordered_map<RHITextureHandle, GLuint>		m_textures;
 		std::unordered_map<RHIShaderHandle, GLuint>			m_shaders;

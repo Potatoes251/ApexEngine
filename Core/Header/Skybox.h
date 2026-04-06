@@ -14,7 +14,7 @@ namespace Apex::Rendering
 	{
 	public:
 		Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHandle<Mesh> mesh, 
-			Resources::ResourceHandle<Shader> shader, IRHI* rhi);
+			Resources::ResourceHandle<Shader> shader);
 		Skybox(Skybox const&);
 		Skybox& operator=(Skybox const&);
 
@@ -23,7 +23,6 @@ namespace Apex::Rendering
 		Resources::ResourceHandle<Cubemap> m_cubemap;
 		Resources::ResourceHandle<Mesh> m_mesh;
 		Resources::ResourceHandle<Shader> m_shader;
-		IRHI* m_rhi;
 	};
 }
 

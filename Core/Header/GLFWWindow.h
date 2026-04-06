@@ -2,7 +2,7 @@
 #define GLFW_WINDOW
 
 // ================================================================================
-// GLFWWindow.h � INTERNAL header. Do NOT include outside windowing implementation.
+// GLFWWindow.h - INTERNAL header. Do NOT include outside windowing implementation.
 // ================================================================================
 
 #include "Window.h"
@@ -38,6 +38,8 @@ namespace Apex::Windowing
 		int		GetHeight() const override;
 		float	GetAspectRatio() const override;
 		float	GetDeltaTime() const override;
+		
+		void	SetWindowTitle(const std::string& title) override;
 
 		// Input
 		bool			IsKeyPressed(Key key) const override;
@@ -86,6 +88,7 @@ namespace Apex::Windowing
 		ScrollCallback		 m_scrollCallback;
 		ResizeCallback		 m_resizeCallback;
 		ExternalDropCallback m_dropCallback;
+		CloseCallback		 m_closeCallback;
 
 		// GLFW static callback wrappers
 		static void	GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -94,6 +97,9 @@ namespace Apex::Windowing
 		static void	GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 		static void	GLFWResizeCallback(GLFWwindow* window, int width, int height);
 		static void GLFWDropCallback(GLFWwindow* window, int count, const char** paths);
+		
+		void		SetCloseCallback(CloseCallback callback);
+		void		SetShouldClose(bool close);
 
 		static Key TranslateKey(int glfwKey);
 		static MouseButton TranslateMouseButton(int glfwButton);

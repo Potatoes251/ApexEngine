@@ -14,7 +14,7 @@ namespace Apex::Scripting
     {
     public:
         ScriptComponent(LuaManager& lua) : m_lua(lua) {};
-        ~ScriptComponent();
+        ~ScriptComponent() = default;
 
         std::unique_ptr<Component> Clone() const override;
 

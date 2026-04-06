@@ -45,8 +45,8 @@ int Apex::Hierarchy::Lua_SetParent(lua_State* L)
     if (!childObj || !newParentObj)
         return 0;
 
-    SceneNode* childNode = childObj->GetSceneNodeRaw();
-    SceneNode* parentNode = newParentObj->GetSceneNodeRaw();
+    std::shared_ptr<SceneNode> const& childNode = childObj->GetSceneNode();
+    std::shared_ptr<SceneNode> const& parentNode = newParentObj->GetSceneNode();
 
     if (!childNode || !parentNode)
         return 0;

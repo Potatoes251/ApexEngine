@@ -12,7 +12,7 @@
 
 #include "Window.h"
 #include "RHI.h"
-#include "Camera.h"
+#include "FirstPersonCamera.h"
 #include "Audio.h"
 
 #include "ResourceManager.h"
@@ -29,6 +29,10 @@
 #include "UI.h"
 #include "Hud.h"
 
+#include "Lighting/LightManager.h"
+#include "Lighting/ShadowManager.h"
+#include "Lighting/Lights.h"
+
 #include <chrono>
 #include <iostream>
 
@@ -43,6 +47,7 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
+using namespace Apex::Lighting;
 
 namespace Apex
 {
@@ -56,10 +61,12 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitResourceManager()  
     || !InitCamera()
     || !InitRHI()  
+    || !InitLighting()
     || !InitRendering()
     || !InitUI(gui)
     || !InitAudio()
-    || !InitLua())
+    || !InitLua()
+    || !InitScene())
         return false;
 
     return true;
@@ -73,7 +80,8 @@ bool Apex::Application::InitResourceManager()
 
 bool Apex::Application::InitCamera()
 {
-    m_camera = std::make_unique<Camera>();
+    m_camera = std::make_unique<FirstPersonCamera>();
+    m_camera->SetProjectionMatrix(m_window->GetAspectRatio());
     return true;
 }
 
@@ -149,10 +157,26 @@ bool Apex::Application::InitUI(IGUI* gui)
     return true;
 }
 
+bool Apex::Application::InitLighting()
+{
+    m_lightManager = std::make_unique<LightManager>(m_rhi.get());
+    m_shadowManager = std::make_unique<ShadowManager>(m_rhi.get(), 
+        m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/DirShadowVert.glsl|ApexAssets/Shaders/DirShadowFrag.glsl"), 
+        m_resourceManager->CreateAsync<Shader>(
+            "ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
+    return true;
+}
+
 bool Apex::Application::InitLua()
 {
     m_luaManager = std::make_unique<Scripting::LuaManager>();
     return m_luaManager != nullptr;
+}
+
+bool Apex::Application::InitScene()
+{
+    m_scene = std::make_unique<Apex::Rendering::Scene>();
+    return true;
 }
 
 void Apex::Application::LoadScene()
@@ -160,11 +184,11 @@ void Apex::Application::LoadScene()
     Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
 ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
-ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl");
+ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj", true);
+    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
-    auto sk = std::make_unique<Skybox>(cubemap, cube, shader, m_rhi.get());
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
 
     m_scene->SetSkybox(sk);
     
@@ -268,16 +292,34 @@ void Apex::Application::Update()
 void Apex::Application::Render(Camera* cam)
 {
     if (!cam) cam = m_camera.get();
-    m_rhi->Clear();
 
     RenderPassInfo pass;
     pass.m_aspectRatio = m_window->GetAspectRatio();
     pass.m_camera = cam;
 
+    Render(pass);
+}
+
+void Apex::Application::Render(RenderPassInfo pass)
+{
+    assert(pass.m_camera && "Application::Render(RenderPassInfo) needs to have a camera set in RenderPassInfo to be able to render the scene");
+
+    m_rhi->Clear();
+
+    VisibleLights visibleLights = m_scene->GetVisibleLights();
+
+    m_lightManager->UploadToGpu(visibleLights);
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    m_shadowManager->BindShadowMaps();
+
+    if (pass.m_target != RHI_INVALID)
+    {
+        m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+        m_rhi->Clear();
+    }
+
     m_scene->Render(pass);
 
-    LibMath::Matrix4 view = cam->GetViewMatrix();
-    LibMath::Matrix4 proj = cam->GetProjectionMatrix(m_window->GetAspectRatio());
-
-    DebugRenderer::Get().DrawLines(proj * view);
+    if (pass.m_flags & ShowCollider)
+        DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

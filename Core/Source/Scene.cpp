@@ -10,6 +10,10 @@
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
+#include "Lighting/DirectionalLightComponent.h"
+#include "Lighting/PointLightComponent.h"
+#include "Lighting/SpotLightComponent.h"
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -43,9 +47,39 @@ namespace Apex::Rendering
 				
 				copy->m_physics.CreateActor(*collider, *body);
 			}
+
+			newObj->SetOnChangedCallback([this]()
+				{
+					MarkDirty();
+				});
 		}
 
 		return copy;
+	}
+
+	Lighting::VisibleLights Scene::GetVisibleLights()
+	{
+		Lighting::VisibleLights visibleLights;
+
+		for (std::unique_ptr<Object>& obj : m_objects)
+		{
+			Lighting::DirectionalLightComponent* dirLight = obj->GetComponent<Lighting::DirectionalLightComponent>();
+
+			if (dirLight)
+				visibleLights.m_directionalLights.push_back(dirLight);
+
+			Lighting::SpotLightComponent* spotLight = obj->GetComponent<Lighting::SpotLightComponent>();
+
+			if (spotLight)
+				visibleLights.m_spotLights.push_back(spotLight);
+
+			Lighting::PointLightComponent* pointLight = obj->GetComponent<Lighting::PointLightComponent>();
+			
+			if (pointLight)
+				visibleLights.m_pointLights.push_back(pointLight);
+		}
+
+		return visibleLights;
 	}
 
 	Object* Scene::CreateObject()
@@ -53,7 +87,14 @@ namespace Apex::Rendering
 		auto obj = std::make_unique<Object>();
 		Object* ptr = obj.get();
 
+		obj->SetOnChangedCallback([this]()
+			{
+				MarkDirty();
+			});
+
 		m_objects.push_back(std::move(obj));
+		MarkDirty();
+
 		return ptr;
 	}
 
@@ -67,7 +108,7 @@ namespace Apex::Rendering
 		if (!obj)
 			return;
 
-		Apex::SceneGraph::SceneNode* node = obj->GetSceneNodeRaw();
+		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
 		if (node && node->GetParent())
 			node->GetParent()->DestroyChild(node);
@@ -81,7 +122,17 @@ namespace Apex::Rendering
 			});
 
 		if (it != m_objects.end())
+		{
 			m_objects.erase(it);
+			MarkDirty();
+		}
+	}
+
+	void Scene::MarkDirty()
+	{
+		m_isDirty = true;
+		if (m_onMarkedDirty)
+			m_onMarkedDirty();
 	}
 		
 	void Scene::Start()
@@ -109,15 +160,18 @@ namespace Apex::Rendering
 			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
 			if (!renderer)
 				continue;
-
 			renderer->Render(passInfo);
 		}
-		LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
-		view[3][0] = 0;
-		view[3][1] = 0;
-		view[3][2] = 0;
-		m_skybox->Render(passInfo.m_camera->GetProjectionMatrix(passInfo.m_aspectRatio) * view);
-		m_physics.DrawColliders();
+		if (passInfo.m_flags & RenderSkybox)
+		{
+			LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
+			view[3][0] = 0;
+			view[3][1] = 0;
+			view[3][2] = 0;
+			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
+		}
+		if (passInfo.m_flags & ShowCollider)
+			m_physics.DrawColliders();
 	}
 
 	void Scene::InsertBefore(Object* dragged, Object* target)
@@ -133,6 +187,9 @@ namespace Apex::Rendering
 		auto itTarget = std::find_if(objs.begin(), objs.end(),
 			[&](auto& o) { return o.get() == target; });
 
+		if (std::next(itDragged) == itTarget)
+			return;
+
 		if (itDragged == objs.end() || itTarget == objs.end())
 			return;
 
@@ -140,6 +197,8 @@ namespace Apex::Rendering
 			std::rotate(itDragged, itDragged + 1, itTarget);
 		else
 			std::rotate(itTarget, itDragged, itDragged + 1);
+
+		MarkDirty();
 	}
 
 	void Scene::InsertAfter(Object* dragged, Object* target)
@@ -155,6 +214,9 @@ namespace Apex::Rendering
 		auto itTarget = std::find_if(objs.begin(), objs.end(),
 			[&](auto& o) { return o.get() == target; });
 
+		if (std::next(itTarget) == itDragged)
+			return;
+
 		if (itDragged == objs.end() || itTarget == objs.end())
 			return;
 
@@ -162,6 +224,8 @@ namespace Apex::Rendering
 			std::rotate(itDragged, itDragged + 1, itTarget + 1);
 		else
 			std::rotate(itTarget + 1, itDragged, itDragged + 1);
+
+		MarkDirty();
 	}
 
 	void Scene::Save(const std::string& path)
@@ -262,5 +326,12 @@ namespace Apex::Rendering
 		file << "}\n";
 
 		std::cout << "Scene saved to " << path << std::endl;
+
+		ClearDirty();
+	}
+	void Scene::SetOnMarkedDirtyCallback(std::function<void()> callback)
+	{
+		if (callback)
+			m_onMarkedDirty = callback;
 	}
 }

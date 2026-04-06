@@ -190,8 +190,13 @@ namespace Apex::UserInterface
                                  float padding = 2.f) = 0;
         virtual bool SmallButton(const std::string& label) = 0;
         virtual bool Checkbox(const std::string& label, bool* value) = 0;
+        virtual bool CheckboxFormat(const std::string& label, bool* value) = 0;
         virtual bool SliderFloat(const std::string& label, float* value, float min, float max) = 0;
         virtual bool SliderInt(const std::string& label, int* value, int min, int max) = 0;
+        virtual bool SliderFloatFormat(const std::string& label, float* value, float min, float max, 
+                                        float size, float sliderPos = -1.f, float spacing = -1.f) = 0;
+        virtual bool SliderIntFormat(const std::string& label, int* value, int min, int max, 
+                                        float size, float sliderPos = -1.f, float spacing = -1.f) = 0;
         virtual bool ColorEdit3(const std::string& label, float color[3]) = 0;
         virtual bool InputText(const std::string& label,
                                char* buffer, size_t bufferSize,
@@ -199,6 +204,7 @@ namespace Apex::UserInterface
         virtual bool InputFloat(const std::string& label, float* value) = 0;
 
         virtual bool Combo(const std::string& label, int* currentItem, const char* items) = 0;
+        virtual bool ComboFormat(const std::string& label, int* currentItem, const char* items) = 0;
 
         virtual bool CollapsingHeader(const std::string& label, bool defaultOpen = false) = 0;
 
@@ -249,6 +255,9 @@ namespace Apex::UserInterface
         virtual Vector2 GetItemRectMax() const = 0;
 
         virtual void SetManagesCursor(bool manages) = 0;
+
+        virtual void BeginModalBlock(const std::string& name) = 0;
+        virtual void EndModalBlock() = 0;
 	private:
 	};
 

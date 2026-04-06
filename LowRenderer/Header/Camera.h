@@ -14,41 +14,34 @@ namespace Apex::Rendering
 		Camera(const Camera&) = delete;
 		Camera& operator=(const Camera&) = delete;
 
-		// View projection
-		LibMath::Matrix4 GetViewMatrix() const;
-		LibMath::Matrix4 GetProjectionMatrix(float aspect, 
-											 float near = 0.1f, float far = 100.f) const;
+		void			 SetProjectionMatrix(float aspect, float near = 0.1f, float far = 100.f);
+		LibMath::Matrix4 GetViewProj();
+		LibMath::Matrix4 GetProjection();
+		LibMath::Matrix4 GetViewMatrix();
 		LibMath::Vector3 GetPosition() const { return m_position; }
-		LibMath::Vector3 GetFront() const { return m_front; }
-		LibMath::Vector3 GetRight() const { return m_right; }
-		LibMath::Vector3 GetUp() const { return m_up; }
+		virtual LibMath::Vector3 GetFront() const = 0;
 
 		void SetPosition(LibMath::Vector3 pos);
-		void SetYaw(float yawDegrees);
-		void SetPitch(float pitchDegrees);
 
-		// Input processing
-		void ProcessKeyboard(bool moveForward, bool moveBackward,
-							 bool moveLeft, bool moveRight,
-							 bool moveUp, bool moveDown,
-							 float deltaTime);
+		virtual void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) = 0;
 
-		void ProcessMouse(double dx, double dy, float sensitivity = 0.1f);
-		void ProcessScroll(double yoffset);
+	protected:
+		virtual void UpdateMatrices() = 0;
+
+		LibMath::Matrix4 m_viewProj;
+		LibMath::Matrix4 m_proj;
+		LibMath::Matrix4 m_view;
+		LibMath::Vector3 m_position;
+
+		LibMath::Degree m_fov = LibMath::Degree(45.f);
+
+		LibMath::Degree m_pitch = LibMath::Degree(0.f);
+		LibMath::Degree m_yaw = LibMath::Degree(-90.f);
 
 		float m_speed = 2.5f;
-		float m_fov = 45.f;
 
+		bool			m_dirty = true;
 	private:
-		LibMath::Vector3 m_position{ 0.f, 0.f, 3.f };
-		LibMath::Vector3 m_front{ 0.f, 0.f, -1.f };
-		LibMath::Vector3 m_up{ 0.f, 1.f, 0.f };
-		LibMath::Vector3 m_right{ 1.f, 0.f, 0.f };
-
-		float m_pitch = 0.f;
-		float m_yaw = -90.f;
-
-		void UpdateVectors();
 	};
 }
 

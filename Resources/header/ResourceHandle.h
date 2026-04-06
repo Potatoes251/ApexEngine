@@ -54,7 +54,7 @@ namespace Apex::Resources
 			if (!m_resourceEntry)
 				return;
 
-			m_resourceEntry->m_refCount.fetch_sub(1);
+			m_resourceEntry->m_refCount.fetch_add(-1);
 
 			if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
 			{

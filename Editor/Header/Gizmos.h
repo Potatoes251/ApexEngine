@@ -35,39 +35,31 @@ namespace Apex::Editor
 		Gizmos& operator=(Gizmos const&) = delete;
 		~Gizmos() = default;
 
-
-		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos);
-
-		Axis IsOnGizmo(
-			LibMath::Vector2 mousePosOnScreen, GizmoMode mode, LibMath::Vector3 worldPos, 
-			LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const;
-
+		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local);
 	private:
 
-		void DrawTranslation(Data::Object* object);
-		void DrawRotation(Data::Object* object);
-		void DrawScale(Data::Object* object);
+		void DrawTranslation(Data::Object* object, bool picking, bool local);
+		void DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking);
+		void DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking);
+		void DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking);
 
-		Axis IsOnTranslation(
-			LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
-			LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const;
-		Axis IsOnRotation(
-			LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj,
-			LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const;
-		Axis IsOnScale(
-			LibMath::Vector2 mousePosOnScreen, LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, 
-			LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize) const;
+		void DrawRotation(Data::Object* object, bool picking, bool local);
+		void DrawScale(Data::Object* object, bool picking);
+
+		LibMath::Vector3 GetColor(Axis axis, bool picking = false);
 
 		// load basic shape
 		void CreateCube();
 		void CreateCone();
 		void CreateCylinder();
 		void CreateCircle();
+		void CreateThorus();
 
 		Mesh m_cube;
 		Mesh m_cone;
 		Mesh m_cylinder;
 		Mesh m_circle;
+		Mesh m_thorus;
 		
 		Resources::ResourceHandle<Shader> m_shader;
 
