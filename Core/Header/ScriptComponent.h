@@ -29,9 +29,10 @@ namespace Apex::Scripting
 
         void Serialize(std::ostream& out) const override;
 
-    protected:
         void OnStart() override;
         void OnUpdate(float deltaTime) override;
+        void OnTriggerEnter(Physic::Collider* other) override;
+        void OnTriggerExit(Physic::Collider* other) override;
 
     private:
         int m_instanceRef = LUA_REFNIL;

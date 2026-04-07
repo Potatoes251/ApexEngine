@@ -81,6 +81,18 @@ void ScriptComponent::OnUpdate(float deltaTime)
     }
 }
 
+void ScriptComponent::OnTriggerEnter(Physic::Collider* other)
+{
+    if (m_instanceRef != LUA_REFNIL)
+        m_lua.CallFunction(m_instanceRef, "OnTriggerEnter");
+}
+
+void ScriptComponent::OnTriggerExit(Physic::Collider* other)
+{
+    if (m_instanceRef != LUA_REFNIL)
+        m_lua.CallFunction(m_instanceRef, "OnTriggerExit");
+}
+
 void ScriptComponent::Serialize(std::ostream& out) const
 {
     out << "      \"ScriptComponent\": {\n";
