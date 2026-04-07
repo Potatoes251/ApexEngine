@@ -107,10 +107,10 @@ bool Apex::Application::InitWindow(IWindow* window)
             m_camera->ProcessMouse(dx, dy);
         });
 
-    /*m_window->SetScrollCallback([&](double, double yoff)
+    m_window->SetScrollCallback([&](double, double yoff)
         {
             m_camera->ProcessScroll(yoff);
-        });*/
+        });
 
     return true;
 }
@@ -179,20 +179,6 @@ bool Apex::Application::InitLua()
 bool Apex::Application::InitScene()
 {
     m_scene = std::make_unique<Apex::Rendering::Scene>();
-    return true;
-}
-
-bool Apex::Application::InitAnimation()
-{
-    /*m_animationMesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/Withered_Freddy.fbx");
-    m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkinningVert.glsl|Assets/Shaders/SkinningFrag.glsl");
-
-    m_animator = std::make_shared<Apex::Rendering::Animator>(m_animationMesh, m_animationShader, 30.f);
-
-    m_animator->PlayRepeat(8);
-    
-    return true;*/
-
     return true;
 }
 

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-const double ANIMATION_FPS = 30;
+constexpr double ANIMATION_FPS = 30;
 
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.

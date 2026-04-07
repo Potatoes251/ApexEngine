@@ -62,6 +62,9 @@ void Animator::Update(float deltaTime)
 	case Play_layer_blend_space_animation:
 		PlayLayerBlendAnimation(deltaTime);
 		break;
+
+	default:
+		break;
 	}
 }
 
@@ -80,7 +83,7 @@ void Animator::PlayRepeat(int animationIndex)
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndex];
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 		m_state = Play_single_animation;
 	}
 }
@@ -95,14 +98,14 @@ void Animator::PlayRepeatInterpolated(int animationIndex)
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndex];
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 		m_state = Play_single_animation_interpolated;
 	}
 }
 
 void Animator::PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime)
 {
-	if (m_crossFadeDuration <= 0.f) return;							//check if the cross fade time isn't negatif
+	if (crossfadeTime <= 0.f) return;							//check if the cross fade time isn't negatif
 
 	if (m_state == Waiting_for_loaded_ressources)				//if the ressources are not already loaded 
 	{
@@ -118,7 +121,7 @@ void Animator::PlayCrossFade(int animationIndexA, int animationIndexB, float cro
 
 		m_state = Play_cross_fade_animation;
 
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 		m_crossFadeElapseTime = 0;
 	}
 
@@ -127,7 +130,7 @@ void Animator::PlayCrossFade(int animationIndexA, int animationIndexB, float cro
 
 void Animator::PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime)
 {
-	if (m_crossFadeDuration <= 0.f) return;							//check if the cross fade time isn't negatif
+	if (crossfadeTime <= 0.f) return;							//check if the cross fade time isn't negatif
 
 	if (m_state == Waiting_for_loaded_ressources)				//if the ressources are not already loaded 
 	{
@@ -143,7 +146,7 @@ void Animator::PlayCrossFadeInterpolated(int animationIndexA, int animationIndex
 
 		m_state = Play_cross_fade_animation_interpolated;
 
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 		m_crossFadeElapseTime = 0;
 	}
 
@@ -168,7 +171,7 @@ void Animator::PlayBlended(int animationIndexA, int animationIndexB, float ratio
 
 		m_state = Play_blend_space_animation;
 
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 	}
 
 	m_blendRatio = ratio;
@@ -192,7 +195,7 @@ void Animator::PlayBlendedInterpolated(int animationIndexA, int animationIndexB,
 
 		m_state = Play_blend_space_animation_interpolated;
 
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 	}
 
 	m_blendRatio = ratio;
@@ -220,7 +223,7 @@ void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int ori
 
 		m_state = Play_layer_blend_space_animation;
 
-		m_timeA = 0.f;
+		m_elapse = 0.f;
 	}
 }
 
@@ -294,7 +297,7 @@ void Animator::ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<Key
 	}
 }
 
-void Animator::InterlopeSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t)
+void Animator::InterpoleSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t)
 {
 	interlopedSkeleton_out.resize(m_boneCount);
 
@@ -311,7 +314,7 @@ void Animator::InterlopeSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vect
 	}
 }
 
-void Animator::ReplaceBonese(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB)
+void Animator::ReplaceBones(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB)
 {
 	skeleton_out.resize(m_boneCount);
 
@@ -335,10 +338,10 @@ void Animator::SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix)
 
 void Animator::PlaySingleAnimation(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get current frame
-	int currentFrame = static_cast<int>(m_timeA * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
+	int currentFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
 
 	//extract transforms
 	vector<KeyFrame> animationSkeleton;
@@ -354,12 +357,12 @@ void Animator::PlaySingleAnimation(float deltaTime)
 
 void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get current frame
-	int currentFrame = static_cast<int>(m_timeA * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
+	int currentFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
 	int nextFrame = (currentFrame + 1) % m_animationA->m_boneAnimations[0].m_frames.size();
-	float ratio = (m_timeA * m_fps) - std::floor(m_timeA * m_fps);
+	float ratio = (m_elapse * m_fps) - std::floor(m_elapse * m_fps);
 
 	//extract transforms
 	vector<KeyFrame> animationSkeleton, nextAnimationSkeleton;
@@ -367,7 +370,7 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 	ExtractFrameSkeleton(nextAnimationSkeleton, *m_animationA, nextFrame);
 
 	vector<KeyFrame> interlopedSkeleton;
-	InterlopeSkeletons(interlopedSkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
+	InterpoleSkeletons(interlopedSkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
 
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, interlopedSkeleton);
@@ -382,10 +385,10 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 
 void Animator::PlayCrossFadeAnimation(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get cross fade data
-	float crossFadePercentage = m_timeA / m_crossFadeDuration;
+	float crossFadePercentage = m_elapse / m_crossFadeDuration;
 	if (crossFadePercentage > 1.f) crossFadePercentage = 1.f;
 
 	int nbFrameAnimationA = m_animationA->m_boneAnimations.size();
@@ -415,7 +418,7 @@ void Animator::PlayCrossFadeAnimation(float deltaTime)
 
 	//cross fade
 	std::vector<KeyFrame> crossFadedSkeleton;
-	InterlopeSkeletons(crossFadedSkeleton, animationSkeletonA, animationSkeletonB, crossFadePercentage);
+	InterpoleSkeletons(crossFadedSkeleton, animationSkeletonA, animationSkeletonB, crossFadePercentage);
 
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
@@ -430,10 +433,10 @@ void Animator::PlayCrossFadeAnimation(float deltaTime)
 
 void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get cross fade data
-	float crossFadePercentage = m_timeA / m_crossFadeDuration;
+	float crossFadePercentage = m_elapse / m_crossFadeDuration;
 	if (crossFadePercentage > 1.f) crossFadePercentage = 1.f; 
 
 	int nbFrameAnimationA = m_animationA->m_boneAnimations.size();
@@ -456,7 +459,7 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 	ExtractFrameSkeleton(nextAnimationSkeleton, *m_animationA, nextIndex);
 
 	std::vector<KeyFrame> AnimationASkeleton;
-	InterlopeSkeletons(AnimationASkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
+	InterpoleSkeletons(AnimationASkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
 
 	//get the second animation skeleton
 	frame = phase * nbFrameAnimationB;
@@ -468,11 +471,11 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 	ExtractFrameSkeleton(nextAnimationSkeleton, *m_animationB, nextIndex);
 
 	std::vector<KeyFrame> AnimationBSkeleton;
-	InterlopeSkeletons(AnimationBSkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
+	InterpoleSkeletons(AnimationBSkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
 
 	//cross fade
 	std::vector<KeyFrame> crossFadedSkeleton;
-	InterlopeSkeletons(crossFadedSkeleton, AnimationASkeleton, AnimationBSkeleton, crossFadePercentage);
+	InterpoleSkeletons(crossFadedSkeleton, AnimationASkeleton, AnimationBSkeleton, crossFadePercentage);
 
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
@@ -487,11 +490,11 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 
 void Animator::PlayBlendedAnimation(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get animations frame
-	int animationAFrame = static_cast<int>(m_timeA * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
-	int animationBFrame = static_cast<int>(m_timeA * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
+	int animationAFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
+	int animationBFrame = static_cast<int>(m_elapse * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
 
 	//extract the animations
 	vector<KeyFrame> animationASkeleton, animationBSkeleton;
@@ -500,7 +503,7 @@ void Animator::PlayBlendedAnimation(float deltaTime)
 
 	//blend
 	std::vector<KeyFrame> blendedSkeleton;
-	InterlopeSkeletons(blendedSkeleton, animationASkeleton, animationBSkeleton, m_blendRatio);
+	InterpoleSkeletons(blendedSkeleton, animationASkeleton, animationBSkeleton, m_blendRatio);
 
 	//local -> global
 	vector<KeyFrame> globalSkeleton;
@@ -516,15 +519,15 @@ void Animator::PlayBlendedAnimation(float deltaTime)
 
 void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get animations frame
-	int animationACurrentFrame = static_cast<int>(m_timeA * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
+	int animationACurrentFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
 	int animationANextFrame = (animationACurrentFrame + 1) % m_animationA->m_boneAnimations[0].m_frames.size();
-	int animationBCurrentFrame = static_cast<int>(m_timeA * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
+	int animationBCurrentFrame = static_cast<int>(m_elapse * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
 	int animationBNextFrame = (animationACurrentFrame + 1) % m_animationB->m_boneAnimations[0].m_frames.size();
 
-	float ratio = (m_timeA * m_fps) - std::floor(m_timeA * m_fps);
+	float ratio = (m_elapse * m_fps) - std::floor(m_elapse * m_fps);
 
 	//extract the animations
 	vector<KeyFrame> animationACurrentSkeleton, animationANextSkeleton, animationBCurrentSkeleton, animationBNextSkeleton;
@@ -535,12 +538,12 @@ void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 
 	//interpolate skeletons
 	vector<KeyFrame> animationAInterpolatedSkeleton, animationBInterpolatedSkeleton;
-	InterlopeSkeletons(animationAInterpolatedSkeleton, animationACurrentSkeleton, animationANextSkeleton, ratio);
-	InterlopeSkeletons(animationBInterpolatedSkeleton, animationBCurrentSkeleton, animationBNextSkeleton, ratio);
+	InterpoleSkeletons(animationAInterpolatedSkeleton, animationACurrentSkeleton, animationANextSkeleton, ratio);
+	InterpoleSkeletons(animationBInterpolatedSkeleton, animationBCurrentSkeleton, animationBNextSkeleton, ratio);
 
 	//blend
 	std::vector<KeyFrame> blendedSkeleton;
-	InterlopeSkeletons(blendedSkeleton, animationAInterpolatedSkeleton, animationBInterpolatedSkeleton, m_blendRatio);
+	InterpoleSkeletons(blendedSkeleton, animationAInterpolatedSkeleton, animationBInterpolatedSkeleton, m_blendRatio);
 
 	//local -> global
 	vector<KeyFrame> globalSkeleton;
@@ -556,11 +559,11 @@ void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 
 void Animator::PlayLayerBlendAnimation(float deltaTime)
 {
-	m_timeA += deltaTime;
+	m_elapse += deltaTime;
 
 	//get animations frame
-	int animationAFrame = static_cast<int>(m_timeA * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
-	int animationBFrame = static_cast<int>(m_timeA * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
+	int animationAFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
+	int animationBFrame = static_cast<int>(m_elapse * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
 
 	//extract the animations
 	vector<KeyFrame> animationASkeleton, animationBSkeleton;
@@ -569,7 +572,7 @@ void Animator::PlayLayerBlendAnimation(float deltaTime)
 
 	//layer blend
 	vector<KeyFrame> LayberBlendedSkeleton;
-	ReplaceBonese(LayberBlendedSkeleton, animationASkeleton, animationBSkeleton);
+	ReplaceBones(LayberBlendedSkeleton, animationASkeleton, animationBSkeleton);
 
 	//local -> global
 	vector<KeyFrame> globalSkeleton;

@@ -75,17 +75,16 @@ public:
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<unsigned int>				m_indices;
 
-
-	std::vector<BoneInfo>			m_bones;		//m_offsetMatrix | inverse bind pose
- 	unordered_map<std::string, int> m_boneMap;
-	std::vector<Animation>			m_animations;
+	std::vector<BoneInfo>					m_bones;		//m_offsetMatrix | inverse bind pose
+ 	unordered_map<std::string, int>			m_boneMap;
+	std::vector<Animation>					m_animations;
 
 private:
-	uint32_t m_VAO = 0;
-	uint32_t m_VBO = 0;
-	uint32_t m_EBO = 0;
-	uint32_t m_indexCount = 0;
-	uint32_t m_vertexCount = 0;
+	uint32_t	m_VAO = 0;
+	uint32_t	m_VBO = 0;
+	uint32_t	m_EBO = 0;
+	uint32_t	m_indexCount = 0;
+	uint32_t	m_vertexCount = 0;
 	std::string m_name;
 
 	LibMath::Vector3 m_boundsMin = { 1e9f,  1e9f,  1e9f };

@@ -64,8 +64,8 @@ namespace Apex::Rendering
 		void ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame);
 		void GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& localSkeleton);
 		void ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform);
-		void InterlopeSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t);
-		void ReplaceBonese(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB);
+		void InterpoleSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t);
+		void ReplaceBones(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB);
 
 		//gpu
 		void SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix);
@@ -96,7 +96,7 @@ namespace Apex::Rendering
 		int						m_boneCount = 0;
 		
 		//elapse times
-		float					m_timeA = 0.0f;
+		float					m_elapse = 0.0f;
 
 		//animations
 		const Animation*		m_animationA = nullptr; //in cross fade, the original animation

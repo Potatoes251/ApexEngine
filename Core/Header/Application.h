@@ -85,7 +85,6 @@ namespace Apex
         bool InitLighting();
         bool InitLua();
         bool InitScene();
-        bool InitAnimation();
 
         void UpdateAudioListener();
         void Update();
