@@ -7,6 +7,9 @@ file(GLOB_RECURSE PROJECT_FILES
 
 add_library(${UI_NAME})
 
+# Create Visual Studio filters matching folder structure
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_FILES})
+
 target_sources(${UI_NAME} PRIVATE ${PROJECT_FILES})
 
 target_include_directories(${UI_NAME} 

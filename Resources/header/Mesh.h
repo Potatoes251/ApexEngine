@@ -50,7 +50,8 @@ struct Animation
 class Mesh : public IResource
 {
 public:
-	Mesh(std::string name) : m_name(name) {}
+	Mesh() = default;
+	Mesh(std::string path) : IResource(path) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
 
@@ -59,25 +60,37 @@ public:
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
+	void ClearVertices();
+
 	void Draw() const;
+	void DrawLineLoop() const;
+
+	uint32_t GetIndexCount()  const { return m_indexCount; }
+	uint32_t GetVertexCount()  const { return m_vertexCount; }
+
+	// Axis-aligned bounding box — populated during UploadToGpu(), valid after IsReady()
+	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
+	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<unsigned int>				m_indices;
 
-	GLsizei GetIndexCount()  const { return m_indexCount; }
 
 	std::vector<BoneInfo>			m_bones;		//m_offsetMatrix | inverse bind pose
  	unordered_map<std::string, int> m_boneMap;
 	std::vector<Animation>			m_animations;
 
 private:
+	uint32_t m_VAO = 0;
+	uint32_t m_VBO = 0;
+	uint32_t m_EBO = 0;
+	uint32_t m_indexCount = 0;
+	uint32_t m_vertexCount = 0;
 	std::string m_name;
 
-	GLuint m_VAO = 0;
-	GLuint m_VBO = 0;
-	GLuint m_EBO = 0;
-	GLsizei m_indexCount = 0;
+	LibMath::Vector3 m_boundsMin = { 1e9f,  1e9f,  1e9f };
+	LibMath::Vector3 m_boundsMax = { -1e9f, -1e9f, -1e9f };
 };
 
 
-#endif // !MESH
+#endif // !MESH	

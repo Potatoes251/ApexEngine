@@ -34,15 +34,13 @@ set_target_properties(GLFW PROPERTIES
 
 set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/External/imgui)
 
-add_library(ImGui
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+file(GLOB_RECURSE IMGUI_SOURCES
+    "${IMGUI_DIR}/*.cpp"
 )
 
+add_library(ImGui STATIC
+    ${IMGUI_SOURCES}
+)
 target_include_directories(ImGui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends

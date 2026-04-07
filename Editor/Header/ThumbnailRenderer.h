@@ -1,0 +1,48 @@
+#ifndef THUMBNAIL_RENDERER
+#define THUMBNAIL_RENDERER
+
+#include "RHI.h"
+#include "ResourceHandle.h"
+#include "ResourceManager.h"
+
+#include <unordered_map>
+#include <filesystem>
+
+class Mesh;
+namespace fs = std::filesystem;
+
+namespace Apex::Editor
+{
+    class ThumbnailRenderer
+    {
+    public:
+        explicit ThumbnailRenderer(Apex::Rendering::IRHI& rhi,
+            Apex::Resources::ResourceManager& resourceManager);
+        ~ThumbnailRenderer();
+        ThumbnailRenderer(const ThumbnailRenderer&) = delete;
+        ThumbnailRenderer& operator=(const ThumbnailRenderer&) = delete;
+
+        uint32_t GetCached(const fs::path& meshPath) const;
+        uint32_t GetOrRender(const fs::path& meshPath);
+
+        void Clear();
+
+        static constexpr float SIZE = 128.f;
+
+    private:
+        uint32_t Render(const fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle);
+        void BuildShaders();
+        void DestroyShaders();
+
+        Apex::Rendering::IRHI& m_rhi;
+        Apex::Resources::ResourceManager& m_resourceManager;
+
+        std::unordered_map<std::string, Apex::Resources::ResourceHandle<Mesh>> m_loadingHandles;
+
+        std::unordered_map<std::string, uint32_t> m_cache;
+
+        Apex::Rendering::RHIShaderHandle m_shader = 0;
+    };
+}
+
+#endif

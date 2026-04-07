@@ -330,7 +330,7 @@ void Animator::ReplaceBonese(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& s
 
 void Animator::SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix)
 {	
-	m_shader->SetUniformMat4Array("u_Bones[0]", skeletonMatrix);
+	m_shader->SetUniform("u_Bones[0]", skeletonMatrix[0], (int)skeletonMatrix.size());
 }
 
 void Animator::PlaySingleAnimation(float deltaTime)

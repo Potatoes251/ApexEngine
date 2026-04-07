@@ -14,6 +14,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
 # Create executable
 add_executable(${EXE_NAME})
 
+# Create Visual Studio filters matching folder structure
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_FILES})
+
 # Add source files
 target_sources(${EXE_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
 
@@ -26,8 +29,8 @@ target_include_directories(${EXE_NAME}
     PRIVATE ${LOW_INCLUDE_DIR}
     PRIVATE ${RESOURCES_INCLUDE_DIR}
     PRIVATE ${UI_INCLUDE_DIR}
+    PRIVATE ${PHYS_INCLUDE_DIR}
     PRIVATE ${CORE_INCLUDE_DIR}
-    PRIVATE ${EDITOR_INCLUDE_DIR}
 )
 
 # ---- Link libraries ----
@@ -47,8 +50,8 @@ target_link_libraries(${EXE_NAME}
     PRIVATE ${RESOURCES_NAME}
     PRIVATE ${LOW_NAME}
     PRIVATE ${UI_NAME}
+    PRIVATE ${PHYS_NAME}
     PRIVATE ${CORE_NAME}
-    PRIVATE ${EDITOR_NAME}
 )
 
 add_custom_command(TARGET ${EXE_NAME} POST_BUILD

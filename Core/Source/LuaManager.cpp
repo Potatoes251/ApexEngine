@@ -18,7 +18,7 @@ Apex::Scripting::LuaManager::LuaManager()
     std::string currentPath = lua_tostring(luaState, -1);
     lua_pop(luaState, 1);
 
-    currentPath += ";../../Assets/Scripts/?.lua";
+    currentPath += "Assets/Scripts/?.lua";
 
     lua_pushstring(luaState, currentPath.c_str());
     lua_setfield(luaState, -2, "path");

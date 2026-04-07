@@ -11,8 +11,7 @@ namespace Apex::Resources
 	struct ResourceEntry
 	{
 		ResourceEntry() = default;
-		ResourceEntry(std::unique_ptr<IResource> res, bool persistent) : m_resource(std::move(res)), m_persistent(persistent)
-		{}
+		ResourceEntry(std::unique_ptr<IResource> res, bool persistent = false) : m_resource(std::move(res)), m_persistent(persistent) {}
 		ResourceEntry(ResourceEntry const&) = delete;
 		ResourceEntry& operator=(ResourceEntry const&) = delete;
 
@@ -31,15 +30,12 @@ namespace Apex::Resources
 		ResourceHandle() = default;
 		ResourceHandle(ResourceEntry* resourceEntry) : m_resourceEntry(resourceEntry)
 		{
-			if (m_resourceEntry)
-			{
-				m_resourceEntry->m_refCount.fetch_add(1);
-			}
+			if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_add(1);
 		}
 
 		ResourceHandle(ResourceHandle const& other) : m_resourceEntry(other.m_resourceEntry)
 		{
-			m_resourceEntry->m_refCount.fetch_add(1);
+			if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_add(1);
 		}
 		ResourceHandle& operator=(ResourceHandle const& other) 
 		{
@@ -48,7 +44,7 @@ namespace Apex::Resources
 				if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_sub(1);
 
 				m_resourceEntry = other.m_resourceEntry;
-				m_resourceEntry->m_refCount.fetch_add(1);
+				if (m_resourceEntry) m_resourceEntry->m_refCount.fetch_add(1);
 			}
 			return *this;
 		}
@@ -58,7 +54,7 @@ namespace Apex::Resources
 			if (!m_resourceEntry)
 				return;
 
-			m_resourceEntry->m_refCount.fetch_sub(1);
+			m_resourceEntry->m_refCount.fetch_add(-1);
 
 			if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
 			{

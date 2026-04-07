@@ -29,6 +29,8 @@ namespace Apex::Resources
 		ResourceHandle<ResourceType> CreateAsync(std::string const& id, bool persistent = false);
 		template <typename ResourceType>
 		ResourceHandle<ResourceType> Get(std::string const& id);
+		template<typename T>
+		std::vector<ResourceHandle<T>> GetAll();
 
 		void ProcessGpuUploads();
 
@@ -47,7 +49,7 @@ namespace Apex::Resources
 		std::queue<ResourceHandle<IResource>>	m_gpuUploadQueue;
 
 		std::shared_mutex		m_mapMutex;
-		std::unordered_map<std::string, ResourceEntry> m_resources;
+		std::unordered_map<std::string, std::unique_ptr<ResourceEntry>> m_resources;
 	};
 
 
@@ -57,9 +59,8 @@ namespace Apex::Resources
 	{
 		assert(m_rhi != nullptr && "rhi must be set in the ResourceManager before starting to load resources");
 		std::unique_lock<std::shared_mutex> lock(m_mapMutex);
-
-		auto [it, inserted] = m_resources.try_emplace(id, nullptr, persistent);
-		ResourceEntry* entry = &it->second;
+		auto [it, inserted] = m_resources.try_emplace(id, std::make_unique<ResourceEntry>(nullptr, persistent));
+		ResourceEntry* entry = it->second.get();
 
 		// If already loading or loaded, do not enqueue again
 		if (entry->m_resource && entry->m_resource->GetState() != ResourceState::Unloaded)
@@ -81,9 +82,9 @@ namespace Apex::Resources
 	{
 		std::shared_lock<std::shared_mutex> lock(m_mapMutex);
 		auto it = m_resources.find(id);
-		if (it != m_resources.end() && it->second.m_resource)
+		if (it != m_resources.end() && it->second.get()->m_resource)
 		{
-			ResourceEntry* resource = &it->second;
+			ResourceEntry* resource = it->second.get();
 			return ResourceHandle<ResourceType>(resource);
 		}
 		else
@@ -103,6 +104,27 @@ namespace Apex::Resources
 
 		resource->SetState(ResourceState::Loaded);
 		AddToGpuQueue(resource);
+	}
+
+	template<typename T>
+	std::vector<ResourceHandle<T>> ResourceManager::GetAll()
+	{
+		std::shared_lock lock(m_mapMutex);
+
+		std::vector<ResourceHandle<T>> result;
+
+		for (auto& [id, entry] : m_resources)
+		{
+			if (!entry->m_resource)
+				continue;
+
+			if (auto* casted = dynamic_cast<T*>(entry->m_resource.get()))
+			{
+				result.emplace_back(entry.get());
+			}
+		}
+
+		return result;
 	}
 }
 

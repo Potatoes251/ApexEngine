@@ -5,6 +5,7 @@
 #include <stb_image.h>
 
 #include <iostream>
+#include "Cubemap.h"
 
 void Texture::LoadFromFile()
 {
@@ -38,7 +39,7 @@ void Texture::UploadToGpu()
     m_imageData.shrink_to_fit();
 }
 
-void Texture::Bind(GLuint slot)
+void Texture::Bind(uint32_t slot)
 {
     m_rhi->BindTexture(m_id, slot);
 }

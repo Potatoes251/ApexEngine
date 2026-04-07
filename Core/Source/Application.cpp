@@ -1,9 +1,43 @@
 #include "Application.h"
+
+#include "LuaManager.h"
+#include "Behaviour.h"
 #include "LuaBehaviour.h"
 #include "ScriptComponent.h"
+#include "RenderPassInfo.h"
+#include "SceneGraph.h"
+#include "Object.h"
+
+#include "SceneLoader.h"
+
+#include "Window.h"
+#include "RHI.h"
+#include "FirstPersonCamera.h"
+#include "Audio.h"
+
+#include "ResourceManager.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Shader.h"
+#include "Cubemap.h"
+#include "BoxCollider.h"
+#include "CapsuleCollider.h"
+#include "MeshCollider.h"
+#include "Rigidbody.h"
+
+#include "DebugRenderer.h"
+#include "UI.h"
+#include "Hud.h"
+
+#include "Lighting/LightManager.h"
+#include "Lighting/ShadowManager.h"
+#include "Lighting/Lights.h"
 
 #include <chrono>
 #include <iostream>
+
+#include <memory>
+#include <filesystem>
 
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
@@ -12,31 +46,29 @@ using namespace Apex::Audio;
 using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Physic;
+using namespace Apex::Serialization;
+using namespace Apex::Lighting;
 
-void Apex::Application::Run()
+namespace Apex
 {
-    while (!m_window->ShouldClose())
-    {   
-        Tick();
-    }
-
-    Shutdown();
+    Application::Application() = default;
+    Application::~Application() = default;
 }
 
-bool Apex::Application::Init()
+bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
-    std::filesystem::current_path(std::filesystem::path(m_argv0).parent_path());
-
-    std::cout << "Application Init\n";
-
-    if (!InitResourceManager()) return false;
-    if (!InitCamera())          return false;
-    if (!InitWindow())          return false;
-    if (!InitRHI())             return false;
-    if (!InitRendering())       return false;
-    if (!InitAudio())           return false;
-    if (!InitScene())           return false;
-    if (!InitAnimation())       return false;
+    if (!InitWindow(window)
+    || !InitResourceManager()  
+    || !InitCamera()
+    || !InitRHI()  
+    || !InitLighting()
+    || !InitRendering()
+    || !InitUI(gui)
+    || !InitAudio()
+    || !InitLua()
+    || !InitScene()
+    || !InitAnimation())
+        return false;
 
     return true;
 }
@@ -49,23 +81,25 @@ bool Apex::Application::InitResourceManager()
 
 bool Apex::Application::InitCamera()
 {
-    m_camera = std::make_unique<Camera>();
+    m_camera = std::make_unique<FirstPersonCamera>();
+    m_camera->SetProjectionMatrix(m_window->GetAspectRatio());
     return true;
 }
 
-bool Apex::Application::InitWindow()
+bool Apex::Application::InitWindow(IWindow* window)
 {
-    m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Renderer", 1280, 720));
+    m_window = window;
 
     if (!m_window)
         return false;
 
-    m_window->SetCursorCaptured(true);
-
-    m_window->SetKeyCallback([&](Key key, bool pressed)
+    m_window->SetKeyCallback([&](Key key, KeyAction action)
         {
-            if (key == Key::Escape && pressed)
+            if (key == Key::Escape && action == KeyAction::Press)
                 m_window->Close();
+
+            if (key == Key::P && action == KeyAction::Press)
+                m_scene->Save("Assets/Scenes/scene.level");
         });
 
     m_window->SetMouseMoveCallback([&](double dx, double dy)
@@ -73,10 +107,10 @@ bool Apex::Application::InitWindow()
             m_camera->ProcessMouse(dx, dy);
         });
 
-    m_window->SetScrollCallback([&](double, double yoff)
+    /*m_window->SetScrollCallback([&](double, double yoff)
         {
             m_camera->ProcessScroll(yoff);
-        });
+        });*/
 
     return true;
 }
@@ -89,13 +123,15 @@ bool Apex::Application::InitRHI()
         return false;
 
     m_resourceManager->SetRHI(m_rhi.get());
+    m_rhi->SetClearColor(0.12f, 0.12f, 0.15f);
 
     return true;
 }
 
 bool Apex::Application::InitRendering()
 {
-    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>("Assets/Shaders/LineVert.glsl|Assets/Shaders/LineFrag.glsl"));
+    DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>
+        ("ApexAssets/Shaders/LineVert.glsl|ApexAssets/Shaders/LineFrag.glsl"), m_rhi.get());
 
     return true;
 }
@@ -105,117 +141,138 @@ bool Apex::Application::InitAudio()
     m_audio = std::unique_ptr<IAudioEngine>(CreateAudioEngine());
 
     if (m_audio)
-    {
         m_audio->Preload("fragments of hope.ogg");
 
-        m_audio->Play2D("fragments of hope.ogg",
-            { .m_loop = true, .m_volume = 1.f });
-    }
-
     return true;
 }
 
-bool Apex::Application::InitScene()
+bool Apex::Application::InitUI(IGUI* gui)
 {
-    m_scene = std::make_unique<Apex::Rendering::Scene>(m_rhi.get(), m_threadPool);
-    return true;
-}
+    if (!m_window) return false;
 
-bool Apex::Application::InitUI()
-{
-    m_uiManager = std::make_unique<UIManager>(m_window->NativeHandle());
+    m_uiManager = std::make_unique<UIManager>(gui);
 
     if (!m_uiManager)
         return false;
 
-    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100, FontID::Default));
+    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
+    return true;
+}
+
+bool Apex::Application::InitLighting()
+{
+    m_lightManager = std::make_unique<LightManager>(m_rhi.get());
+    m_shadowManager = std::make_unique<ShadowManager>(m_rhi.get(), 
+        m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/DirShadowVert.glsl|ApexAssets/Shaders/DirShadowFrag.glsl"), 
+        m_resourceManager->CreateAsync<Shader>(
+            "ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
+    return true;
+}
+
+bool Apex::Application::InitLua()
+{
+    m_luaManager = std::make_unique<Scripting::LuaManager>();
+    return m_luaManager != nullptr;
+}
+
+bool Apex::Application::InitScene()
+{
+    m_scene = std::make_unique<Apex::Rendering::Scene>();
     return true;
 }
 
 bool Apex::Application::InitAnimation()
 {
-    m_animationMesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/Withered_Freddy.fbx");
+    /*m_animationMesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/Withered_Freddy.fbx");
     m_animationShader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/SkinningVert.glsl|Assets/Shaders/SkinningFrag.glsl");
 
     m_animator = std::make_shared<Apex::Rendering::Animator>(m_animationMesh, m_animationShader, 30.f);
 
     m_animator->PlayRepeat(8);
     
+    return true;*/
+
     return true;
 }
 
 void Apex::Application::LoadScene()
 {
-    m_sphere = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere.obj");
-    m_texture = m_resourceManager->CreateAsync<Texture>("Assets/Textures/container.jpg");
-    m_texture2 = m_resourceManager->CreateAsync<Texture>("Assets/Textures/T_M_B_44_Qishilong_body01_B.png");
-    m_shader = m_resourceManager->CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+    Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
+        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
+ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
+ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj", true);
+    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
-    m_cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
 
-    while (!m_sphere.IsReady() ||
-        !m_cube.IsReady() ||
-        !m_texture.IsReady() ||
-        !m_texture2.IsReady() ||
-        !m_shader.IsReady())
+    m_scene->SetSkybox(sk);
+    
+    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic());
+    loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
+
+    bool ready = false;
+
+    while (!ready)
+    {
+        ready = true;
+
+        for (auto& objPtr : m_scene->GetObjects())
+        {
+            Object* obj = objPtr.get();
+
+            if (auto* renderer = obj->GetComponent<MeshRenderer>())
+            {
+                if (!renderer->GetMesh().IsReady())
+                    ready = false;
+
+                if (!renderer->GetTexture().IsReady())
+                    ready = false;
+
+                if (!renderer->GetShader().IsReady())
+                    ready = false;
+            }
+
+            if (auto* collider = obj->GetComponent<MeshCollider>())
+            {
+                if (!collider->GetMesh().IsReady())
+                    ready = false;
+            }
+        }
+
         m_resourceManager->ProcessGpuUploads();
+    }
 
-    BoxCollider collider = BoxCollider({ 1.f, 1.f, 1.f });
-    BoxCollider collider2 = BoxCollider({ 10.f, .5f, 10.f });
+    for (auto& objPtr : m_scene->GetObjects())
+    {
+        Object* obj = objPtr.get();
 
-    auto obj = std::make_unique<Object>();
-    auto& body = obj->AddComponent<RigidBodyComponent>(1, BodyType::Dynamic);
-    body.SetPosition({0, 10, 0});
-    m_body = &body;
-    m_objects.push_back(std::move(obj));
+        auto* body = obj->GetComponent<RigidBodyComponent>();
+        auto* collider = obj->GetComponent<Collider>();
 
-    auto obj2 = std::make_unique<Object>();
-    auto& body2 = obj2->AddComponent<RigidBodyComponent>(0, BodyType::Static);
-    body2.SetPosition({0, 0, 0});
-    m_body2 = &body2;
-    m_objects.push_back(std::move(obj2));
-
-    MeshCollider meshCollider = MeshCollider(m_sphere, MeshColliderType::Convex);
-    //MeshCollider meshCollider2 = MeshCollider(mesh2, MeshColliderType::Triangle);
-
-    CapsuleCollider capsule(2, 2);
-
-    m_physics.CreateActor(meshCollider, body);
-    m_physics.CreateActor(collider2, body2);
-}
-
-void Apex::Application::Shutdown()
-{
-    std::cout << "Application Shutdown\n" << std::endl;
+        if (body && collider)
+            m_scene->GetPhysic()->CreateActor(*collider, *body);
+    }
 }
 
 void Apex::Application::Tick()
 {
-    m_window->PollEvents();
+    constexpr float fixedUpdateTime_s = 1.f / 60.f;
 
-    m_deltaTime = m_window->GetDeltaTime();
-    if (m_deltaTime > 0.1f) m_deltaTime = 1.f / 60.f;
+    m_deltaTime_s = m_window->GetDeltaTime();
+    if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
     ProcessInput();
     Update();
 
-    m_accumulator += m_deltaTime;
-    m_totalTime += m_deltaTime;
+    m_accumulator_s += m_deltaTime_s;
 
-    while (m_accumulator >= 1.f / 60.f)
+    while (m_accumulator_s >= fixedUpdateTime_s)
     {
-        m_physics.Update(1.f / 60.f);
-        m_accumulator -= 1.f / 60.f;
+        m_scene->FixedUpdate(fixedUpdateTime_s);
+        m_accumulator_s -= fixedUpdateTime_s;
     }
-
-    SyncPhysicsToTransforms();
-
-    Render();
-
-    m_window->SwapBuffers();
-
-    m_resourceManager->ProcessGpuUploads();
 }
 
 void Apex::Application::ProcessInput()
@@ -227,7 +284,7 @@ void Apex::Application::ProcessInput()
         m_window->IsKeyPressed(Key::D),
         m_window->IsKeyPressed(Key::E),
         m_window->IsKeyPressed(Key::Q),
-        m_deltaTime
+        m_deltaTime_s
     );
 }
 
@@ -246,58 +303,40 @@ void Apex::Application::UpdateAudioListener()
 
 void Apex::Application::Update()
 {
-    for (auto& obj : m_objects)
-        obj->Update(m_deltaTime);
+    m_scene->Update(m_deltaTime_s);
 }
 
-void Apex::Application::SyncPhysicsToTransforms()
+void Apex::Application::Render(Camera* cam)
 {
-    m_physics.SyncFromPhysx();
+    if (!cam) cam = m_camera.get();
+
+    RenderPassInfo pass;
+    pass.m_aspectRatio = m_window->GetAspectRatio();
+    pass.m_camera = cam;
+
+    Render(pass);
 }
 
-void Apex::Application::Render()
+void Apex::Application::Render(RenderPassInfo pass)
 {
-    m_rhi->Clear(0.12f, 0.12f, 0.15f);
+    assert(pass.m_camera && "Application::Render(RenderPassInfo) needs to have a camera set in RenderPassInfo to be able to render the scene");
 
-    m_shader->Use();
-    m_resourceManager->Get<Texture>("Assets/Textures/container.jpg")->Bind();
+    m_rhi->Clear();
 
-    LibMath::Matrix4 view = m_camera->GetViewMatrix();
-    LibMath::Matrix4 proj = m_camera->GetProjectionMatrix(m_window->GetAspectRatio());
+    VisibleLights visibleLights = m_scene->GetVisibleLights();
 
-    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body->GetTransform()));
-    m_shader->SetUniform("uView", view);
-    m_shader->SetUniform("uProjection", proj);
-    m_shader->SetUniform("uCameraPos", m_camera->GetPosition());
+    m_lightManager->UploadToGpu(visibleLights);
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    m_shadowManager->BindShadowMaps();
 
-    m_shader->SetUniform("uLightPos", LibMath::Vector3(2.f, 3.f, 2.f));
-    m_shader->SetUniform("uLightColor", LibMath::Vector3(1.f, 1.f, 1.f));
-    m_shader->SetUniform("uViewPos", m_camera->GetPosition());
+    if (pass.m_target != RHI_INVALID)
+    {
+        m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+        m_rhi->Clear();
+    }
 
-    m_shader->SetUniform("uTexture", 0);
-    m_shader->SetUniform("uUseTexture", 1);
+    m_scene->Render(pass);
 
-    m_sphere->Draw();
-
-    m_texture2->Bind();
-    m_shader->SetUniform("uModel", static_cast<LibMath::Matrix4>(m_body2->GetTransform()));
-    //m_cube->Draw();
-
-    //animation
-
-    m_animationShader->Use();
-
-    m_animationShader->SetUniform("uModel", LibMath::Matrix4::identity());
-    m_animationShader->SetUniform("uView", view);
-    m_animationShader->SetUniform("uProjection", proj);
-    //m_animationShader->SetUniform("uCameraPos", m_camera->GetPosition());
-
-    m_animator->Update(m_deltaTime);
-
-    m_animationMesh->Draw();
-
-    m_physics.DrawColliders();
-    DebugRenderer::Get().DrawLines(m_rhi.get(), proj * view);
-
-    m_resourceManager->ProcessGpuUploads();
+    if (pass.m_flags & ShowCollider)
+        DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

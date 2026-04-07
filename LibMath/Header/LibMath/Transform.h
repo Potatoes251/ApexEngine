@@ -20,15 +20,17 @@ namespace LibMath
 		Quaternion	getRotation() const { return m_rotation; }
 		Vector3		getPosition() const { return m_position; }
 		Vector3		getScale() const { return m_scale; }
+		Vector3		getForward() const;
 		
 		void	setRotation(Radian pitch, Radian yaw, Radian roll) { m_rotation = Quaternion(pitch, yaw, roll); }
 		void	setRotation(Quaternion rotation) { m_rotation = rotation; }
 		void	setPosition(Vector3 position) { m_position = position; }
 		void	setScale(Vector3 scale) { m_scale = scale; }
 
-		Transform operator*(Transform const& other) const;
-
 		operator Matrix4() const;
+
+		// parent * child
+		Transform operator*(Transform const& other) const;
 
 	private:
 		Quaternion m_rotation = Quaternion(0, 0, 0, 1);

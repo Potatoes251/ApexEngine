@@ -8,6 +8,7 @@ namespace LibMath
 {
 	class Quaternion;
 	class Vector2;
+	class Vector4;
 	class Radian;
 
 	class Vector3
@@ -18,6 +19,7 @@ namespace LibMath
 						Vector3(float, float, float);					// set all component individually
 						Vector3(Vector2 const&, float);
 						Vector3(Vector3 const&);						// copy all component
+						Vector3(Vector4 const&);						// copy all component
 						~Vector3() = default;
 
 		static Vector3	zero();											// return a vector with all its component set to 0
@@ -54,6 +56,7 @@ namespace LibMath
 		float			magnitudeSquared() const;						// return square value of the vector magnitude
 
 		Vector3&		normalize();									// scale this vector to have a magnitude of 1
+		Vector3			normalized() const;								// scale this vector to have a magnitude of 1
 
 		void			projectOnto(Vector3 const&);					// project this vector onto an other
 

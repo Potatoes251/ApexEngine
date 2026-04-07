@@ -1,26 +1,25 @@
 #include "ScriptComponent.h"
 
-Apex::Scripting::ScriptComponent::~ScriptComponent()
+using namespace Apex;
+using namespace Apex::Scripting;
+
+std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
 {
-    if (m_instanceRef != LUA_REFNIL)
-    {
-        luaL_unref(m_lua.GetState(), LUA_REGISTRYINDEX, m_instanceRef);
-    }
+    auto clone = std::make_unique<ScriptComponent>(m_lua);
+    clone->SetScript(m_scriptPath);
+    return clone;
 }
 
-void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
+void ScriptComponent::SetScript(const std::string& path)
 {
     m_scriptPath = path;
     m_scriptRef = m_lua.LoadScript(path);
     m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
 
-    m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
-
-    // Après création de l’instance :
     lua_State* L = m_lua.GetState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
-    // push light userdata vers Object*
+    // push light userdata to Object*
     lua_pushlightuserdata(L, GetOwner());
 
     // instance.__object = pointer
@@ -30,17 +29,36 @@ void Apex::Scripting::ScriptComponent::SetScript(const std::string& path)
     lua_pop(L, 1);
 }
 
-void Apex::Scripting::ScriptComponent::OnStart()
+std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
+{
+    return {
+        {
+            "Script",
+            ExposedVar::Script,
+            this
+        }
+    };
+}
+
+void ScriptComponent::OnStart()
 {
     if (m_instanceRef != LUA_REFNIL)
         m_lua.CallFunction(m_instanceRef, "Start");
 }
 
-void Apex::Scripting::ScriptComponent::OnUpdate(float deltaTime)
+void ScriptComponent::OnUpdate(float deltaTime)
 {
     if (!IsEnabled())
         return;
 
     if (m_instanceRef != LUA_REFNIL)
         m_lua.CallFunction(m_instanceRef, "Update", deltaTime);
+}
+
+void ScriptComponent::Serialize(std::ostream& out) const
+{
+    out << "      \"ScriptComponent\": {\n";
+    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+    out << "        \"script\": \"" << m_scriptPath << "\"\n";
+    out << "      }";
 }

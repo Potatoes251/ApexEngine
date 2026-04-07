@@ -1,41 +1,69 @@
 ﻿#include "GLFWWindow.h"
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <commdlg.h>
+#include <shlobj.h>
+// windows.h defines CreateWindow as a macro which conflicts with our IWindow* CreateWindow
+#undef CreateWindow
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <iostream>
+
 
 namespace Apex::Windowing 
 {
 	// ── Factory ─────────────────────────────────────────────────
-	IWindow* CreateWindow(const std::string& title, int width, int height)
+	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext)
 	{
-		return new GLFWWindow(title, width, height);
+        GLFWwindow* share = shareContext ?
+             static_cast<GLFWwindow*>(shareContext->NativeHandle()) :
+             nullptr;
+        return new GLFWWindow(title, width, height, share);
 	}
 
-    // ── Constructor ──────────────────────────────────────────────
-    GLFWWindow::GLFWWindow(const std::string& title, int width, int height)
-        : m_width(width), m_height(height)
+    void PollAllEvents()
     {
-        if (!glfwInit())
-			std::cout << "Failed to initialize GLFW" << std::endl;
+        glfwPollEvents();
+    }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    void MakeContextCurrent(IWindow& window)
+    {
+        glfwMakeContextCurrent(static_cast<GLFWwindow*>(window.NativeHandle()));
+    }
+
+    // ── Constructor ──────────────────────────────────────────────
+    GLFWWindow::GLFWWindow(const std::string& title, int width, int height, GLFWwindow* shareContext)
+        : m_width(width), m_height(height), m_isPrimary(shareContext == nullptr)
+    {
+        if (m_isPrimary)
+        {
+            if (!glfwInit())
+                std::cout << "Failed to initialize GLFW" << std::endl;
+        }
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, shareContext);
         if (!m_window) 
         {
-            glfwTerminate();
+            if (m_isPrimary) glfwTerminate();
             std::cout << "Failed to create GLFW window" << std::endl;
+            return;
         }
 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1);
 
-        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-			std::cout << "Failed to initialize GLAD" << std::endl;
+        if (m_isPrimary)
+        {
+            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+                std::cout << "Failed to initialize GLAD" << std::endl;
+        }
 
         // Store pointer for static callbacks
         glfwSetWindowUserPointer(m_window, this);
@@ -44,34 +72,48 @@ namespace Apex::Windowing
         glfwSetMouseButtonCallback(m_window, GLFWMouseButtonCallback);
         glfwSetScrollCallback(m_window, GLFWScrollCallback);
         glfwSetFramebufferSizeCallback(m_window, GLFWResizeCallback);
+        glfwSetDropCallback(m_window, GLFWDropCallback);
 
         m_lastFrameTime = (float)glfwGetTime();
+        m_crosshairCursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
     }
 
     GLFWWindow::~GLFWWindow() 
     {
-        if (m_window) glfwDestroyWindow(m_window);
-        glfwTerminate();
+        if (m_crosshairCursor) glfwDestroyCursor(m_crosshairCursor);
+        if (m_window)          glfwDestroyWindow(m_window);
+        if (m_isPrimary)       glfwTerminate();
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
-    bool  GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
-    void  GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
-    void  GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
+    void GLFWWindow::MakeContextCurrent() { glfwMakeContextCurrent(m_window); }
+    bool GLFWWindow::ShouldClose()  const { return glfwWindowShouldClose(m_window); }
+    void GLFWWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
+    void GLFWWindow::Clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+    void GLFWWindow::Close() { glfwSetWindowShouldClose(m_window, true); }
+    void GLFWWindow::Focus() { glfwFocusWindow(m_window); }
+    void GLFWWindow::Maximize() { glfwMaximizeWindow(m_window); }
 
-    void GLFWWindow::PollEvents() 
+    void GLFWWindow::UpdateDeltaTime()
     {
         float currentTime = (float)glfwGetTime();
         m_deltaTime = currentTime - m_lastFrameTime;
         m_lastFrameTime = currentTime;
-        glfwPollEvents();
-	}
+    }
 
 	// ── Properties ───────────────────────────────────────────────
 	int GLFWWindow::GetWidth() const { return m_width; }
 	int GLFWWindow::GetHeight() const { return m_height; }
     float GLFWWindow::GetAspectRatio() const { return m_height ? (float)m_width / m_height : 1.f; }
 	float GLFWWindow::GetDeltaTime() const { return m_deltaTime; }
+
+    void GLFWWindow::SetWindowTitle(const std::string& title)
+    {
+        glfwSetWindowTitle(m_window, title.c_str());
+    }
 
 	// ── Input ────────────────────────────────────────────────────
     bool GLFWWindow::IsKeyPressed(Key key) const
@@ -97,6 +139,12 @@ namespace Apex::Windowing
         case Key::E:      
             glfwKey = GLFW_KEY_E;      
             break;
+        case Key::P:
+            glfwKey = GLFW_KEY_P;
+            break;
+        case Key::F:
+            glfwKey = GLFW_KEY_F;
+            break;
         case Key::Escape: 
             glfwKey = GLFW_KEY_ESCAPE; 
             break;
@@ -108,6 +156,26 @@ namespace Apex::Windowing
         }
         return glfwGetKey(m_window, glfwKey) == GLFW_PRESS;
 	}
+
+    bool GLFWWindow::IsMousButtonPressed(MouseButton key) const
+    {
+        int glfwKey = GLFW_KEY_UNKNOWN;
+        switch (key)
+        {
+        case MouseButton::Left:
+            glfwKey = GLFW_MOUSE_BUTTON_LEFT;
+            break;
+        case MouseButton::Middle:
+            glfwKey = GLFW_MOUSE_BUTTON_MIDDLE;
+            break;
+        case MouseButton::Right:
+            glfwKey = GLFW_MOUSE_BUTTON_RIGHT;
+            break;
+        default:
+            break;
+        }
+        return glfwGetMouseButton(m_window, glfwKey) == GLFW_PRESS;
+    }
 
     MousePosition GLFWWindow::GetMousePosition() const
     {
@@ -122,19 +190,136 @@ namespace Apex::Windowing
 		m_firstMouseMove = true; // Reset mouse movement tracking when toggling capture
 	}
 
+    void GLFWWindow::SetCrosshairCursor()
+    {
+        if (m_crosshairCursor)
+            glfwSetCursor(m_window, m_crosshairCursor);
+    }
+
+    void GLFWWindow::ResetCursor()
+    {
+        glfwSetCursor(m_window, nullptr);  // nullptr restores the default arrow
+    }
+
     // ── Callback setters ─────────────────────────────────────────
 	void GLFWWindow::SetKeyCallback(KeyCallback callback) { m_keyCallback = callback; }
 	void GLFWWindow::SetMouseMoveCallback(MouseMoveCallback callback) { m_mouseMoveCallback = callback; }
 	void GLFWWindow::SetMouseButtonCallback(MouseButtonCallback callback) { m_mouseButtonCallback = callback; }
 	void GLFWWindow::SetScrollCallback(ScrollCallback callback) { m_scrollCallback = callback; }
 	void GLFWWindow::SetResizeCallback(ResizeCallback callback) { m_resizeCallback = callback; }
+	void GLFWWindow::SetExternalDropCallback(ExternalDropCallback callback) { m_dropCallback = callback; }
+
+    std::vector<std::filesystem::path> GLFWWindow::OpenFileDialog(bool allowMultiple)
+    {
+        std::vector<std::filesystem::path> result;
+
+        constexpr int BUFFER = 32768;
+        std::wstring buffer(BUFFER, L'\0');
+
+        OPENFILENAMEW openFileName = {};
+        openFileName.lStructSize = sizeof(openFileName);
+        openFileName.hwndOwner = GetActiveWindow();
+        openFileName.lpstrFile = buffer.data();
+        openFileName.nMaxFile = BUFFER;
+        openFileName.lpstrTitle = L"Import Assets";
+        openFileName.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_EXPLORER;
+        if (allowMultiple)
+            openFileName.Flags |= OFN_ALLOWMULTISELECT;
+
+        if (!GetOpenFileNameW(&openFileName))
+            return result; // cancelled
+
+        // Multi-select: buffer is "dir\0file1\0file2\0\0"
+        // Single file:  buffer is just the full path
+        const wchar_t* path = buffer.data();
+        std::filesystem::path dir(path);
+        path += dir.native().size() + 1;
+
+        if (*path == L'\0')
+        {
+            // Single selection — dir is actually the full path
+            result.push_back(dir);
+        }
+        else
+        {
+            while (*path != L'\0')
+            {
+                result.push_back(dir / path);
+                path += std::wcslen(path) + 1;
+            }
+        }
+        return result;
+    }
+
+    std::filesystem::path GLFWWindow::OpenFolderDialog()
+    {
+        BROWSEINFOW browseInfo = {};
+        browseInfo.hwndOwner = GetActiveWindow();
+        browseInfo.lpszTitle = L"Select Folder to Import";
+        browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+
+        PIDLIST_ABSOLUTE pIDList = SHBrowseForFolderW(&browseInfo);
+        if (!pIDList) return {};
+
+        wchar_t buffer[MAX_PATH];
+        SHGetPathFromIDListW(pIDList, buffer);
+        CoTaskMemFree(pIDList);
+        return std::filesystem::path(buffer);
+    }
+
+    std::filesystem::path GLFWWindow::SaveFileDialog(const std::string& defaultName)
+    {
+        constexpr int BUFFER = 32768;
+        std::wstring buffer(BUFFER, L'\0');
+
+        // Pre-fill the filename field with the suggested name
+        if (!defaultName.empty())
+        {
+            std::wstring wide(defaultName.begin(), defaultName.end());
+            wide.copy(buffer.data(), std::min(wide.size(), (size_t)(BUFFER - 1)));
+        }
+
+        OPENFILENAMEW ofn = {};
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = GetActiveWindow();
+        ofn.lpstrFile = buffer.data();
+        ofn.nMaxFile = BUFFER;
+        ofn.lpstrTitle = L"Export Texture";
+        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0\0";
+        ofn.nFilterIndex = 1;
+        ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_EXPLORER;
+
+        if (!GetSaveFileNameW(&ofn))
+            return {};
+
+        return std::filesystem::path(buffer.data());
+    }
 
 	// ── GLFW static callback wrappers ─────────────────────────────
     void GLFWWindow::GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
-        if (self && self->m_keyCallback)
-            self->m_keyCallback(TranslateKey(key), action != GLFW_RELEASE);
+        if (!self || !self->m_keyCallback)
+            return;
+
+        KeyAction keyAction;
+
+        switch (action)
+        {
+        case GLFW_PRESS:
+            keyAction = KeyAction::Press;
+            break;
+        case GLFW_RELEASE:
+            keyAction = KeyAction::Release;
+            break;
+        case GLFW_REPEAT:
+            keyAction = KeyAction::Repeat;
+            break;
+        default:
+            return;
+        }
+
+        self->m_keyCallback(TranslateKey(key), keyAction);
 	}
 
     void GLFWWindow::GLFWCursorCallback(GLFWwindow* window, double xpos, double ypos)
@@ -183,6 +368,39 @@ namespace Apex::Windowing
         }
 	}
 
+    void GLFWWindow::GLFWDropCallback(GLFWwindow* window, int count, const char** paths)
+    {
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        if (!self || !self->m_dropCallback) return;
+
+        std::vector<std::filesystem::path> result;
+        result.reserve(count);
+        for (int i = 0; i < count; ++i)
+            result.emplace_back(paths[i]);
+
+        self->m_dropCallback(std::move(result));
+    }
+
+    void GLFWWindow::SetCloseCallback(CloseCallback callback)
+    {
+        m_closeCallback = std::move(callback);
+
+        glfwSetWindowUserPointer(m_window, this);
+
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* win)
+            {
+                auto* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(win));
+
+                if (self->m_closeCallback)
+                    self->m_closeCallback();
+            });
+    }
+
+    void GLFWWindow::SetShouldClose(bool close)
+    {
+        glfwSetWindowShouldClose(m_window, close);
+    }
+
     // ── Translation helpers ───────────────────────────────────────
     Key GLFWWindow::TranslateKey(int glfwKey)
     {
@@ -194,6 +412,8 @@ namespace Apex::Windowing
         case GLFW_KEY_D:      return Key::D;
         case GLFW_KEY_Q:      return Key::Q;
         case GLFW_KEY_E:      return Key::E;
+        case GLFW_KEY_P:      return Key::P;
+        case GLFW_KEY_F:      return Key::F;
         case GLFW_KEY_UP:     return Key::Up;
         case GLFW_KEY_DOWN:   return Key::Down;
         case GLFW_KEY_LEFT:   return Key::Left;

@@ -1,0 +1,118 @@
+{
+"materials": [
+  {
+    "id": 0,
+    "static friction": 0.500000,
+    "dynamic friction": 0.500000,
+    "bounciness": 1.000000
+  }
+],
+"objects": [
+  {
+    "id": 12,
+    "parent": null,
+    "name": "Sphere",
+    "position": [0.000000,3.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Dynamic",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/sphere.obj",
+        "type": "Convex",
+        "isTrigger": false,
+        "material": 0
+      },
+      "SpotLight": {
+        "enabled": true,
+        "color": [0.000000, 1.000000, 0.000000],
+        "intensity": 0.000000,
+        "innerCutOff": 4.386000,
+        "outerCutOff": 5.405000
+      },
+      "PointLight": {
+        "enabled": true,
+        "color": [1.000000, 0.000000, 1.000000],
+        "intensity": 4.830000,
+        "radius": 10.000000
+      },
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 10.000000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 13,
+    "parent": null,
+    "name": "Padoru",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/padoru.obj",
+        "texture": "Assets/Textures/padoru.png",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 0.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [10.000000, 0.500000, 10.000000],
+        "isTrigger": false,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 14,
+    "parent": null,
+    "name": "Floor",
+    "position": [0.000000,5.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/floor.obj",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Dynamic",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/floor.obj",
+        "type": "Convex",
+        "isTrigger": false,
+        "material": 0
+      }
+    }
+  }
+]
+}

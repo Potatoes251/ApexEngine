@@ -3,35 +3,66 @@
 
 #include "MeshRenderer.h"
 #include "RHI.h"
+#include "RenderPassInfo.h"
 
 #include "ResourceManager.h"
 #include "Object.h"
+
+#include "Physic.h"
+
+#include "Skybox.h"
+
+#include "Lighting/VisibleLights.h"
+
+#include "LibMath/Matrix/Matrix4.h"
+#include "LibMath/Vector/Vector3.h"
 
 namespace Apex::Rendering
 {
 	class Scene
 	{
 	public:
-		Scene(IRHI* rhi, Apex::Core::ThreadPool& threadPool);
+		Scene() = default;
 		~Scene() = default;
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		Apex::Data::Object* AddMesh(const std::string& meshFile,
-									const std::string& textureFile,
-									const std::string& shaderName);
+		std::unique_ptr<Scene> Clone();
 
-		MeshRenderer& GetRenderer(size_t index) { return m_renderers[index]; }
-		const MeshRenderer& GetRenderer(size_t index) const { return m_renderers[index]; }
+		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
 
+		Lighting::VisibleLights GetVisibleLights();
 
-		void Update(const LibMath::Matrix4& view, const LibMath::Matrix4& projection,
-					const LibMath::Vector3& cameraPosition, float deltaTime);
+		Object* CreateObject();
+		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
+		void DestroyObject(Object* obj);
+
+		void MarkDirty();
+		void ClearDirty() { m_isDirty = false; }
+		bool IsDirty() const { return m_isDirty; }
+
+		void Start();
+		void Update(float deltaTime_s);
+		void FixedUpdate(float deltaTime_s);
+		void Render(RenderPassInfo passInfo);
 		
+		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
+
+		void InsertBefore(Object* dragged, Object* target);
+		void InsertAfter(Object* dragged, Object* target);
+		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+
+		void Save(const std::string& path);
+		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
-		IRHI* m_rhi = nullptr;
-		Apex::Resources::ResourceManager   m_resourceManager;
-		std::vector<MeshRenderer>          m_renderers;
+		Physic::PhysicSystem m_physics;
+
+		std::vector<std::unique_ptr<Object>> m_objects;
+		std::unique_ptr<Skybox> m_skybox;
+
+		bool m_isDirty = false;
+
+		std::function<void()> m_onMarkedDirty;
 	};
 }
 

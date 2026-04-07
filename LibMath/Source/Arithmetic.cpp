@@ -32,27 +32,7 @@ float LibMath::floor(float value)
 
 float LibMath::squareRoot(float value)
 {
-    if (value < 0)
-    {
-        return 0.f;
-    }
-    if (value == 0.f || value == 1.f)
-    {
-        return value;
-    }
-    int	maxIterations = 100;        // set a maximum to the amount of iterations possible
-
-    int iterations = 0;
-    float root = value > 0 ? value * 0.5f : value;
-
-    while (std::fabs(root * root - value) > g_tolerance &&
-        iterations < maxIterations)
-    {
-        root = static_cast<float>(0.5 * (root + value / root));
-        ++iterations;
-    }
-
-    return root;
+    return std::sqrt(value);
 }
 
 float LibMath::wrap(float value, float lowRange, float highRange)
