@@ -21,6 +21,9 @@ namespace LibMath
 		Vector3		getPosition() const { return m_position; }
 		Vector3		getScale() const { return m_scale; }
 		Vector3		getForward() const;
+
+		Vector3		getEulerRotation() const;
+		void		setEulerRotation(Vector3 euler);
 		
 		void	setRotation(Radian pitch, Radian yaw, Radian roll) { m_rotation = Quaternion(pitch, yaw, roll); }
 		void	setRotation(Quaternion rotation) { m_rotation = rotation; }
@@ -33,6 +36,7 @@ namespace LibMath
 		Transform operator*(Transform const& other) const;
 
 	private:
+		Vector3 m_eulerRotation;
 		Quaternion m_rotation = Quaternion(0, 0, 0, 1);
 		Vector3 m_position = Vector3(0);
 		Vector3 m_scale = Vector3(1);

@@ -35,3 +35,18 @@ LibMath::Transform::operator LibMath::Matrix4() const
 {
 	return LibMath::Matrix4::createTranslation(m_position) * static_cast<LibMath::Matrix4>(m_rotation) * LibMath::Matrix4::createScale(m_scale);
 }
+
+LibMath::Vector3 LibMath::Transform::getEulerRotation() const
+{
+	return m_eulerRotation;
+}
+
+void LibMath::Transform::setEulerRotation(Vector3 euler)
+{
+	m_eulerRotation = euler;
+	m_rotation = Quaternion(
+		Radian(euler[0]),
+		Radian(euler[1]),
+		Radian(euler[2])
+	);
+}

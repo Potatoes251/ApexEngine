@@ -30,8 +30,11 @@ namespace Apex::Editor
 
 		void Draw();
 
+		void DrawTransform(Object* obj);
 		void DrawComponent(Apex::Component* comp);
 		bool DrawTreeComp(Apex::Component* obj);
+
+		bool DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max);
 
 		void HandleSelection(Apex::Component* comp);
 

@@ -103,6 +103,8 @@ void ComponentsViewer::Draw()
 
 	if (m_selectedObj)
 	{
+		DrawTransform(m_selectedObj);
+
 		for (Component* comp : m_selectedObj->GetComponents())
 		{
 			if (!comp)
@@ -125,6 +127,56 @@ void ComponentsViewer::Draw()
 	m_scriptPicker.Draw();
 
 	m_gui.PopFont();
+}
+
+void ComponentsViewer::DrawTransform(Object* obj)
+{
+	LibMath::Transform transform = obj->GetLocalTransform();
+
+	if (!m_gui.BeginTreeNode("Transform", TreeNodeFlags::SpanAvailWidth))
+		return;
+
+	LibMath::Vector3 pos = transform.getPosition();
+	LibMath::Vector3 rot = transform.getEulerRotation();
+	rot = rot * (180.0f / 3.14159265f);
+	LibMath::Vector3 scale = transform.getScale();
+
+	bool changed = false;
+
+	changed |= DrawVec3("Position", pos, -1000.0f, 1000.0f);
+	changed |= DrawVec3("Rotation", rot, 0.0f, 360.0f);
+	changed |= DrawVec3("Scale", scale, -1000.0f, 1000.0f);
+
+	if (changed)
+	{
+		transform.setPosition(pos);
+		transform.setEulerRotation(rot * (3.14159265f / 180.0f));
+		transform.setScale(scale);
+
+		obj->SetLocalTransform(transform);
+	}
+
+	m_gui.EndTreeNode();
+}
+
+bool ComponentsViewer::DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max)
+{
+	bool changed = false;
+
+	m_gui.Text(name);
+	m_gui.SameLine(150);
+
+	m_gui.PushID(name.c_str());
+
+	changed |= m_gui.SliderFloatFormat("X", &v[0], min, max, 50.0f);
+	m_gui.SameLine();
+	changed |= m_gui.SliderFloatFormat("Y", &v[1], min, max, 50.0f);
+	m_gui.SameLine();
+	changed |= m_gui.SliderFloatFormat("Z", &v[2], min, max, 50.0f);
+
+	m_gui.PopID();
+
+	return changed;
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
