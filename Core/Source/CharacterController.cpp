@@ -51,7 +51,7 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	std::vector<HitResult> hits;
 	HitResult hit;
 
-	if (m_physic->Sweep(hits, m_targetPos, displacement.normalized(), *m_collider, m_speed) && FindClosestHit(hits, hit))
+	if (m_physic->Sweep(hits, m_targetPos, displacement.normalized(), *m_collider, displacement.magnitude()) && FindClosestHit(hits, hit))
 	{
 		// Move only up to contact point
 		LibMath::Vector3 safeMove = displacement.normalized() * hit.m_distance;
@@ -115,14 +115,16 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 
 	return found;
 }
-
+#include "InputSystem.h"
 void CharacterController::UpdateGrounded()
 {
 	if (!m_physic || !m_collider) return;
 
 	std::vector<HitResult> hits;
 	HitResult hit;
+	
+	LibMath::Vector3 rayStart = m_targetPos + LibMath::Vector3(0, m_collider->GetHalfHeight(), 0);
 
-	m_grounded = m_physic->Raycast(hits, m_targetPos, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight()) 
+	m_grounded = m_physic->Raycast(hits, rayStart, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight())
 				&& FindClosestHit(hits, hit);
 }

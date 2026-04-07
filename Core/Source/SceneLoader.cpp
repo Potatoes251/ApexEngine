@@ -418,6 +418,8 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
             comp.SetEnabled(enabled);
+            comp.SetSpeed(speed);
+            comp.SetGroundedDistance(groundedDistance);
         }
         else if (compName == "ThirdPersonCamera")
         {

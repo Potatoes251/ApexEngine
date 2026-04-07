@@ -57,7 +57,7 @@
       },
       "CharacterController": {
         "enabled": true,
-        "groundedDistance": 0.500000,
+        "groundedDistance": 0.800000,
         "speed": 5.000000
       },
       "ThirdPersonCamera": {
