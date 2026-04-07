@@ -53,7 +53,7 @@ std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
     };
 }
 
-std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone() const
+std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
 {
     auto clone = std::make_unique<MeshRenderer>();
 

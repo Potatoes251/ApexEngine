@@ -139,12 +139,52 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 		{
 			m_scriptPicker.Open(script);
 		}
+
+		for (auto& var : script->GetExposedVariables())
+		{
+			switch (var.type)
+			{
+			case ExposedVar::Float:
+			{
+				float* value = (float*)var.data;
+				if (m_gui.SliderFloat(var.name, value, 0.0f, 10.0f))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::Int:
+			{
+				int* value = (int*)var.data;
+				if (m_gui.SliderInt(var.name, value, 0, 10))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::Bool:
+			{
+				bool* value = (bool*)var.data;
+				if (m_gui.Checkbox(var.name, value))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::String:
+			{
+				char* value = (char*)var.data;
+				if (m_gui.InputText(var.name, value, 256))
+					script->SetVariable(var.name, var);
+				break;
+			}
+			}
+		}
 	}
 
-	for (auto& var : comp->GetExposedVariables())
+	else
 	{
-		switch (var.type)
+		for (auto& var : comp->GetExposedVariables())
 		{
+			switch (var.type)
+			{
 			case ExposedVar::Float:
 				m_gui.SliderFloat(var.name, (float*)var.data, 0.0f, 10.0f);
 				break;
@@ -194,6 +234,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			case ExposedVar::Script:
 				DrawComponentScript(var);
 				break;
+			}
 		}
 	}
 

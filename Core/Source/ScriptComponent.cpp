@@ -3,15 +3,24 @@
 using namespace Apex;
 using namespace Apex::Scripting;
 
-std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
+std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);
     clone->SetScript(m_scriptPath);
+
+    for (auto& var : GetExposedVariables())
+    {
+        clone->SetVariable(var.name, const_cast<ExposedVar&>(var));
+    }
+
     return clone;
 }
 
 void ScriptComponent::SetScript(const std::string& path)
 {
+    if (m_scriptPath == path && m_instanceRef != LUA_REFNIL)
+        return;
+
     m_scriptPath = path;
     m_scriptRef = m_lua.LoadScript(path);
     m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
@@ -118,6 +127,45 @@ std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
     lua_pop(L, 2); // __exposed + instance
 
     return vars;
+}
+
+void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
+{
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
+    printf("SET instance: %d\n", m_instanceRef);
+
+    lua_State* L = m_lua.GetState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
+
+    switch (var.type)
+    {
+    case ExposedVar::Float:
+        lua_pushnumber(L, *(float*)var.data);
+        break;
+
+    case ExposedVar::Int:
+        lua_pushinteger(L, *(int*)var.data);
+        break;
+
+    case ExposedVar::Bool:
+        lua_pushboolean(L, *(bool*)var.data);
+        break;
+
+    case ExposedVar::String:
+        lua_pushstring(L, (char*)var.data);
+        break;
+
+    default:
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_setfield(L, -2, name.c_str()); // instance[name] = value
+
+    lua_pop(L, 1); // pop instance
 }
 
 void ScriptComponent::OnStart()

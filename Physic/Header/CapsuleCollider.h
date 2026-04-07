@@ -17,7 +17,7 @@ namespace Apex::Physic
 
 		void Serialize(std::ostream& out) const override;
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<CapsuleCollider>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<CapsuleCollider>(*this); }
 
 		const char* GetTypeName() const override { return "CapsuleCollider"; };
 		ColliderType GetType() const override { return ColliderType::Capsule; }

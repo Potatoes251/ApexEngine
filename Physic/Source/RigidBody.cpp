@@ -22,7 +22,7 @@ RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& othe
 	return *this;
 }
 
-std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
+std::unique_ptr<Apex::Component> RigidBodyComponent::Clone()
 {
 	auto clone = std::make_unique<RigidBodyComponent>(*this);
 	return clone;

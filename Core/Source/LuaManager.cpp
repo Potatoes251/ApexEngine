@@ -97,6 +97,8 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 {
     if (instanceRef == LUA_NOREF) return false;
 
+    printf("CALL instance: %d\n", instanceRef);
+
     lua_rawgeti(luaState, LUA_REGISTRYINDEX, instanceRef); // push instance
     if (!lua_istable(luaState, -1))
     {
