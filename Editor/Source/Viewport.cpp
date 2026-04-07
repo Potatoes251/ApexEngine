@@ -53,7 +53,6 @@ void Viewport::OnMouseClick(double mouseX, double mouseY)
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
-	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
 	m_selectedAxis = Axis::None;
 }
 

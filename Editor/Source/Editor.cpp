@@ -95,7 +95,7 @@ namespace Apex::Editor
                 else
                 {
                     LibMath::Vector2 pos = InputSystem::Get().GetMousePos();
-                    m_viewport->OnMouseClick(pos[0], pos[1]);
+                    m_viewport->OnMouseMove(pos[0], pos[1]);
                 }
             });
 
