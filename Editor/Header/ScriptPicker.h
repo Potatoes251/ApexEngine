@@ -42,8 +42,6 @@ namespace Apex::Resources
                     if (!entry.is_regular_file())
                         continue;
 
-                    m_gui.Text(entry.path().string());
-
                     if (entry.path().extension() != ".lua")
                         continue;
 

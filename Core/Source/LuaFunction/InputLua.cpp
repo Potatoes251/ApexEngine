@@ -38,9 +38,9 @@ int Apex::Input::Lua_GetAxis(lua_State* L)
     {
         float value = 0.f;
         if (InputSystem::Get().IsKeyDown(Key::A))
-            value += 1.f;
-        if (InputSystem::Get().IsKeyDown(Key::D))
             value -= 1.f;
+        if (InputSystem::Get().IsKeyDown(Key::D))
+            value += 1.f;
 
         lua_pushnumber(L, value);
     }

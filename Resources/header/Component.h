@@ -46,11 +46,9 @@ namespace Apex
         size_t GetId() const { return m_id; }
         void SetId(size_t newId) { m_id = newId; }
 
-    protected:
-        Apex::Data::Object* m_owner = nullptr;
-
     private:
         friend class Apex::Data::Object;
+        Apex::Data::Object* m_owner = nullptr;
 
         bool m_enabled = true;
 

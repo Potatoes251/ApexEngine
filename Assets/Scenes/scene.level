@@ -60,6 +60,12 @@
         "groundedDistance": 0.500000,
         "speed": 5.000000
       },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 10.000000,
+        "speed": 2.500000
+      }
     }
   },
   {

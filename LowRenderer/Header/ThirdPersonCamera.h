@@ -16,11 +16,16 @@ namespace Apex::Rendering
 
 		void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) override;
 
+		void SetDistance(float distance) { m_distance = distance; }
+		void SetSpeed(float speed) { m_speed = speed; }
+
 		LibMath::Vector3 GetTarget() const { return m_target; }
-		LibMath::Vector3 GetFront() const override { return m_target - m_position; }
+		LibMath::Vector3 GetFront() const override { return (m_target - m_position).normalized(); }
+		LibMath::Vector3 GetRight() const override { return GetFront().cross(LibMath::Vector3::up()).normalized(); }
+		LibMath::Vector3 GetUp() const override { return GetRight().cross(GetFront()).normalized(); }
 
 		const char* GetTypeName() const override { return "ThirdPersonCamera"; }
-		void Serialize(std::ostream& out) const override {}
+		void Serialize(std::ostream& out) const override;
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<ThirdPersonCamera>(*this); }

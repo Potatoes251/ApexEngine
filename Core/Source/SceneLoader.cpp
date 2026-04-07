@@ -9,6 +9,8 @@
 #include "MeshCollider.h"
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
+#include "ThirdPersonCamera.h"
+#include "FirstPersonCamera.h"
 
 #include <fstream>
 #include <sstream>
@@ -416,6 +418,48 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
             comp.SetEnabled(enabled);
+        }
+        else if (compName == "ThirdPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float distance = parser.ParseFloat();
+
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::ThirdPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
+            comp.SetDistance(distance);
+            comp.SetSpeed(speed);
+        }
+        else if (compName == "FirstPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::FirstPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
         }
 
         parser.Expect('}'); // component end

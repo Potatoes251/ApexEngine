@@ -29,16 +29,14 @@ void CharacterController::OnStart()
 
 	m_body = owner->GetComponent<RigidBodyComponent>();
 	m_collider = owner->GetComponent<CapsuleCollider>();
+	m_targetPos = owner->GetLocalTransform().getPosition();
 }
 
 void CharacterController::OnFixedUpdate(float deltatime_s)
 {
 	UpdateGrounded();
-	Object* owner = GetOwner();
 
-	if (!owner || !m_collider) return;
-
-	LibMath::Vector3 pos = owner->GetLocalTransform().getPosition();
+	if (!m_collider) return;
 
 	m_verticalVelocity += GRAVITY[1] * deltatime_s;
 	if (m_grounded && m_verticalVelocity < 0.f)
@@ -53,25 +51,38 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	std::vector<HitResult> hits;
 	HitResult hit;
 
-	if (m_physic->Sweep(hits, pos, displacement.normalized(), *m_collider, m_speed) && FindClosestHit(hits, hit))
+	if (m_physic->Sweep(hits, m_targetPos, displacement.normalized(), *m_collider, m_speed) && FindClosestHit(hits, hit))
 	{
 		// Move only up to contact point
 		LibMath::Vector3 safeMove = displacement.normalized() * hit.m_distance;
-		pos += safeMove;
+		m_targetPos += safeMove;
 
 		// Slide along surface
 		LibMath::Vector3 remaining = displacement - safeMove;
 		LibMath::Vector3 slide = remaining - hit.m_normal * remaining.dot(hit.m_normal);
 
-		pos += slide;
+		m_targetPos += slide;
 	}
 	else
 	{
-		pos += displacement;
+		m_targetPos += displacement;
 	}
 
-	owner->SetLocalPosition(pos);
 	m_moveInput = LibMath::Vector3(0.0f);
+}
+
+void CharacterController::OnUpdate(float deltatime_s)
+{
+	Object* owner = GetOwner();
+
+	if (!owner) return;
+
+	LibMath::Vector3 pos = owner->GetLocalTransform().getPosition();
+
+	float smoothSpeed = 10.0f; // higher = faster, less lag
+	float lerpFactor = 1.0f - exp(-smoothSpeed * deltatime_s);
+
+	owner->SetLocalPosition(LibMath::Vector3::lerp(pos, m_targetPos, lerpFactor));
 }
 
 void CharacterController::Serialize(std::ostream& out) const
@@ -107,15 +118,11 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 
 void CharacterController::UpdateGrounded()
 {
-	Object* owner = GetOwner();
-
-	if (!m_physic || !m_collider || !owner) return;
-
-	LibMath::Vector3 pos = owner->GetGlobalTransform().getPosition();
+	if (!m_physic || !m_collider) return;
 
 	std::vector<HitResult> hits;
 	HitResult hit;
 
-	m_grounded = m_physic->Raycast(hits, pos, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight()) 
+	m_grounded = m_physic->Raycast(hits, m_targetPos, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight()) 
 				&& FindClosestHit(hits, hit);
 }

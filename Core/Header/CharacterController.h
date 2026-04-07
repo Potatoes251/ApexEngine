@@ -31,6 +31,7 @@ namespace Apex::Controller
 
 		void OnStart() override;
 		void OnFixedUpdate(float deltatime_s) override;
+		void OnUpdate(float deltatime_s) override;
 
 		void Serialize(std::ostream& out) const override;
 		
@@ -50,6 +51,7 @@ namespace Apex::Controller
 		Physic::RigidBodyComponent* m_body = nullptr;
 		Physic::CapsuleCollider*	m_collider = nullptr;
 		LibMath::Vector3			m_moveInput;
+		LibMath::Vector3			m_targetPos;
 		float						m_verticalVelocity = 0.f;
 
 		float m_jumpForce = 5.f;

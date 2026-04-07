@@ -18,14 +18,14 @@ namespace Apex::Rendering
 			float deltaTime);
 
 		LibMath::Vector3 GetFront() const override { return m_front; }
-		LibMath::Vector3 GetRight() const { return m_right; }
-		LibMath::Vector3 GetUp() const { return m_up; }
+		LibMath::Vector3 GetRight() const override { return m_right; }
+		LibMath::Vector3 GetUp() const override { return m_up; }
 
 		void ProcessMouse(double dx, double dy, float sensitivity = 0.1f) override;
 		void ProcessScroll(double yoffset);
 
 		const char* GetTypeName() const override { return "FirstPersonCamera"; }
-		void Serialize(std::ostream& out) const override {}
+		void Serialize(std::ostream& out) const override;
 
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<FirstPersonCamera>(*this); }
 

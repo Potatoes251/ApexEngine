@@ -18,12 +18,12 @@ function CharacterController.Get(obj)
 end
 
 -- Methods
-function CharacterController:Move(x, y, z)
-    CC_Move_Internal(self, x, y, z)
+function CharacterController:Move(moveDir)
+    CC_Move_Internal(self, moveDir)
 end
 
 function CharacterController:Jump()
-    CC_Jump_Internal(self, x, y, z)
+    CC_Jump_Internal(self)
 end
 
 return CharacterController

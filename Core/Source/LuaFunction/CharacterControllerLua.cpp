@@ -1,10 +1,12 @@
 #include "LuaFunction/CharacterControllerLua.h"
 #include "LuaFunction/HierarchyFunc.h"
+#include "LuaFunction/Vector3Lua.h"
 
 #include "CharacterController.h"
 
 using namespace Apex::Hierarchy;
 using namespace Apex::Controller;
+using namespace Apex::Vector3;
 
 void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
 {
@@ -28,12 +30,9 @@ int Apex::Controller::Lua_CC_Move(lua_State* L)
     if (!cc)
         return 0;
 
-    LibMath::Vector3 dir;
-    dir[0] = static_cast<float>(lua_tonumber(L, 2));
-    dir[1] = static_cast<float>(lua_tonumber(L, 3));
-    dir[2] = static_cast<float>(lua_tonumber(L, 4));
+    LuaVector3* dir = CheckVector3(L, 2);
 
-    cc->Move(dir);
+    cc->Move(dir->m_value);
 
     return 0;
 }

@@ -6,6 +6,8 @@
 #include "LuaFunction/HierarchyFunc.h"
 #include "LuaFunction/InputLua.h"
 #include "LuaFunction/CharacterControllerLua.h"
+#include "LuaFunction/Vector3Lua.h"
+#include "LuaFunction/CameraLua.h"
 
 #include <iostream>
 
@@ -72,6 +74,8 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Transform::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
+    Apex::Vector3::RegisterLua(*this);
+    Apex::Camera::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
