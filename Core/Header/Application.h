@@ -31,6 +31,10 @@ namespace Apex::UserInterface
     class IGUI;
 }
 
+#include "Animator.h"
+
+#include <memory>
+#include <filesystem>
 namespace Apex::Scripting
 {
     class LuaManager;
@@ -81,14 +85,16 @@ namespace Apex
         bool InitLighting();
         bool InitLua();
         bool InitScene();
-        
+
         void UpdateAudioListener();
         void Update();
 
-    private:
         bool m_running = true;
+        float m_totalTime = 0.0f;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
+
+        const char* m_argv0;
 
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
