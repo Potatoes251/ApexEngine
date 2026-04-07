@@ -34,20 +34,28 @@ namespace Apex::Rendering
 
 		void Stop();
 
-		void PlayRepeat(int animationIndex);													//Play_single_animation_repeat
-		void PlayRepeatInterpolated(int animationIndex);										//Play_single_animation_repeat_interpolated
-		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);		//Play_cross_fade_animation
+		void PlayRepeat(int animationIndex);															//Play_single_animation
+		void PlayRepeatInterpolated(int animationIndex);												//Play_single_animation_interpolated
+		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//Play_cross_fade_animation
+		void PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime);	//Play_cross_fade_animation_interpolated
+		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//Play_blend_space_animation
+		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//Play_blend_space_animation_interpolated
+		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//Play_layer_blend_space_animation
 
 	private:
 		enum AnimatorState
 		{
-			//Play + animation type + repeat or once? + interpolated?
+			//Play + animation type + repeat? + interpolated?
 
 			Waiting_for_loaded_ressources,
 			Play_no_animation,
-			Play_single_animation_repeat,
-			Play_single_animation_repeat_interpolated,
-			Play_cross_fade_animation
+			Play_single_animation,
+			Play_single_animation_interpolated,
+			Play_cross_fade_animation,
+			Play_cross_fade_animation_interpolated,
+			Play_blend_space_animation,
+			Play_blend_space_animation_interpolated,
+			Play_layer_blend_space_animation
 		};
 
 		void WaitForResourcesToBeLoaded();
@@ -57,14 +65,19 @@ namespace Apex::Rendering
 		void GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& localSkeleton);
 		void ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform);
 		void InterlopeSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t);
+		void ReplaceBonese(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB);
 
 		//gpu
 		void SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix);
 
 		//animations
-		void PlaySingleAnimation(float deltaTime);						//Play_single_animation_repeat
-		void PlaySingleAnimationInterpolated(float deltaTime);			//Play_single_animation_repeat_interpolated
-		void PlayCrossFadeAnimation(float deltaTime);	//Play_cross_fade_animation
+		void PlaySingleAnimation(float deltaTime);						//Play_single_animation
+		void PlaySingleAnimationInterpolated(float deltaTime);			//Play_single_animation_interpolated
+		void PlayCrossFadeAnimation(float deltaTime);					//Play_cross_fade_animation
+		void PlayCrossFadeAnimationInterpolated(float deltaTime);		//Play_cross_fade_animation_interpolated
+		void PlayBlendedAnimation(float deltaTime);						//Play_blend_space_animation
+		void PlayBlendedAnimationInterpolated(float deltaTime);			//Play_blend_space_animation_interpolated
+		void PlayLayerBlendAnimation(float deltaTime);					//Play_layer_blend_space_animation
 
 		//
 		AnimatorState			m_state = Waiting_for_loaded_ressources;
@@ -92,6 +105,12 @@ namespace Apex::Rendering
 		//cross fade
 		float					m_crossFadeDuration = 0.f;
 		float					m_crossFadeElapseTime = 0.f;
+
+		//blending
+		float					m_blendRatio = 0;
+
+		//layer bending
+		int						m_layerBendingOrigine = 0;
 	};
 }
 
