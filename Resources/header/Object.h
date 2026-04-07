@@ -45,6 +45,8 @@ namespace Apex::Data
 		void		Start();
 		void		FixedUpdate(float deltaTime_s);
 		void		Update(float deltaTime_s);
+		void		OnTriggerEnter(Physic::Collider* other);
+		void		OnTriggerExit(Physic::Collider* other);
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }

@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace Apex::Data { class Object; }
+namespace Apex::Physic { class Collider; }
 
 namespace Apex
 {
@@ -31,6 +32,9 @@ namespace Apex
         virtual void OnDestroy() {}
         virtual void OnUpdate(float deltatime_s) {}
         virtual void OnFixedUpdate(float fixedDeltaTime_s) {}
+        virtual void OnTriggerEnter(Physic::Collider* other) {}
+        virtual void OnTriggerExit(Physic::Collider* other) {}
+
         virtual void Serialize(std::ostream& out) const = 0;
 
         virtual std::unique_ptr<Component> Clone() const = 0;

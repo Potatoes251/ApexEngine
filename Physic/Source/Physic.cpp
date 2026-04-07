@@ -460,7 +460,11 @@ physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& colli
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
-	return m_pxCtx.m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
+	physx::PxShape* shape = m_pxCtx.m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
+
+	shape->userData = (void*)&box;
+
+	return shape;
 }
 
 physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
@@ -469,9 +473,11 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float radius = capsule.GetRadius();
 
 	physx::PxShape* shape = m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
-
+	
 	physx::PxQuat rotation(physx::PxHalfPi, physx::PxVec3(0, 0, 1));
 	shape->setLocalPose(physx::PxTransform(rotation));
+
+	shape->userData = (void*)&capsule;
 
 	return shape;
 }
@@ -493,7 +499,11 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
 			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
-			return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+			physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+
+			shape->userData = (void*)&mesh;
+
+			return shape;
 		}
 	case MeshColliderType::Convex:
 	{
@@ -505,7 +515,11 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 
 		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
-		return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+		physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+		
+		shape->userData = (void*)&mesh;
+
+		return shape;
 	}
 	default:
 		assert(false && "Unhandled mesh collider type");
@@ -531,9 +545,11 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor
+	{
+		.m_actor = body,
+		.m_owner = &rigidBody
+	};
 
 	m_rigidBodies.push_back(actor);
 }
@@ -550,9 +566,11 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor
+	{
+		.m_actor = body,
+		.m_owner = &rigidBody
+	};
 
 	m_rigidBodies.push_back(actor);
 }
@@ -752,15 +770,18 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 {
 	for (unsigned int i = 0; i < count; i++)
 	{
-		RigidBodyComponent* otherbody = static_cast<RigidBodyComponent*>(pairs[i].otherActor->userData);
-		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(pairs[i].triggerActor->userData);
+		Collider* collider = static_cast<Collider*>(pairs[i].triggerShape->userData);
+		Object* owner = collider->GetOwner();
+
+		Collider* otherCollider = static_cast<Collider*>(pairs[i].otherShape->userData);
+		
 		switch (pairs[i].status)
 		{
 		case physx::PxPairFlag::eNOTIFY_TOUCH_FOUND:
-			otherbody->OnTriggerEnter(body);
+			owner->OnTriggerEnter(otherCollider);
 			break;
 		case physx::PxPairFlag::eNOTIFY_TOUCH_LOST:
-			otherbody->OnTriggerExit(body);
+			owner->OnTriggerExit(otherCollider);
 			break;
 		default:
 			assert(false && "Unhandled Trigger status");

@@ -139,6 +139,24 @@ void Object::Update(float deltaTime_s)
 	}
 }
 
+void Object::OnTriggerEnter(Physic::Collider* other)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnTriggerEnter(other);
+	}
+}
+
+void Object::OnTriggerExit(Physic::Collider* other)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnTriggerExit(other);
+	}
+}
+
 void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 {
 	comp->m_owner = this;

@@ -115,7 +115,7 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 
 	return found;
 }
-#include "InputSystem.h"
+
 void CharacterController::UpdateGrounded()
 {
 	if (!m_physic || !m_collider) return;
