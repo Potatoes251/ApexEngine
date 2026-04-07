@@ -1,4 +1,4 @@
-#include "Debug.h"
+#include "LuaFunction/Debug.h"
 
 #include <iostream>
 

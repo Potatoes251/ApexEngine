@@ -27,6 +27,7 @@ namespace Apex::Controller
 		void SetGroundedDistance(float groundedDistance) { m_groundedDistance = groundedDistance; }
 
 		void Move(LibMath::Vector3 movement);
+		void Jump();
 
 		void OnStart() override;
 		void OnFixedUpdate(float deltatime_s) override;
@@ -51,6 +52,7 @@ namespace Apex::Controller
 		LibMath::Vector3			m_moveInput;
 		float						m_verticalVelocity = 0.f;
 
+		float m_jumpForce = 5.f;
 		float m_speed = 5.f;
 		// distance to be considered grounded
 		float m_groundedDistance = 0.5f;

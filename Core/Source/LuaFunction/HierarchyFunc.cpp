@@ -1,9 +1,9 @@
-#include "HierarchyFunc.h"
+#include "LuaFunction/HierarchyFunc.h"
 #include "SceneGraph.h"
 
 using namespace Apex::SceneGraph;
 
-static Apex::Data::Object* Apex::Hierarchy::GetObject(lua_State* L, int index)
+Apex::Data::Object* Apex::Hierarchy::GetObject(lua_State* L, int index)
 {
     lua_getfield(L, index, "__object");
     auto* obj = static_cast<Apex::Data::Object*>(lua_touserdata(L, -1));

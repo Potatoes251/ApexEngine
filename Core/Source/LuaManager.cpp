@@ -1,9 +1,11 @@
 #include "LuaManager.h"
 
-#include "Debug.h"
-#include "DebugLuaBindings.h"
-#include "TransformFunc.h"
-#include "HierarchyFunc.h"
+#include "LuaFunction/Debug.h"
+#include "LuaFunction/DebugLuaBindings.h"
+#include "LuaFunction/TransformFunc.h"
+#include "LuaFunction/HierarchyFunc.h"
+#include "LuaFunction/InputLua.h"
+#include "LuaFunction/CharacterControllerLua.h"
 
 #include <iostream>
 
@@ -64,10 +66,12 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
 	RegisterFunction("Print", Apex::Engine::Debug::Lua_ApexPrint);
-    RegisterFunction("SetPosition_Internal", Apex::Transform::Lua_SetPosition);
     RegisterFunction("AddChild_Internal", Apex::Hierarchy::Lua_AddChild);
     RegisterFunction("RemoveChild_Internal", Apex::Hierarchy::Lua_RemoveChild);
     RegisterFunction("Reparent_Internal", Apex::Hierarchy::Lua_SetParent);
+    Apex::Transform::RegisterLua(*this);
+    Apex::Input::RegisterLua(*this);
+    Apex::Controller::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

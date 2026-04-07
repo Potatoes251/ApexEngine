@@ -37,8 +37,7 @@ std::unique_ptr<Object> Object::Clone()
 
 		if (!newComp)
 		{
-			std::cerr << "Clone returned nullptr for component: "
-				<< comp->GetTypeName() << std::endl;
+			std::cerr << "Clone returned nullptr for component: " << comp->GetTypeName() << std::endl;
 			continue;
 		}
 
@@ -148,9 +147,7 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	if (m_components.size() == 1)
 		m_components.back()->SetId(0);
 	else
-	{
 		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
-	}
 }
 
 void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys)
@@ -165,7 +162,7 @@ void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem
 				phys.RemoveActor(*rb);
 
 			m_components.erase(m_components.begin() + i);
-
+			compToRemove->m_owner = nullptr;
 			return;
 		}
 	}

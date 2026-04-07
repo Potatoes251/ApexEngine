@@ -54,7 +54,12 @@
         "radius": 0.200000,
         "isTrigger": false,
         "material": null
-      }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.500000,
+        "speed": 5.000000
+      },
     }
   },
   {

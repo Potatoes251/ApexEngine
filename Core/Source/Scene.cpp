@@ -125,6 +125,8 @@ namespace Apex::Rendering
 			if (character) 
 			{
 				character->SetPhysic(&m_physics);
+				character->SetPhysic(&m_physics);
+				character->SetPhysic(&m_physics);
 			}
 
 			if (m_mainCamera) continue;
@@ -142,10 +144,6 @@ namespace Apex::Rendering
 		for (auto& obj : m_objects)
 		{
 			obj->Update(deltaTime_s);
-			if (Apex::Controller::CharacterController* cc = obj->GetComponent<Apex::Controller::CharacterController>())
-			{
-				cc->Move({ 0,0,1 });
-			}
 		}
 
 		if (m_mainCamera)

@@ -19,6 +19,7 @@ namespace Apex::Scripting
         std::unique_ptr<Component> Clone() const override;
 
         void SetScript(const std::string& path);
+        void SetObjectPtr();
         const std::string GetScriptPath() const { return m_scriptPath; }
 
         const char* GetTypeName() const override { return "ScriptComponent"; };

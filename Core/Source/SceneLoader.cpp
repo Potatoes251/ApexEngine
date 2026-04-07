@@ -7,9 +7,7 @@
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "MeshCollider.h"
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
-#include "Lighting/PointLightComponent.h"
+#include "Lighting/Lights.h"
 #include "CharacterController.h"
 
 #include <fstream>

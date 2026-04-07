@@ -13,6 +13,14 @@ void CharacterController::Move(LibMath::Vector3 movement)
 	m_moveInput += movement;
 }
 
+void CharacterController::Jump()
+{
+	if (m_grounded)
+	{
+		m_verticalVelocity = m_jumpForce;
+	}
+}
+
 void CharacterController::OnStart()
 {
 	Object* owner = GetOwner();
@@ -33,12 +41,14 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	LibMath::Vector3 pos = owner->GetLocalTransform().getPosition();
 
 	m_verticalVelocity += GRAVITY[1] * deltatime_s;
-	if (m_grounded)
+	if (m_grounded && m_verticalVelocity < 0.f)
 		m_verticalVelocity = 0.f;
 
 	LibMath::Vector3 velocity = m_moveInput * m_speed;
 	velocity[1] = m_verticalVelocity;
 	LibMath::Vector3 displacement = velocity * deltatime_s;
+
+	if (displacement.magnitudeSquared() == 0.f) return;
 
 	std::vector<HitResult> hits;
 	HitResult hit;

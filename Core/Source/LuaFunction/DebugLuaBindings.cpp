@@ -1,5 +1,5 @@
-#include "DebugLuaBindings.h"
-#include "Debug.h"
+#include "LuaFunction/DebugLuaBindings.h"
+#include "LuaFunction/Debug.h"
 
 int Apex::Engine::Debug::Lua_ApexPrint(lua_State* L)
 {
