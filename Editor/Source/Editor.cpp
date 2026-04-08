@@ -28,6 +28,16 @@ namespace Apex::Editor
         if (!m_window) return false;
 
         m_window->Maximize();
+
+        m_window->SetCloseCallback([this]()
+            {
+                m_window->SetShouldClose(false);
+                if (m_app->GetScene() && m_app->GetScene()->IsDirty())
+                    m_confirmClosePopup = true;
+                else
+                    m_window->SetShouldClose(true);
+            });
+
         return true;
     }
 
@@ -41,6 +51,13 @@ namespace Apex::Editor
 
         m_editScene = app.GetScene()->Clone();
 
+        app.GetScene()->ClearDirty();
+
+        app.GetScene()->SetOnMarkedDirtyCallback([this]()
+            {
+                m_window->SetWindowTitle("Apex Editor *");
+            });
+
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
@@ -53,7 +70,8 @@ namespace Apex::Editor
         m_hierarchy = std::make_unique<Hierarchy>(
             *m_gui,
             app.GetScene(),
-            m_componentsViewer.get()
+            m_componentsViewer.get(),
+            *m_window
         );
 
         m_viewport = std::make_unique<Viewport>(
@@ -71,7 +89,10 @@ namespace Apex::Editor
         m_window->SetKeyCallback([&](Input::Key key, bool down)
             {
                 if (key == Input::Key::P && down)
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
 
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
@@ -193,6 +214,8 @@ namespace Apex::Editor
         if (m_componentsViewer)
             m_componentsViewer->Draw();
 
+        HandleEditorClosing();
+
         m_gui->EndFrame();
 
         m_window->SwapBuffers();
@@ -220,6 +243,46 @@ namespace Apex::Editor
         default:
             break;
         }
+    }
+
+    void Editor::HandleEditorClosing()
+    {
+        m_gui->PushFont(FontID::Default);
+
+        if (m_confirmClosePopup)
+        {
+            m_gui->OpenPopup("ConfirmExit");
+            m_confirmClosePopup = false;
+        }
+
+        if (m_gui->BeginPopupModal("ConfirmExit", { 400.f, 0.f }))
+        {
+            m_gui->Text("\nUnsaved changes.\nExit anyway?\n\n");
+
+            if (m_gui->Button("Save & Exit"))
+            {
+                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_window->SetShouldClose(true);
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Exit"))
+            {
+                m_window->SetShouldClose(true);
+                m_gui->CloseCurrentPopup();
+            }
+
+            m_gui->SameLine();
+
+            if (m_gui->Button("Cancel"))
+                m_gui->CloseCurrentPopup();
+
+            m_gui->EndPopup();
+        }
+
+        m_gui->PopFont();
     }
 
     void Editor::Shutdown()

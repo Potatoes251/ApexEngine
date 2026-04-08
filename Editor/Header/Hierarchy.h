@@ -18,6 +18,8 @@ namespace Apex::Data
 
 #include "ComponentsViewer.h"
 
+#include "Window.h"
+
 namespace Apex::Editor
 {
 	class Viewport;
@@ -33,8 +35,8 @@ namespace Apex::Editor
 	class Hierarchy
 	{
 	public:
-		Hierarchy(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene* scene, ComponentsViewer* compViewer);
+		Hierarchy(Apex::UserInterface::IGUI& gui, Apex::Rendering::Scene* scene, 
+			ComponentsViewer* compViewer, Apex::Windowing::IWindow& window);
 
 		void Draw();
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
@@ -69,6 +71,8 @@ namespace Apex::Editor
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene* m_scene;
 		ComponentsViewer* m_componentsViewer;
+
+		Apex::Windowing::IWindow& m_window;
 
 		Apex::Data::Object* m_selected = nullptr;
 		Apex::SceneGraph::SceneNode* m_pendingParent = nullptr;

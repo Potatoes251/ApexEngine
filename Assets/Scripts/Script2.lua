@@ -14,11 +14,11 @@ function M:Update(dt)
     print("Update 2")
 end
 
-function M:OnTriggerEnter(dt)
+function M:OnTriggerEnter()
     print("Enter")
 end
 
-function M:OnTriggerExit(dt)
+function M:OnTriggerExit()
     print("Exit")
 end
 

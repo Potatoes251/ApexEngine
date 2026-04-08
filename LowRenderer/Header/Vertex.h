@@ -16,6 +16,9 @@ namespace Apex::Rendering
         LibMath::Vector3 m_position;
         LibMath::Vector3 m_normal;
         LibMath::Vector2 m_uv;
+
+        int		         m_boneIDs[4] = { -1, -1, -1, -1 };
+        float	         m_weights[4] = { 0,0,0,0 };
     };
 
 } // namespace Apex::Rendering

@@ -24,11 +24,15 @@ namespace Apex::Resources
 
         void Draw();
 
+        bool HasNewAsset() { return m_newAsset; }
+        void ResetNewAsset() { m_newAsset = false; }
+
     private:
         void ScanAssets();
         static bool MatchesType(const std::filesystem::path& path);
 
         bool m_isOpen = false;
+        bool m_newAsset = false;
         ResourceHandle<T>* m_target = nullptr;
         std::vector<std::string> m_cachedPaths;
 
@@ -69,7 +73,7 @@ namespace Apex::Resources
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg"
             || ext == ".hdr" || ext == ".tga";
         else
-            return true;  // unknown type — show everything
+            return true;  // unknown type - show everything
     }
 
     template<typename T>
@@ -77,7 +81,9 @@ namespace Apex::Resources
     {
         if (!m_isOpen) return;
 
-        m_gui.BeginPanel("Select Asset", &m_isOpen, false);
+        m_gui.BeginModalBlock("Select Asset");
+        
+        m_gui.BeginPanel("Select Asset", &m_isOpen, false, true);
 
         if (m_gui.Button("Refresh"))
             ScanAssets();
@@ -88,12 +94,19 @@ namespace Apex::Resources
         {
             if (m_gui.Button(pathStr.c_str()))
             {
-                *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                if (!m_target->IsValid() || (*m_target)->GetPath() != pathStr)
+                {
+                    *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                    m_newAsset = true;
+                }
                 m_isOpen = false;
             }
         }
 
         m_gui.EndPanel();
+
+        if (!m_isOpen)
+            m_gui.EndModalBlock();
     }
 }
 

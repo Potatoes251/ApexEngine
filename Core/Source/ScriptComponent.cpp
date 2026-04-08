@@ -3,14 +3,6 @@
 using namespace Apex;
 using namespace Apex::Scripting;
 
-ScriptComponent::~ScriptComponent()
-{
-    if (m_instanceRef != LUA_REFNIL)
-    {
-        luaL_unref(m_lua.GetState(), LUA_REGISTRYINDEX, m_instanceRef);
-    }
-}
-
 std::unique_ptr<Apex::Component> ScriptComponent::Clone() const
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);

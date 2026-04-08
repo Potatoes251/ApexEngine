@@ -48,6 +48,11 @@ namespace Apex::Rendering
 				
 				copy->m_physics.CreateActor(*collider, *body);
 			}
+
+			newObj->SetOnChangedCallback([this]()
+				{
+					MarkDirty();
+				});
 		}
 
 		return copy;
@@ -83,7 +88,14 @@ namespace Apex::Rendering
 		auto obj = std::make_unique<Object>();
 		Object* ptr = obj.get();
 
+		obj->SetOnChangedCallback([this]()
+			{
+				MarkDirty();
+			});
+
 		m_objects.push_back(std::move(obj));
+		MarkDirty();
+
 		return ptr;
 	}
 
@@ -111,7 +123,17 @@ namespace Apex::Rendering
 			});
 
 		if (it != m_objects.end())
+		{
 			m_objects.erase(it);
+			MarkDirty();
+		}
+	}
+
+	void Scene::MarkDirty()
+	{
+		m_isDirty = true;
+		if (m_onMarkedDirty)
+			m_onMarkedDirty();
 	}
 		
 	void Scene::Start()
@@ -194,6 +216,9 @@ namespace Apex::Rendering
 		auto itTarget = std::find_if(objs.begin(), objs.end(),
 			[&](auto& o) { return o.get() == target; });
 
+		if (std::next(itDragged) == itTarget)
+			return;
+
 		if (itDragged == objs.end() || itTarget == objs.end())
 			return;
 
@@ -201,6 +226,8 @@ namespace Apex::Rendering
 			std::rotate(itDragged, itDragged + 1, itTarget);
 		else
 			std::rotate(itTarget, itDragged, itDragged + 1);
+
+		MarkDirty();
 	}
 
 	void Scene::InsertAfter(Object* dragged, Object* target)
@@ -216,6 +243,9 @@ namespace Apex::Rendering
 		auto itTarget = std::find_if(objs.begin(), objs.end(),
 			[&](auto& o) { return o.get() == target; });
 
+		if (std::next(itTarget) == itDragged)
+			return;
+
 		if (itDragged == objs.end() || itTarget == objs.end())
 			return;
 
@@ -223,6 +253,8 @@ namespace Apex::Rendering
 			std::rotate(itDragged, itDragged + 1, itTarget + 1);
 		else
 			std::rotate(itTarget + 1, itDragged, itDragged + 1);
+
+		MarkDirty();
 	}
 
 	void Scene::Save(const std::string& path)
@@ -323,5 +355,12 @@ namespace Apex::Rendering
 		file << "}\n";
 
 		std::cout << "Scene saved to " << path << std::endl;
+
+		ClearDirty();
+	}
+	void Scene::SetOnMarkedDirtyCallback(std::function<void()> callback)
+	{
+		if (callback)
+			m_onMarkedDirty = callback;
 	}
 }

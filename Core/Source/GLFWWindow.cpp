@@ -113,6 +113,10 @@ namespace Apex::Windowing
     float GLFWWindow::GetAspectRatio() const { return m_height ? (float)m_width / m_height : 1.f; }
 	float GLFWWindow::GetDeltaTime() const { return m_deltaTime; }
 
+    void GLFWWindow::SetWindowTitle(const std::string& title)
+    {
+        glfwSetWindowTitle(m_window, title.c_str());
+    }
 
     void GLFWWindow::SetCursorCaptured(bool captured)
     {
@@ -298,6 +302,26 @@ namespace Apex::Windowing
             result.emplace_back(paths[i]);
 
         self->m_dropCallback(std::move(result));
+    }
+
+    void GLFWWindow::SetCloseCallback(CloseCallback callback)
+    {
+        m_closeCallback = std::move(callback);
+
+        glfwSetWindowUserPointer(m_window, this);
+
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* win)
+            {
+                auto* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(win));
+
+                if (self->m_closeCallback)
+                    self->m_closeCallback();
+            });
+    }
+
+    void GLFWWindow::SetShouldClose(bool close)
+    {
+        glfwSetWindowShouldClose(m_window, close);
     }
 
     // ── Translation helpers ───────────────────────────────────────
