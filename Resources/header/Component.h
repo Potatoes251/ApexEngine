@@ -33,7 +33,7 @@ namespace Apex
         virtual void OnFixedUpdate(float fixedDeltaTime) {}
         virtual void Serialize(std::ostream& out) const = 0;
 
-        virtual std::unique_ptr<Component> Clone() const = 0;
+        virtual std::unique_ptr<Component> Clone() = 0;
 
         virtual const char* GetTypeName() const = 0;
         virtual std::vector<ExposedVar> GetExposedVariables() = 0;

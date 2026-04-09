@@ -199,10 +199,60 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	if (!open)
 		return;
 
-	for (auto& var : comp->GetExposedVariables())
+	if (auto* script = dynamic_cast<ScriptComponent*>(comp))
 	{
-		switch (var.type)
+		m_gui.Text("Script: " + script->GetScriptPath());
+
+		if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
 		{
+			m_scriptPicker.Open(script);
+		}
+
+		for (auto& var : script->GetExposedVariables())
+		{
+			switch (var.type)
+			{
+			case ExposedVar::Float:
+			{
+				float* value = (float*)var.data;
+				if (m_gui.SliderFloat(var.name, value, 0.0f, 10.0f))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::Int:
+			{
+				int* value = (int*)var.data;
+				if (m_gui.SliderInt(var.name, value, 0, 10))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::Bool:
+			{
+				bool* value = (bool*)var.data;
+				if (m_gui.Checkbox(var.name, value))
+					script->SetVariable(var.name, var);
+				break;
+			}
+
+			case ExposedVar::String:
+			{
+				char* value = (char*)var.data;
+				if (m_gui.InputText(var.name, value, 256))
+					script->SetVariable(var.name, var);
+				break;
+			}
+			}
+		}
+	}
+
+	else
+	{
+		for (auto& var : comp->GetExposedVariables())
+		{
+			switch (var.type)
+			{
 			case ExposedVar::Float:
 				if (m_gui.SliderFloatFormat(var.name, (float*)var.data, 0.0f, 10.0f, 50.f))
 					m_changed = true;
@@ -256,6 +306,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			case ExposedVar::Script:
 				DrawComponentScript(var);
 				break;
+			}
 		}
 	}
 

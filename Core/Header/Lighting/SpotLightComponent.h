@@ -15,7 +15,7 @@ namespace Apex::Lighting
 		SpotLightComponent(SpotLightComponent const& other);
 		SpotLightComponent& operator=(SpotLightComponent const& other);
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<SpotLightComponent>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<SpotLightComponent>(*this); }
 
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "SpotLight"; }

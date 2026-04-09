@@ -13,7 +13,7 @@
     "parent": null,
     "name": "Sphere",
     "position": [0.000000,3.000000,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "rotation": [0.000000,0.707107,0.000000,0.707107],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
@@ -34,6 +34,15 @@
         "type": "Convex",
         "isTrigger": false,
         "material": 0
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Exposed.lua",
+        "vars": {
+          "speed": 8.125000,
+          "health": 6.544000,
+          "active": true
+        }
       },
       "SpotLight": {
         "enabled": true,

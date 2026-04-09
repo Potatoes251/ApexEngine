@@ -130,13 +130,15 @@ void Apex::SceneGraph::SceneNode::SetParent(SceneNode* newParent)
 		newParent == this ||	//No move to itself
 		newParent->IsDescendantOf(this))	//No loop descendance
 	{
+		m_parent->DetachChild(this);
+		m_parent = nullptr;
 		return;
 	}
 
-	if (!newParent)
+	if (m_parent.get() == newParent ||	//No move to origine place
+		newParent == this		||	//No move to itself
+		IsDescendantOf(newParent))	//No loop descendance
 	{
-		m_parent->DetachChild(this);
-		m_parent = nullptr;
 		return;
 	}
 

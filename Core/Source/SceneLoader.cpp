@@ -9,6 +9,7 @@
 #include "Lighting/DirectionalLightComponent.h"
 #include "Lighting/SpotLightComponent.h"
 #include "Lighting/PointLightComponent.h"
+#include "ScriptComponent.h"
 
 #include <fstream>
 #include <sstream>
@@ -365,6 +366,44 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             comp.SetEnabled(enabled);
         }
 
+        else if (compName == "ScriptComponent")
+        {
+            parser.ParseString(); parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            std::string scriptPath = parser.ParseString();
+
+            auto& comp = obj->AddComponent<Apex::Scripting::ScriptComponent>(m_luaManager);
+            comp.SetEnabled(enabled);
+            comp.SetScript(scriptPath);
+
+            if (parser.Peek(','))
+            {
+                parser.Expect(',');
+
+                parser.ParseString(); parser.Expect(':');
+                parser.Expect('{');
+
+                while (!parser.Peek('}'))
+                {
+                    std::string varName = parser.ParseString();
+                    parser.Expect(':');
+
+                    ExposedVar var = ParseScriptVar(parser);
+                    var.name = varName;
+
+                    comp.SetVariable(var.name, var);
+
+                    if (parser.Peek(','))
+                        parser.Expect(',');
+                }
+
+                parser.Expect('}');
+            }
+            }
+
         parser.Expect('}'); // component end
 
         if (parser.Peek(','))
@@ -372,6 +411,42 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
     }
 
     parser.Expect('}'); // "components" category end
+}
+
+Apex::ExposedVar SceneLoader::ParseScriptVar(SerialParser& parser)
+{
+    ExposedVar var;
+
+    char c = parser.PeekChar();
+
+    // STRING
+    if (c == '"')
+    {
+        std::string str = parser.ParseString();
+
+        char* buffer = new char[256];
+        strncpy(buffer, str.c_str(), 255);
+        buffer[255] = '\0';
+
+        var.type = ExposedVar::String;
+        var.data = buffer;
+    }
+    // BOOL
+    else if (c == 't' || c == 'f')
+    {
+        bool* v = new bool(parser.ParseBool());
+        var.type = ExposedVar::Bool;
+        var.data = v;
+    }
+    // NUMBER
+    else
+    {
+        float* v = new float(parser.ParseFloat());
+        var.type = ExposedVar::Float;
+        var.data = v;
+    }
+
+    return var;
 }
 
 void SceneLoader::ParseMaterials(SerialParser& parser)
