@@ -28,8 +28,9 @@ public:
 	BinLoader& operator=(BinLoader const&) = delete;
 	~BinLoader() = default;
 
-	bool Load(std::string path, Mesh& mesh, std::string& sourcePath_out);
-	bool Export(std::string path, Mesh& mesh);
+	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
+	bool Load(std::string path, Animation& animation_out);
+	bool Export(std::string path, Mesh const& mesh);
 
 private:
 	// read
@@ -38,7 +39,7 @@ private:
 	bool ReadVerticesIndices(Mesh& mesh, std::ifstream& file);
 	bool ReadBoneInfo(Mesh& mesh, std::ifstream& file);
 	bool ReadBoneMap(Mesh& mesh, std::ifstream& file);
-	bool ReadAnimations(Mesh& mesh, std::filesystem::path const& path);
+	bool ReadAnimation(Mesh& mesh, std::filesystem::path const& path);
 	bool ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream& file);
 
 	inline bool ReadString(std::ifstream& file, std::string& str);
