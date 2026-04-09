@@ -326,7 +326,7 @@ Apex::ExposedVar SceneLoader::ParseScriptVar(SerialParser& parser)
         var.type = ExposedVar::Bool;
         var.data = v;
     }
-    // NUMBER (on force en float = plus safe avec Lua)
+    // NUMBER
     else
     {
         float* v = new float(parser.ParseFloat());
