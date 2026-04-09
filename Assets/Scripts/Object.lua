@@ -1,33 +1,33 @@
-local M = {}
+local Object = {}
 
-function M:New()
+function Object:New()
     local instance = {}
     setmetatable(instance, { __index = self })
     return instance
 end
 
-function M:AddChild(child)
+function Object:AddChild(child)
     AddChild_Internal(self, child)
 end
 
-function M:RemoveChild(child)
+function Object:RemoveChild(child)
     RemoveChild_Internal(self, child)
 end
 
-function M:Reparent(newParent)
+function Object:Reparent(newParent)
     Reparent_Internal(self, newParent)
 end
 
-function M:AddTag(newTag)
+function Object:AddTag(newTag)
     AddTag_Internal(self, newTag)
 end
 
-function M:HasTag(tag)
+function Object:HasTag(tag)
     return HasTag_Internal(self, tag)
 end
 
-function M:GetTags()
+function Object:GetTags()
     return GetTags_Internal(self)
 end
 
-return M
+return Object

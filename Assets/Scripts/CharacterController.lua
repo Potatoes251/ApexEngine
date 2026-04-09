@@ -1,10 +1,12 @@
+local Component = require("Component")
+
 local CharacterController = {}
 CharacterController.__index = CharacterController
+setmetatable(CharacterController, { __index = Component })
 
 -- Constructor
 function CharacterController:New(ptr)
-    local instance = { __object = ptr }  -- store the C++ pointer/reference
-    setmetatable(instance, { __index = self })
+    local instance = Component.New(self, ptr)
     return instance
 end
 
