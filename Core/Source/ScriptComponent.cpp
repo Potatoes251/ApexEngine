@@ -134,8 +134,6 @@ void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
     if (m_instanceRef == LUA_REFNIL)
         return;
 
-    printf("SET instance: %d\n", m_instanceRef);
-
     lua_State* L = m_lua.GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
@@ -187,6 +185,43 @@ void ScriptComponent::Serialize(std::ostream& out) const
 {
     out << "      \"ScriptComponent\": {\n";
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-    out << "        \"script\": \"" << m_scriptPath << "\"\n";
+    out << "        \"script\": \"" << m_scriptPath << "\",\n";
+
+    auto vars = const_cast<ScriptComponent*>(this)->GetExposedVariables();
+
+    out << "        \"vars\": {\n";
+
+    for (size_t i = 0; i < vars.size(); i++)
+    {
+        const auto& var = vars[i];
+
+        out << "          \"" << var.name << "\": ";
+
+        switch (var.type)
+        {
+        case ExposedVar::Float:
+            out << *(float*)var.data;
+            break;
+
+        case ExposedVar::Int:
+            out << *(int*)var.data;
+            break;
+
+        case ExposedVar::Bool:
+            out << (*(bool*)var.data ? "true" : "false");
+            break;
+
+        case ExposedVar::String:
+            out << "\"" << (char*)var.data << "\"";
+            break;
+        }
+
+        if (i < vars.size() - 1)
+            out << ",";
+
+        out << "\n";
+    }
+
+    out << "        }\n";
     out << "      }";
 }

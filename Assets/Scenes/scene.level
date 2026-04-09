@@ -36,7 +36,12 @@
       },
       "ScriptComponent": {
         "enabled": true,
-        "script": "Assets/Scripts/Exposed.lua"
+        "script": "Assets/Scripts/Exposed.lua",
+        "vars": {
+          "speed": 7.000000,
+          "health": 5.000000,
+          "active": true
+        }
       }
     }
   },

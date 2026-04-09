@@ -42,6 +42,7 @@ namespace Apex::Serialization
 
         Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
+        ExposedVar ParseScriptVar(SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 
         Apex::Physic::BodyType StringToBodyType(const std::string& str);
