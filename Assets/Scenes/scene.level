@@ -33,6 +33,10 @@
         "type": "Convex",
         "isTrigger": false,
         "material": 0
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Exposed.lua"
       }
     }
   },

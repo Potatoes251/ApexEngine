@@ -53,7 +53,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png");
         m_editScene->SetSkybox(sk);
 
         // Load scene
-        SceneLoader loader(*app.GetResourceManager(), *m_editScene->GetPhysic());
+        SceneLoader loader(*app.GetResourceManager(), *m_editScene->GetPhysic(), *app.GetLuaManager());
         loader.LoadScene(*m_editScene, "Assets/Scenes/scene.level");
 
         bool ready = false;

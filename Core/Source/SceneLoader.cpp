@@ -5,6 +5,7 @@
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 #include "MeshCollider.h"
+#include "ScriptComponent.h"
 
 #include <fstream>
 #include <sstream>
@@ -251,6 +252,20 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
             comp.SetEnabled(enabled);
+        }
+
+        else if (compName == "ScriptComponent")
+        {
+            parser.ParseString(); parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            std::string scriptPath = parser.ParseString();
+
+            auto& comp = obj->AddComponent<Apex::Scripting::ScriptComponent>(m_luaManager);
+            comp.SetEnabled(enabled);
+            comp.SetScript(scriptPath);
         }
 
         parser.Expect('}'); // component end
