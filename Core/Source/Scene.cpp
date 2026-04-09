@@ -10,9 +10,8 @@
 #include "Rigidbody.h"
 #include "BoxCollider.h"
 
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/PointLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
+#include "Lighting/Lights.h"
+#include "CharacterController.h"
 
 #include <fstream>
 #include <iostream>
@@ -28,6 +27,8 @@ namespace Apex::Rendering
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
+
+		copy->m_mainCamera = m_mainCamera;
 
 		for (const auto& obj : m_objects)
 		{
@@ -138,18 +139,46 @@ namespace Apex::Rendering
 	void Scene::Start()
 	{
 		for (auto& obj : m_objects)
+		{
 			obj->Start();
+
+			Controller::CharacterController* character = obj->GetComponent<Controller::CharacterController>();
+
+			if (character) 
+			{
+				character->SetPhysic(&m_physics);
+				character->SetPhysic(&m_physics);
+				character->SetPhysic(&m_physics);
+			}
+
+			if (m_mainCamera) continue;
+
+			Camera* camera = obj->GetComponent<Camera>();
+			if (camera)
+			{
+				m_mainCamera = camera;
+			}
+		}
 	}
 
 	void Scene::Update(float deltaTime_s)
 	{
 		for (auto& obj : m_objects)
+		{
 			obj->Update(deltaTime_s);
+		}
+
+		if (m_mainCamera)
+		{
+			m_mainCamera->SetPosition(m_mainCamera->GetOwner()->GetGlobalTransform().getPosition());
+		}
 	}
 
 	void Scene::FixedUpdate(float deltaTime_s)
 	{
 		m_physics.Update(deltaTime_s);
+		for (auto& obj : m_objects)
+			obj->FixedUpdate(deltaTime_s);
 	}
 
 	void Scene::Render(RenderPassInfo passInfo)
@@ -162,7 +191,7 @@ namespace Apex::Rendering
 				continue;
 			renderer->Render(passInfo);
 		}
-		if (passInfo.m_flags & RenderSkybox)
+		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)
 		{
 			LibMath::Matrix4 view = passInfo.m_camera->GetViewMatrix();
 			view[3][0] = 0;

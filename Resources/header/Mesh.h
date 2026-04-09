@@ -20,7 +20,7 @@ using std::unordered_map;
 
 struct BoneInfo
 {
-	int			m_parentIndex;
+	int32_t		m_parentIndex;
 	Matrix4		m_offsetMatrix;
 };
 
@@ -73,9 +73,9 @@ public:
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
-	std::vector<unsigned int>				m_indices;
+	std::vector<uint32_t>					m_indices;
 
-	std::vector<BoneInfo>					m_bones;		//m_offsetMatrix | inverse bind pose
+	std::vector<BoneInfo>					m_bones;		// m_offsetMatrix | inverse bind pose
  	unordered_map<std::string, int>			m_boneMap;
 	std::vector<Animation>					m_animations;
 

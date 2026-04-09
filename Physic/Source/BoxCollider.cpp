@@ -31,14 +31,12 @@ std::vector<ExposedVar> BoxCollider::GetExposedVariables()
 
 void BoxCollider::Serialize(std::ostream& out) const
 {
-    auto size = m_halfExtents;
-
     out << "      \"BoxCollider\": {\n";
     out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"halfExtents\": ["
-        << size[0] << ", "
-        << size[1] << ", "
-        << size[2] << "],\n";
+        << m_halfExtents[0] << ", "
+        << m_halfExtents[1] << ", "
+        << m_halfExtents[2] << "],\n";
     out << "        \"isTrigger\": "
         << (m_isTrigger ? "true" : "false") << ",\n";
 

@@ -37,8 +37,7 @@ std::unique_ptr<Object> Object::Clone()
 
 		if (!newComp)
 		{
-			std::cerr << "Clone returned nullptr for component: "
-				<< comp->GetTypeName() << std::endl;
+			std::cerr << "Clone returned nullptr for component: " << comp->GetTypeName() << std::endl;
 			continue;
 		}
 
@@ -64,6 +63,24 @@ void Object::SetLocalTransform(const Transform& transform)
 	m_owner->MarkDirty();
 
 	OnChanged();
+}
+
+void Object::SetLocalPosition(const LibMath::Vector3& position)
+{
+	m_localTransform.setPosition(position);
+	m_owner->MarkDirty();
+}
+
+void Object::SetLocalRotation(const LibMath::Quaternion& rotation)
+{
+	m_localTransform.setRotation(rotation);
+	m_owner->MarkDirty();
+}
+
+void Object::SetLocalScale(const LibMath::Vector3& scale)
+{
+	m_localTransform.setScale(scale);
+	m_owner->MarkDirty();
 }
 
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
@@ -116,14 +133,40 @@ void Object::Start()
 			comp->OnStart();
 }
 
-void Object::Update(float deltaTime)
+void Object::FixedUpdate(float deltaTime_s)
 {
 	for (auto& comp : m_components)
 	{
 		if (comp->IsEnabled())
-			comp->OnUpdate(deltaTime);
+			comp->OnFixedUpdate(deltaTime_s);
 	}
-	auto pos = m_localTransform.getPosition();
+}
+
+void Object::Update(float deltaTime_s)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnUpdate(deltaTime_s);
+	}
+}
+
+void Object::OnTriggerEnter(Physic::Collider* other)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnTriggerEnter(other);
+	}
+}
+
+void Object::OnTriggerExit(Physic::Collider* other)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnTriggerExit(other);
+	}
 }
 
 void Object::AddComponentDirect(std::unique_ptr<Component> comp)
@@ -134,9 +177,7 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	if (m_components.size() == 1)
 		m_components.back()->SetId(0);
 	else
-	{
 		m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
-	}
 
 	OnChanged();
 }
@@ -156,6 +197,7 @@ void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem
 
 			OnChanged();
 
+			compToRemove->m_owner = nullptr;
 			return;
 		}
 	}

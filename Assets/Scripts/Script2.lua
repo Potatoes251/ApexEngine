@@ -14,4 +14,12 @@ function M:Update(dt)
     print("Update 2")
 end
 
+function M:OnTriggerEnter()
+    print("Enter")
+end
+
+function M:OnTriggerExit()
+    print("Exit")
+end
+
 return M
