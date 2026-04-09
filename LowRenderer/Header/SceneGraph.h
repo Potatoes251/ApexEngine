@@ -8,7 +8,6 @@ namespace Apex::Data { class Object; }
 
 using std::vector;
 using std::shared_ptr;
-using Apex::Data::Object;
 
 namespace Apex::SceneGraph
 {
@@ -16,7 +15,7 @@ namespace Apex::SceneGraph
 	{
 	public:
 		SceneNode();
-		SceneNode(Object* object = nullptr);
+		SceneNode(Apex::Data::Object* object = nullptr);
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
@@ -24,8 +23,8 @@ namespace Apex::SceneGraph
 
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
 		std::shared_ptr<SceneNode> const& GetParent() const;
-		Object*		GetParentObj() const;
-		Object*		GetObject() const;
+		Apex::Data::Object*		GetParentObj() const;
+		Apex::Data::Object*		GetObject() const;
 
 		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a shared pointer, to use children use ' .get() ' on each children
 		void		AddChild(shared_ptr<SceneNode> child);
@@ -47,7 +46,7 @@ namespace Apex::SceneGraph
 
 		bool							m_dirty = true;
 
-		Object*							m_object;
+		Apex::Data::Object*				m_object;
 
 		std::shared_ptr<SceneNode>		m_parent;
 		vector<shared_ptr<SceneNode>>	m_children;

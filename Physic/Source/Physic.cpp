@@ -16,6 +16,7 @@
 
 #include "DebugRenderer.h"
 
+using namespace Apex::Data;
 using namespace Apex::Physic;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;

@@ -169,6 +169,26 @@ void Object::OnTriggerExit(Physic::Collider* other)
 	}
 }
 
+void Object::AddTag(std::string tag)
+{
+	m_tags.insert(std::move(tag));
+}
+
+void Object::RemoveTag(std::string const& tag)
+{
+	m_tags.erase(tag);
+}
+
+bool Object::HasTag(std::string const& tag) const
+{
+	return m_tags.contains(tag);
+}
+
+std::unordered_set<std::string> const& Apex::Data::Object::GetTags() const
+{
+	return m_tags;
+}
+
 void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 {
 	comp->m_owner = this;

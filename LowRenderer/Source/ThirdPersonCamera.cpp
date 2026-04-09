@@ -6,6 +6,7 @@
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
 
+using namespace Apex::Data;
 using namespace Apex::Rendering;
 
 ThirdPersonCamera::ThirdPersonCamera(LibMath::Vector3 target, float distance)

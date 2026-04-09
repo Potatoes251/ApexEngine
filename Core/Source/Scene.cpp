@@ -18,8 +18,8 @@
 #include <iomanip>
 #include <algorithm>
 
-using namespace Apex::Physic;
 using namespace Apex::Data;
+using namespace Apex::Physic;
 
 namespace Apex::Rendering
 {

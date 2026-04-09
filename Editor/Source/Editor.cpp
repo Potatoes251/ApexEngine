@@ -1,23 +1,22 @@
 #include "Editor.h"
+
 #include "EditorIcon.h"
 
-#include "Shader.h"
-#include "ResourceHandle.h"
 #include "Audio.h"
-#include "ResourceManager.h"
 #include "Scene.h"
+#include "Shader.h"
 #include "SceneLoader.h"
+#include "ResourceHandle.h"
+#include "ResourceManager.h"
 
-#include "Rigidbody.h"
-
-
-using namespace Apex::Windowing;
-using namespace Apex::UserInterface;
+using namespace Apex::Data;
 using namespace Apex::Audio;
-using namespace Apex::Rendering;
-using namespace Apex::Serialization;
-using namespace Apex::Physic;
 using namespace Apex::Input;
+using namespace Apex::Physic;
+using namespace Apex::Rendering;
+using namespace Apex::Windowing;
+using namespace Apex::Serialization;
+using namespace Apex::UserInterface;
 
 namespace Apex::Editor 
 {

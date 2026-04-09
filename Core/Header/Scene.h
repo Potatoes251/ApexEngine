@@ -35,9 +35,9 @@ namespace Apex::Rendering
 
 		Lighting::VisibleLights GetVisibleLights();
 
-		Object* CreateObject();
-		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
-		void DestroyObject(Object* obj);
+		Apex::Data::Object* CreateObject();
+		const std::vector<std::unique_ptr<Apex::Data::Object>>& GetObjects() const;
+		void DestroyObject(Apex::Data::Object* obj);
 
 		void MarkDirty();
 		void ClearDirty() { m_isDirty = false; }
@@ -48,13 +48,13 @@ namespace Apex::Rendering
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
-		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
+		Apex::Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
 		Camera* GetMainCamera() const { return m_mainCamera; }
 		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
 
-		void InsertBefore(Object* dragged, Object* target);
-		void InsertAfter(Object* dragged, Object* target);
+		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
+		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
 
 		void Save(const std::string& path);
@@ -62,7 +62,7 @@ namespace Apex::Rendering
 	private:
 		Physic::PhysicSystem m_physics;
 
-		std::vector<std::unique_ptr<Object>> m_objects;
+		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
 
 		Camera* m_mainCamera = nullptr;

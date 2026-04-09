@@ -17,8 +17,9 @@
 #include <stdexcept>
 #include <cassert>
 
-using namespace Apex::Serialization;
+using namespace Apex::Data;
 using namespace Apex::Physic;
+using namespace Apex::Serialization;
 
 void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& path)
 {

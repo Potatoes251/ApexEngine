@@ -1,8 +1,9 @@
 local CharacterController = require("CharacterController")
 local Camera = require("Camera")
+local Object = require("Object")
 local Input = require("Input")
 
-local Player = {}
+local Player = Object:New()
 
 function Player:New()
     local instance = { cc = nil, cam = nil }

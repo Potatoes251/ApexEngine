@@ -34,8 +34,8 @@ namespace Apex::Serialization
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;
         std::vector<std::pair<size_t, size_t>> parentLinks;
 
-        Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
-        void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
+        Apex::Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
+        void ParseComponents(Apex::Data::Object* obj, Apex::Serialization::SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 
         Apex::Physic::BodyType StringToBodyType(const std::string& str);

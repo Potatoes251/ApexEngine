@@ -1,37 +1,37 @@
 #include "Application.h"
 
-#include "LuaManager.h"
-#include "Behaviour.h"
-#include "LuaBehaviour.h"
-#include "ScriptComponent.h"
-#include "RenderPassInfo.h"
-#include "SceneGraph.h"
 #include "Object.h"
-
+#include "SceneGraph.h"
 #include "SceneLoader.h"
 
-#include "Window.h"
-#include "RHI.h"
-#include "Audio.h"
-#include "Camera.h"
+#include "LuaManager.h"
+#include "ScriptComponent.h"
 
-#include "ResourceManager.h"
+#include "Audio.h"
+
+#include "Window.h"
+
+#include "RHI.h"
 #include "Mesh.h"
-#include "Texture.h"
+#include "Camera.h"
 #include "Shader.h"
 #include "Cubemap.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
-#include "Rigidbody.h"
+#include "Texture.h"
+#include "RenderPassInfo.h"
+#include "ResourceManager.h"
 
+#include "Rigidbody.h"
+#include "BoxCollider.h"
+#include "MeshCollider.h"
 #include "DebugRenderer.h"
+#include "CapsuleCollider.h"
+
 #include "UI.h"
 #include "Hud.h"
 
+#include "Lighting/Lights.h"
 #include "Lighting/LightManager.h"
 #include "Lighting/ShadowManager.h"
-#include "Lighting/Lights.h"
 
 #include <chrono>
 #include <iostream>
@@ -39,16 +39,17 @@
 #include <memory>
 #include <filesystem>
 
+using namespace Apex::Data;
+using namespace Apex::Audio;
+using namespace Apex::Input;
+using namespace Apex::Physic;
+using namespace Apex::Lighting;
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
 using namespace Apex::Scripting;
-using namespace Apex::Audio;
 using namespace Apex::Resources;
 using namespace Apex::UserInterface;
-using namespace Apex::Physic;
 using namespace Apex::Serialization;
-using namespace Apex::Lighting;
-using namespace Apex::Input;
 
 namespace Apex
 {

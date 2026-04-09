@@ -8,6 +8,7 @@
 #include "SceneGraph.h"
 #include "../../Physic/Header/Physic.h"
 
+#include <unordered_set>
 #include <vector>
 #include <memory>
 #include <utility>
@@ -48,6 +49,12 @@ namespace Apex::Data
 		void		Update(float deltaTime_s);
 		void		OnTriggerEnter(Physic::Collider* other);
 		void		OnTriggerExit(Physic::Collider* other);
+
+		void		AddTag(std::string tag);
+		void		RemoveTag(std::string const& tag);
+		bool		HasTag(std::string const& tag) const;
+
+		std::unordered_set<std::string> const& GetTags() const;
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
@@ -130,6 +137,9 @@ namespace Apex::Data
 		LibMath::Transform				m_globalTransform;
 
 		std::function<void()>			m_onChanged;
+
+		// only one of each
+		std::unordered_set<std::string>					m_tags;
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;

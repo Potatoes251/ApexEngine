@@ -18,4 +18,16 @@ function M:Reparent(newParent)
     Reparent_Internal(self, newParent)
 end
 
+function M:AddTag(newTag)
+    AddTag_Internal(self, newTag)
+end
+
+function M:HasTag(tag)
+    return HasTag_Internal(self, tag)
+end
+
+function M:GetTags()
+    return GetTags_Internal(self)
+end
+
 return M
