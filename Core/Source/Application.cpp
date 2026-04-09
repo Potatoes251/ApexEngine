@@ -231,7 +231,6 @@ void Apex::Application::Tick()
     m_deltaTime_s = m_window->GetDeltaTime();
     if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
-    ProcessInput();
     Update();
 
     m_accumulator_s += m_deltaTime_s;
@@ -241,19 +240,6 @@ void Apex::Application::Tick()
         m_scene->FixedUpdate(fixedUpdateTime_s);
         m_accumulator_s -= fixedUpdateTime_s;
     }
-}
-
-void Apex::Application::ProcessInput()
-{
-    //m_scene->GetCamera()->ProcessKeyboard(
-    //    m_window->IsKeyPressed(Key::W),
-    //    m_window->IsKeyPressed(Key::S),
-    //    m_window->IsKeyPressed(Key::A),
-    //    m_window->IsKeyPressed(Key::D),
-    //    m_window->IsKeyPressed(Key::E),
-    //    m_window->IsKeyPressed(Key::Q),
-    //    m_deltaTime_s
-    //);
 }
 
 void Apex::Application::UpdateAudioListener()

@@ -59,7 +59,6 @@ namespace Apex
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
         void LoadScene();
-        void ProcessInput();
 
         void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
