@@ -138,7 +138,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 
 	LibMath::Vector3 pos = transform.getPosition();
 	LibMath::Vector3 rot = transform.getEulerRotation();
-	rot = rot * (180.0f / 3.14159265f);
+	rot = rot * (180.0f / g_Pi);
 	LibMath::Vector3 scale = transform.getScale();
 
 	bool changed = false;
@@ -150,7 +150,8 @@ void ComponentsViewer::DrawTransform(Object* obj)
 	if (changed)
 	{
 		transform.setPosition(pos);
-		transform.setEulerRotation(rot * (3.14159265f / 180.0f));
+		std::cout << rot << std::endl;
+		transform.setEulerRotation(rot * (g_Pi / 180.0f));
 		transform.setScale(scale);
 
 		obj->SetLocalTransform(transform);

@@ -20,7 +20,7 @@ namespace LibMath
 		Quaternion	getRotation() const { return m_rotation; }
 		Vector3		getPosition() const { return m_position; }
 		Vector3		getScale() const { return m_scale; }
-		Vector3		getForward() const;
+		Vector3		getForward() const;	
 
 		Vector3		getEulerRotation() const;
 		void		setEulerRotation(Vector3 euler);

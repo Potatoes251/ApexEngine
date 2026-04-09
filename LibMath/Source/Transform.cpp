@@ -7,6 +7,7 @@ LibMath::Transform::Transform(Transform const& other)
 	m_rotation = other.m_rotation;
 	m_position = other.m_position;
 	m_scale = other.m_scale;
+	m_eulerRotation = other.m_eulerRotation;
 }
 
 LibMath::Transform& LibMath::Transform::operator=(Transform const other)
@@ -14,6 +15,7 @@ LibMath::Transform& LibMath::Transform::operator=(Transform const other)
 	m_rotation = other.m_rotation;
 	m_position = other.m_position;
 	m_scale = other.m_scale;
+	m_eulerRotation = other.m_eulerRotation;
 	return *this;
 }
 
