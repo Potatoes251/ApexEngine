@@ -9,7 +9,7 @@ namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
     {
-        if (ext == ".obj" || ext == ".fbx")                  
+        if (ext == ".mesh")                  
             return AssetType::Mesh;
         if (ext == ".jpg" || ext == ".png" || ext == ".tga" || ext == ".hdr") 
             return AssetType::Texture;
@@ -140,7 +140,8 @@ namespace Apex::Editor
 
         for (const auto& entry : fs::directory_iterator(m_currentPath))
         {
-            if (!entry.is_directory() && (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh"))
+            if (!entry.is_directory() && (entry.path().extension() == ".meta" || entry.path().extension() == ".obj"
+                || entry.path().extension() == ".fbx" || entry.path().extension() == ".FBX" || entry.path().extension() == ".mtl"))
                 continue;
 
             AssetEntry assetEntry = ClassifyEntry(entry);
@@ -172,7 +173,9 @@ namespace Apex::Editor
         for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
-            if (entry.path().extension() == ".meta" || entry.path().extension() == ".mesh") continue;
+            if (entry.path().extension() == ".meta" || entry.path().extension() == ".obj"
+                || entry.path().extension() == ".fbx" || entry.path().extension() == ".FBX"
+                || entry.path().extension() == ".mtl") continue;
 
             std::string name = entry.path().filename().string();
             std::string low = name;

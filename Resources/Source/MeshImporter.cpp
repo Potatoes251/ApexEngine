@@ -11,197 +11,27 @@ constexpr double ANIMATION_FPS = 30;
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
 // causes undefined behaviour and crashes.
-FbxManager* MeshImporter::s_manager = nullptr;
-std::mutex  MeshImporter::s_mutex;
 
-static void EnsureManager()
+void MeshImporter::EnsureManager()
 {
     // Called inside the locked region — safe to check/create once.
-    if (!MeshImporter::s_manager)
+    if (!s_manager)
     {
-        MeshImporter::s_manager = FbxManager::Create();
-        FbxIOSettings* ios = FbxIOSettings::Create(MeshImporter::s_manager, IOSROOT);
-        MeshImporter::s_manager->SetIOSettings(ios);
+        s_manager = FbxManager::Create();
+        FbxIOSettings* ios = FbxIOSettings::Create(s_manager, IOSROOT);
+        s_manager->SetIOSettings(ios);
     }
 }
 
-void MeshImporter::Import(std::string path, Mesh& mesh)
+bool MeshImporter::Import(std::string path, Mesh& mesh)
 {
-    if (ImportBin(path, mesh)) return;
     if (ImportFbx(path, mesh))
     {
-        ExportBin(path, mesh);
-        return;
+        return true;
     }
     // eventually load another way
-}
 
-bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
-{
-    std::filesystem::path binaryPath = path;
-    binaryPath.replace_extension(".mesh");
-    std::ifstream file(binaryPath, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        std::cout << "Failed to open file\n";
-        return false;
-    }
-
-    file.seekg(0, std::ios::end);
-    std::streamsize size = file.tellg();
-
-    if (size == 0)
-    {
-        std::cout << "File is empty\n";
-        return false;
-    }
-
-    file.seekg(0, std::ios::beg);
-
-    MeshHeader header;
-    file.read((char*)&header, sizeof(header));
-
-    if constexpr (IsBigEndian())
-    {
-        header.m_magic = _byteswap_ulong(header.m_magic);
-        header.m_version = _byteswap_ulong(header.m_version);
-    }
-
-    if (header.m_magic != 0x4D455348)
-    {
-        std::cout << "Invalid file format\n";
-        return false;
-    }
-    if (header.m_version != CURRENT_VERSION)
-    {
-        std::cout << "File needs to be updated\n";
-        return false;
-    }
-    uint32_t vertexCount;
-    uint32_t indexCount;
-
-    if (!file.read((char*)&vertexCount, sizeof(vertexCount)))
-        return false;
-
-    if (!file.read((char*)&indexCount, sizeof(indexCount)))
-        return false;
-
-    if constexpr (IsBigEndian())
-    {
-        vertexCount = _byteswap_ulong(vertexCount);
-        indexCount = _byteswap_ulong(indexCount);
-    }
-
-    std::vector<Apex::Rendering::Vertex> vertices(vertexCount);
-
-    if (!file.read((char*)vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex)))
-        return false;
-
-    std::vector<uint32_t> indices(indexCount);
-
-    if (!file.read((char*)indices.data(), indexCount * sizeof(uint32_t)))
-        return false;
-
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
-    {
-        uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
-
-        for (size_t i = 0; i < indices.size(); i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        // only works if vertices uses only 4 bytes types
-        data = reinterpret_cast<uint32_t*>(vertices.data());
-        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-    }
-
-    mesh.m_vertices = vertices;
-    mesh.m_indices = indices;
-
-    return true;
-}
-
-bool MeshImporter::ExportBin(std::string path, Mesh& mesh)
-{
-    std::filesystem::path binaryPath = path;
-    binaryPath.replace_extension(".mesh");
-
-    std::ofstream file(binaryPath, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        std::cout << "Failed to open file for writing\n";
-        return false;
-    }
-
-    // Header
-    MeshHeader header;
-    header.m_magic = 0x4D455348; // "MESH"
-    header.m_version = CURRENT_VERSION;
-
-    if constexpr (IsBigEndian())
-    {
-        header.m_magic = _byteswap_ulong(header.m_magic);
-        header.m_version = _byteswap_ulong(header.m_version);
-    }
-
-    file.write((char*)&header, sizeof(header));
-
-    // Counts
-    uint32_t vertexCount = mesh.m_vertices.size();
-    uint32_t indexCount = mesh.m_indices.size();
-
-    if constexpr (IsBigEndian())
-    {
-        vertexCount = _byteswap_ulong(vertexCount);
-        indexCount = _byteswap_ulong(indexCount);
-    }
-
-    file.write((char*)&vertexCount, sizeof(vertexCount));
-    file.write((char*)&indexCount, sizeof(indexCount));
-
-    // Data
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
-    {
-        std::vector<Apex::Rendering::Vertex> vertices = mesh.m_vertices;
-        std::vector<uint32_t> indices = mesh.m_indices;
-
-        // only works if vertices uses only 4 bytes types
-        uint32_t* data = reinterpret_cast<uint32_t*>(vertices.data());
-        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        file.write((char*)data, vertexCount * sizeof(Apex::Rendering::Vertex));
-
-        data = reinterpret_cast<uint32_t*>(indices.data());
-
-        for (size_t i = 0; i < indices.size(); i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        file.write((char*)data, indexCount * sizeof(uint32_t));
-    }
-    else
-    {
-        file.write((char*)mesh.m_vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex));
-        file.write((char*)mesh.m_indices.data(), indexCount * sizeof(uint32_t));
-    }
-
-    return true;
+    return false;
 }
 
 bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)

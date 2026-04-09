@@ -68,7 +68,7 @@ namespace Apex::Resources
         for (auto& c : ext) c = static_cast<char>(::tolower(c));
 
         if constexpr (std::is_same_v<T, Mesh>)
-            return ext == ".obj" || ext == ".fbx";
+            return ext == ".mesh";
         else if constexpr (std::is_same_v<T, Texture>)
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg"
             || ext == ".hdr" || ext == ".tga";

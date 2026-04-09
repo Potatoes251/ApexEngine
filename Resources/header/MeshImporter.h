@@ -8,17 +8,8 @@
 
 #define FBXSDK_SHARED
 #include <fbxsdk.h>
-#include <bit>
 
-// to be increased after each modifictation to the bin loader
-constexpr int CURRENT_VERSION = 1;
-
-struct MeshHeader
-{
-	int m_magic = 0x4D455348;
-	int m_version = 1;
-};
-
+#include "BinLoader.h"
 
 class MeshImporter
 {
@@ -26,9 +17,11 @@ public:
 	MeshImporter() = default;
 	~MeshImporter() = default;
 
-	void Import(std::string path, Mesh& mesh);
-	bool ImportBin(std::string path, Mesh& mesh);
-	bool ExportBin(std::string path, Mesh& mesh);
+	static void EnsureManager();
+
+	bool Import(std::string path, Mesh& mesh);
+
+private:
 	bool ImportFbx(std::string path, Mesh& mesh);
 	void ProcessNode(FbxNode* node, Mesh& mesh);
 	void ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh);
@@ -40,13 +33,9 @@ public:
 
 	Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
 
-	static constexpr bool IsBigEndian()
-	{
-		return std::endian::native == std::endian::big;
-	}
 
-	static FbxManager* s_manager;
-	static std::mutex  s_mutex;
+	static inline FbxManager* s_manager = nullptr;
+	static inline std::mutex  s_mutex;
 
 	std::unordered_map<int, std::vector<int>> m_ctrlPointToVertices;
 };
