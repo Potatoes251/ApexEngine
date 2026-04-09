@@ -11,4 +11,12 @@ function M:New()
     return instance
 end
 
+function M:OnTriggerEnter()
+    print("Enter")
+end
+
+function M:OnTriggerExit()
+    print("Exit")
+end
+
 return M

@@ -19,6 +19,7 @@ namespace Apex::Scripting
         std::unique_ptr<Component> Clone() override;
 
         void SetScript(const std::string& path);
+        void SetObjectPtr();
         const std::string GetScriptPath() const { return m_scriptPath; }
 
         const char* GetTypeName() const override { return "ScriptComponent"; };
@@ -30,9 +31,10 @@ namespace Apex::Scripting
 
         void Serialize(std::ostream& out) const override;
 
-    protected:
         void OnStart() override;
         void OnUpdate(float deltaTime) override;
+        void OnTriggerEnter(Physic::Collider* other) override;
+        void OnTriggerExit(Physic::Collider* other) override;
 
     private:
         int m_instanceRef = LUA_REFNIL;

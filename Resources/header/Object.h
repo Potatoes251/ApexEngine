@@ -38,10 +38,16 @@ namespace Apex::Data
 		void		UpdateGlobalTransform();
 
 		void		SetLocalTransform(const LibMath::Transform& transform);
+		void		SetLocalPosition(const LibMath::Vector3& position);
+		void		SetLocalRotation(const LibMath::Quaternion& rotation);
+		void		SetLocalScale(const LibMath::Vector3& scale);
 		void		SetGlobalTransform(const LibMath::Transform& transform);
 
 		void		Start();
-		void		Update(float deltaTime);
+		void		FixedUpdate(float deltaTime_s);
+		void		Update(float deltaTime_s);
+		void		OnTriggerEnter(Physic::Collider* other);
+		void		OnTriggerExit(Physic::Collider* other);
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }

@@ -23,8 +23,6 @@ namespace Apex::Physic
 		ColliderType GetType() const override { return ColliderType::Capsule; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 
-		void DrawVariables(Apex::UserInterface::IGUI& gui) {}
-
 		float GetHalfHeight() const { return m_halfHeight; }
 		float GetRadius() const { return m_radius; }
 

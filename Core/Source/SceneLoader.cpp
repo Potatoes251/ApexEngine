@@ -5,10 +5,12 @@
 #include "MeshRenderer.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
+#include "CapsuleCollider.h"
 #include "MeshCollider.h"
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
-#include "Lighting/PointLightComponent.h"
+#include "Lighting/Lights.h"
+#include "CharacterController.h"
+#include "ThirdPersonCamera.h"
+#include "FirstPersonCamera.h"
 #include "ScriptComponent.h"
 
 #include <fstream>
@@ -263,6 +265,40 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
             comp.SetEnabled(enabled);
         }
+        else if (compName == "CapsuleCollider")
+        {
+            parser.ParseString(); parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            float halfHeight = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            float radius = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            bool isTrigger = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+
+            PhysMatHandle material;
+
+            if (!parser.Match("null"))
+            {
+                size_t id = parser.ParseInt();
+                auto it = m_materials.find(id);
+                assert(it != m_materials.end() && "Material id not found");
+
+                material = it->second;
+            }
+
+            auto& comp = obj->AddComponent<Apex::Physic::CapsuleCollider>(halfHeight, radius, isTrigger, material);
+            comp.SetEnabled(enabled);
+        }
         else if (compName == "DirectionalLight")
         {
             parser.ParseString(); 
@@ -364,6 +400,69 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(
                 LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
             comp.SetEnabled(enabled);
+        }
+        else if (compName == "CharacterController")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float groundedDistance = parser.ParseFloat();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
+            comp.SetEnabled(enabled);
+            comp.SetSpeed(speed);
+            comp.SetGroundedDistance(groundedDistance);
+        }
+        else if (compName == "ThirdPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float distance = parser.ParseFloat();
+
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::ThirdPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
+            comp.SetDistance(distance);
+            comp.SetSpeed(speed);
+        }
+        else if (compName == "FirstPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::FirstPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
         }
 
         else if (compName == "ScriptComponent")

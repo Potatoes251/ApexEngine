@@ -52,9 +52,9 @@ namespace Apex::Physic
 		std::vector<Force> const&	GetForces() const { return m_pendingForces; }
 		// must be called in fixed update
 		// force is ignored on a body that is not Dynamic
-		void					AddForce(Force newForce) { m_pendingForces.push_back(newForce); }
+		void						AddForce(Force newForce) { m_pendingForces.push_back(newForce); }
 
-		void					ResetForces();
+		void						ResetForces();
 		
 		void SetTransform(LibMath::Transform trans);
 		void SetRotation(LibMath::Quaternion rot);
@@ -66,6 +66,9 @@ namespace Apex::Physic
 
 		void Serialize(std::ostream& out) const override;
 
+		bool m_lockRotationX = false;
+		bool m_lockRotationY = false;
+		bool m_lockRotationZ = false;
 	private:
 		BodyType			m_bodyType;
 		float				m_mass;

@@ -13,6 +13,24 @@ FirstPersonCamera::FirstPersonCamera(LibMath::Vector3 position)
 	UpdateVectors();
 }
 
+FirstPersonCamera::FirstPersonCamera(FirstPersonCamera const& other)
+{
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+}
+
+FirstPersonCamera& FirstPersonCamera::operator=(FirstPersonCamera const& other)
+{
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+
+	return *this;
+}
+
 void FirstPersonCamera::ProcessKeyboard(bool moveForward, bool moveBackward, bool moveLeft,
 	bool moveRight, bool moveUp, bool moveDown, float deltaTime)
 {
@@ -60,4 +78,12 @@ void FirstPersonCamera::ProcessScroll(double yoffset)
 {
 	m_fov -= LibMath::Degree((float)yoffset);
 	m_fov = LibMath::Degree(LibMath::clamp(m_fov.raw(), 1.f, 90.f));
+}
+
+void FirstPersonCamera::Serialize(std::ostream& out) const
+{
+	out << "      \"ThirdPersonCamera\": {\n";
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << "\n";
+	out << "      }";
 }

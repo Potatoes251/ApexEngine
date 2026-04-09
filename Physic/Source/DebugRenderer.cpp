@@ -137,7 +137,7 @@ void DebugRenderer::DrawLines(LibMath::Matrix4 viewProj)
 
 	// Draw
 	m_rhi->BindVAO(m_vao);
-	m_rhi->DrawLineArrays((m_lines.size() * 2));
+	m_rhi->DrawLineArrays((uint32_t)(m_lines.size() * 2));
 
 	// Clear for next frame
 	m_lines.clear();

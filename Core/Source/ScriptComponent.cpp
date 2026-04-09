@@ -6,6 +6,7 @@ using namespace Apex::Scripting;
 std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 {
     auto clone = std::make_unique<ScriptComponent>(m_lua);
+    clone->SetEnabled(IsEnabled());
     clone->SetScript(m_scriptPath);
 
     for (auto& var : GetExposedVariables())
@@ -35,6 +36,23 @@ void ScriptComponent::SetScript(const std::string& path)
     lua_setfield(L, -2, "__object");
 
     // pop instance
+    lua_pop(L, 1);
+}
+
+void Apex::Scripting::ScriptComponent::SetObjectPtr()
+{
+    lua_State* L = m_lua.GetState();
+
+    // Push instance
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef);
+
+    // Push new pointer
+    lua_pushlightuserdata(L, GetOwner());
+
+    // instance.__object = new pointer
+    lua_setfield(L, -2, "__object");
+
+    // Pop instance
     lua_pop(L, 1);
 }
 
@@ -168,17 +186,29 @@ void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
 
 void ScriptComponent::OnStart()
 {
+    SetObjectPtr();
     if (m_instanceRef != LUA_REFNIL)
         m_lua.CallFunction(m_instanceRef, "Start");
 }
 
 void ScriptComponent::OnUpdate(float deltaTime)
 {
-    if (!IsEnabled())
-        return;
-
     if (m_instanceRef != LUA_REFNIL)
+    {
         m_lua.CallFunction(m_instanceRef, "Update", deltaTime);
+    }
+}
+
+void ScriptComponent::OnTriggerEnter(Physic::Collider* other)
+{
+    if (m_instanceRef != LUA_REFNIL)
+        m_lua.CallFunction(m_instanceRef, "OnTriggerEnter");
+}
+
+void ScriptComponent::OnTriggerExit(Physic::Collider* other)
+{
+    if (m_instanceRef != LUA_REFNIL)
+        m_lua.CallFunction(m_instanceRef, "OnTriggerExit");
 }
 
 void ScriptComponent::Serialize(std::ostream& out) const

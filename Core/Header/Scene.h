@@ -19,6 +19,8 @@
 
 namespace Apex::Rendering
 {
+	class Camera;
+
 	class Scene
 	{
 	public:
@@ -48,6 +50,9 @@ namespace Apex::Rendering
 		
 		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
+		Camera* GetMainCamera() const { return m_mainCamera; }
+		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
+
 		void InsertBefore(Object* dragged, Object* target);
 		void InsertAfter(Object* dragged, Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
@@ -60,9 +65,10 @@ namespace Apex::Rendering
 		std::vector<std::unique_ptr<Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
 
-		bool m_isDirty = false;
+		Camera* m_mainCamera = nullptr;
 
 		std::function<void()> m_onMarkedDirty;
+		bool m_isDirty = false;
 	};
 }
 

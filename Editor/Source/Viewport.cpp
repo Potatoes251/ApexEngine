@@ -3,6 +3,7 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
+#include "InputSystem.h"
 #include "Hierarchy.h"
 #include "Editor.h"
 #include "Window.h"
@@ -14,6 +15,7 @@ using namespace Apex::Data;
 
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
+using namespace Apex::Input;
 
 Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
 	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
@@ -34,25 +36,23 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
 {
-	m_camera.ProcessKeyboard(
-		window->IsKeyPressed(Windowing::Key::W),
-		window->IsKeyPressed(Windowing::Key::S),
-		window->IsKeyPressed(Windowing::Key::A),
-		window->IsKeyPressed(Windowing::Key::D),
-		window->IsKeyPressed(Windowing::Key::E),
-		window->IsKeyPressed(Windowing::Key::Q),
-		window->GetDeltaTime());
+	if (!m_isFocus) return;
+
+	InputSystem& input = InputSystem::Get();
+
+	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
+		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
+		input.IsKeyDown(Key::E), input.IsKeyDown(Key::Q), window->GetDeltaTime());
 }
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
-	if (m_editor->GetEditorState() != EditorState::Edit) return;
+	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
 	PerformPicking({ (float)mouseX, (float)mouseY });
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
-	if (m_editor->GetEditorState() != EditorState::Edit) return;
 	m_selectedAxis = Axis::None;
 }
 
@@ -178,19 +178,24 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	{
 		m_selectedAxis = static_cast<Axis>(id);
 
-		LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
-
 		m_initialTransform = m_selectedObject->GetGlobalTransform();
 
-		if (m_currentGizmoMode != GizmoMode::Rotation)
-		{
-			ComputePlane();
-			m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
-		}
+		LibMath::Line3D ray = ScreenToWorldRay(mousePos, m_camera.GetViewProj(), m_panelPos, m_panelSize);
+
+		if (m_currentGizmoMode != GizmoMode::Rotation) ComputePlane();
 		else ComputePlaneRotation();
 
-		m_rhi->UnBindFrameBuffer();
-		return;
+		if (LibMath::intersectionRayPlane(ray, m_axisPlane, m_startingPoint))
+		{
+			if (m_currentGizmoMode != GizmoMode::Rotation)
+			{
+				LibMath::Vector3 center = m_selectedObject->GetGlobalTransform().getPosition();
+				m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
+			}
+
+			m_rhi->UnBindFrameBuffer();
+			return;
+		}
 	}
 
 	m_selectedAxis = Axis::None;
@@ -357,10 +362,14 @@ void Viewport::Draw()
 
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
-	pass.m_camera = &m_camera;
 	pass.m_target = m_fbo;
 	if (m_showColliders)
 		pass.m_flags |= ShowCollider;
+
+	if (m_editor->GetEditorState() == EditorState::Play)
+		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	if (!pass.m_camera)
+		pass.m_camera = &m_camera;
 
 	if (m_isFirstFullScreen)
 	{
@@ -383,6 +392,7 @@ void Viewport::Draw()
 
 	m_gui->BeginPanel("Viewport");
 
+	m_isFocus = m_gui->IsPanelFocused();
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
@@ -443,6 +453,11 @@ void Viewport::DrawUI()
 	{
 		m_editor->SetEditorState(EditorState::Edit);
 		SelectObject(nullptr);
+		if (m_isFullScreen)
+		{
+			m_isFullScreen = false;
+			m_isFirstFullScreen = true;
+		}
 	}
 	m_gui->SameLine();
 	m_gui->Checkbox("Grid", &m_showGrid);
