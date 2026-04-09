@@ -1,13 +1,14 @@
 #ifndef BIN_LOADER
 #define BIN_LOADER
 
+#include <filesystem>
 #include <string>
 #include <bit>
 
 #include "Mesh.h"
 
 // to be increased after each modifictation to the bin loader
-constexpr int CURRENT_VERSION = 2;
+constexpr int CURRENT_VERSION = 5;
 
 struct MeshHeader
 {
@@ -27,28 +28,29 @@ public:
 	BinLoader& operator=(BinLoader const&) = delete;
 	~BinLoader() = default;
 
-	bool Load(std::string path, Mesh& mesh);
+	bool Load(std::string path, Mesh& mesh, std::string& sourcePath_out);
 	bool Export(std::string path, Mesh& mesh);
 
 private:
-	bool ReadHeader(std::ifstream& file);
+	// read
+
+	bool ReadHeader(std::ifstream& file, std::string& sourcePath_out);
 	bool ReadVerticesIndices(Mesh& mesh, std::ifstream& file);
 	bool ReadBoneInfo(Mesh& mesh, std::ifstream& file);
 	bool ReadBoneMap(Mesh& mesh, std::ifstream& file);
-	bool ReadAnimations(Mesh& mesh, std::ifstream& file);
+	bool ReadAnimations(Mesh& mesh, std::filesystem::path const& path);
 	bool ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream& file);
 
 	inline bool ReadString(std::ifstream& file, std::string& str);
 	inline bool Read32Bits(std::ifstream& file, uint32_t& val);
 
-
-	bool ExportBin(std::string path, Mesh& mesh);
+	// write
 
 	void WriteHeader(std::ofstream& file);
 	void WriteVerticesIndices(Mesh const& mesh, std::ofstream& file);
 	void WriteBoneInfo(Mesh const& mesh, std::ofstream& file);
 	void WriteBoneMap(Mesh const& mesh, std::ofstream& file);
-	void WriteAnimations(Mesh const& mesh, std::ofstream& file);
+	bool WriteAnimations(Mesh const& mesh, std::filesystem::path const& path);
 	void WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::ofstream& file);
 
 	inline void WriteString(std::ofstream& file, std::string const& str);

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <filesystem>
 
-bool BinLoader::Load(std::string path, Mesh& mesh)
+bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 {
     std::ifstream file(path, std::ios::binary);
 
@@ -24,12 +24,25 @@ bool BinLoader::Load(std::string path, Mesh& mesh)
 
     file.seekg(0, std::ios::beg);
 
-    if (!ReadHeader(file)
+    if (!ReadHeader(file, sourcePath_out)
         || !ReadVerticesIndices(mesh, file)
         || !ReadBoneInfo(mesh, file)
-        || !ReadBoneMap(mesh, file)
-        || !ReadAnimations(mesh, file))
+        || !ReadBoneMap(mesh, file))
         return false;
+
+    std::filesystem::path folderPath(path);
+    folderPath = folderPath.parent_path();
+    folderPath /= "Animation";
+    if (std::filesystem::exists(folderPath) && std::filesystem::is_directory(folderPath)) 
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) 
+        {
+            if (entry.is_regular_file() && entry.path().extension() == ".anim")
+            {
+                ReadAnimations(mesh, entry);
+            }
+        }
+    }
 
     return true;
 }
@@ -38,7 +51,15 @@ bool BinLoader::Export(std::string path, Mesh& mesh)
 {
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
-    std::ofstream file(binaryPath, std::ios::binary);
+    std::filesystem::path folderPath = binaryPath.parent_path();
+    folderPath /= binaryPath.stem();
+
+    if (!std::filesystem::exists(folderPath))
+    {
+        std::filesystem::create_directory(folderPath);
+    }
+
+    std::ofstream file(folderPath / binaryPath.filename(), std::ios::binary);
 
     if (!file.is_open())
     {
@@ -47,16 +68,26 @@ bool BinLoader::Export(std::string path, Mesh& mesh)
     }
 
     WriteHeader(file);
+    WriteString(file, path);
     WriteVerticesIndices(mesh, file);
     WriteBoneInfo(mesh, file);
     WriteBoneMap(mesh, file);
-    WriteAnimations(mesh, file);
+
+    if (mesh.m_animations.size() == 0) return true;
+
+    folderPath /= "Animation";
+    if (!std::filesystem::exists(folderPath)) 
+    {
+        std::filesystem::create_directory(folderPath);
+    }
+
+    WriteAnimations(mesh, folderPath);
 
     return true;
 }
 
 
-bool BinLoader::ReadHeader(std::ifstream& file)
+bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
 {
     MeshHeader header;
 
@@ -65,6 +96,11 @@ bool BinLoader::ReadHeader(std::ifstream& file)
     if (!Read32Bits(file, header.m_vertexSize)) return false;
     if (!Read32Bits(file, header.m_keyframeSize)) return false;
     if (!Read32Bits(file, header.m_boneinfoSize)) return false;
+    if (!ReadString(file, sourcePath_out))
+    {
+        sourcePath_out.clear();
+        return false;
+    }
 
     if (header.m_magic != 0x4D455348)
     {
@@ -73,7 +109,7 @@ bool BinLoader::ReadHeader(std::ifstream& file)
     }
     if (header.m_version != CURRENT_VERSION)
     {
-        std::cout << "File needs to be updated" << std::endl;
+        std::cout << "File needs to be updated version was " << header.m_version << std::endl;
         return false;
     }
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
@@ -184,35 +220,32 @@ bool BinLoader::ReadBoneMap(Mesh& mesh, std::ifstream& file)
     return true;
 }
 
-bool BinLoader::ReadAnimations(Mesh& mesh, std::ifstream& file)
+bool BinLoader::ReadAnimations(Mesh& mesh, std::filesystem::path const& path)
 {
-    uint32_t animCount;
+    std::ifstream file(path, std::ios::binary);
 
-    if (!Read32Bits(file, animCount)) return false;
-
-    mesh.m_animations.resize(animCount);
-
-    for (size_t i = 0; i < animCount; i++)
+    if (!file.is_open())
     {
-        Animation& animation = mesh.m_animations[i];
-
-        std::string name;
-
-        if (!ReadString(file, name)) return false;
-
-        animation.m_name = name;
-
-        uint32_t count;
-
-        if (!Read32Bits(file, count)) return false;
-
-        animation.m_boneAnimations.resize(count);
-
-        for (size_t j = 0; j < count; j++)
-        {
-            if (!ReadSingleBoneAnimation(animation.m_boneAnimations[j], file)) return false;
-        }
+        std::cout << "Failed to open file for reading animations" << std::endl;
+        return false;
     }
+
+    Animation animation;
+
+    animation.m_name = path.stem().string();
+
+    uint32_t count;
+
+    if (!Read32Bits(file, count)) return false;
+
+    animation.m_boneAnimations.resize(count);
+
+    for (size_t j = 0; j < count; j++)
+    {
+        if (!ReadSingleBoneAnimation(animation.m_boneAnimations[j], file)) return false;
+    }
+
+    mesh.m_animations.push_back(animation);
 
     return true;
 }
@@ -374,17 +407,23 @@ void BinLoader::WriteBoneMap(Mesh const& mesh, std::ofstream& file)
     }
 }
 
-void BinLoader::WriteAnimations(Mesh const& mesh, std::ofstream& file)
+bool BinLoader::WriteAnimations(Mesh const& mesh, std::filesystem::path const& path)
 {
-    uint32_t animCount = mesh.m_animations.size();
-
-    Write32Bits(file, animCount);
+    size_t animCount = mesh.m_animations.size();
 
     for (size_t i = 0; i < animCount; i++)
     {
         Animation const& animation = mesh.m_animations[i];
 
-        WriteString(file, animation.m_name);
+        std::filesystem::path fileName = animation.m_name + ".anim";
+
+        std::ofstream file(path / fileName, std::ios::binary);
+
+        if (!file.is_open())
+        {
+            std::cout << "Failed to open file for writing animations" << std::endl;
+            return false;
+        }
 
         uint32_t count = animation.m_boneAnimations.size();
 
@@ -395,6 +434,8 @@ void BinLoader::WriteAnimations(Mesh const& mesh, std::ofstream& file)
             WriteSingleBoneAnimation(animation.m_boneAnimations[j], file);
         }
     }
+
+    return true;
 }
 
 void BinLoader::WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::ofstream& file)

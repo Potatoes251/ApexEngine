@@ -170,7 +170,7 @@ void Apex::Application::LoadScene()
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
 ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
 ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.mesh", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj", true);
     Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader);

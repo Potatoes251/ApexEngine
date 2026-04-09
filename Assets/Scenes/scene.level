@@ -18,7 +18,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.mesh",
+        "mesh": "Assets/Meshes/sphere.obj",
         "texture": "Assets/Textures/container.jpg",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -78,7 +78,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/padoru.mesh",
+        "mesh": "Assets/Meshes/padoru.obj",
         "texture": "Assets/Textures/padoru.png",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -106,7 +106,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/floor.mesh",
+        "mesh": "Assets/Meshes/floor.obj",
         "texture": "Assets/Textures/container.jpg",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -118,7 +118,7 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/floor.mesh",
+        "mesh": "Assets/Meshes/floor.obj",
         "type": "Convex",
         "isTrigger": false,
         "material": 0

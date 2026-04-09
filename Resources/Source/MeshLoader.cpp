@@ -11,7 +11,10 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     std::string extension = filePath.extension().string();
 
     BinLoader binLoader;
-    if (IsBinFile(extension) && binLoader.Load(path, mesh)) return;
+    std::string sourcePath;
+    if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
+
+    if (!sourcePath.empty()) path = sourcePath;
 
     MeshImporter importer;
     if (importer.Import(path, mesh))
