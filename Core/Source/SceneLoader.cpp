@@ -518,8 +518,6 @@ Apex::ExposedVar SceneLoader::ParseScriptVar(SerialParser& parser)
 
     char c = parser.PeekChar();
 
-    printf(("ParseScriptVar peek: [" + std::string(1, c) + "]\n").c_str());
-
     // STRING
     if (c == '"')
     {

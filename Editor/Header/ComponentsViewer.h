@@ -26,7 +26,7 @@ namespace Apex::Editor
 			Apex::Physic::PhysicSystem& phys,
 			Apex::Scripting::LuaManager& lua);
 		
-		void SetSelectedObject(Apex::Data::Object* obj) { std::cout << "SelectedObj = " << (obj ? obj->GetName() : "NULL") << std::endl; m_selectedObj = obj; }
+		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
 
 		void Draw();
 
@@ -61,6 +61,10 @@ namespace Apex::Editor
 		Apex::Component* m_pendingDelete = nullptr;
 
 		bool m_changed = false;
+
+		LibMath::Vector3 m_cachedEuler;
+		Object* m_lastTransformObj = nullptr;
+		LibMath::Vector3 m_lastPosition;
 	};
 }
 

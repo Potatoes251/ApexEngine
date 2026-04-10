@@ -160,22 +160,25 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		return;
 
 	LibMath::Vector3 pos = transform.getPosition();
-	LibMath::Vector3 rot = transform.getEulerRotation();
-	rot = rot * (180.0f / g_Pi);
 	LibMath::Vector3 scale = transform.getScale();
 
-	bool changed = false;
+	bool externalChange = (obj != m_lastTransformObj);
+	if (externalChange)
+	{
+		m_cachedEuler = transform.getEulerRotation() * (180.0f / g_Pi);
+		m_lastTransformObj = obj;
+	}
 
+	bool changed = false;
 	changed |= DrawVec3("Position", pos, -1000.0f, 1000.0f);
-	changed |= DrawVec3("Rotation", rot, 0.0f, 360.0f);
+	changed |= DrawVec3("Rotation", m_cachedEuler, 0.0f, 360.0f);
 	changed |= DrawVec3("Scale", scale, -1000.0f, 1000.0f);
 
 	if (changed)
 	{
 		transform.setPosition(pos);
-		transform.setEulerRotation(rot * (g_Pi / 180.0f));
+		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
 		transform.setScale(scale);
-
 		obj->SetLocalTransform(transform);
 	}
 

@@ -7,7 +7,6 @@ LibMath::Transform::Transform(Transform const& other)
 	m_rotation = other.m_rotation;
 	m_position = other.m_position;
 	m_scale = other.m_scale;
-	m_eulerRotation = other.m_eulerRotation;
 }
 
 LibMath::Transform& LibMath::Transform::operator=(Transform const other)
@@ -15,7 +14,6 @@ LibMath::Transform& LibMath::Transform::operator=(Transform const other)
 	m_rotation = other.m_rotation;
 	m_position = other.m_position;
 	m_scale = other.m_scale;
-	m_eulerRotation = other.m_eulerRotation;
 	return *this;
 }
 
@@ -40,12 +38,11 @@ LibMath::Transform::operator LibMath::Matrix4() const
 
 LibMath::Vector3 LibMath::Transform::getEulerRotation() const
 {
-	return m_eulerRotation;
+	return m_rotation.toEuler();
 }
 
 void LibMath::Transform::setEulerRotation(Vector3 euler)
 {
-	m_eulerRotation = euler;
 	m_rotation = Quaternion(
 		Radian(euler[0]),
 		Radian(euler[1]),

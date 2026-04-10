@@ -36,7 +36,6 @@ namespace LibMath
 		Transform operator*(Transform const& other) const;
 
 	private:
-		Vector3 m_eulerRotation;
 		Quaternion m_rotation = Quaternion(0, 0, 0, 1);
 		Vector3 m_position = Vector3(0);
 		Vector3 m_scale = Vector3(1);
