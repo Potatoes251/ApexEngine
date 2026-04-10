@@ -19,7 +19,7 @@ std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 
 void ScriptComponent::SetScript(const std::string& path)
 {
-    if (m_scriptPath == path && m_instanceRef != LUA_REFNIL)
+    if (!path.empty() && (m_scriptPath == path && m_instanceRef != LUA_REFNIL))
         return;
 
     m_scriptPath = path;
@@ -108,32 +108,24 @@ std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
         {
         case LUA_TNUMBER:
         {
-            float* value = new float((float)lua_tonumber(L, -1));
             var.type = ExposedVar::Float;
-            var.data = value;
+            var.value = (float)lua_tonumber(L, -1);
             vars.push_back(var);
             break;
         }
 
         case LUA_TBOOLEAN:
         {
-            bool* value = new bool(lua_toboolean(L, -1));
             var.type = ExposedVar::Bool;
-            var.data = value;
+            var.value = (bool)lua_toboolean(L, -1);
             vars.push_back(var);
             break;
         }
 
         case LUA_TSTRING:
         {
-            const char* str = lua_tostring(L, -1);
-
-            char* buffer = new char[256];
-            strncpy(buffer, str ? str : "", 255);
-            buffer[255] = '\0';
-
             var.type = ExposedVar::String;
-            var.data = buffer;
+            var.value = std::string(lua_tostring(L, -1));
             vars.push_back(var);
             break;
         }
@@ -159,19 +151,19 @@ void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
     switch (var.type)
     {
     case ExposedVar::Float:
-        lua_pushnumber(L, *(float*)var.data);
+        lua_pushnumber(L, std::get<float>(var.value));
         break;
 
     case ExposedVar::Int:
-        lua_pushinteger(L, *(int*)var.data);
+        lua_pushinteger(L, std::get<int>(var.value));
         break;
 
     case ExposedVar::Bool:
-        lua_pushboolean(L, *(bool*)var.data);
+        lua_pushboolean(L, std::get<bool>(var.value));
         break;
 
     case ExposedVar::String:
-        lua_pushstring(L, (char*)var.data);
+        lua_pushstring(L, std::get<std::string>(var.value).c_str());
         break;
 
     default:
@@ -230,19 +222,19 @@ void ScriptComponent::Serialize(std::ostream& out) const
         switch (var.type)
         {
         case ExposedVar::Float:
-            out << *(float*)var.data;
+            out << std::get<float>(var.value);
             break;
 
         case ExposedVar::Int:
-            out << *(int*)var.data;
+            out << std::get<int>(var.value);
             break;
 
         case ExposedVar::Bool:
-            out << (*(bool*)var.data ? "true" : "false");
+            out << (std::get<bool>(var.value) ? "true" : "false");
             break;
 
         case ExposedVar::String:
-            out << "\"" << (char*)var.data << "\"";
+            out << "\"" << std::get<std::string>(var.value) << "\"";
             break;
         }
 

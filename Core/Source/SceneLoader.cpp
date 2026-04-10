@@ -518,31 +518,25 @@ Apex::ExposedVar SceneLoader::ParseScriptVar(SerialParser& parser)
 
     char c = parser.PeekChar();
 
+    printf(("ParseScriptVar peek: [" + std::string(1, c) + "]\n").c_str());
+
     // STRING
     if (c == '"')
     {
-        std::string str = parser.ParseString();
-
-        char* buffer = new char[256];
-        strncpy(buffer, str.c_str(), 255);
-        buffer[255] = '\0';
-
         var.type = ExposedVar::String;
-        var.data = buffer;
+        var.value = parser.ParseString();
     }
     // BOOL
     else if (c == 't' || c == 'f')
     {
-        bool* v = new bool(parser.ParseBool());
         var.type = ExposedVar::Bool;
-        var.data = v;
+        var.value = parser.ParseBool();
     }
     // NUMBER
     else
     {
-        float* v = new float(parser.ParseFloat());
         var.type = ExposedVar::Float;
-        var.data = v;
+        var.value = parser.ParseFloat();
     }
 
     return var;

@@ -173,7 +173,6 @@ void ComponentsViewer::DrawTransform(Object* obj)
 	if (changed)
 	{
 		transform.setPosition(pos);
-		std::cout << rot << std::endl;
 		transform.setEulerRotation(rot * (g_Pi / 180.0f));
 		transform.setScale(scale);
 
@@ -237,33 +236,38 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			{
 			case ExposedVar::Float:
 			{
-				float* value = (float*)var.data;
-				if (m_gui.SliderFloat(var.name, value, 0.0f, 10.0f))
+				float value = std::get<float>(var.value);
+				if (m_gui.SliderFloat(var.name, &value, 0.0f, 10.0f))
+				{
+					var.value = value;
 					script->SetVariable(var.name, var);
-				break;
-			}
-
-			case ExposedVar::Int:
-			{
-				int* value = (int*)var.data;
-				if (m_gui.SliderInt(var.name, value, 0, 10))
-					script->SetVariable(var.name, var);
+				}
 				break;
 			}
 
 			case ExposedVar::Bool:
 			{
-				bool* value = (bool*)var.data;
-				if (m_gui.Checkbox(var.name, value))
+				bool value = std::get<bool>(var.value);
+				if (m_gui.Checkbox(var.name, &value))
+				{
+					var.value = value;
 					script->SetVariable(var.name, var);
+				}
 				break;
 			}
 
 			case ExposedVar::String:
 			{
-				char* value = (char*)var.data;
-				if (m_gui.InputText(var.name, value, 256))
+				char buffer[256];
+				const auto& str = std::get<std::string>(var.value);
+				strncpy(buffer, str.c_str(), 255);
+				buffer[255] = '\0';
+
+				if (m_gui.InputText(var.name, buffer, 256))
+				{
+					var.value = std::string(buffer);
 					script->SetVariable(var.name, var);
+				}
 				break;
 			}
 			}
