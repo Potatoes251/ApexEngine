@@ -126,6 +126,8 @@ void ComponentsViewer::Draw()
 
 	if (m_selectedObj)
 	{
+		DrawTransform(m_selectedObj);
+
 		for (Component* comp : m_selectedObj->GetComponents())
 		{
 			if (!comp)
@@ -150,6 +152,59 @@ void ComponentsViewer::Draw()
 	m_gui.PopFont();
 }
 
+void ComponentsViewer::DrawTransform(Object* obj)
+{
+	LibMath::Transform transform = obj->GetLocalTransform();
+
+	if (!m_gui.BeginTreeNode("Transform", TreeNodeFlags::SpanAvailWidth))
+		return;
+
+	LibMath::Vector3 pos = transform.getPosition();
+	LibMath::Vector3 scale = transform.getScale();
+
+	bool externalChange = (obj != m_lastTransformObj);
+	if (externalChange)
+	{
+		m_cachedEuler = transform.getEulerRotation() * (180.0f / g_Pi);
+		m_lastTransformObj = obj;
+	}
+
+	bool changed = false;
+	changed |= DrawVec3("Position", pos, -1000.0f, 1000.0f);
+	changed |= DrawVec3("Rotation", m_cachedEuler, 0.0f, 360.0f);
+	changed |= DrawVec3("Scale", scale, -1000.0f, 1000.0f);
+
+	if (changed)
+	{
+		transform.setPosition(pos);
+		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
+		transform.setScale(scale);
+		obj->SetLocalTransform(transform);
+	}
+
+	m_gui.EndTreeNode();
+}
+
+bool ComponentsViewer::DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max)
+{
+	bool changed = false;
+
+	m_gui.Text(name);
+	m_gui.SameLine(150);
+
+	m_gui.PushID(name.c_str());
+
+	changed |= m_gui.SliderFloatFormat("X", &v[0], min, max, 50.0f);
+	m_gui.SameLine();
+	changed |= m_gui.SliderFloatFormat("Y", &v[1], min, max, 50.0f);
+	m_gui.SameLine();
+	changed |= m_gui.SliderFloatFormat("Z", &v[2], min, max, 50.0f);
+
+	m_gui.PopID();
+
+	return changed;
+}
+
 void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 {
 	bool open = DrawTreeComp(comp);
@@ -169,10 +224,65 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 	if (!open)
 		return;
 
-	for (auto& var : comp->GetExposedVariables())
+	if (auto* script = dynamic_cast<ScriptComponent*>(comp))
 	{
-		switch (var.type)
+		m_gui.Text("Script: " + script->GetScriptPath());
+
+		if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
 		{
+			m_scriptPicker.Open(script);
+		}
+
+		for (auto& var : script->GetExposedVariables())
+		{
+			switch (var.type)
+			{
+			case ExposedVar::Float:
+			{
+				float value = std::get<float>(var.value);
+				if (m_gui.SliderFloat(var.name, &value, 0.0f, 10.0f))
+				{
+					var.value = value;
+					script->SetVariable(var.name, var);
+				}
+				break;
+			}
+
+			case ExposedVar::Bool:
+			{
+				bool value = std::get<bool>(var.value);
+				if (m_gui.Checkbox(var.name, &value))
+				{
+					var.value = value;
+					script->SetVariable(var.name, var);
+				}
+				break;
+			}
+
+			case ExposedVar::String:
+			{
+				char buffer[256];
+				const auto& str = std::get<std::string>(var.value);
+				strncpy(buffer, str.c_str(), 255);
+				buffer[255] = '\0';
+
+				if (m_gui.InputText(var.name, buffer, 256))
+				{
+					var.value = std::string(buffer);
+					script->SetVariable(var.name, var);
+				}
+				break;
+			}
+			}
+		}
+	}
+
+	else
+	{
+		for (auto& var : comp->GetExposedVariables())
+		{
+			switch (var.type)
+			{
 			case ExposedVar::Float:
 				if (m_gui.SliderFloatFormat(var.name, (float*)var.data, 0.0f, 10.0f, 50.f))
 					m_changed = true;
@@ -226,6 +336,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			case ExposedVar::Script:
 				DrawComponentScript(var);
 				break;
+			}
 		}
 	}
 

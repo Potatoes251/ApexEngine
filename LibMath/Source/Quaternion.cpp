@@ -174,6 +174,32 @@ float LibMath::Quaternion::angleBetween(Quaternion const& other) const
 	return 2.f * std::acos(dotProduct);
 }
 
+LibMath::Vector3 LibMath::Quaternion::toEuler() const
+{
+	Quaternion quat = normalized();
+
+	// roll (X axis)
+	float sinr_cosp = 2.0f * (quat.m_w * quat.m_x + quat.m_y * quat.m_z);
+	float cosr_cosp = 1.0f - 2.0f * (quat.m_x * quat.m_x + quat.m_y * quat.m_y);
+	float roll = std::atan2(sinr_cosp, cosr_cosp);
+
+	// pitch (Y axis)
+	float sinp = 2.0f * (quat.m_w * quat.m_y - quat.m_z * quat.m_x);
+	float pitch;
+
+	if (std::abs(sinp) >= 1.0f)
+		pitch = std::copysign(M_PI / 2.0f, sinp); // clamp
+	else
+		pitch = std::asin(sinp);
+
+	// yaw (Z axis)
+	float siny_cosp = 2.0f * (quat.m_w * quat.m_z + quat.m_x * quat.m_y);
+	float cosy_cosp = 1.0f - 2.0f * (quat.m_y * quat.m_y + quat.m_z * quat.m_z);
+	float yaw = std::atan2(siny_cosp, cosy_cosp);
+
+	return LibMath::Vector3(roll, pitch, yaw);
+}
+
 float& LibMath::Quaternion::operator[](int index)
 {
 	if (index == 0)

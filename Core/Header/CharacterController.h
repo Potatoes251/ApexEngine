@@ -35,7 +35,7 @@ namespace Apex::Controller
 
 		void Serialize(std::ostream& out) const override;
 		
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<CharacterController>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<CharacterController>(*this); }
 		
 		const char* GetTypeName() const override { return "CharacterController"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
