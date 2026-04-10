@@ -18,7 +18,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
+        "mesh": "Assets/Meshes/sphere/sphere.mesh",
         "texture": "Assets/Textures/container.jpg",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -62,7 +62,7 @@
       },
       "ThirdPersonCamera": {
         "enabled": true,
-        "isMain": false,
+        "isMain": true,
         "distance": 10.000000,
         "speed": 2.500000
       }
@@ -78,7 +78,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/padoru.obj",
+        "mesh": "Assets/Meshes/padoru/padoru.mesh",
         "texture": "Assets/Textures/padoru.png",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -106,7 +106,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/floor.obj",
+        "mesh": "Assets/Meshes/floor/floor.mesh",
         "texture": "Assets/Textures/container.jpg",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
@@ -135,7 +135,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/cube.obj",
+        "mesh": "Assets/Meshes/cube/cube.mesh",
         "texture": "Assets/Textures/Blank.png",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true

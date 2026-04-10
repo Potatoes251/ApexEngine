@@ -151,6 +151,15 @@ void Object::Update(float deltaTime_s)
 	}
 }
 
+void Object::LateUpdate(float deltaTime_s)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnLateUpdate(deltaTime_s);
+	}
+}
+
 void Object::OnTriggerEnter(Physic::Collider* other)
 {
 	for (auto& comp : m_components)

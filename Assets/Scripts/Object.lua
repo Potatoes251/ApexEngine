@@ -30,4 +30,8 @@ function Object:GetTags()
     return GetTags_Internal(self)
 end
 
+function Object:Destroy()
+    return Destroy_Internal(self)
+end
+
 return Object

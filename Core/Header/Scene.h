@@ -35,9 +35,8 @@ namespace Apex::Rendering
 
 		Lighting::VisibleLights GetVisibleLights();
 
-		Apex::Data::Object* CreateObject();
-		const std::vector<std::unique_ptr<Apex::Data::Object>>& GetObjects() const;
-		void DestroyObject(Apex::Data::Object* obj);
+		Data::Object* CreateObject();
+		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
 
 		void MarkDirty();
 		void ClearDirty() { m_isDirty = false; }
@@ -45,10 +44,11 @@ namespace Apex::Rendering
 
 		void Start();
 		void Update(float deltaTime_s);
+		void LateUpdate(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
-		Apex::Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
+		Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
 		Camera* GetMainCamera() const { return m_mainCamera; }
 		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
@@ -60,6 +60,9 @@ namespace Apex::Rendering
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
+		void DestroyPendingObject();
+		void DestroyObject(Apex::Data::Object* obj);
+
 		Physic::PhysicSystem m_physics;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;

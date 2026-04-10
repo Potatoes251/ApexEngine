@@ -31,6 +31,7 @@ namespace Apex
         virtual void OnStart() {}
         virtual void OnDestroy() {}
         virtual void OnUpdate(float deltatime_s) {}
+        virtual void OnLateUpdate(float deltatime_s) {}
         virtual void OnFixedUpdate(float fixedDeltaTime_s) {}
         virtual void OnTriggerEnter(Physic::Collider* other) {}
         virtual void OnTriggerExit(Physic::Collider* other) {}

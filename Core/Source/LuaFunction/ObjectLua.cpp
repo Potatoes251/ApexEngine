@@ -10,6 +10,7 @@ void Apex::Data::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("AddTag_Internal", Apex::Data::Lua_AddTag);
     lua.RegisterFunction("HasTag_Internal", Apex::Data::Lua_HasTag);
     lua.RegisterFunction("GetTags_Internal", Apex::Data::Lua_GetTags);
+    lua.RegisterFunction("Destroy_Internal", Apex::Data::Lua_Destroy);
 }
 
 
@@ -66,4 +67,15 @@ int Apex::Data::Lua_GetTags(lua_State* L)
     }
 
     return 1;
+}
+
+int Apex::Data::Lua_Destroy(lua_State* L)
+{    
+    Object* obj = GetObject(L, 1);
+
+    if (!obj) return 0;
+
+    obj->Destroy();
+
+    return 0;
 }

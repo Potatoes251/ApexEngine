@@ -15,6 +15,7 @@ namespace Apex::Data
 	int Lua_AddTag(lua_State* L);
 	int Lua_HasTag(lua_State* L);
 	int Lua_GetTags(lua_State* L);
+	int Lua_Destroy(lua_State* L);
 	
 }
 

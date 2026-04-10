@@ -153,6 +153,17 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 		if (it->m_owner == &rigidbody)
 		{
 			m_scene->removeActor(*(it->m_actor));
+
+			it->m_actor->userData = nullptr;
+			physx::PxU32 nbShapes = it->m_actor->getNbShapes();
+			std::vector<physx::PxShape*> shapes(nbShapes);
+			it->m_actor->getShapes(shapes.data(), nbShapes);
+
+			for (auto* shape : shapes)
+			{
+				shape->userData = nullptr;
+			}
+
 			it->m_actor->release();
 			m_rigidBodies.erase(it);
 			return;
@@ -776,9 +787,12 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 	for (unsigned int i = 0; i < count; i++)
 	{
 		Collider* collider = static_cast<Collider*>(pairs[i].triggerShape->userData);
-		Object* owner = collider->GetOwner();
+		if (!collider) continue;
 
 		Collider* otherCollider = static_cast<Collider*>(pairs[i].otherShape->userData);
+		if (!otherCollider) continue;
+
+		Object* owner = collider->GetOwner();
 		Object* otherOwner = otherCollider->GetOwner();
 		
 		switch (pairs[i].status)

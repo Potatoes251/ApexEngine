@@ -29,6 +29,8 @@ namespace Apex::Rendering
 
 		std::unique_ptr<Component> Clone() const override { return std::make_unique<FirstPersonCamera>(*this); }
 
+		void OnLateUpdate(float /*deltatime_s*/) override;
+
 	private:
 		void UpdateVectors();
 		void UpdateMatrices() override;

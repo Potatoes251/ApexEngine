@@ -168,10 +168,10 @@ bool Apex::Application::InitScene()
 void Apex::Application::LoadScene()
 {
     Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
-        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
-ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
-ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj", true);
+        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
+        "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
+        "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube/cube.mesh", true);
     Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
@@ -232,7 +232,7 @@ void Apex::Application::Tick()
     m_deltaTime_s = m_window->GetDeltaTime();
     if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
-    Update();
+    m_scene->Update(m_deltaTime_s);
 
     m_accumulator_s += m_deltaTime_s;
 
@@ -241,6 +241,8 @@ void Apex::Application::Tick()
         m_scene->FixedUpdate(fixedUpdateTime_s);
         m_accumulator_s -= fixedUpdateTime_s;
     }
+
+    m_scene->LateUpdate(m_deltaTime_s);
 }
 
 void Apex::Application::UpdateAudioListener()
@@ -254,11 +256,6 @@ void Apex::Application::UpdateAudioListener()
             { front[0], front[1], front[2] }
         );
     }
-}
-
-void Apex::Application::Update()
-{
-    m_scene->Update(m_deltaTime_s);
 }
 
 void Apex::Application::Render(RenderPassInfo pass)

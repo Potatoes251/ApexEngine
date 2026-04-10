@@ -310,7 +310,6 @@ namespace Apex::Editor
 
             m_app->GetScene()->Start();
 
-            m_window->SetCursorCaptured(true);
             m_hierarchy->SetScene(m_app->GetScene());
         }
         // stop
@@ -321,8 +320,8 @@ namespace Apex::Editor
             m_hierarchy->SetScene(m_app->GetScene());
         }
 
-        if (newState != EditorState::Play)
-            m_window->SetCursorCaptured(false);
+        // capture cursor when in play uncapture it when not in play
+        m_window->SetCursorCaptured(newState == EditorState::Play);
 
         m_editorState = newState;
     }

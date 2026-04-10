@@ -16,15 +16,18 @@ namespace Apex::Rendering
 		Camera(const Camera&) = default;
 		Camera& operator=(const Camera&) = default;
 
-		void			 SetMainCamera(bool enabled) { m_isMain = enabled; }
-		void			 SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
-		LibMath::Matrix4 GetViewProj();
-		LibMath::Matrix4 GetProjection();
-		LibMath::Matrix4 GetViewMatrix();
-		LibMath::Vector3 GetPosition() const { return m_position; }
-		virtual LibMath::Vector3 GetFront() const = 0;
-		virtual LibMath::Vector3 GetRight() const = 0;
-		virtual LibMath::Vector3 GetUp() const = 0;
+		bool	IsMainCamera() const{ return m_isMain; }
+		void	SetMainCamera(bool enabled) { m_isMain = enabled; }
+		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
+
+		LibMath::Matrix4	GetViewProj();
+		LibMath::Matrix4	GetProjection();
+		LibMath::Matrix4	GetViewMatrix();
+		LibMath::Vector3	GetPosition() const { return m_position; }
+
+		virtual LibMath::Vector3	GetFront() const = 0;
+		virtual LibMath::Vector3	GetRight() const = 0;
+		virtual LibMath::Vector3	GetUp() const = 0;
 
 		void SetPosition(LibMath::Vector3 pos);
 

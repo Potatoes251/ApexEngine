@@ -7,7 +7,7 @@ local Input = require("Input")
 local Player = Object:New()
 
 function Player:New()
-    local instance = { cc = nil, cam = nil }
+    local instance = { cc = nil, cam = nil, coinCount = 0 }
     setmetatable(instance, { __index = self })
     return instance
 end
@@ -15,6 +15,7 @@ end
 function Player:Start()
     self.cc = CharacterController.Get(self)
     self.cam = Camera.Get(self)
+    self:AddTag("Player")
 end
 
 function Player:Update(dt)
@@ -42,9 +43,8 @@ end
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if (obj:HasTag("Coin")) then
-        print("Coin")
-    else
-        print("No Coin")
+        self.coinCount = self.coinCount + 1
+        obj:Destroy()
     end
 end
 
