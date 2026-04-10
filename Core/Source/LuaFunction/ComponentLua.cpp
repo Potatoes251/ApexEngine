@@ -27,21 +27,21 @@ void Apex::Comp::PushLuaObject(lua_State* L, Object* obj)
         return;
     }
 
+    lua_getglobal(L, "require");
+    lua_pushstring(L, "Object");
+    lua_pcall(L, 1, 1, 0);
+
+    // call Object:New()
+    lua_getfield(L, -1, "New");
+    lua_pushvalue(L, -2);
+    lua_pcall(L, 1, 1, 0);
+
+    // stack now: instance
     lua_pushlightuserdata(L, obj);
-    lua_gettable(L, LUA_REGISTRYINDEX);
+    lua_setfield(L, -2, "__object");
 
-    if (lua_isnil(L, -1))
-    {
-        lua_pop(L, 1);
-
-        lua_newtable(L);
-        luaL_getmetatable(L, "Object");
-        lua_setmetatable(L, -2);
-
-        lua_pushlightuserdata(L, obj);
-        lua_pushvalue(L, -2);
-        lua_settable(L, LUA_REGISTRYINDEX);
-    }
+    // remove Object table
+    lua_remove(L, -2);
 }
 
 int Apex::Comp::Lua_GetOwner(lua_State* L)

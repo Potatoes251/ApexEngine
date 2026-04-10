@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace Apex::Physic { class Collider; }
+
 namespace Apex::Scripting
 {
     class LuaManager
@@ -25,7 +27,9 @@ namespace Apex::Scripting
         void RegisterFunctions();
 
         int CreateScriptInstance(int scriptRef);
-        bool CallFunction(int instanceRef, const std::string& funcName, float dt = 0.f);
+        bool CallFunction(int instanceRef, const std::string& funcName);
+        bool CallFunction(int instanceRef, const std::string& funcName, float dt);
+        bool CallFunction(int instanceRef, const std::string& funcName, Apex::Physic::Collider* collider);
 
     private:
         lua_State* luaState;

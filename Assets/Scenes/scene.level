@@ -9,7 +9,7 @@
 ],
 "objects": [
   {
-    "id": 12,
+    "id": 15,
     "parent": null,
     "name": "Sphere",
     "position": [-0.000406,2.872014,0.000156],
@@ -62,14 +62,14 @@
       },
       "ThirdPersonCamera": {
         "enabled": true,
-        "isMain": true,
+        "isMain": false,
         "distance": 10.000000,
         "speed": 2.500000
       }
     }
   },
   {
-    "id": 13,
+    "id": 16,
     "parent": null,
     "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
@@ -97,7 +97,7 @@
     }
   },
   {
-    "id": 14,
+    "id": 17,
     "parent": null,
     "name": "Floor",
     "position": [-0.000116,5.897200,-0.000184],
@@ -122,6 +122,34 @@
         "type": "Convex",
         "isTrigger": false,
         "material": 0
+      }
+    }
+  },
+  {
+    "id": 18,
+    "parent": null,
+    "name": "Object6",
+    "position": [-4.000000,2.000000,-2.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.000000,2.036985,2.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/cube.obj",
+        "texture": "Assets/Textures/Blank.png",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [1.000000, 1.000000, 1.000000],
+        "isTrigger": true,
+        "material": null
       }
     }
   }

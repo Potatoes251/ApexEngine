@@ -107,7 +107,9 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 	bool found = false;
 	for (HitResult const& hit : hits)
 	{
-		if (hit.m_body != m_body && (!found || hit.m_distance < closest_out.m_distance))
+		if (hit.m_body != m_body 
+			&& !hit.m_collider->IsTrigger()
+			&& (!found || hit.m_distance < closest_out.m_distance))
 		{
 			closest_out = hit;
 			found = true;

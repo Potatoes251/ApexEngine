@@ -1,4 +1,5 @@
 local CharacterController = require("CharacterController")
+local Collider = require("Collider")
 local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
@@ -35,6 +36,15 @@ function Player:Update(dt)
 
     if (Input.IsKeyDown("Space")) then
         self.cc:Jump()
+    end
+end
+
+function Player:OnTriggerEnter(col)
+    local obj = col:GetOwner()
+    if (obj:HasTag("Coin")) then
+        print("Coin")
+    else
+        print("No Coin")
     end
 end
 
