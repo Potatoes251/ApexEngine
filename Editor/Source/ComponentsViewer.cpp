@@ -16,6 +16,7 @@
 
 #include "CharacterController.h"
 
+#include "Command/RemoveCompCommand.h"
 #include "Command/TransformCommand.h"
 #include "Command/AddCompCommand.h"
 #include "CommandManager.h"
@@ -191,7 +192,7 @@ void ComponentsViewer::Draw()
 
 		if (m_pendingDelete)
 		{
-			m_selectedObj->RemoveComponent(m_pendingDelete, &m_phys);
+			CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete, &m_phys));
 			m_pendingDelete = nullptr;
 		}
 	}
