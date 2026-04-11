@@ -182,7 +182,7 @@ void Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	OnChanged();
 }
 
-void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys)
+void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys)
 {
 	for (size_t i = 0; i < m_components.size(); i++)
 	{
@@ -190,8 +190,8 @@ void Object::RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem
 		{
 			auto* rb = dynamic_cast<Apex::Physic::RigidBodyComponent*>(m_components[i].get());
 
-			if (rb)
-				phys.RemoveActor(*rb);
+			if (rb && phys)
+				phys->RemoveActor(*rb);
 
 			m_components.erase(m_components.begin() + i);
 

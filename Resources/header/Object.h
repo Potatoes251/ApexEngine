@@ -114,7 +114,7 @@ namespace Apex::Data
 			return comps;
 		}
 
-		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem& phys);
+		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys = nullptr);
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 

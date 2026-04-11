@@ -5,7 +5,7 @@
 #include "Command/ICommand.h"
 #include "Command/BatchCommand.h"
 
-#include <stack>
+#include <deque>
 #include <memory>
 
 
@@ -23,7 +23,6 @@ namespace Apex::CtrlZ
 
 		void Execute(std::unique_ptr<ICommand> cmd);
 
-		// start a new batch
 		void StartBatch();
 		void EndBatch();
 
@@ -33,10 +32,12 @@ namespace Apex::CtrlZ
 	private:
 		CommandManager() = default;
 
+		static inline constexpr size_t MAX_SIZE = 100;
+
 		// for ctrl-Z
-		std::stack<std::unique_ptr<ICommand>> m_undoStack;
+		std::deque<std::unique_ptr<ICommand>> m_undoStack;
 		// for ctrl-Y
-		std::stack<std::unique_ptr<ICommand>> m_redoStack;
+		std::deque<std::unique_ptr<ICommand>> m_redoStack;
 
 		std::unique_ptr<BatchCommand> m_batch;
 

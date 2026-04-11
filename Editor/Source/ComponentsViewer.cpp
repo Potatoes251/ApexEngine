@@ -17,6 +17,7 @@
 #include "CharacterController.h"
 
 #include "Command/TransformCommand.h"
+#include "Command/AddCompCommand.h"
 #include "CommandManager.h"
 
 using namespace Apex::Editor;
@@ -50,14 +51,21 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
 			m_gui.MenuItem("Mesh"))
 		{
-			auto& comp = m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
-			comp.SetEnabled(true);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
+				[this](Object* obj)
+				{
+					return &obj->AddComponent<MeshRenderer>(m_resourceManager);
+				}));
 		}
 
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
 			m_gui.MenuItem("Rigidbody"))
 		{
-			m_selectedObj->AddComponent<RigidBodyComponent>(1.0f);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<RigidBodyComponent>(1.0f);
+				}));
 		}
 
 		RigidBodyComponent* rb = m_selectedObj->GetComponent<RigidBodyComponent>();
@@ -68,61 +76,102 @@ void ComponentsViewer::Draw()
 
 			if (meshRenderer && m_gui.MenuItem("Mesh Collider"))
 			{
-				m_selectedObj->AddComponent<MeshCollider>(m_resourceManager.Get<Mesh>(
-					m_selectedObj->GetComponent<MeshRenderer>()->GetMesh()->GetPath()),
-					MeshColliderType::Convex, false);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						Collider& comp = obj->AddComponent<MeshCollider>(
+							m_selectedObj->GetComponent<MeshRenderer>()->GetMesh(),
+							MeshColliderType::Convex, false);
 
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return &comp;
+					}));
 			}
-
 			else if (m_gui.MenuItem("Box Collider"))
 			{
-				m_selectedObj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
 
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return &comp;
+					}));
 			}
 
 			else if (m_gui.MenuItem("Capsule Collider"))
 			{
-				m_selectedObj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
-
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return &comp;
+					}));
 			}
 		}
 
 		if (m_gui.MenuItem("Lua Script"))
 		{
-			m_selectedObj->AddComponent<ScriptComponent>(m_luaManager);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					return &obj->AddComponent<ScriptComponent>(m_luaManager);
+				}));
 		}
 
 		if (m_gui.MenuItem("Directional Light"))
 		{
-			m_selectedObj->AddComponent<DirectionalLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<DirectionalLightComponent>();
+				}));
 		}
 
 		if (m_gui.MenuItem("Point Light"))
 		{
-			m_selectedObj->AddComponent<PointLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<PointLightComponent>();
+				}));
 		}
 
 		if (m_gui.MenuItem("Spot Light"))
 		{
-			m_selectedObj->AddComponent<SpotLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<SpotLightComponent>();
+				}));
 		}
 
 		if (m_gui.MenuItem("First Person Camera"))
 		{
-			m_selectedObj->AddComponent<FirstPersonCamera>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<FirstPersonCamera>();
+				}));
 		}
 
 		if (m_gui.MenuItem("Third Person Camera"))
 		{
-			m_selectedObj->AddComponent<ThirdPersonCamera>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<ThirdPersonCamera>();
+				}));
 		}
 
 		if (m_gui.MenuItem("Character Controller"))
 		{
-			m_selectedObj->AddComponent<Controller::CharacterController>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					return &obj->AddComponent<Controller::CharacterController>();
+				}));
 		}
 
 		m_gui.EndPopup();
@@ -142,7 +191,7 @@ void ComponentsViewer::Draw()
 
 		if (m_pendingDelete)
 		{
-			m_selectedObj->RemoveComponent(m_pendingDelete, m_phys);
+			m_selectedObj->RemoveComponent(m_pendingDelete, &m_phys);
 			m_pendingDelete = nullptr;
 		}
 	}
@@ -167,7 +216,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 	LibMath::Vector3 pos = oldTransform.getPosition();
 	LibMath::Vector3 scale = oldTransform.getScale();
 
-	bool externalChange = (obj != m_lastTransformObj);
+	//bool externalChange = (obj != m_lastTransformObj);
 	//if (externalChange)
 	{
 		m_cachedEuler = oldTransform.getEulerRotation() * (180.0f / g_Pi);
