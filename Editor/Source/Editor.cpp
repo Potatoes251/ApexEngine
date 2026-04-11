@@ -10,6 +10,7 @@
 
 #include "Rigidbody.h"
 
+#include "CommandManager.h"
 
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
@@ -18,6 +19,7 @@ using namespace Apex::Rendering;
 using namespace Apex::Serialization;
 using namespace Apex::Physic;
 using namespace Apex::Input;
+using namespace Apex::CtrlZ;
 
 namespace Apex::Editor 
 {
@@ -96,6 +98,15 @@ namespace Apex::Editor
 
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
+
+                if (key == Input::Key::Z && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Undo();
+                }
+                if (key == Input::Key::Y && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Redo();
+                }
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -215,6 +226,18 @@ namespace Apex::Editor
             m_componentsViewer->Draw();
 
         HandleEditorClosing();
+
+        bool editing = m_gui->IsAnyItemActive();
+        if (editing && !m_editingUI)
+        {
+            CommandManager::Get().StartBatch();
+        }
+        if (!editing && m_editingUI)
+        {
+            CommandManager::Get().EndBatch();
+        }
+        
+        m_editingUI = editing;
 
         m_gui->EndFrame();
 

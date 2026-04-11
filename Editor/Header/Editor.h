@@ -89,6 +89,7 @@ namespace Apex::Editor
 		EditorState	m_editorState = EditorState::Edit;
 
 		bool m_confirmClosePopup = false;
+		bool m_editingUI = false;
 	};
 }
 

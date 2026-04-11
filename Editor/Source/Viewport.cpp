@@ -3,6 +3,8 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
+#include "Command/TransformCommand.h"
+#include "CommandManager.h"
 #include "InputSystem.h"
 #include "Hierarchy.h"
 #include "Editor.h"
@@ -16,6 +18,7 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 using namespace Apex::Input;
+using namespace Apex::CtrlZ;
 
 Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
 	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
@@ -49,11 +52,13 @@ void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
 	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
 	PerformPicking({ (float)mouseX, (float)mouseY });
+	CommandManager::Get().StartBatch();
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
 	m_selectedAxis = Axis::None;
+	CommandManager::Get().EndBatch();
 }
 
 void Viewport::OnMouseMove(double mouseX, double mouseY)
@@ -83,17 +88,19 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		movementVec = delta;
 	}
 
+	LibMath::Transform oldTransform = m_selectedObject->GetLocalTransform();
+	LibMath::Transform newTransform;
+
 	switch (m_currentGizmoMode)
 	{
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setPosition(m_initialTransform.getPosition() + movementVec);
-		m_selectedObject->SetLocalTransform(transform);
+		newTransform.setPosition(m_initialTransform.getPosition() + movementVec);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_selectedObject, oldTransform, newTransform, false));
 		break;
 	}
-
 	case GizmoMode::Rotation:
 	{
 		assert(IsAxisSingle() && "Rotation are only allowed around a single axis");
@@ -108,9 +115,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setRotation(deltaAngle * m_initialTransform.getRotation());
-		m_selectedObject->SetLocalTransform(transform);
+		newTransform.setRotation(deltaAngle * m_initialTransform.getRotation());
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_selectedObject, oldTransform, newTransform, false));
 		break;
 	}
 	case GizmoMode::Scale:
@@ -124,9 +131,10 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		if (m_isScaleSnapping) Snap(scaleDelta);
 		LibMath::Vector3 newScale = m_initialTransform.getScale() + scaleDelta;
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setScale(newScale);
-		m_selectedObject->SetLocalTransform(transform);
+
+		newTransform.setScale(newScale);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_selectedObject, oldTransform, newTransform, false));
 		break;
 	}
 	default:

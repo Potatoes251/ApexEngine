@@ -16,6 +16,9 @@
 
 #include "CharacterController.h"
 
+#include "Command/TransformCommand.h"
+#include "CommandManager.h"
+
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
@@ -23,6 +26,7 @@ using namespace Apex::Resources;
 using namespace Apex::Physic;
 using namespace Apex::Scripting;
 using namespace Apex::Lighting;
+using namespace Apex::CtrlZ;
 
 ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
 	Apex::Resources::ResourceManager& resourceManager, 
@@ -154,32 +158,34 @@ void ComponentsViewer::Draw()
 
 void ComponentsViewer::DrawTransform(Object* obj)
 {
-	LibMath::Transform transform = obj->GetLocalTransform();
-
 	if (!m_gui.BeginTreeNode("Transform", TreeNodeFlags::SpanAvailWidth))
 		return;
 
-	LibMath::Vector3 pos = transform.getPosition();
-	LibMath::Vector3 scale = transform.getScale();
+	LibMath::Transform oldTransform = obj->GetLocalTransform();
+	LibMath::Transform newTransform = oldTransform;
+
+	LibMath::Vector3 pos = oldTransform.getPosition();
+	LibMath::Vector3 scale = oldTransform.getScale();
 
 	bool externalChange = (obj != m_lastTransformObj);
-	if (externalChange)
+	//if (externalChange)
 	{
-		m_cachedEuler = transform.getEulerRotation() * (180.0f / g_Pi);
+		m_cachedEuler = oldTransform.getEulerRotation() * (180.0f / g_Pi);
 		m_lastTransformObj = obj;
 	}
 
 	bool changed = false;
 	changed |= DrawVec3("Position", pos, -1000.0f, 1000.0f);
-	changed |= DrawVec3("Rotation", m_cachedEuler, 0.0f, 360.0f);
+	changed |= DrawVec3("Rotation", m_cachedEuler, -180.0f, 180.0f);
 	changed |= DrawVec3("Scale", scale, -1000.0f, 1000.0f);
 
 	if (changed)
 	{
-		transform.setPosition(pos);
-		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
-		transform.setScale(scale);
-		obj->SetLocalTransform(transform);
+		newTransform.setPosition(pos);
+		newTransform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
+		newTransform.setScale(scale);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(obj, oldTransform, newTransform, false));
 	}
 
 	m_gui.EndTreeNode();
