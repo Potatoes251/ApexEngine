@@ -9,7 +9,7 @@
 ],
 "objects": [
   {
-    "id": 12,
+    "id": 0,
     "parent": null,
     "name": "Sphere",
     "position": [0.000000,2.000000,0.000156],
@@ -68,17 +68,14 @@
       },
       "ScriptComponent": {
         "enabled": true,
-        "script": "Assets/Scripts/Exposed.lua",
+        "script": "Assets/Scripts/Player.lua",
         "vars": {
-          "speed": 7.169000,
-          "health": 5.221000,
-          "active": false
         }
       }
     }
   },
   {
-    "id": 13,
+    "id": 1,
     "parent": null,
     "name": "Padoru",
     "position": [0.000000,0.000000,0.000000],
@@ -106,7 +103,7 @@
     }
   },
   {
-    "id": 14,
+    "id": 2,
     "parent": null,
     "name": "Floor",
     "position": [0.000000,6.000000,0.000000],

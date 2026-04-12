@@ -55,7 +55,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
 				[this](Object* obj)
 				{
-					return &obj->AddComponent<MeshRenderer>(m_resourceManager);
+					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
+					return comp->GetId();
 				}));
 		}
 
@@ -65,7 +66,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<RigidBodyComponent>(1.0f);
+					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
+					return comp->GetId();
 				}));
 		}
 
@@ -85,7 +87,7 @@ void ComponentsViewer::Draw()
 							MeshColliderType::Convex, false);
 
 						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return &comp;
+						return comp.GetId();
 					}));
 			}
 			else if (m_gui.MenuItem("Box Collider"))
@@ -96,7 +98,7 @@ void ComponentsViewer::Draw()
 						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
 
 						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return &comp;
+						return comp.GetId();
 					}));
 			}
 
@@ -107,7 +109,7 @@ void ComponentsViewer::Draw()
 					{
 						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
 						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return &comp;
+						return comp.GetId();
 					}));
 			}
 		}
@@ -117,7 +119,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
-					return &obj->AddComponent<ScriptComponent>(m_luaManager);
+					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
+					return comp->GetId();
 				}));
 		}
 
@@ -126,7 +129,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<DirectionalLightComponent>();
+					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
+					return comp->GetId();
 				}));
 		}
 
@@ -135,7 +139,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<PointLightComponent>();
+					Component* comp = &obj->AddComponent<PointLightComponent>();
+					return comp->GetId();
 				}));
 		}
 
@@ -144,7 +149,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<SpotLightComponent>();
+					Component* comp = &obj->AddComponent<SpotLightComponent>();
+					return comp->GetId();
 				}));
 		}
 
@@ -153,7 +159,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<FirstPersonCamera>();
+					Component* comp = &obj->AddComponent<FirstPersonCamera>();
+					return comp->GetId();
 				}));
 		}
 
@@ -162,7 +169,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<ThirdPersonCamera>();
+					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
+					return comp->GetId();
 				}));
 		}
 
@@ -171,7 +179,8 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
-					return &obj->AddComponent<Controller::CharacterController>();
+					Component* comp = &obj->AddComponent<Controller::CharacterController>();
+					return comp->GetId();
 				}));
 		}
 

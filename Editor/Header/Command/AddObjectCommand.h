@@ -11,7 +11,7 @@ namespace Apex::Data { class Object; }
 namespace Apex::CtrlZ
 {
 	using createFunc = std::function<Apex::Data::Object* (void)>;
-	using destroyFunc = std::function<void (Apex::Data::Object*)>;
+	using destroyFunc = std::function<void (size_t)>;
 
 
 	class AddObjectCommand : public ICommand
@@ -24,9 +24,10 @@ namespace Apex::CtrlZ
 
 
 	private:
-		Data::Object*	m_target;
 		createFunc		m_createFunc;
 		destroyFunc		m_destroyFunc;
+		Data::Object*	m_target;
+		size_t			m_targetId;
 	};
 }
 

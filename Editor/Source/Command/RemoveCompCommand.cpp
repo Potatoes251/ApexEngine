@@ -8,19 +8,20 @@ using namespace Apex::CtrlZ;
 
 RemoveCompCommand::RemoveCompCommand(Data::Object* target, Component* comp, Physic::PhysicSystem* physic)
 {
+	m_savedComp = comp->Clone();
 	m_target = target;
-	m_comp = comp;
+	m_compId = comp->GetId();
 	m_physic = physic;
 }
 
 void RemoveCompCommand::Execute()
 {
-	m_savedComp = m_comp->Clone();
-	m_target->RemoveComponent(m_comp, m_physic);
+	m_target->RemoveComponent(m_compId, m_physic);
 }
 
 void Apex::CtrlZ::RemoveCompCommand::Undo()
 {
-	m_comp = m_savedComp.get();
-	m_target->AddComponentDirect(std::move(m_savedComp));
+	std::unique_ptr<Component> clone = m_savedComp->Clone();
+	size_t id = m_target->AddComponentDirect(std::move(clone));
+	m_target->SetCompId(id, m_compId);
 }

@@ -43,9 +43,9 @@ void Hierarchy::Draw()
                     SelectObject(obj);
                     return obj;
                 },
-                [this](Object* obj)
+                [this](size_t objId)
                 {
-                    DestroyObject(obj);
+                    DestroyObject(objId);
                 }));
         }
         m_gui.EndPopup();
@@ -148,9 +148,9 @@ void Apex::Editor::Hierarchy::HandlePending()
             {
                 m_scene->AddObject(std::move(obj));
             },
-            [this](Object* obj)
+            [this](size_t objId)
             {
-                DestroyObject(obj);
+                DestroyObject(objId);
             }));
         m_pendingDelete = nullptr;
     }
@@ -395,38 +395,17 @@ Object* Hierarchy::DuplicateObject(Object* original)
 {
     if (!original) return nullptr;
 
-    Object* clone = m_scene->CreateObject();
-    clone->SetName(original->GetName() + "_Copy");
-    clone->SetLocalTransform(original->GetLocalTransform());
-    clone->SetGlobalTransform(original->GetGlobalTransform());
+    std::unique_ptr<Object> clone = original->Clone();
+    size_t id = clone->NewId();
+    m_scene->AddObject(std::move(clone));
 
-    for (auto* comp : original->GetComponents())
-    {
-        std::unique_ptr<Component> newComp = comp->Clone();
-        clone->AddComponentDirect(std::move(newComp));
-    }
-
-    SceneNode* originalNode = original->GetSceneNodeRaw();
-    SceneNode* cloneNode = clone->GetSceneNodeRaw();
-    for (auto& child : originalNode->GetChildren())
-    {
-        Object* childClone = DuplicateObject(child->GetObject());
-        if (childClone)
-            cloneNode->AddChild(childClone->GetSceneNode());
-    }
-
-    return clone;
+    return m_scene->GetObjectWithId(id);
 }
 
-void Hierarchy::DestroyObject(Object* obj)
+void Hierarchy::DestroyObject(size_t objId)
 {
-    std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
-
-    if (node->GetParent())
-        node->GetParent()->DestroyChild(node);
-
-    m_scene->DestroyObject(obj);
-
-    if (m_selected == obj)
+    if (m_selected && m_selected->GetId() == objId)
         SelectObject(nullptr);
+
+    m_scene->DestroyObject(objId);
 }

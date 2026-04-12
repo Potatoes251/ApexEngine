@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 #include <functional>	
+#include <set>
 
 namespace Apex::Data
 {
@@ -19,15 +20,23 @@ namespace Apex::Data
 	{
 	public:
 		Object();
+		Object(size_t forcedId);
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other) = delete;
 		Object&	operator=(const Object& other) = delete;
-		~Object() = default;
+		~Object();
 
 		std::unique_ptr<Object>		Clone();
 
 		size_t			GetId() const { return m_id; }
-		void			SetId(size_t id) { m_id = id; }
+		void			SetId(size_t id);
+		void			SetCompId(size_t oldId, size_t newId);
+		void			SetCompId(Component* comp, size_t newId);
+		size_t			NewId();
+		// set id to INVALID_ID
+		void			RemoveId();
+		void			RemoveCompId(size_t oldId);
+		void			RemoveCompId(Component* comp);
 
 		std::string&	GetName() { return m_name; }
 		void			SetName(std::string name);
@@ -52,7 +61,7 @@ namespace Apex::Data
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
 
-		void AddComponentDirect(std::unique_ptr<Apex::Component> comp);
+		size_t AddComponentDirect(std::unique_ptr<Apex::Component> comp);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
@@ -64,11 +73,14 @@ namespace Apex::Data
 			T& ref = *component;
 			m_components.push_back(std::move(component));
 
-			if (m_components.size() == 1)
-				m_components.back()->SetId(0);
+			if (m_freeCompIds.empty())
+			{
+				m_components.back()->SetId(m_nextCompId++);
+			}
 			else
 			{
-				m_components.back()->SetId(m_components[m_components.size() - 2]->GetId() + 1);
+				m_components.back()->SetId(*m_freeCompIds.begin());
+				m_freeCompIds.erase(m_freeCompIds.begin());
 			}
 
 			OnChanged();
@@ -114,16 +126,26 @@ namespace Apex::Data
 			return comps;
 		}
 
+		Component* GetComponent(size_t id);
+
 		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys = nullptr);
+		void RemoveComponent(size_t compId, Apex::Physic::PhysicSystem* phys = nullptr);
 
 		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 		void OnChanged();
 		void SetOnChangedCallback(std::function<void()> callback);
 			
+		static constexpr size_t INVALID_ID = std::numeric_limits<size_t>::max();
+
 	private:
+		static inline size_t m_nextId = 0;
+		static inline std::set<size_t> m_freeIds;
+
+		std::set<size_t> m_freeCompIds;
+		size_t m_nextCompId = 0;
+
 		size_t			m_id;
-		static size_t	m_nextId;
 		std::string		m_name;
 
 		LibMath::Transform				m_localTransform;

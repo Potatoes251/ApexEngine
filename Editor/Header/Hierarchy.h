@@ -65,7 +65,7 @@ namespace Apex::Editor
 
 		Apex::Data::Object* DuplicateObject(Apex::Data::Object* original);
 
-		void DestroyObject(Apex::Data::Object* obj);
+		void DestroyObject(size_t objId);
 
 	private:
 		Apex::UserInterface::IGUI& m_gui;

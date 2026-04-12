@@ -12,7 +12,7 @@ namespace Apex::Data { class Object; }
 namespace Apex::CtrlZ
 {
 	using addObjectFunc = std::function<void (std::unique_ptr<Apex::Data::Object>)>;
-	using destroyFunc = std::function<void(Apex::Data::Object*)>;
+	using destroyFunc = std::function<void(size_t)>;
 
 
 	class RemoveObjectCommand : public ICommand
@@ -25,10 +25,11 @@ namespace Apex::CtrlZ
 
 
 	private:
-		std::unique_ptr<Data::Object> m_savedObject;
-		Data::Object*	m_target;
 		addObjectFunc	m_addObjectFunc;
 		destroyFunc		m_destroyFunc;
+		std::unique_ptr<Data::Object> m_savedObject;
+		Data::Object*	m_target;
+		size_t			m_targetId;
 	};
 }
 

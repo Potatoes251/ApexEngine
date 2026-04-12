@@ -12,7 +12,7 @@ namespace Apex { class Component; }
 
 namespace Apex::CtrlZ
 {
-	using createFunc = std::function<Apex::Component* (Apex::Data::Object*)>;
+	using createFunc = std::function<size_t (Apex::Data::Object*)>;
 
 
 	class AddCompCommand : public ICommand
@@ -28,8 +28,8 @@ namespace Apex::CtrlZ
 	private:
 		createFunc m_createFunc;
 		
-		Data::Object* m_target;
-		Component* m_comp = nullptr;
+		Data::Object*	m_target;
+		size_t			m_compId;
 
 		Physic::PhysicSystem* m_physic = nullptr;
 	};

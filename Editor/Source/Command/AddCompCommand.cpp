@@ -23,11 +23,11 @@ void AddCompCommand::Execute()
 {
 	if (m_target)
 	{
-		m_comp = m_createFunc(m_target);
+		m_compId = m_createFunc(m_target);
 	}
 }
 
 void AddCompCommand::Undo()
 {
-	m_target->RemoveComponent(m_comp, m_physic);
+	m_target->RemoveComponent(m_compId, m_physic);
 }
