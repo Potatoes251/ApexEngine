@@ -37,6 +37,7 @@ namespace Apex::Rendering
 
 		Object* CreateObject();
 		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
+		void AddObject(std::unique_ptr<Object> obj);
 		void DestroyObject(Object* obj);
 
 		void MarkDirty();

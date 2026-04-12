@@ -4,12 +4,18 @@
 #include "Scene.h"
 #include "Object.h"
 
+#include "Command/RemoveObjectCommand.h"
+#include "Command/AddObjectCommand.h"
+#include "CommandManager.h"
+
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Data;
 using namespace Apex::Windowing;
+using namespace Apex::CtrlZ;
 
 Hierarchy::Hierarchy(IGUI& gui,
     Scene* scene, ComponentsViewer* compViewer, IWindow& window)
@@ -30,8 +36,17 @@ void Hierarchy::Draw()
     {
         if (m_gui.MenuItem("Empty"))
         {
-            Object* obj = m_scene->CreateObject();
-            SelectObject(obj);
+            CommandManager::Get().Execute(std::make_unique<AddObjectCommand>(
+                [this]()
+                {
+                    Object* obj = m_scene->CreateObject();
+                    SelectObject(obj);
+                    return obj;
+                },
+                [this](Object* obj)
+                {
+                    DestroyObject(obj);
+                }));
         }
         m_gui.EndPopup();
     }
@@ -128,7 +143,15 @@ void Apex::Editor::Hierarchy::HandlePending()
 
     if (m_pendingDelete)
     {
-        DestroyObject(m_pendingDelete);
+        CommandManager::Get().Execute(std::make_unique<RemoveObjectCommand>(m_pendingDelete,
+            [this](std::unique_ptr<Object> obj)
+            {
+                m_scene->AddObject(std::move(obj));
+            },
+            [this](Object* obj)
+            {
+                DestroyObject(obj);
+            }));
         m_pendingDelete = nullptr;
     }
 

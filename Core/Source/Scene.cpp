@@ -104,6 +104,12 @@ namespace Apex::Rendering
 		return m_objects;
 	}
 
+	void Scene::AddObject(std::unique_ptr<Object> obj)
+	{
+		m_objects.push_back(std::move(obj));
+		MarkDirty();
+	}
+
 	void Scene::DestroyObject(Object* obj)
 	{
 		if (!obj)
