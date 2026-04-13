@@ -5,201 +5,33 @@
 #include <fstream>
 #include <filesystem>
 
+constexpr double ANIMATION_FPS = 30;
+
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
 // causes undefined behaviour and crashes.
-FbxManager* MeshImporter::s_manager = nullptr;
-std::mutex  MeshImporter::s_mutex;
 
-static void EnsureManager()
+void MeshImporter::EnsureManager()
 {
     // Called inside the locked region — safe to check/create once.
-    if (!MeshImporter::s_manager)
+    if (!s_manager)
     {
-        MeshImporter::s_manager = FbxManager::Create();
-        FbxIOSettings* ios = FbxIOSettings::Create(MeshImporter::s_manager, IOSROOT);
-        MeshImporter::s_manager->SetIOSettings(ios);
+        s_manager = FbxManager::Create();
+        FbxIOSettings* ios = FbxIOSettings::Create(s_manager, IOSROOT);
+        s_manager->SetIOSettings(ios);
     }
 }
 
-void MeshImporter::Import(std::string path, Mesh& mesh)
+bool MeshImporter::Import(std::string path, Mesh& mesh)
 {
-    if (ImportBin(path, mesh)) return;
     if (ImportFbx(path, mesh))
     {
-        ExportBin(path, mesh);
-        return;
+        return true;
     }
     // eventually load another way
-}
 
-bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
-{
-    std::filesystem::path binaryPath = path;
-    binaryPath.replace_extension(".mesh");
-    std::ifstream file(binaryPath, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        std::cout << "Failed to open file\n";
-        return false;
-    }
-
-    file.seekg(0, std::ios::end);
-    std::streamsize size = file.tellg();
-
-    if (size == 0)
-    {
-        std::cout << "File is empty\n";
-        return false;
-    }
-
-    file.seekg(0, std::ios::beg);
-
-    MeshHeader header;
-    file.read((char*)&header, sizeof(header));
-
-    if constexpr (IsBigEndian())
-    {
-        header.m_magic = _byteswap_ulong(header.m_magic);
-        header.m_version = _byteswap_ulong(header.m_version);
-    }
-
-    if (header.m_magic != 0x4D455348)
-    {
-        std::cout << "Invalid file format\n";
-        return false;
-    }
-    if (header.m_version != CURRENT_VERSION)
-    {
-        std::cout << "File needs to be updated\n";
-        return false;
-    }
-    uint32_t vertexCount;
-    uint32_t indexCount;
-
-    if (!file.read((char*)&vertexCount, sizeof(vertexCount)))
-        return false;
-
-    if (!file.read((char*)&indexCount, sizeof(indexCount)))
-        return false;
-
-    if constexpr (IsBigEndian())
-    {
-        vertexCount = _byteswap_ulong(vertexCount);
-        indexCount = _byteswap_ulong(indexCount);
-    }
-
-    std::vector<Apex::Rendering::Vertex> vertices(vertexCount);
-
-    if (!file.read((char*)vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex)))
-        return false;
-
-    std::vector<uint32_t> indices(indexCount);
-
-    if (!file.read((char*)indices.data(), indexCount * sizeof(uint32_t)))
-        return false;
-
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
-    {
-        uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
-
-        for (size_t i = 0; i < indices.size(); i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        // only works if vertices uses only 4 bytes types
-        data = reinterpret_cast<uint32_t*>(vertices.data());
-        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-    }
-
-    mesh.m_vertices = vertices;
-    mesh.m_indices = indices;
-
-    return true;
-}
-
-bool MeshImporter::ExportBin(std::string path, Mesh& mesh)
-{
-    std::filesystem::path binaryPath = path;
-    binaryPath.replace_extension(".mesh");
-
-    std::ofstream file(binaryPath, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        std::cout << "Failed to open file for writing\n";
-        return false;
-    }
-
-    // Header
-    MeshHeader header;
-    header.m_magic = 0x4D455348; // "MESH"
-    header.m_version = CURRENT_VERSION;
-
-    if constexpr (IsBigEndian())
-    {
-        header.m_magic = _byteswap_ulong(header.m_magic);
-        header.m_version = _byteswap_ulong(header.m_version);
-    }
-
-    file.write((char*)&header, sizeof(header));
-
-    // Counts
-    uint32_t vertexCount = mesh.m_vertices.size();
-    uint32_t indexCount = mesh.m_indices.size();
-
-    if constexpr (IsBigEndian())
-    {
-        vertexCount = _byteswap_ulong(vertexCount);
-        indexCount = _byteswap_ulong(indexCount);
-    }
-
-    file.write((char*)&vertexCount, sizeof(vertexCount));
-    file.write((char*)&indexCount, sizeof(indexCount));
-
-    // Data
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
-    {
-        std::vector<Apex::Rendering::Vertex> vertices = mesh.m_vertices;
-        std::vector<uint32_t> indices = mesh.m_indices;
-
-        // only works if vertices uses only 4 bytes types
-        uint32_t* data = reinterpret_cast<uint32_t*>(vertices.data());
-        size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        file.write((char*)data, vertexCount * sizeof(Apex::Rendering::Vertex));
-
-        data = reinterpret_cast<uint32_t*>(indices.data());
-
-        for (size_t i = 0; i < indices.size(); i++)
-        {
-            data[i] = _byteswap_ulong(data[i]);
-        }
-
-        file.write((char*)data, indexCount * sizeof(uint32_t));
-    }
-    else
-    {
-        file.write((char*)mesh.m_vertices.data(), vertexCount * sizeof(Apex::Rendering::Vertex));
-        file.write((char*)mesh.m_indices.data(), indexCount * sizeof(uint32_t));
-    }
-
-    return true;
+    return false;
 }
 
 bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
@@ -250,6 +82,10 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
         ProcessNode(root->GetChild(i), mesh);
     }
 
+    ExtractAnimations(scene, mesh);
+
+    m_ctrlPointToVertices.clear();
+
     scene->Destroy();
 
     return true;
@@ -263,7 +99,10 @@ void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)
     FbxMesh* fbxMesh = node->GetMesh();
 
     if (fbxMesh)
+    {
         ProcessMesh(fbxMesh, mesh);
+        ExtractBones(fbxMesh, mesh);
+    }
 
     for (int i = 0; i < node->GetChildCount(); ++i)
     {
@@ -309,8 +148,237 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
                 vertex.m_uv = { static_cast<float>(uv[0]), static_cast<float>(uv[1]) };
             }
 
+            int vertexIndex = static_cast<int>(mesh.m_vertices.size());
+
             mesh.m_vertices.push_back(vertex);
             mesh.m_indices.push_back(vertexCounter++);
+
+            m_ctrlPointToVertices[controlPointIndex].push_back(vertexIndex);
         }
     }
+}
+
+void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
+{
+    int skinCount = fbxMesh->GetDeformerCount(FbxDeformer::eSkin);
+
+    for (int i = 0; i < skinCount; i++)
+    {
+        FbxSkin* skin = static_cast<FbxSkin*>(fbxMesh->GetDeformer(i, FbxDeformer::eSkin));
+
+        int clusterCount = skin->GetClusterCount();
+
+        for (int j = 0; j < clusterCount; j++)
+        {
+            FbxCluster* cluster = skin->GetCluster(j);
+            FbxNode*    boneNode = cluster->GetLink();
+
+            if (!boneNode) continue;
+
+            std::string boneName = boneNode->GetName();
+
+            int boneIndex = 0;
+
+            if (mesh.m_boneMap.find(boneName) == mesh.m_boneMap.end())
+            {
+                boneIndex = static_cast<int>(mesh.m_bones.size());
+
+                mesh.m_boneMap[boneName] = boneIndex;;
+
+                BoneInfo boneInfo;
+
+                //offset matrix
+                boneInfo.m_parentIndex = -1;
+
+                FbxAMatrix meshTransform;
+                FbxAMatrix boneTransform;
+
+                cluster->GetTransformMatrix(meshTransform);          // mesh global at bind pose
+                cluster->GetTransformLinkMatrix(boneTransform);      // bone global at bind pose
+
+                FbxAMatrix geom;
+                FbxNode* meshNode = fbxMesh->GetNode();
+                geom.SetT(meshNode->GetGeometricTranslation(FbxNode::eSourcePivot));
+                geom.SetR(meshNode->GetGeometricRotation(FbxNode::eSourcePivot));
+                geom.SetS(meshNode->GetGeometricScaling(FbxNode::eSourcePivot));
+
+                FbxAMatrix m_offsetMatrix = boneTransform.Inverse() * meshTransform * geom;
+
+                boneInfo.m_offsetMatrix = ConvertFBXMatrix(m_offsetMatrix);
+
+                if (boneNode->GetParent()) //check if node has a parent
+                {
+                    std::string parentName = boneNode->GetParent()->GetName();
+
+                    auto it = mesh.m_boneMap.find(parentName);
+                    if (it != mesh.m_boneMap.end())
+                    {
+                        boneInfo.m_parentIndex = it->second;
+                    }
+                }
+                mesh.m_bones.push_back(boneInfo);
+            }
+            else
+            {
+                boneIndex = mesh.m_boneMap[boneName];
+            }
+
+            int*    controlPointIndices = cluster->GetControlPointIndices();
+            double* weights             = cluster->GetControlPointWeights();
+            int     indexCount          = cluster->GetControlPointIndicesCount();
+
+            for (int k = 0; k < indexCount; k++)
+            {
+                int     ctrlIndex = controlPointIndices[k];
+                double  weight = weights[k];
+
+                auto it = m_ctrlPointToVertices.find(ctrlIndex);
+
+                if (it != m_ctrlPointToVertices.end())
+                {
+                    for (int vertexID : it->second)
+                    {
+                        AddBoneWeight(mesh, vertexID, boneIndex, static_cast<float>(weight));
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MeshImporter::AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight)
+{
+    Apex::Rendering::Vertex& vertex = mesh.m_vertices[vertexID];
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (vertex.m_weights[i] == 0.0f)
+        {
+            vertex.m_boneIDs[i] = boneID;
+            vertex.m_weights[i] = weight;
+            return;
+        }
+    }
+}
+
+void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
+{
+
+    Matrix4 scaleMatrix = Matrix4::createScale(Vector3(100.f));
+
+    int animStackCount = scene->GetSrcObjectCount<FbxAnimStack>();
+    if (animStackCount == 0) return;
+
+    FbxNode* root = scene->GetRootNode();
+    if (!root) return;
+
+    mesh.m_animations.clear();
+    mesh.m_animations.resize(animStackCount);
+
+    for (int animIndex = 0; animIndex < animStackCount; ++animIndex)
+    {
+        FbxAnimStack* stack = scene->GetSrcObject<FbxAnimStack>(animIndex);
+        scene->SetCurrentAnimationStack(stack);
+
+        FbxTakeInfo* takeInfo = scene->GetTakeInfo(stack->GetName());
+        if (!takeInfo) continue;
+
+        FbxTime start = takeInfo->mLocalTimeSpan.GetStart();
+        FbxTime end = takeInfo->mLocalTimeSpan.GetStop();
+
+        double duration = end.GetSecondDouble() - start.GetSecondDouble();
+        int frameCount = static_cast<int>(duration * ANIMATION_FPS);
+
+        if (frameCount <= 0) continue;
+
+        Animation& anim = mesh.m_animations[animIndex];
+        anim.m_name = stack->GetName();
+
+        int boneCount = static_cast<int>(mesh.m_bones.size());
+        anim.m_boneAnimations.resize(boneCount);
+
+        for (int bone = 0; bone < boneCount; ++bone)
+        {
+            const std::string& boneName = GetBoneNameFromIndex(mesh, bone);
+
+            auto& boneAnim = anim.m_boneAnimations[bone];
+            boneAnim.m_frames.resize(frameCount);
+
+            FbxNode* node = root->FindChild(boneName.c_str(), true);
+            if (!node)
+            {
+                for (int frame = 0; frame < frameCount; ++frame)
+                {
+                    KeyFrame& key = boneAnim.m_frames[frame];
+                    key.m_position = Vector3(0.f, 0.f, 0.f);
+                    key.m_rotation = Quaternion::identity();
+                    key.m_scale = Vector3(1.f, 1.f, 1.f);
+                }
+                continue;
+            }
+
+            for (int frame = 0; frame < frameCount; ++frame)
+            {
+                FbxTime time;
+                time.SetSecondDouble(start.GetSecondDouble() + frame / ANIMATION_FPS);
+
+                FbxAMatrix localTransform = node->EvaluateLocalTransform(time);
+
+                FbxVector4 t = localTransform.GetT();
+                FbxQuaternion r = localTransform.GetQ();
+                FbxVector4 s = localTransform.GetS();
+
+                KeyFrame& key = boneAnim.m_frames[frame];
+
+                key.m_position = Vector3((float)t[0], (float)t[1], (float)t[2]);
+
+                key.m_rotation = Quaternion(
+                    (float)r[0],
+                    (float)r[1],
+                    (float)r[2],
+                    (float)r[3]);
+
+                key.m_scale = Vector3((float)s[0], (float)s[1], (float)s[2]);
+
+                FbxAMatrix globalTransform = node->EvaluateGlobalTransform(time);
+
+                key.m_matrix = scaleMatrix * ConvertFBXMatrix(globalTransform);
+            }
+        }
+    }
+}
+
+const std::string& MeshImporter::GetBoneNameFromIndex(const Mesh& mesh, int index)
+{
+    for (const auto& [name, i] : mesh.m_boneMap)
+    {
+        if (i == index) return name;
+    }
+
+    static std::string empty = "";
+    return empty;
+}
+
+FbxAMatrix MeshImporter::GetGeometryTransform(FbxNode* node)
+{
+    FbxVector4 t = node->GetGeometricTranslation(FbxNode::eSourcePivot);
+    FbxVector4 r = node->GetGeometricRotation(FbxNode::eSourcePivot);
+    FbxVector4 s = node->GetGeometricScaling(FbxNode::eSourcePivot);
+
+    return FbxAMatrix(t, r, s);
+}
+
+Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
+{
+    Matrix4 result;
+
+    for (int row = 0; row < 4; row++)
+    {
+        for (int col = 0; col < 4; col++)
+        {
+            result[row][col] = static_cast<float>(mat.Get(row, col));
+        }
+    }
+
+    return result;
 }

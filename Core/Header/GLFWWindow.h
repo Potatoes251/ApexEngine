@@ -42,12 +42,9 @@ namespace Apex::Windowing
 		void	SetWindowTitle(const std::string& title) override;
 
 		// Input
-		bool			IsKeyPressed(Key key) const override;
-		bool			IsMousButtonPressed(MouseButton key) const override;
-		MousePosition	GetMousePosition() const override;
-		void			SetCursorCaptured(bool captured) override;
-		void			SetCrosshairCursor() override;
-		void			ResetCursor() override;
+		void	SetCursorCaptured(bool captured) override;
+		void	SetCrosshairCursor() override;
+		void	ResetCursor() override;
 
 
 		// Callbacks
@@ -101,8 +98,8 @@ namespace Apex::Windowing
 		void		SetCloseCallback(CloseCallback callback);
 		void		SetShouldClose(bool close);
 
-		static Key TranslateKey(int glfwKey);
-		static MouseButton TranslateMouseButton(int glfwButton);
+		static Input::Key TranslateKey(int glfwKey);
+		static Input::MouseButton TranslateMouseButton(int glfwButton);
 
 	};
 } // namespace Apex::Windowing

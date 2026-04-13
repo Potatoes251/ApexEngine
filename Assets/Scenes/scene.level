@@ -12,7 +12,7 @@
     "id": 12,
     "parent": null,
     "name": "Sphere",
-    "position": [0.000000,3.000000,0.000000],
+    "position": [0.000000,2.000000,0.000156],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
@@ -25,15 +25,8 @@
       },
       "RigidBody": {
         "enabled": true,
-        "type": "Dynamic",
+        "type": "Kinematic",
         "mass": 1.000000
-      },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/sphere.obj",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": 0
       },
       "SpotLight": {
         "enabled": true,
@@ -54,6 +47,33 @@
         "intensity": 10.000000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "halfHeight": 0.500000,
+        "radius": 0.200000,
+        "isTrigger": false,
+        "material": null
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 5.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 10.000000,
+        "speed": 2.500000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Exposed.lua",
+        "vars": {
+          "speed": 7.169000,
+          "health": 5.221000,
+          "active": false
+        }
       }
     }
   },
@@ -89,7 +109,7 @@
     "id": 14,
     "parent": null,
     "name": "Floor",
-    "position": [0.000000,5.000000,0.000000],
+    "position": [0.000000,6.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {

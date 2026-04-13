@@ -29,6 +29,7 @@ namespace Apex::Serialization
 
         LibMath::Vector3 ParseVector3();
         LibMath::Quaternion ParseQuaternion();
+        char PeekChar();
 
         bool Match(const std::string& str);
         bool Peek(char c);

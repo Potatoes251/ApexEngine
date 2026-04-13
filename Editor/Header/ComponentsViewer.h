@@ -30,8 +30,11 @@ namespace Apex::Editor
 
 		void Draw();
 
+		void DrawTransform(Object* obj);
 		void DrawComponent(Apex::Component* comp);
 		bool DrawTreeComp(Apex::Component* obj);
+
+		bool DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max);
 
 		void HandleSelection(Apex::Component* comp);
 
@@ -58,6 +61,10 @@ namespace Apex::Editor
 		Apex::Component* m_pendingDelete = nullptr;
 
 		bool m_changed = false;
+
+		LibMath::Vector3 m_cachedEuler;
+		Object* m_lastTransformObj = nullptr;
+		LibMath::Vector3 m_lastPosition;
 	};
 }
 

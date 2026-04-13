@@ -47,6 +47,8 @@ namespace Apex::Editor
 
 		void				Draw();
 
+		bool				IsFocus() const { return m_isFocus; }
+
 	private:
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
@@ -102,6 +104,7 @@ namespace Apex::Editor
 		float	m_rotateSnap = 2.f;
 		float	m_scaleSnap = 1.f;
 
+		bool	m_isFocus = false;
 		bool	m_localGizmo = true;
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;

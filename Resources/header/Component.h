@@ -5,8 +5,10 @@
 
 #include <ostream>
 #include <vector>
+#include <variant>
 
 namespace Apex::Data { class Object; }
+namespace Apex::Physic { class Collider; }
 
 namespace Apex
 {
@@ -14,8 +16,19 @@ namespace Apex
     {
         std::string name;
         enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Script } type;
-        void* data;
+        void* data = nullptr;
+        std::variant<float, int, bool, std::string> value;
         std::vector<std::string> enumNames;
+
+        ExposedVar() = default;
+
+        ExposedVar(std::string name, Type type, void* data)
+            : name(std::move(name)), type(type), data(data) {
+        }
+
+        ExposedVar(std::string name, Type type, void* data, std::vector<std::string> enumNames)
+            : name(std::move(name)), type(type), data(data), enumNames(std::move(enumNames)) {
+        }
     };  
 
     class Component
@@ -24,16 +37,19 @@ namespace Apex
         Component() = default;
         virtual ~Component() = default;
 
-        Component(const Component&) = delete;
-        Component& operator=(const Component&) = delete;
+        Component(const Component&) = default;
+        Component& operator=(const Component&) = default;
 
         virtual void OnStart() {}
         virtual void OnDestroy() {}
-        virtual void OnUpdate(float deltaTime) {}
-        virtual void OnFixedUpdate(float fixedDeltaTime) {}
+        virtual void OnUpdate(float deltatime_s) {}
+        virtual void OnFixedUpdate(float fixedDeltaTime_s) {}
+        virtual void OnTriggerEnter(Physic::Collider* other) {}
+        virtual void OnTriggerExit(Physic::Collider* other) {}
+
         virtual void Serialize(std::ostream& out) const = 0;
 
-        virtual std::unique_ptr<Component> Clone() const = 0;
+        virtual std::unique_ptr<Component> Clone() = 0;
 
         virtual const char* GetTypeName() const = 0;
         virtual std::vector<ExposedVar> GetExposedVariables() = 0;
@@ -48,8 +64,8 @@ namespace Apex
 
     private:
         friend class Apex::Data::Object;
-
         Apex::Data::Object* m_owner = nullptr;
+
         bool m_enabled = true;
 
         size_t m_id = SIZE_MAX;

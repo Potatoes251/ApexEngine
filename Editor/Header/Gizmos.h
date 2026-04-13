@@ -52,13 +52,11 @@ namespace Apex::Editor
 		void CreateCube();
 		void CreateCone();
 		void CreateCylinder();
-		void CreateCircle();
 		void CreateThorus();
 
 		Mesh m_cube;
 		Mesh m_cone;
 		Mesh m_cylinder;
-		Mesh m_circle;
 		Mesh m_thorus;
 		
 		Resources::ResourceHandle<Shader> m_shader;

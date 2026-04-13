@@ -13,16 +13,22 @@ RigidBodyComponent::RigidBodyComponent(RigidBodyComponent const& other)
 {
 	m_mass = other.m_mass;
 	m_bodyType = other.m_bodyType;
+	m_lockRotationX = other.m_lockRotationX;
+	m_lockRotationY = other.m_lockRotationY;
+	m_lockRotationZ = other.m_lockRotationZ;
 }
 
 RigidBodyComponent& RigidBodyComponent::operator=(RigidBodyComponent const& other)
 {
 	m_mass = other.m_mass;
 	m_bodyType = other.m_bodyType;
+	m_lockRotationX = other.m_lockRotationX;
+	m_lockRotationY = other.m_lockRotationY;
+	m_lockRotationZ = other.m_lockRotationZ;
 	return *this;
 }
 
-std::unique_ptr<Apex::Component> RigidBodyComponent::Clone() const
+std::unique_ptr<Apex::Component> RigidBodyComponent::Clone()
 {
 	auto clone = std::make_unique<RigidBodyComponent>(*this);
 	return clone;
@@ -33,7 +39,10 @@ std::vector<ExposedVar> RigidBodyComponent::GetExposedVariables()
 	return 
 	{
 		{ "BodyType", ExposedVar::Enum, &m_bodyType, { "Static", "Dynamic", "Kinematic" } },
-		{ "Mass", ExposedVar::Float, &m_mass }
+		{ "Mass", ExposedVar::Float, &m_mass },
+		{ "Lock Rotation X", ExposedVar::Bool, &m_lockRotationX },
+		{ "Lock Rotation Y", ExposedVar::Bool, &m_lockRotationY },
+		{ "Lock Rotation Z", ExposedVar::Bool, &m_lockRotationZ }
 	};
 }
 

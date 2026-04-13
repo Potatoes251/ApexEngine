@@ -12,8 +12,8 @@
 
 #include "Window.h"
 #include "RHI.h"
-#include "FirstPersonCamera.h"
 #include "Audio.h"
+#include "Camera.h"
 
 #include "ResourceManager.h"
 #include "Mesh.h"
@@ -48,6 +48,7 @@ using namespace Apex::UserInterface;
 using namespace Apex::Physic;
 using namespace Apex::Serialization;
 using namespace Apex::Lighting;
+using namespace Apex::Input;
 
 namespace Apex
 {
@@ -59,7 +60,6 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
     if (!InitWindow(window)
     || !InitResourceManager()  
-    || !InitCamera()
     || !InitRHI()  
     || !InitLighting()
     || !InitRendering()
@@ -78,13 +78,6 @@ bool Apex::Application::InitResourceManager()
     return true;
 }
 
-bool Apex::Application::InitCamera()
-{
-    m_camera = std::make_unique<FirstPersonCamera>();
-    m_camera->SetProjectionMatrix(m_window->GetAspectRatio());
-    return true;
-}
-
 bool Apex::Application::InitWindow(IWindow* window)
 {
     m_window = window;
@@ -92,23 +85,13 @@ bool Apex::Application::InitWindow(IWindow* window)
     if (!m_window)
         return false;
 
-    m_window->SetKeyCallback([&](Key key, KeyAction action)
+    m_window->SetKeyCallback([&](Key key, bool down)
         {
-            if (key == Key::Escape && action == KeyAction::Press)
+            if (key == Key::Escape && down)
                 m_window->Close();
 
-            if (key == Key::P && action == KeyAction::Press)
+            if (key == Key::P && down)
                 m_scene->Save("Assets/Scenes/scene.level");
-        });
-
-    m_window->SetMouseMoveCallback([&](double dx, double dy)
-        {
-            m_camera->ProcessMouse(dx, dy);
-        });
-
-    m_window->SetScrollCallback([&](double, double yoff)
-        {
-            m_camera->ProcessScroll(yoff);
         });
 
     return true;
@@ -197,7 +180,7 @@ ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
 
     m_scene->SetSkybox(sk);
     
-    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic());
+    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic(), *m_luaManager);
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;
@@ -251,7 +234,6 @@ void Apex::Application::Tick()
     m_deltaTime_s = m_window->GetDeltaTime();
     if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
-    ProcessInput();
     Update();
 
     m_accumulator_s += m_deltaTime_s;
@@ -263,25 +245,12 @@ void Apex::Application::Tick()
     }
 }
 
-void Apex::Application::ProcessInput()
-{
-    m_camera->ProcessKeyboard(
-        m_window->IsKeyPressed(Key::W),
-        m_window->IsKeyPressed(Key::S),
-        m_window->IsKeyPressed(Key::A),
-        m_window->IsKeyPressed(Key::D),
-        m_window->IsKeyPressed(Key::E),
-        m_window->IsKeyPressed(Key::Q),
-        m_deltaTime_s
-    );
-}
-
 void Apex::Application::UpdateAudioListener()
 {
     if (m_audio)
     {
-        LibMath::Vector3 pos = m_camera->GetPosition();
-        LibMath::Vector3 front = m_camera->GetFront();
+        LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
+        LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
         m_audio->SetListenerPosition(
             { pos[0],   pos[1],   pos[2] },
             { front[0], front[1], front[2] }
@@ -294,21 +263,8 @@ void Apex::Application::Update()
     m_scene->Update(m_deltaTime_s);
 }
 
-void Apex::Application::Render(Camera* cam)
-{
-    if (!cam) cam = m_camera.get();
-
-    RenderPassInfo pass;
-    pass.m_aspectRatio = m_window->GetAspectRatio();
-    pass.m_camera = cam;
-
-    Render(pass);
-}
-
 void Apex::Application::Render(RenderPassInfo pass)
 {
-    assert(pass.m_camera && "Application::Render(RenderPassInfo) needs to have a camera set in RenderPassInfo to be able to render the scene");
-
     m_rhi->Clear();
 
     VisibleLights visibleLights = m_scene->GetVisibleLights();

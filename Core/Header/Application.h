@@ -10,7 +10,6 @@ namespace Apex::Rendering
 {
     class IRHI;
     class Scene;
-    class FirstPersonCamera;
 }
 namespace Apex::Windowing
 {
@@ -31,6 +30,10 @@ namespace Apex::UserInterface
     class IGUI;
 }
 
+#include "Animator.h"
+
+#include <memory>
+#include <filesystem>
 namespace Apex::Scripting
 {
     class LuaManager;
@@ -56,10 +59,8 @@ namespace Apex
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
         void LoadScene();
-        void ProcessInput();
-        // default rendering pass
-        void Render(Rendering::Camera* cam);
-        void Render(Rendering::RenderPassInfo pass);
+
+        void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -73,7 +74,6 @@ namespace Apex
     private:
         bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
-        bool InitCamera();
         bool InitRHI();
         bool InitRendering();
         bool InitAudio();
@@ -81,14 +81,16 @@ namespace Apex
         bool InitLighting();
         bool InitLua();
         bool InitScene();
-        
+
         void UpdateAudioListener();
         void Update();
 
-    private:
         bool m_running = true;
+        float m_totalTime = 0.0f;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
+
+        const char* m_argv0;
 
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
@@ -99,7 +101,6 @@ namespace Apex
         std::unique_ptr<UserInterface::UIManager> m_uiManager;
 
         Windowing::IWindow* m_window = nullptr;
-        std::unique_ptr<Rendering::FirstPersonCamera> m_camera;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         Core::ThreadPool m_threadPool;

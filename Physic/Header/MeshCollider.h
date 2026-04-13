@@ -23,7 +23,7 @@ namespace Apex::Physic
 
 		~MeshCollider() = default;
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<MeshCollider>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<MeshCollider>(*this); }
 
 		ColliderType GetType() const override { return ColliderType::Mesh; }
 		MeshColliderType GetMeshColliderType() const { return m_type; }
