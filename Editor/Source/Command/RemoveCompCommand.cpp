@@ -3,25 +3,29 @@
 #include "Object.h"
 #include "Component.h"
 #include "Physic.h"
+#include "Scene.h"
 
 using namespace Apex::CtrlZ;
 
-RemoveCompCommand::RemoveCompCommand(Data::Object* target, Component* comp, Physic::PhysicSystem* physic)
+RemoveCompCommand::RemoveCompCommand(Rendering::Scene* scene, Data::Object* target, Component* comp, Physic::PhysicSystem* physic)
 {
+	m_scene = scene;
 	m_savedComp = comp->Clone();
-	m_target = target;
+	m_targetId = target->GetId();
 	m_compId = comp->GetId();
 	m_physic = physic;
 }
 
 void RemoveCompCommand::Execute()
 {
-	m_target->RemoveComponent(m_compId, m_physic);
+	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
+	target->RemoveComponent(m_compId, m_physic);
 }
 
-void Apex::CtrlZ::RemoveCompCommand::Undo()
+void RemoveCompCommand::Undo()
 {
+	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
 	std::unique_ptr<Component> clone = m_savedComp->Clone();
-	size_t id = m_target->AddComponentDirect(std::move(clone));
-	m_target->SetCompId(id, m_compId);
+	size_t id = target->AddComponentDirect(std::move(clone));
+	target->SetCompId(id, m_compId);
 }

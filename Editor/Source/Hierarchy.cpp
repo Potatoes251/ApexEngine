@@ -364,7 +364,7 @@ void Hierarchy::ApplyPendingOp()
     {
         if (m_pendingTarget)
             m_pendingReparent->SetParent(m_pendingTarget);
-        else
+        else if (m_pendingReparent && m_pendingReparent->GetParent())
             m_pendingReparent->SetParent(nullptr);
     }
 

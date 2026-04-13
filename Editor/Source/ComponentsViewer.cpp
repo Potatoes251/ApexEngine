@@ -52,7 +52,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
 			m_gui.MenuItem("Mesh"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj, 
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
@@ -63,7 +63,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
 			m_gui.MenuItem("Rigidbody"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
@@ -79,7 +79,7 @@ void ComponentsViewer::Draw()
 
 			if (meshRenderer && m_gui.MenuItem("Mesh Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj, &m_phys,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<MeshCollider>(
@@ -92,7 +92,7 @@ void ComponentsViewer::Draw()
 			}
 			else if (m_gui.MenuItem("Box Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj, &m_phys,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
@@ -104,7 +104,7 @@ void ComponentsViewer::Draw()
 
 			else if (m_gui.MenuItem("Capsule Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, &m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj, &m_phys,
 					[this](Object* obj)
 					{
 						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
@@ -116,7 +116,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Lua Script"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
@@ -126,7 +126,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Directional Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
@@ -136,7 +136,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Point Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<PointLightComponent>();
@@ -146,7 +146,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Spot Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<SpotLightComponent>();
@@ -156,7 +156,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("First Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<FirstPersonCamera>();
@@ -166,7 +166,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Third Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
@@ -176,7 +176,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Character Controller"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Controller::CharacterController>();
@@ -201,7 +201,7 @@ void ComponentsViewer::Draw()
 
 		if (m_pendingDelete)
 		{
-			CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete, &m_phys));
+			CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(&m_scene, m_selectedObj, m_pendingDelete, &m_phys));
 			m_pendingDelete = nullptr;
 		}
 	}
@@ -220,16 +220,15 @@ void ComponentsViewer::DrawTransform(Object* obj)
 	if (!m_gui.BeginTreeNode("Transform", TreeNodeFlags::SpanAvailWidth))
 		return;
 
-	LibMath::Transform oldTransform = obj->GetLocalTransform();
-	LibMath::Transform newTransform = oldTransform;
+	LibMath::Transform trans = obj->GetLocalTransform();
 
-	LibMath::Vector3 pos = oldTransform.getPosition();
-	LibMath::Vector3 scale = oldTransform.getScale();
+	LibMath::Vector3 pos = trans.getPosition();
+	LibMath::Vector3 scale = trans.getScale();
 
 	//bool externalChange = (obj != m_lastTransformObj);
 	//if (externalChange)
 	{
-		m_cachedEuler = oldTransform.getEulerRotation() * (180.0f / g_Pi);
+		m_cachedEuler = trans.getEulerRotation() * (180.0f / g_Pi);
 		m_lastTransformObj = obj;
 	}
 
@@ -240,11 +239,11 @@ void ComponentsViewer::DrawTransform(Object* obj)
 
 	if (changed)
 	{
-		newTransform.setPosition(pos);
-		newTransform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
-		newTransform.setScale(scale);
+		trans.setPosition(pos);
+		trans.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
+		trans.setScale(scale);
 		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(obj, oldTransform, newTransform, false));
+			std::make_unique<TransformCommand>(&m_scene, obj, trans, false));
 	}
 
 	m_gui.EndTreeNode();

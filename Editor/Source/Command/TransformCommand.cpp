@@ -1,23 +1,39 @@
 #include "Command/TransformCommand.h"
 
 #include "Object.h"
+#include "Scene.h"
 
-Apex::CtrlZ::TransformCommand::TransformCommand(Data::Object* target, LibMath::Transform old, LibMath::Transform niou, bool global)
-	: m_target(target), m_oldTransform(old), m_newTransform(niou), m_global(global)
-{}
+Apex::CtrlZ::TransformCommand::TransformCommand(Rendering::Scene* scene, Data::Object* target, LibMath::Transform trans, bool global)
+	: m_newTransform(trans), m_global(global)
+{
+	m_scene = scene;
+
+	m_targetId = target->GetId();
+
+	if (global)
+		m_oldTransform = target->GetGlobalTransform();
+	else
+		m_oldTransform = target->GetLocalTransform();
+}
 
 void Apex::CtrlZ::TransformCommand::Execute()
 {
+	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
+	if (!target) return;
+
 	if (m_global)
-		m_target->SetGlobalTransform(m_newTransform);
+		target->SetGlobalTransform(m_newTransform);
 	else
-		m_target->SetLocalTransform(m_newTransform);
+		target->SetLocalTransform(m_newTransform);
 }
 
 void Apex::CtrlZ::TransformCommand::Undo()
 {
+	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
+	if (!target) return;
+
 	if (m_global)
-		m_target->SetGlobalTransform(m_oldTransform);
+		target->SetGlobalTransform(m_oldTransform);
 	else
-		m_target->SetLocalTransform(m_oldTransform);
+		target->SetLocalTransform(m_oldTransform);
 }

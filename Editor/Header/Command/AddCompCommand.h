@@ -6,9 +6,9 @@
 #include <functional>
 
 namespace Apex::Physic { class PhysicSystem; }
+namespace Apex::Rendering { class Scene; }
 namespace Apex::Data { class Object; }
 namespace Apex { class Component; }
-
 
 namespace Apex::CtrlZ
 {
@@ -18,8 +18,8 @@ namespace Apex::CtrlZ
 	class AddCompCommand : public ICommand
 	{
 	public:
-		AddCompCommand(Data::Object* target, createFunc createFunc);
-		AddCompCommand(Data::Object* target, Physic::PhysicSystem* physic, createFunc createFunc);
+		AddCompCommand(Rendering::Scene* scene, Data::Object* target, createFunc createFunc);
+		AddCompCommand(Rendering::Scene* scene, Data::Object* target, Physic::PhysicSystem* physic, createFunc createFunc);
 
 		void Execute() override;
 		void Undo() override;
@@ -28,10 +28,11 @@ namespace Apex::CtrlZ
 	private:
 		createFunc m_createFunc;
 		
-		Data::Object*	m_target;
-		size_t			m_compId;
+		size_t	m_targetId;
+		size_t	m_compId;
 
-		Physic::PhysicSystem* m_physic = nullptr;
+		Rendering::Scene*		m_scene;
+		Physic::PhysicSystem*	m_physic = nullptr;
 	};
 }
 

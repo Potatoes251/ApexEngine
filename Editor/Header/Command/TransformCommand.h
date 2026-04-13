@@ -5,6 +5,7 @@
 
 #include "LibMath/Transform.h"
 
+namespace Apex::Rendering { class Scene; }
 namespace Apex::Data { class Object; }
 
 namespace Apex::CtrlZ
@@ -12,15 +13,15 @@ namespace Apex::CtrlZ
 	class TransformCommand : public ICommand
 	{
 	public:
-		TransformCommand() = delete;
-		TransformCommand(Data::Object* target, LibMath::Transform old, LibMath::Transform niou, bool global);
+		TransformCommand(Rendering::Scene* m_scene, Data::Object* target, LibMath::Transform trans, bool global);
 
 		void Execute() override;
 		void Undo() override;
 	private:
 		LibMath::Transform	m_oldTransform;
 		LibMath::Transform	m_newTransform;
-		Data::Object*		m_target;
+		Rendering::Scene*	m_scene;
+		size_t				m_targetId;
 		bool				m_global;
 	};
 }

@@ -126,7 +126,7 @@ void SceneNode::SetParent(std::shared_ptr<SceneNode> const& newParent)
 
 void Apex::SceneGraph::SceneNode::SetParent(SceneNode* newParent)
 {
-	if (!newParent)
+	if (!newParent && !m_parent)
 	{
 		m_parent->DetachChild(this);
 		m_parent = nullptr;
