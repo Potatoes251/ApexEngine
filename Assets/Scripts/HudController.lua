@@ -1,13 +1,4 @@
--- HudController.lua
--- Attach this ScriptComponent to any object in the scene to control HUDs.
---
--- Available functions (registered globally by the engine):
---   handle = CreateHUD("Name")    load Assets/***/Name.hud, returns integer handle
---   ShowHUD(handle)               make that HUD visible
---   HideHUD(handle)               hide it (keeps the instance alive)
---   DestroyHUD(handle)            free the instance
---   visible = IsHUDVisible(handle)
- 
+
 local HudController = {}
 HudController.__index = HudController
  
@@ -21,7 +12,6 @@ end
  
 function HudController:Start()
     -- Load the HUD files once at game start.
-    -- The name must match the .hud filename stem, e.g. "Assets/HUDs/GameHUD.hud"
     self.gameHud  = CreateHUD("GameHUD")
     self.pauseHud = CreateHUD("PauseHUD")
  
@@ -31,15 +21,7 @@ function HudController:Start()
 end
  
 function HudController:Update(dt)
-    -- Toggle pause HUD on Escape (example — wire to actual input)
-    -- self.paused = not self.paused
-    -- if self.paused then
-    --     HideHUD(self.gameHud)
-    --     ShowHUD(self.pauseHud)
-    -- else
-    --     ShowHUD(self.gameHud)
-    --     HideHUD(self.pauseHud)
-    -- end
+
 end
  
 return HudController

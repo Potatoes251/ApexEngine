@@ -317,17 +317,17 @@ namespace Apex::Editor
             m_editScene = m_app->GetScene()->Clone();
             m_app->SetScene(m_editScene->Clone());
 
-            m_app->GetScene()->Start();
-
-            m_window->SetCursorCaptured(true);
-            m_hierarchy->SetScene(m_app->GetScene());
-
             auto* ui = m_app->GetUI();
             if (ui)
             {
                 ui->ClearAll();
                 ui->ScanHUDs("Assets/");
             }
+
+            m_app->GetScene()->Start();
+
+            m_window->SetCursorCaptured(true);
+            m_hierarchy->SetScene(m_app->GetScene());
         }
         // stop
         else if (newState == EditorState::Edit)

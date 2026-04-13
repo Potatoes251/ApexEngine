@@ -1,41 +1,17 @@
 {
   "widgets": [
     {
-      "type": "Image",
-      "name": "Image",
+      "type": "ProgressBar",
+      "name": "ProgressBar",
       "anchor": "TopLeft",
       "visible": true,
-      "position": [ 0.163089, 0.258281 ],
-      "size": [ 0.150000, 0.150000 ],
+      "position": [ 0.020401, 0.054927 ],
+      "size": [ 0.300000, 0.030000 ],
       "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
-      "texture": "Assets/Textures/awesomeface.png"
-    },
-    {
-      "type": "Panel",
-      "name": "Panel",
-      "anchor": "TopLeft",
-      "visible": true,
-      "position": [ 0.368279, 0.319078 ],
-      "size": [ 0.250000, 0.200000 ],
-      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
-      "rounding": 6.000000,
-      "colorBg": [ 0.664615, 0.094069, 0.094069, 0.800000 ],
-      "children": [
-        {
-          "type": "Text",
-          "name": "Text",
-          "anchor": "TopLeft",
-          "visible": true,
-          "position": [ 0.200000, 0.111530 ],
-          "size": [ 0.200000, 0.050000 ],
-          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
-          "text": "game",
-          "fontSize": 56.000000
-          "hAlign": 1,
-          "vAlign": 0,
-          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
-        }
-      ]
+      "value": 0.700000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
     }
   ]
 }

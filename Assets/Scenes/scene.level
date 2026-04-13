@@ -62,7 +62,7 @@
       },
       "ThirdPersonCamera": {
         "enabled": true,
-        "isMain": true,
+        "isMain": false,
         "distance": 10.000000,
         "speed": 2.500000
       },
@@ -131,6 +131,28 @@
         "type": "Convex",
         "isTrigger": false,
         "material": 0
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/HudController.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 6,
+    "parent": null,
+    "name": "HUDController",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/HudController.lua",
+        "vars": {
+        }
       }
     }
   }

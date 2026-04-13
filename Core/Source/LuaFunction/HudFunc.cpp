@@ -1,4 +1,4 @@
-#include "HudFunc.h"
+#include "LuaFunction/HudFunc.h"
 #include "Hud.h"
 
 static const char* HUD_MANAGER_KEY = "__apex_ui_manager";
