@@ -358,21 +358,42 @@ namespace Apex::Editor
         if (!element) return;
 
         UIPanel* asPanel = dynamic_cast<UIPanel*>(element);
-        bool     hasChildren = asPanel && !asPanel->m_children.empty();
+        WidgetSelection thisSelection{ parent, static_cast<int>(index) };
 
-        WidgetSelection thisSelection{ parent, index };
-        bool isSelected = (m_selection == thisSelection);
-
-        TreeNodeFlags flags = TreeNodeFlags::OpenOnArrow | TreeNodeFlags::SpanAvailWidth;
-        if (isSelected)  flags = flags | TreeNodeFlags::Selected;
-        if (!hasChildren)    flags = flags | TreeNodeFlags::Leaf;
-
+        TreeNodeFlags flags = GetTreeNodeFlags(element, thisSelection);
         std::string label = ShortenName(element->m_name) + "##" + std::to_string(reinterpret_cast<uintptr_t>(element));
 
         bool nodeOpen = m_gui.BeginTreeNode(label, flags);
 
+        HandleTreeInteraction(element, index, parent, asPanel, thisSelection);
+
+        if (nodeOpen)
+        {
+            if (asPanel)
+            {
+                for (int ci = 0; ci < static_cast<int>(asPanel->m_children.size()); ++ci)
+                    DrawTreeElement(asPanel->m_children[ci].get(), ci, asPanel);
+            }
+            m_gui.EndTreeNode();
+        }
+    }
+
+    TreeNodeFlags HudEditor::GetTreeNodeFlags(UIElement* element, const WidgetSelection& selection)
+    {
+        UIPanel* asPanel = dynamic_cast<UIPanel*>(element);
+        bool hasChildren = asPanel && !asPanel->m_children.empty();
+
+        TreeNodeFlags flags = TreeNodeFlags::OpenOnArrow | TreeNodeFlags::SpanAvailWidth;
+        if (m_selection == selection) flags = flags | TreeNodeFlags::Selected;
+        if (!hasChildren)             flags = flags | TreeNodeFlags::Leaf;
+
+        return flags;
+    }
+
+    void HudEditor::HandleTreeInteraction(UIElement* element, size_t index, UIPanel* parent, UIPanel* asPanel, const WidgetSelection& selection)
+    {
         if (m_gui.IsItemClicked() && !m_gui.IsDragDropActive())
-            m_selection = thisSelection;
+            m_selection = selection;
 
         if (m_gui.IsDragDropActive() && m_gui.IsItemHovered())
         {
@@ -393,6 +414,7 @@ namespace Apex::Editor
             }
         }
 
+        // Drag Logic
         if (m_gui.BeginDragSource())
         {
             m_pendingOp.srcParent = parent;
@@ -402,43 +424,40 @@ namespace Apex::Editor
             m_gui.EndDragSource();
         }
 
+        // Drop Logic
         if (m_gui.BeginDropTarget())
         {
-            if (m_gui.AcceptDragPayload("WIDGET_TREE"))
-            {
-                LibMath::Vector2 minRect = m_gui.GetItemRectMin();
-                LibMath::Vector2 maxRect = m_gui.GetItemRectMax();
-                float mouseY = m_gui.GetMousePos()[1];
-                float height = maxRect[1] - minRect[1];
-
-                if (mouseY < minRect[1] + height * 0.25f)
-                {
-                    m_pendingOp.kind = PendingTreeOp::Kind::ReorderBefore;
-                    m_pendingOp.dstParent = parent;
-                    m_pendingOp.dstIndex = index;
-                }
-                else if (mouseY > maxRect[1] - height * 0.25f || !asPanel)
-                {
-                    m_pendingOp.kind = PendingTreeOp::Kind::ReorderAfter;
-                    m_pendingOp.dstParent = parent;
-                    m_pendingOp.dstIndex = index;
-                }
-                else if (asPanel)
-                {
-                    m_pendingOp.kind = PendingTreeOp::Kind::Reparent;
-                    m_pendingOp.dstParent = asPanel;
-                    m_pendingOp.dstIndex = -1;
-                }
-            }
+            HandleDropOnElement(index, parent, asPanel);
             m_gui.EndDropTarget();
         }
+    }
 
-        if (nodeOpen)
+    void HudEditor::HandleDropOnElement(size_t index, UIPanel* parent, UIPanel* asPanel)
+    {
+        if (!m_gui.AcceptDragPayload("WIDGET_TREE")) return;
+
+        LibMath::Vector2 minRect = m_gui.GetItemRectMin();
+        LibMath::Vector2 maxRect = m_gui.GetItemRectMax();
+        float mouseY = m_gui.GetMousePos()[1];
+        float height = maxRect[1] - minRect[1];
+
+        if (mouseY < minRect[1] + height * 0.25f)
         {
-            if (asPanel)
-                for (int ci = 0; ci < static_cast<int>(asPanel->m_children.size()); ++ci)
-                    DrawTreeElement(asPanel->m_children[ci].get(), ci, asPanel);
-            m_gui.EndTreeNode();
+            m_pendingOp.kind = PendingTreeOp::Kind::ReorderBefore;
+            m_pendingOp.dstParent = parent;
+            m_pendingOp.dstIndex = index;
+        }
+        else if (mouseY > maxRect[1] - height * 0.25f || !asPanel)
+        {
+            m_pendingOp.kind = PendingTreeOp::Kind::ReorderAfter;
+            m_pendingOp.dstParent = parent;
+            m_pendingOp.dstIndex = index;
+        }
+        else if (asPanel)
+        {
+            m_pendingOp.kind = PendingTreeOp::Kind::Reparent;
+            m_pendingOp.dstParent = asPanel;
+            m_pendingOp.dstIndex = -1;
         }
     }
 
@@ -461,10 +480,10 @@ namespace Apex::Editor
         if (!m_gui.BeginPopupModal("Pick Texture", { 540.f, 420.f }))
             return;
 
-        UIImage* img = nullptr;
+        UIImage* image = nullptr;
         {
             UIElement* selected = ResolveSelected();
-            if (selected) img = dynamic_cast<UIImage*>(selected);
+            if (selected) image = dynamic_cast<UIImage*>(selected);
         }
 
         m_gui.Text("Click a texture to select:");
@@ -476,61 +495,7 @@ namespace Apex::Editor
         }
         else
         {
-            constexpr float THUMB_SIZE = 60.f;
-            constexpr float SPACING = 8.f;
-
-            float availableWidth = m_gui.GetAvailableSize()[0] - 16.f;
-
-            int cols = std::max(1, static_cast<int>((availableWidth + SPACING) / (THUMB_SIZE + SPACING)));
-            int currentCol = 0;
-
-            m_gui.BeginChildPanel("TextureScrollingRegion", 0.f, -50.f, false);
-            {
-                for (const auto& path : m_textureFiles)
-                {
-                    std::string key = path.generic_string();
-
-                    m_gui.PushID(key);
-
-                    uint32_t tid = EditorIcon::Get(key);
-                    bool picked = false;
-
-                    if (tid != 0)
-                        picked = m_gui.ImageButton("##img", tid, { THUMB_SIZE, THUMB_SIZE });
-
-                    if (m_gui.IsItemHovered())
-                    {
-                        m_gui.BeginTooltip();
-                        m_gui.Text(path.filename().string());
-                        m_gui.EndTooltip();
-                    }
-
-                    if (picked && img)
-                    {
-                        img->m_texturePath = key;
-                        img->m_glTexID = 0;
-                        img->LoadTexture(m_resourceManager);
-                        m_dirty = true;
-                        m_showTexturePicker = false;
-                        m_texPickerOpened = false;
-
-                        m_gui.PopID();
-                        m_gui.EndChildPanel();
-                        m_gui.CloseCurrentPopup();
-                        m_gui.EndPopup();
-                        return;
-                    }
-
-                    m_gui.PopID();
-
-                    currentCol++;
-                    if (currentCol < cols)
-                        m_gui.SameLine(0.f, SPACING);
-                    else
-                        currentCol = 0;
-                }
-            }
-            m_gui.EndChildPanel();
+			DrawTextureTiles(image);
         }
 
         m_gui.Separator();
@@ -541,6 +506,65 @@ namespace Apex::Editor
             m_gui.CloseCurrentPopup();
         }
         m_gui.EndPopup();
+    }
+
+    void HudEditor::DrawTextureTiles(UIImage* image)
+    {
+        constexpr float THUMB_SIZE = 60.f;
+        constexpr float SPACING = 8.f;
+
+        float availableWidth = m_gui.GetAvailableSize()[0] - 16.f;
+
+        int cols = std::max(1, static_cast<int>((availableWidth + SPACING) / (THUMB_SIZE + SPACING)));
+        int currentCol = 0;
+
+        m_gui.BeginChildPanel("TextureScrollingRegion", 0.f, -50.f, false);
+        {
+            for (const auto& path : m_textureFiles)
+            {
+                std::string key = path.generic_string();
+
+                m_gui.PushID(key);
+
+                uint32_t tid = EditorIcon::Get(key);
+                bool picked = false;
+
+                if (tid != 0)
+                    picked = m_gui.ImageButton("##img", tid, { THUMB_SIZE, THUMB_SIZE });
+
+                if (m_gui.IsItemHovered())
+                {
+                    m_gui.BeginTooltip();
+                    m_gui.Text(path.filename().string());
+                    m_gui.EndTooltip();
+                }
+
+                if (picked && image)
+                {
+                    image->m_texturePath = key;
+                    image->m_glTexID = 0;
+                    image->LoadTexture(m_resourceManager);
+                    m_dirty = true;
+                    m_showTexturePicker = false;
+                    m_texPickerOpened = false;
+
+                    m_gui.PopID();
+                    m_gui.EndChildPanel();
+                    m_gui.CloseCurrentPopup();
+                    m_gui.EndPopup();
+                    return;
+                }
+
+                m_gui.PopID();
+
+                currentCol++;
+                if (currentCol < cols)
+                    m_gui.SameLine(0.f, SPACING);
+                else
+                    currentCol = 0;
+            }
+        }
+        m_gui.EndChildPanel();
     }
 
     void HudEditor::DrawProperties()
@@ -559,179 +583,202 @@ namespace Apex::Editor
 
         m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 4.f, 6.f);
        
-        auto row = [&](const char* label)
-            {
-                m_gui.AlignTextToFramePadding();
-                m_gui.Text(label);
-                m_gui.SameLine(LABEL_WIDTH);
-                m_gui.SetNextItemWidth(-1.f);
-            };
+        DrawBaseProperties(element);
+        m_gui.Separator();
+        DrawTypeSpecificProperties(element);
 
-        auto colorRow = [&](const char* label, const char* id, UIColor& color)
-            {
-                row(label);
-                float col[4] = { color.m_r, color.m_g, color.m_b, color.m_a };
-                if (m_gui.ColorEdit4(id, col))
-                {
-                    color.m_r = col[0]; 
-                    color.m_g = col[1]; 
-                    color.m_b = col[2]; 
-                    color.m_a = col[3];
-                    m_dirty = true;
-                }
-            };
+        m_gui.PopStyleVariable();
+    }
 
-        row("Name:");
+    void HudEditor::DrawRow(const char* label)
+    {
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text(label);
+        m_gui.SameLine(LABEL_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+    }
+
+    void HudEditor::DrawColorRow(const char* label, const char* id, UIColor& color)
+    {
+        DrawRow(label);
+        float col[4] = { color.m_r, color.m_g, color.m_b, color.m_a };
+        if (m_gui.ColorEdit4(id, col))
         {
-            char buf[128]; std::strncpy(buf, element->m_name.c_str(), 127); buf[127] = '\0';
-            if (m_gui.InputText("##name", buf, 128)) { element->m_name = buf; m_dirty = true; }
+            color.m_r = col[0];
+            color.m_g = col[1];
+            color.m_b = col[2];
+            color.m_a = col[3];
+            m_dirty = true;
+        }
+    }
+
+    void HudEditor::DrawBaseProperties(UIElement* element)
+    {
+        DrawRow("Name:");
+        char buf[128]; std::strncpy(buf, element->m_name.c_str(), 127); buf[127] = '\0';
+        if (m_gui.InputText("##name", buf, 128)) 
+        { 
+            element->m_name = buf; 
+            m_dirty = true; 
         }
 
-        row("Visible:");
+        DrawRow("Visible:");
         if (m_gui.Checkbox("##vis", &element->m_visible)) m_dirty = true;
 
         m_gui.Separator();
 
-        row("Anchor:");
+        DrawRow("Anchor:");
+        static const char* items =
+            "TopLeft\0TopCenter\0TopRight\0"
+            "MiddleLeft\0Center\0MiddleRight\0"
+            "BottomLeft\0BottomCenter\0BottomRight\0";
+        int cur = static_cast<int>(element->m_anchor);
+        if (m_gui.Combo("##anch", &cur, items))
         {
-            static const char* items =
-                "TopLeft\0TopCenter\0TopRight\0"
-                "MiddleLeft\0Center\0MiddleRight\0"
-                "BottomLeft\0BottomCenter\0BottomRight\0";
-            int cur = static_cast<int>(element->m_anchor);
-            if (m_gui.Combo("##anch", &cur, items))
+            element->m_anchor = static_cast<UIAnchor>(cur);
+            m_dirty = true;
+        }
+
+        DrawRow("Pos X:");
+        if (m_gui.InputFloat("##px", &element->m_position[0])) m_dirty = true;
+        DrawRow("Pos Y:");
+        if (m_gui.InputFloat("##py", &element->m_position[1])) m_dirty = true;
+        DrawRow("Width:");
+        if (m_gui.InputFloat("##sw", &element->m_size[0])) m_dirty = true;
+        DrawRow("Height:");
+        if (m_gui.InputFloat("##sh", &element->m_size[1])) m_dirty = true;
+    }
+
+    void HudEditor::DrawTypeSpecificProperties(UIElement* element)
+    {
+        if (auto* text = dynamic_cast<UIText*>(element)) DrawTextProperties(text);
+        else if (auto* image = dynamic_cast<UIImage*>(element)) DrawImageProperties(image);
+        else if (auto* button = dynamic_cast<UIButton*>(element)) DrawButtonProperties(button);
+        else if (auto* progressBar = dynamic_cast<UIProgressBar*>(element)) DrawProgressBarProperties(progressBar);
+        else if (auto* panel = dynamic_cast<UIPanel*>(element)) DrawPanelProperties(panel);
+    }
+
+    void HudEditor::DrawTextProperties(UIText* text)
+    {
+        m_gui.Text("Text");
+        m_gui.Separator();
+        DrawRow("Content:");
+        
+        char buffer[256];
+        std::strncpy(buffer, text->m_text.c_str(), 255);
+        buffer[255] = '\0';
+        if (m_gui.InputText("##txt", buffer, 256))
+        {
+            text->m_text = buffer;
+            m_dirty = true;
+        }
+
+        DrawRow("FontSize:");
+        if (m_gui.InputFloat("##fs", &text->m_fontSize)) m_dirty = true;
+        DrawColorRow("Color:", "##tc", text->m_textColor);
+        DrawRow("H-Align:");
+        {
+            static const char* hAlign = "Left\0Center\0Right\0";
+            int current = static_cast<int>(text->m_hAlign);
+            if (m_gui.Combo("##ha", &current, hAlign))
             {
-                element->m_anchor = static_cast<UIAnchor>(cur); 
+                text->m_hAlign = static_cast<TextHAlign>(current);
                 m_dirty = true;
             }
         }
+        DrawRow("V-Align:");
+        {
+            static const char* vAlign = "Top\0Middle\0Bottom\0";
+            int current = static_cast<int>(text->m_vAlign);
+            if (m_gui.Combo("##va", &current, vAlign))
+            {
+                text->m_vAlign = static_cast<TextVAlign>(current);
+                m_dirty = true;
+            }
+        }
+    }
 
-        row("Pos X:");
-        if (m_gui.InputFloat("##px", &element->m_position[0])) m_dirty = true;
-        row("Pos Y:");
-        if (m_gui.InputFloat("##py", &element->m_position[1])) m_dirty = true;
-        row("Width:");
-        if (m_gui.InputFloat("##sw", &element->m_size[0])) m_dirty = true;
-        row("Height:");
-        if (m_gui.InputFloat("##sh", &element->m_size[1])) m_dirty = true;
+    void HudEditor::DrawImageProperties(UIImage* image)
+    {
+        m_gui.Text("Image");
         m_gui.Separator();
-        // --- Type-specific fields ---
-        if (auto* text = dynamic_cast<UIText*>(element))
+        DrawColorRow("Tint:", "##imgcol", image->m_color);
+        m_gui.AlignTextToFramePadding();
+        m_gui.Text("Texture:");
+        m_gui.SameLine(LABEL_WIDTH);
+        m_gui.SetNextItemWidth(-1.f);
+        if (m_gui.Button("Browse...##texbrowse"))
         {
-            m_gui.Text("Text");
-            m_gui.Separator();
-            row("Content:");
-            {
-                char buffer[256]; 
-                std::strncpy(buffer, text->m_text.c_str(), 255); 
-                buffer[255] = '\0';
-                if (m_gui.InputText("##txt", buffer, 256)) 
-                { 
-                    text->m_text = buffer; 
-                    m_dirty = true; 
-                }
-            }
-            row("FontSize:");
-            if (m_gui.InputFloat("##fs", &text->m_fontSize)) m_dirty = true;
-            colorRow("Color:", "##tc", text->m_textColor);
-            row("H-Align:");
-            {
-                static const char* hAlign = "Left\0Center\0Right\0";
-                int current = static_cast<int>(text->m_hAlign);
-                if (m_gui.Combo("##ha", &current, hAlign))
-                {
-                    text->m_hAlign = static_cast<TextHAlign>(current); 
-                    m_dirty = true;
-                }
-            }
-            row("V-Align:");
-            {
-                static const char* vAlign = "Top\0Middle\0Bottom\0";
-                int current = static_cast<int>(text->m_vAlign);
-                if (m_gui.Combo("##va", &current, vAlign))
-                {
-                    text->m_vAlign = static_cast<TextVAlign>(current); 
-                    m_dirty = true;
-                }
-            }
+            m_showTexturePicker = true;
+            m_texPickerOpened = false;
+            ScanTextures();
         }
-        else if (auto* img = dynamic_cast<UIImage*>(element))
+
+        if (!image->m_texturePath.empty())
         {
-            m_gui.Text("Image");
-            m_gui.Separator();
-            colorRow("Tint:", "##imgcol", img->m_color);
+            DrawRow("File:");
+            m_gui.TextDisabled(fs::path(image->m_texturePath).filename().string());
+
             m_gui.AlignTextToFramePadding();
-            m_gui.Text("Texture:");
+            m_gui.Text("Preview:");
             m_gui.SameLine(LABEL_WIDTH);
-            m_gui.SetNextItemWidth(-1.f);
-            if (m_gui.Button("Browse...##texbrowse"))
+
+            if (image->m_glTexID == 0 && image->m_texture.IsReady())
             {
-                m_showTexturePicker = true;
-                m_texPickerOpened = false;
-                ScanTextures();
+                auto handle = image->m_texture->GetId();
+                if (handle != 0) image->m_glTexID = m_rhi.GetTexture(handle);
             }
 
-            if (!img->m_texturePath.empty())
-            {
-                row("File:");
-                m_gui.TextDisabled(fs::path(img->m_texturePath).filename().string());
-
-                m_gui.AlignTextToFramePadding();
-                m_gui.Text("Preview:");
-                m_gui.SameLine(LABEL_WIDTH);
-
-                if (img->m_glTexID == 0 && img->m_texture.IsReady())
-                {
-                    auto handle = img->m_texture->GetId();
-                    if (handle != 0) img->m_glTexID = m_rhi.GetTexture(handle);
-                }
-
-                if (img->m_glTexID != 0)
-                    m_gui.DrawImageTinted(img->m_glTexID, { 80.f,80.f }, { 1,1,1,1 }, true);
-                else if (img->m_texture.IsFailed())
-                    m_gui.TextDisabled("(load failed)");
-                else
-                    m_gui.TextDisabled("(loading...)");
-            }
+            if (image->m_glTexID != 0)
+                m_gui.DrawImageTinted(image->m_glTexID, { 80.f,80.f }, { 1,1,1,1 }, true);
+            else if (image->m_texture.IsFailed())
+                m_gui.TextDisabled("(load failed)");
+            else
+                m_gui.TextDisabled("(loading...)");
         }
-        else if (auto* btn = dynamic_cast<UIButton*>(element))
-        {
-            m_gui.Text("Button");
-            m_gui.Separator();
-            colorRow("Background:", "##bgc", btn->m_color);
-            m_gui.Separator();
-            row("Label:");
-            {
-                char buf[128]; std::strncpy(buf, btn->m_label.c_str(), 127); buf[127] = '\0';
-                if (m_gui.InputText("##bl", buf, 128)) { btn->m_label = buf; m_dirty = true; }
-            }
-            row("FontSize:");
-            if (m_gui.InputFloat("##bfs", &btn->m_fontSize)) m_dirty = true;
-            colorRow("Text:", "##btc", btn->m_colorText);
-            colorRow("Hover:", "##bhc", btn->m_colorHover);
-            colorRow("Press:", "##bpc", btn->m_colorPressed);
-        }
-        else if (auto* pb = dynamic_cast<UIProgressBar*>(element))
-        {
-            m_gui.Text("ProgressBar");
-            m_gui.Separator();
-            row("Value:");
-            if (m_gui.SliderFloat("##pbv", &pb->m_value, 0.f, 1.f)) m_dirty = true;
-            row("Rounding:");
-            if (m_gui.InputFloat("##pbr", &pb->m_rounding)) m_dirty = true;
-            colorRow("Fill:", "##pbf", pb->m_colorFill);
-            colorRow("Background:", "##pbb", pb->m_colorBg);
-        }
-        else if (auto* panel = dynamic_cast<UIPanel*>(element))
-        {
-            m_gui.Text("Panel");
-            m_gui.Separator();
-            row("Rounding:");
-            if (m_gui.InputFloat("##pr", &panel->m_rounding)) m_dirty = true;
-            colorRow("Background:", "##pbc", panel->m_colorBg);
+    }
+
+    void HudEditor::DrawPanelProperties(UIPanel* panel)
+    {
+        m_gui.Text("Panel");
+        m_gui.Separator();
+        DrawRow("Rounding:");
+        if (m_gui.InputFloat("##pr", &panel->m_rounding)) m_dirty = true;
+        DrawColorRow("Background:", "##pbc", panel->m_colorBg);
+    }
+
+    void HudEditor::DrawButtonProperties(UIButton* button)
+    {
+        m_gui.Text("Button");
+        m_gui.Separator();
+        DrawColorRow("Background:", "##bgc", button->m_color);
+        m_gui.Separator();
+        DrawRow("Label:");
+
+        char buf[128]; std::strncpy(buf, button->m_label.c_str(), 127); buf[127] = '\0';
+        if (m_gui.InputText("##bl", buf, 128)) 
+        { 
+            button->m_label = buf;
+            m_dirty = true; 
         }
 
-        m_gui.PopStyleVariable();
+        DrawRow("FontSize:");
+        if (m_gui.InputFloat("##bfs", &button->m_fontSize)) m_dirty = true;
+        DrawColorRow("Text:", "##btc", button->m_colorText);
+        DrawColorRow("Hover:", "##bhc", button->m_colorHover);
+        DrawColorRow("Press:", "##bpc", button->m_colorPressed);
+    }
+
+    void HudEditor::DrawProgressBarProperties(UIProgressBar* progressBar)
+    {
+        m_gui.Text("ProgressBar");
+        m_gui.Separator();
+        DrawRow("Value:");
+        if (m_gui.SliderFloat("##pbv", &progressBar->m_value, 0.f, 1.f)) m_dirty = true;
+        DrawRow("Rounding:");
+        if (m_gui.InputFloat("##pbr", &progressBar->m_rounding)) m_dirty = true;
+        DrawColorRow("Fill:", "##pbf", progressBar->m_colorFill);
+        DrawColorRow("Background:", "##pbb", progressBar->m_colorBg);
     }
 
     void HudEditor::AddWidget(UIWidgetType type)
@@ -782,6 +829,11 @@ namespace Apex::Editor
             }
         }
 
+        HandleAddingWidget(element);
+    }
+
+    void HudEditor::HandleAddingWidget(std::unique_ptr<Apex::UserInterface::UIElement>& element)
+    {
         if (element)
         {
             element->m_position = { 0.1f, 0.1f };

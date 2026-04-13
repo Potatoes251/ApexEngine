@@ -401,7 +401,6 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
     file << indent << "}";
 }
 
-
 static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceManager* resourceManager)
 {
     parser.Expect('{');

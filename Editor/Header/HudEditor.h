@@ -13,11 +13,13 @@
 
 namespace fs = std::filesystem;
 
+using namespace Apex::UserInterface;
+
 namespace Apex::Editor
 {
     struct WidgetSelection
     {
-        Apex::UserInterface::UIPanel* m_panel = nullptr;
+        UIPanel* m_panel = nullptr;
         int  m_index = -1;
 
         bool IsValid()  const { return m_index >= 0; }
@@ -35,11 +37,11 @@ namespace Apex::Editor
         enum class Kind { None, ReorderBefore, ReorderAfter, Reparent } kind = Kind::None;
 
         // source
-        Apex::UserInterface::UIPanel* srcParent = nullptr;
+        UIPanel* srcParent = nullptr;
         int srcIndex = -1;
 
         // target
-        Apex::UserInterface::UIPanel* dstParent = nullptr;
+        UIPanel* dstParent = nullptr;
         int dstIndex = -1;
     };
 
@@ -70,14 +72,28 @@ namespace Apex::Editor
         void DrawToolbarLoad();
         void DrawCanvas();
         void DrawProperties();
+        void DrawRow(const char* label);
+        void DrawColorRow(const char* label, const char* id, UIColor& color);
+        void DrawBaseProperties(UIElement* element);
+        void DrawTypeSpecificProperties(UIElement* element);
+        void DrawTextProperties(UIText* text);
+		void DrawImageProperties(UIImage* image);
+		void DrawPanelProperties(UIPanel* panel);
+		void DrawButtonProperties(UIButton* button);
+		void DrawProgressBarProperties(UIProgressBar* progressBar);
         void DrawWidgetTree();
         void DrawTreeElement(Apex::UserInterface::UIElement* element, size_t index, Apex::UserInterface::UIPanel* parent);
+        TreeNodeFlags GetTreeNodeFlags(UIElement* element, const WidgetSelection& selection);
+        void HandleTreeInteraction(UIElement* element, size_t index, UIPanel* parent, UIPanel* asPanel, const WidgetSelection& selection);
+        void HandleDropOnElement(size_t index, UIPanel* parent, UIPanel* asPanel);
         void DrawInsertLine(float y);
         void DrawTexturePicker();
+		void DrawTextureTiles(UIImage* image);
 
         void HandleCanvasInput();
 
         void AddWidget(Apex::UserInterface::UIWidgetType type);
+        void HandleAddingWidget(std::unique_ptr<Apex::UserInterface::UIElement>& element);
         void DeleteSelected();
         
         Apex::UserInterface::UIElement* ResolveSelected() const;
@@ -94,12 +110,12 @@ namespace Apex::Editor
         void ScanTextures();
         std::string ShortenName(const std::string& name, size_t maxLen = 14);
 
-        Apex::UserInterface::IGUI& m_gui;
+        IGUI& m_gui;
         Apex::Windowing::IWindow& m_window;
         Apex::Resources::ResourceManager& m_resourceManager;
         Apex::Rendering::IRHI& m_rhi;
 
-        Apex::UserInterface::UICanvas m_canvas;
+        UICanvas m_canvas;
 
         bool        m_open = false;
         bool        m_pendingFocus = false;
