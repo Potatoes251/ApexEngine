@@ -231,7 +231,7 @@ void Apex::Application::Tick()
     m_deltaTime_s = m_window->GetDeltaTime();
     if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
-    Update();
+    m_window->UpdateDeltaTime();
 
     m_accumulator_s += m_deltaTime_s;
 
@@ -255,11 +255,6 @@ void Apex::Application::UpdateAudioListener()
         { pos[0],   pos[1],   pos[2] },
         { front[0], front[1], front[2] }
     );
-}
-
-void Apex::Application::Update()
-{
-    m_scene->Update(m_deltaTime_s);
 }
 
 void Apex::Application::Render(RenderPassInfo pass)
