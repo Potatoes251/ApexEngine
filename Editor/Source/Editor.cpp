@@ -23,6 +23,7 @@ namespace Apex::Editor
     bool Editor::InitWindow()
     {
         m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Editor", 1280, 720));
+        m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
 
         if (!m_window) return false;
 
@@ -44,7 +45,6 @@ namespace Apex::Editor
     {
         m_app = &app;
         m_audio = app.GetAudio();
-        m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
 
         if (!m_gui) return false;
 
@@ -298,20 +298,29 @@ namespace Apex::Editor
     {
         if (m_editorState == newState)
             return;
-        
+
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
             m_editScene = m_app->GetScene()->Clone();
             m_app->SetScene(m_editScene->Clone());
-
             m_hierarchy->SetScene(m_app->GetScene());
+
+            auto* ui = m_app->GetUI();
+            if (ui)
+            {
+                ui->ClearAll();
+                ui->ScanHUDs("Assets/");
+            }
         }
-        
+
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
-
             m_hierarchy->SetScene(m_app->GetScene());
+
+            auto* ui = m_app->GetUI();
+            if (ui)
+                ui->ClearAll();
         }
 
         m_editorState = newState;
@@ -409,7 +418,7 @@ namespace Apex::Editor
                 return;
             }
         }
-        auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager());
+        auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager(), *m_app->GetRhi());
         hudEditor->Open(path, static_cast<int>(m_hudEditors.size()));
         m_hudEditors.push_back(std::move(hudEditor));
     }

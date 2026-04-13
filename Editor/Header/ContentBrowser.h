@@ -107,6 +107,7 @@ namespace Apex::Editor
 		void BeginRename(const fs::path& path);
 		void CommitRename();
 		void CreateFolder();
+		void CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content);
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);

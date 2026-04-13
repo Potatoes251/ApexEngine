@@ -2,6 +2,7 @@
 #include "EditorIcon.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace Apex::UserInterface;
 
@@ -319,6 +320,19 @@ namespace Apex::Editor
 
         // Immediately enter rename mode on the new folder
         BeginRename(target);
+    }
+
+    void ContentBrowser::CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content)
+    {
+        fs::path path = dir / (name + ext);
+        int n = 1;
+        while (fs::exists(path))
+            path = dir / (name + std::to_string(n++) + ext);
+
+        std::ofstream file(path);
+        file << content;
+
+        BeginRename(path);
     }
 
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
@@ -678,6 +692,28 @@ namespace Apex::Editor
         m_gui.PopStyleVariable();
         m_gui.PopStyleVariable();
 
+        m_gui.Separator();
+        m_gui.TextDisabled("Create");
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("New HUD"))
+        {
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Level"))
+        {
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Script"))
+        {
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            Refresh();
+        }
+
         m_gui.EndPopup();
     }
 
@@ -932,7 +968,28 @@ namespace Apex::Editor
         }
 
         m_gui.Separator();
+        m_gui.TextDisabled("Create");
+        m_gui.Separator();
 
+        if (m_gui.MenuItem("New HUD"))
+        {
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Level"))
+        {
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Script"))
+        {
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            Refresh();
+        }
+
+        m_gui.Separator();
         if (m_gui.MenuItem("Refresh"))
             Refresh();
 

@@ -4,6 +4,7 @@
 #include "DebugLuaBindings.h"
 #include "TransformFunc.h"
 #include "HierarchyFunc.h"
+#include "HudFunc.h"
 
 #include <iostream>
 
@@ -128,4 +129,9 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     lua_pop(luaState, 1); // pop instance
     return true;
+}
+
+void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIManager* ui)
+{
+    Apex::HudBindings::RegisterHudFunctions(luaState, ui);
 }

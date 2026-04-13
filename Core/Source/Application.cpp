@@ -149,7 +149,7 @@ bool Apex::Application::InitUI(IGUI* gui)
 {
     if (!m_window) return false;
 
-    m_uiManager = std::make_unique<UIManager>(gui, m_resourceManager.get());
+    m_uiManager = std::make_unique<UIManager>(gui, m_resourceManager.get(), m_rhi.get());
 
     if (!m_uiManager)
         return false;
@@ -170,7 +170,12 @@ bool Apex::Application::InitLighting()
 bool Apex::Application::InitLua()
 {
     m_luaManager = std::make_unique<Scripting::LuaManager>();
-    return m_luaManager != nullptr;
+    if (!m_luaManager) return false;
+
+    if (m_uiManager)
+        m_luaManager->RegisterHudBindings(m_uiManager.get());
+
+    return true;
 }
 
 bool Apex::Application::InitScene()

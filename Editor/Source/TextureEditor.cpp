@@ -1296,6 +1296,7 @@ namespace Apex::Editor
 
         int pickedX = static_cast<int>((mouse[0] - imageOrigin[0]) / displayWidth * m_width);
         int pickedY = static_cast<int>((mouse[1] - imageOrigin[1]) / displayHeight * m_height);
+        pickedY = (m_height - 1) - pickedY;
         pickedX = std::max(0, std::min(m_width - 1, pickedX));
         pickedY = std::max(0, std::min(m_height - 1, pickedY));
 

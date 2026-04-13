@@ -30,6 +30,9 @@ namespace Apex::UserInterface
 
 	enum class UIWidgetType { Text, Image, Button, ProgressBar, Panel };
 
+    enum class TextHAlign { Left, Center, Right };
+    enum class TextVAlign { Top, Middle, Bottom };
+
 	struct UIColor { float m_r = 1, m_g = 1, m_b = 1, m_a = 1; };
 
 	inline uint32_t UIColorPack(UIColor color)
@@ -42,8 +45,11 @@ namespace Apex::UserInterface
 	{
 		IDrawList*  m_drawList = nullptr;
 		Vector2     m_screenSize;
+        Vector2     m_origin = { 0.f, 0.f };
+        Apex::Rendering::IRHI* m_rhi = nullptr;
 		bool        m_isEditor = false;
 		bool        m_selected = false;
+
 	};
 
 	class UIElement
@@ -56,8 +62,8 @@ namespace Apex::UserInterface
 		virtual void Draw(const UIDrawContext& context) const = 0;
 
 		static Vector2 ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screen);
-		Vector2 GetScreenPos(Vector2 screen) const;
-		Vector2 GetScreenSize(Vector2 screen) const;
+		Vector2 GetScreenPos(const UIDrawContext& context) const;
+		Vector2 GetScreenSize(const UIDrawContext& context) const;
 
 		std::string m_name = "Widget";
 		Vector2     m_position = { 0.5f, 0.5f };
@@ -76,6 +82,9 @@ namespace Apex::UserInterface
         std::string m_text = "Text";
         FontID      m_font = FontID::Default;
         float       m_fontSize = 24.f;
+        TextHAlign   m_hAlign = TextHAlign::Left;
+        TextVAlign   m_vAlign = TextVAlign::Top;
+        UIColor      m_textColor = { 1.f, 1.f, 1.f, 1.f };
     };
 
     class UIImage : public UIElement
@@ -87,6 +96,7 @@ namespace Apex::UserInterface
 
         std::string                      m_texturePath;
         ResourceHandle<Texture>          m_texture;
+        mutable uint32_t                 m_glTexID = 0;
     };
 
     class UIButton : public UIElement
@@ -122,6 +132,7 @@ namespace Apex::UserInterface
         UIWidgetType GetType() const override { return UIWidgetType::Panel; }
         void Draw(const UIDrawContext& context) const override;
         void AddChild(std::unique_ptr<UIElement> child);
+        std::unique_ptr<UIElement> ExtractChild(size_t index);
 
         UIColor m_colorBg = { 0.1f, 0.1f, 0.1f, 0.8f };
         float   m_rounding = 6.f;
@@ -140,11 +151,13 @@ namespace Apex::UserInterface
         void MoveElement(size_t from, size_t to);
         void Clear();
 
-        UIElement* GetElement(size_t index);
+        UIElement* GetElement(size_t index) const;
         size_t GetElementCount() const { return m_elements.size(); }
         const std::vector<std::unique_ptr<UIElement>>& GetElements() const { return m_elements; }
+        std::unique_ptr<UIElement> ExtractElement(size_t index);
 
-        void Draw(const UIDrawContext& ctx) const;
+        void Draw(const UIDrawContext& context) const;
+        void PrepareForRender(Apex::Rendering::IRHI* rhi);
 
         bool Save(const fs::path& path) const;
         bool Load(const fs::path& path, ResourceManager& resourceManager);
@@ -153,25 +166,74 @@ namespace Apex::UserInterface
         std::vector<std::unique_ptr<UIElement>> m_elements;
     };
 
+    struct HUDInstance
+    {
+        std::string  m_name;       
+        UICanvas     m_canvas;
+        bool         m_visible = false;
+
+        HUDInstance() = default;
+        HUDInstance(const HUDInstance&) = delete;
+        HUDInstance& operator=(const HUDInstance&) = delete;
+    };
+
     class UIManager
     {
     public:
         UIManager() = delete;
-        explicit UIManager(IGUI* gui, ResourceManager* resourceManager);
+        explicit UIManager(IGUI* gui, ResourceManager* resourceManager, Apex::Rendering::IRHI* rhi = nullptr);
         UIManager(const UIManager&) = delete;
         UIManager& operator=(const UIManager&) = delete;
 
-        UICanvas& GetCanvas() { return m_canvas; }
+        UICanvas& GetCanvas() { return m_legacyCanvas; }
+        void PrepareForRender() { m_legacyCanvas.PrepareForRender(m_rhi); }
+
+        bool IsVisible() const { return m_legacyVisible; }
+        void ShowHUD() { m_legacyVisible = true; }
+        void HideHUD() { m_legacyVisible = false; }
 
         bool LoadHUD(const fs::path& path);
         bool SaveHUD(const fs::path& path) const;
 
-        void RenderHUD(IDrawList* backgroundDrawList);
+        // Multi-HUD API (used by Lua scripts)
+        // Scan Assets/ for all .hud files and register their names.
+        // Called once when entering Play.
+        void ScanHUDs(const fs::path& assetsRoot = "Assets/");
+
+        // Create (load) a HUD by name (filename stem, e.g. "GameHUD").
+        // Returns a handle >= 1 on success, 0 on failure.
+        // Calling CreateHUD with the same name returns the existing handle.
+        int  CreateHUD(const std::string& name);
+
+        // Destroy a HUD instance and free its canvas.
+        void DestroyHUD(int handle);
+
+        // Show / Hide a specific HUD instance.
+        void ShowHUD(int handle);
+        void HideHUD(int handle);
+        bool IsHUDVisible(int handle) const;
+
+        // Prepare + Render all visible HUD instances.
+        void RenderHUD(IDrawList* drawList,
+            Vector2 viewportPos = { 0.f, 0.f },
+            Vector2 viewportSize = { 0.f, 0.f });
+
+        // Clears all instances (called on Stop).
+        void ClearAll();
 
     private:
-        UICanvas       m_canvas;
+        HUDInstance* GetInstance(int handle);
+        const HUDInstance* GetInstance(int handle) const;
+
         IGUI* m_gui = nullptr;
         ResourceManager* m_resourceManager = nullptr;
+        Apex::Rendering::IRHI* m_rhi = nullptr;
+
+        UICanvas m_legacyCanvas;
+        bool m_legacyVisible = false;
+
+        std::vector<std::unique_ptr<HUDInstance>> m_instances;
+        std::unordered_map<std::string, fs::path>  m_registry;
     };
 }
 
