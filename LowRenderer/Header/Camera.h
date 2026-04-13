@@ -16,6 +16,8 @@ namespace Apex::Rendering
 		Camera(const Camera&) = default;
 		Camera& operator=(const Camera&) = default;
 
+		bool			 IsMain() const { return m_isMain; }
+
 		void			 SetMainCamera(bool enabled) { m_isMain = enabled; }
 		void			 SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
 		LibMath::Matrix4 GetViewProj();

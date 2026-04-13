@@ -28,7 +28,7 @@ namespace Apex::Rendering
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
 
-		copy->m_mainCamera = m_mainCamera;
+		//copy->m_mainCamera = m_mainCamera;
 
 		for (const auto& obj : m_objects)
 		{
@@ -53,6 +53,16 @@ namespace Apex::Rendering
 				{
 					MarkDirty();
 				});
+		}
+
+		for (auto& obj : copy->m_objects)
+		{
+			Camera* cam = obj->GetComponent<Camera>();
+			if (cam && cam->IsMain())
+			{
+				copy->m_mainCamera = cam;
+				break;
+			}
 		}
 
 		return copy;

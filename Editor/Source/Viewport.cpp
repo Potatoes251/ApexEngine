@@ -193,7 +193,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 				m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
 			}
 
-			m_rhi->UnBindFrameBuffer();
+			m_rhi->UnBindFrameBuffer(m_width, m_height);
 			return;
 		}
 	}
@@ -214,7 +214,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
-	m_rhi->UnBindFrameBuffer();
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
 }
 
 LibMath::Vector3 Viewport::GetAxis()
@@ -406,7 +406,7 @@ void Viewport::Draw()
 		LibMath::Matrix4 proj = m_camera.GetProjection();
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
-	m_rhi->UnBindFrameBuffer();
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
 
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];

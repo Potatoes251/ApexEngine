@@ -34,7 +34,7 @@ namespace Apex::Rendering
 		RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) override;
 		RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) override;
 		void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) override;
-		void					UnBindFrameBuffer() override;
+		void					UnBindFrameBuffer(unsigned width = 1280, unsigned height = 720) override;
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 		int						GetPixelData(int x, int y) override;
 

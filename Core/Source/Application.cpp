@@ -244,15 +244,17 @@ void Apex::Application::Tick()
 
 void Apex::Application::UpdateAudioListener()
 {
-    if (m_audio)
-    {
-        LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
-        LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
-        m_audio->SetListenerPosition(
-            { pos[0],   pos[1],   pos[2] },
-            { front[0], front[1], front[2] }
-        );
-    }
+    if (!m_audio) return;
+
+    Camera* cam = m_scene->GetMainCamera();
+    if (!cam) return;
+
+    LibMath::Vector3 pos = cam->GetPosition();
+    LibMath::Vector3 front = cam->GetFront();
+    m_audio->SetListenerPosition(
+        { pos[0],   pos[1],   pos[2] },
+        { front[0], front[1], front[2] }
+    );
 }
 
 void Apex::Application::Update()
@@ -273,6 +275,11 @@ void Apex::Application::Render(RenderPassInfo pass)
     if (pass.m_target != RHI_INVALID)
     {
         m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+        m_rhi->Clear();
+    }
+    else
+    {
+        m_rhi->UnBindFrameBuffer(m_window->GetWidth(), m_window->GetHeight());
         m_rhi->Clear();
     }
 

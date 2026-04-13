@@ -69,7 +69,7 @@ namespace Apex::Rendering
 		virtual RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) = 0;
 		virtual RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) = 0;
 		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) = 0;
-		virtual void					UnBindFrameBuffer() = 0;
+		virtual void					UnBindFrameBuffer(unsigned width = 1280, unsigned height = 720) = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 		virtual int						GetPixelData(int x, int y) = 0;
 
