@@ -1,0 +1,18 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "Text",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.100000, 0.100000 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "PAUSE",
+      "fontSize": 24.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    }
+  ]
+}

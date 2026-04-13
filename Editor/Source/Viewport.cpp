@@ -9,7 +9,7 @@
 #include "Window.h"
 #include "Scene.h"
 #include "RHI.h"
-#include "UI.h"
+#include "Hud.h"
 
 using namespace Apex::Data;
 
@@ -406,8 +406,6 @@ void Viewport::Draw()
 		LibMath::Matrix4 proj = m_camera.GetProjection();
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
-	m_rhi->UnBindFrameBuffer();
-
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];
 	LibMath::Vector2 drawSize;
@@ -427,6 +425,15 @@ void Viewport::Draw()
 	}
 
 	m_gui->DrawImageBackground(m_rhi->GetTexture(m_textureFbo), m_panelPos + offset, m_panelPos + offset + drawSize);
+	m_rhi->UnBindFrameBuffer();
+
+	if (m_editor->GetEditorState() != EditorState::Edit)
+	{
+		auto* uiManager = m_editor->GetApp()->GetUI();
+		if (uiManager)
+			uiManager->RenderHUD(m_gui->GetDrawList(), m_panelPos + offset, drawSize);
+			
+	}
 
 	DrawUI();
 

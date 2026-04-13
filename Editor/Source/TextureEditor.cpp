@@ -509,7 +509,7 @@ namespace Apex::Editor
                 float localX = origin[0] + col * displayWidth - panelPos[0] + cursorStart[0];
                 float localY = origin[1] + row * displayHeight - panelPos[1] + cursorStart[1];
                 m_gui.SetCursorPos(LibMath::Vector2(localX, localY));
-                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, false);
+                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, true);
             }
         }
     }
@@ -1296,6 +1296,7 @@ namespace Apex::Editor
 
         int pickedX = static_cast<int>((mouse[0] - imageOrigin[0]) / displayWidth * m_width);
         int pickedY = static_cast<int>((mouse[1] - imageOrigin[1]) / displayHeight * m_height);
+        pickedY = (m_height - 1) - pickedY;
         pickedX = std::max(0, std::min(m_width - 1, pickedX));
         pickedY = std::max(0, std::min(m_height - 1, pickedY));
 

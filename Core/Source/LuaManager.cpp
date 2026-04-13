@@ -8,6 +8,7 @@
 #include "LuaFunction/CharacterControllerLua.h"
 #include "LuaFunction/Vector3Lua.h"
 #include "LuaFunction/CameraLua.h"
+#include "LuaFunction/HudFunc.h"
 
 #include <iostream>
 
@@ -136,4 +137,9 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     lua_pop(luaState, 1); // pop instance
     return true;
+}
+
+void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIManager* ui)
+{
+    Apex::HudBindings::RegisterHudFunctions(luaState, ui);
 }

@@ -2,6 +2,7 @@
 #include "EditorIcon.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace Apex::UserInterface;
 
@@ -19,6 +20,8 @@ namespace Apex::Editor
             return AssetType::Level;
         if (ext == ".lua")
             return AssetType::Script;
+        if (ext == ".hud")
+            return AssetType::Hud;
         return AssetType::Unknown;
     }
 
@@ -31,6 +34,7 @@ namespace Apex::Editor
         case AssetType::Sound:   return "Sound";
         case AssetType::Level:   return "Level";
         case AssetType::Script:  return "Lua";
+        case AssetType::Hud:     return "HUD";
         case AssetType::Folder:  return "Folder";
         default:                 return "[ ]";
         }
@@ -46,6 +50,7 @@ namespace Apex::Editor
         case AssetType::Sound:   return PackColor(220, 120, 255);  // purple
         case AssetType::Level:   return PackColor(255, 100, 100);  // red
         case AssetType::Script:  return PackColor(255, 140, 60);   // orange
+        case AssetType::Hud:     return PackColor(80, 220, 200);   // teal
         case AssetType::Folder:  return PackColor(255, 210, 100);  // gold
         default:                 return PackColor(160, 160, 160);  // grey
         }
@@ -75,6 +80,7 @@ namespace Apex::Editor
         case AssetType::Level:  return "ApexAssets/Icons/level.png";
         case AssetType::Script: return "ApexAssets/Icons/script.png";
         case AssetType::Sound:  return "ApexAssets/Icons/sound.png";
+        case AssetType::Hud:    return "ApexAssets/Icons/hud.png";
         default:                return "";
         }
 
@@ -317,6 +323,19 @@ namespace Apex::Editor
 
         // Immediately enter rename mode on the new folder
         BeginRename(target);
+    }
+
+    void ContentBrowser::CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content)
+    {
+        fs::path path = dir / (name + ext);
+        int n = 1;
+        while (fs::exists(path))
+            path = dir / (name + std::to_string(n++) + ext);
+
+        std::ofstream file(path);
+        file << content;
+
+        BeginRename(path);
     }
 
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
@@ -676,6 +695,28 @@ namespace Apex::Editor
         m_gui.PopStyleVariable();
         m_gui.PopStyleVariable();
 
+        m_gui.Separator();
+        m_gui.TextDisabled("Create");
+        m_gui.Separator();
+
+        if (m_gui.MenuItem("New HUD"))
+        {
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Level"))
+        {
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Script"))
+        {
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            Refresh();
+        }
+
         m_gui.EndPopup();
     }
 
@@ -930,7 +971,28 @@ namespace Apex::Editor
         }
 
         m_gui.Separator();
+        m_gui.TextDisabled("Create");
+        m_gui.Separator();
 
+        if (m_gui.MenuItem("New HUD"))
+        {
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Level"))
+        {
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Script"))
+        {
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            Refresh();
+        }
+
+        m_gui.Separator();
         if (m_gui.MenuItem("Refresh"))
             Refresh();
 

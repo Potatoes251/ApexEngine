@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace Apex::UserInterface { class UIManager; }
+
 namespace Apex::Scripting
 {
     class LuaManager
@@ -23,6 +25,8 @@ namespace Apex::Scripting
 
         void RegisterFunction(const char* name, lua_CFunction func);
         void RegisterFunctions();
+
+        void RegisterHudBindings(Apex::UserInterface::UIManager* ui);
 
         int CreateScriptInstance(int scriptRef);
         bool CallFunction(int instanceRef, const std::string& funcName, float dt = 0.f);
