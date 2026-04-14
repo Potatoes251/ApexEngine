@@ -4,6 +4,7 @@
 #include <LibMath/Colision3D.h>
 
 #include "Command/TransformCommand.h"
+#include "Command/SetValCommand.h"
 #include "CommandManager.h"
 #include "InputSystem.h"
 #include "Hierarchy.h"
@@ -619,7 +620,9 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 		m_gui->SetCursorPos({ rowX, curY + pad * 0.5f });
 
 		if (IconButton(element.m_icon, element.m_label, { SNAP_BUTTON_WIDTH, SNAP_BUTTON_WIDTH }, *element.m_enabled))
-			*element.m_enabled = !*element.m_enabled;
+		{
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(element.m_enabled, *element.m_enabled, !*element.m_enabled));
+		}
 
 		if (m_gui->IsItemHovered())
 		{
@@ -630,7 +633,11 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 		m_gui->SameLine(0.f, pad);
 		m_gui->SetNextItemWidth(SNAP_INPUT_WIDTH);
 		m_gui->PushFont(FontID::Default);
-		m_gui->InputFloat(std::string("##sv") + element.m_label, element.m_value);
+		float val = *element.m_value;
+		if (m_gui->InputFloat(std::string("##sv") + element.m_label, &val))
+		{
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<float>>(element.m_value, *element.m_value, val));
+		}
 		m_gui->PopFont();
 		curY += SNAP_CELL_HEIGHT;
 	}

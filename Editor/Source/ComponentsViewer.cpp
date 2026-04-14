@@ -278,7 +278,7 @@ bool ComponentsViewer::DrawVec3(const std::string& name, LibMath::Vector3& v, fl
 	return changed;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component* comp)
+void ComponentsViewer::DrawComponent(Object* obj, Apex::Component* comp)
 {
 	bool open = DrawTreeComp(comp);
 	
@@ -388,10 +388,16 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 				break;
 			}
 			case ExposedVar::String:
+			{
+				std::string oldVal = *(std::string*)var.data;
 				if (m_gui.InputText(var.name, (char*)var.data, 256))
+				{
 					m_changed = true;
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, &m_scene));
+				}
 				break;
-
+			}
 			case ExposedVar::Enum:
 			{
 				int oldVal = *(int*)var.data;
@@ -413,7 +419,6 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 				}
 				break;
 			}
-
 			case ExposedVar::PhysMaterial:
 			{
 				PhysicMaterial oldVal = *(PhysicMaterial*)var.data;
@@ -424,13 +429,11 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 				}
 				break;
 			}
-
 			case ExposedVar::Mesh:
 			{
 				DrawComponentMesh(var);
 				break;
 			}
-
 			case ExposedVar::Texture:
 			{
 				DrawComponentTexture(var);
@@ -438,6 +441,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 			}
 			default:
 				assert(false && "Unhandled case of ExposedVar in ComponentsViewer::DrawComponent\n");
+				break;
 			}
 		}
 	}
