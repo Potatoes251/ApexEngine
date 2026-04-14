@@ -822,7 +822,10 @@ namespace Apex::Editor
             if (entry.m_isFolder)
                 m_pendingNavigate = entry.m_path;
             else if (m_onLoad)
+            {
                 m_onLoad(entry);
+                m_selectedPath.clear();
+            }
         }
 
         if (m_gui.BeginDragSource())
