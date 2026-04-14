@@ -15,9 +15,9 @@ namespace Apex
     struct ExposedVar
     {
         std::string name;
-        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Script } type;
+        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture } type;
         void* data = nullptr;
-        std::variant<float, int, bool, std::string> value;
+        std::variant<float, bool, std::string> value;
         std::vector<std::string> enumNames;
 
         ExposedVar() = default;
@@ -60,8 +60,8 @@ namespace Apex
 
         Apex::Data::Object* GetOwner() const { return m_owner; }
 
-        size_t GetId() const { return m_id; }
-        void SetId(size_t newId) { m_id = newId; }
+        size_t  GetId() const { return m_id; }
+        void    SetId(size_t newId) { m_id = newId; }
 
     private:
         friend class Apex::Data::Object;

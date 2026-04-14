@@ -37,6 +37,8 @@ namespace Apex::Rendering
 
 		Data::Object* CreateObject();
 		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
+		void AddObject(std::unique_ptr<Data::Object> obj);
+		void DestroyObject(size_t objId);
 
 		void MarkDirty();
 		void ClearDirty() { m_isDirty = false; }
@@ -48,6 +50,7 @@ namespace Apex::Rendering
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
+		Data::Object* GetObjectWithId(size_t id);
 		Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
 		Camera* GetMainCamera() const { return m_mainCamera; }

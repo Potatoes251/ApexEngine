@@ -17,6 +17,8 @@ ThirdPersonCamera::ThirdPersonCamera(LibMath::Vector3 target, float distance)
 
 ThirdPersonCamera::ThirdPersonCamera(ThirdPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_target = other.m_target;
 	m_distance = other.m_distance;
 	m_fov = other.m_fov;
@@ -28,6 +30,8 @@ ThirdPersonCamera::ThirdPersonCamera(ThirdPersonCamera const& other)
 
 ThirdPersonCamera& Apex::Rendering::ThirdPersonCamera::operator=(ThirdPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_target = other.m_target;
 	m_distance = other.m_distance;
 	m_fov = other.m_fov;

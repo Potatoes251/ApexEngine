@@ -17,6 +17,8 @@ FirstPersonCamera::FirstPersonCamera(LibMath::Vector3 position)
 
 FirstPersonCamera::FirstPersonCamera(FirstPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_fov = other.m_fov;
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;
@@ -26,6 +28,8 @@ FirstPersonCamera::FirstPersonCamera(FirstPersonCamera const& other)
 
 FirstPersonCamera& FirstPersonCamera::operator=(FirstPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_fov = other.m_fov;
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;

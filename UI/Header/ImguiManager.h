@@ -136,6 +136,7 @@ namespace Apex::UserInterface
 
         bool IsItemHovered() const override;
         bool IsItemActive() const override;
+        bool IsAnyItemActive() const override;
         LibMath::Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;

@@ -89,8 +89,6 @@ namespace Apex
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
 
-        const char* m_argv0;
-
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
         std::unique_ptr<Scripting::LuaManager> m_luaManager;

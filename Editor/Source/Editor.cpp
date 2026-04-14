@@ -8,8 +8,10 @@
 #include "SceneLoader.h"
 #include "ResourceHandle.h"
 #include "ResourceManager.h"
-
+#include "Rigidbody.h"
+#include "CommandManager.h"
 using namespace Apex::Data;
+using namespace Apex::CtrlZ;
 using namespace Apex::Audio;
 using namespace Apex::Input;
 using namespace Apex::Physic;
@@ -95,6 +97,18 @@ namespace Apex::Editor
 
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
+
+                if (key == Input::Key::Z && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Undo();
+                }
+                if (key == Input::Key::Y && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Redo();
+                }
+
+                if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -221,6 +235,18 @@ namespace Apex::Editor
             m_componentsViewer->Draw();
 
         HandleEditorClosing();
+
+        bool editing = m_gui->IsAnyItemActive();
+        if (editing && !m_editingUI)
+        {
+            CommandManager::Get().StartBatch();
+        }
+        if (!editing && m_editingUI)
+        {
+            CommandManager::Get().EndBatch();
+        }
+        
+        m_editingUI = editing;
 
         m_gui->EndFrame();
 

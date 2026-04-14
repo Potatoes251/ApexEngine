@@ -33,7 +33,7 @@ namespace Apex::Rendering
 		for (const auto& obj : m_objects)
 		{
 			copy->m_objects.push_back(obj->Clone());
-			std::unique_ptr<Object>& newObj = copy->m_objects[copy->m_objects.size() - 1];
+			std::unique_ptr<Object>& newObj = copy->m_objects.back();
 
 			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
 			Collider* collider = newObj->GetComponent<Collider>();
@@ -104,6 +104,12 @@ namespace Apex::Rendering
 		return m_objects;
 	}
 
+	void Scene::AddObject(std::unique_ptr<Object> obj)
+	{
+		m_objects.push_back(std::move(obj));
+		MarkDirty();
+	}
+
 	void Scene::DestroyPendingObject()
 	{
 		std::vector<Object*> destroyQueue;
@@ -148,6 +154,18 @@ namespace Apex::Rendering
 
 			m_objects.erase(it);
 			MarkDirty();
+		}
+	}
+
+	void Scene::DestroyObject(size_t objId)
+	{
+		for (std::unique_ptr<Object>& obj : m_objects)
+		{
+			if (obj && obj->GetId() == objId)
+			{
+				DestroyObject(obj.get());
+				return;
+			}
 		}
 	}
 
@@ -228,6 +246,18 @@ namespace Apex::Rendering
 		}
 		if (passInfo.m_flags & ShowCollider)
 			m_physics.DrawColliders();
+	}
+
+	Object* Scene::GetObjectWithId(size_t id)
+	{
+		for (std::unique_ptr<Object>& obj : m_objects)
+		{
+			if (obj && obj->GetId() == id)
+			{
+				return obj.get();
+			}
+		}
+		return nullptr;
 	}
 
 	void Scene::InsertBefore(Object* dragged, Object* target)

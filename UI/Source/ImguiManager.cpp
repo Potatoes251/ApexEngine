@@ -478,6 +478,7 @@ namespace Apex::UserInterface
 
     bool ImGUIManager::IsItemHovered() const { return ImGui::IsItemHovered(); }
     bool ImGUIManager::IsItemActive()  const { return ImGui::IsItemActive(); }
+    bool ImGUIManager::IsAnyItemActive() const { return ImGui::IsAnyItemHovered(); }
 
     LibMath::Vector2 ImGUIManager::GetItemRectSize() const
     {

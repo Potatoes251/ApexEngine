@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 16,
+    "id": 0,
     "parent": null,
     "name": "Player",
     "position": [-2.689153,1.073233,-0.486195],
@@ -37,7 +37,7 @@
       },
       "ThirdPersonCamera": {
         "enabled": true,
-        "isMain": false,
+        "isMain": true,
         "distance": 6.176000,
         "speed": 2.500000
       },
@@ -50,7 +50,7 @@
     }
   },
   {
-    "id": 17,
+    "id": 1,
     "parent": null,
     "name": "Platform",
     "position": [0.000000,0.000000,0.000000],
@@ -60,7 +60,7 @@
       "MeshRenderer": {
         "enabled": true,
         "mesh": "Assets/Meshes/cube/cube.mesh",
-        "texture": "Assets/Textures/Blank.png",
+        "texture": "Assets/Textures/Potatoes.jpg",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
       },
@@ -78,7 +78,7 @@
     }
   },
   {
-    "id": 18,
+    "id": 2,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -104,7 +104,7 @@
       "DirectionalLight": {
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
-        "intensity": 4.412000,
+        "intensity": 0.883000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
       }

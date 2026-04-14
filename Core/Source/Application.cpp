@@ -90,9 +90,6 @@ bool Apex::Application::InitWindow(IWindow* window)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
-
-            if (key == Key::P && down)
-                m_scene->Save("Assets/Scenes/scene.level");
         });
 
     return true;
