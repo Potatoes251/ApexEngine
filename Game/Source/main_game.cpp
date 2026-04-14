@@ -88,7 +88,7 @@ int main2(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    std::filesystem::current_path(FindProjectRoot(GetExeDir()));
+    std::filesystem::current_path(GetExeDir());
 
     Apex::Game::Game game;
 

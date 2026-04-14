@@ -57,7 +57,13 @@ target_link_libraries(${EXE_NAME}
 add_custom_command(TARGET ${EXE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${EXE_NAME}>/assets
+        $<TARGET_FILE_DIR:${EXE_NAME}>/Assets
+)
+
+add_custom_command(TARGET ${EXE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/apexassets
+        $<TARGET_FILE_DIR:${EXE_NAME}>/ApexAssets
 )
 
 # This ensures the executable can find the DLL at runtime
