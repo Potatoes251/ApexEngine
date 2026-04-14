@@ -8,6 +8,7 @@
 #include "SceneGraph.h"
 #include "../../Physic/Header/Physic.h"
 
+#include <unordered_set>
 #include <vector>
 #include <memory>
 #include <utility>
@@ -50,13 +51,33 @@ namespace Apex::Data
 		void		SetLocalPosition(const LibMath::Vector3& position);
 		void		SetLocalRotation(const LibMath::Quaternion& rotation);
 		void		SetLocalScale(const LibMath::Vector3& scale);
+
+		const LibMath::Vector3&		GetLocalPosition() const { return m_localTransform.getPosition(); }
+		const LibMath::Quaternion&	GetLocalRotation() const { return m_localTransform.getRotation(); }
+		const LibMath::Vector3&		GetLocalScale() const { return m_localTransform.getScale(); }
+
 		void		SetGlobalTransform(const LibMath::Transform& transform);
+
+		const LibMath::Vector3&		GetGlobalPosition() const { return m_globalTransform.getPosition(); }
+		const LibMath::Quaternion&	GetGlobalRotation() const { return m_globalTransform.getRotation(); }
+		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
+
 
 		void		Start();
 		void		FixedUpdate(float deltaTime_s);
 		void		Update(float deltaTime_s);
+		void		LateUpdate(float deltaTime_s);
 		void		OnTriggerEnter(Physic::Collider* other);
 		void		OnTriggerExit(Physic::Collider* other);
+
+		void		AddTag(std::string tag);
+		void		RemoveTag(std::string const& tag);
+		bool		HasTag(std::string const& tag) const;
+
+		void		Destroy() { m_pendingDestroy = true; }
+		bool		IsPendingDestroy() const { return m_pendingDestroy; }
+
+		std::unordered_set<std::string> const& GetTags() const;
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	GetSceneNode() { return m_owner; }
 		Apex::SceneGraph::SceneNode*					GetSceneNodeRaw() { return m_owner.get(); }
@@ -153,8 +174,13 @@ namespace Apex::Data
 
 		std::function<void()>			m_onChanged;
 
+		// only one of each
+		std::unordered_set<std::string>					m_tags;
+
 		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;
+
+		bool m_pendingDestroy = false;
 	};
 }
 

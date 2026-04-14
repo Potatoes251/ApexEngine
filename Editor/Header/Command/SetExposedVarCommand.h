@@ -25,7 +25,7 @@ namespace Apex::CtrlZ
 
 		void Execute() override
 		{
-			Object* obj = m_scene->GetObjectWithId(m_targetId);
+			Data::Object* obj = m_scene->GetObjectWithId(m_targetId);
 			if (!obj) return;
 
 			Component* comp = obj->GetComponent(m_targetCompId);
@@ -43,7 +43,7 @@ namespace Apex::CtrlZ
 
 		void Undo() override
 		{
-			Object* obj = m_scene->GetObjectWithId(m_targetId);
+			Data::Object* obj = m_scene->GetObjectWithId(m_targetId);
 			if (!obj) return;
 
 			Component* comp = obj->GetComponent(m_targetCompId);

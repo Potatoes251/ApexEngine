@@ -30,6 +30,7 @@ using namespace Apex::Resources;
 using namespace Apex::Physic;
 using namespace Apex::Scripting;
 using namespace Apex::Lighting;
+using namespace Apex::Data;
 using namespace Apex::CtrlZ;
 
 ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
@@ -39,6 +40,12 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene,
 	m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), 
 	m_phys(phys), m_luaManager(lua), m_scriptPicker(gui)
 {
+}
+
+void Apex::Editor::ComponentsViewer::ClearSelection()
+{
+	m_selectedObj = nullptr; 
+	m_selectedComp = nullptr; 
 }
 
 void ComponentsViewer::Draw()
@@ -341,7 +348,6 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 			}
 		}
 	}
-
 	else
 	{
 		for (auto& var : comp->GetExposedVariables())

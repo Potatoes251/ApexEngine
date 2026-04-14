@@ -83,7 +83,6 @@ namespace Apex
         bool InitScene();
 
         void UpdateAudioListener();
-        void Update();
 
         bool m_running = true;
         float m_totalTime = 0.0f;

@@ -72,4 +72,20 @@ namespace Apex::UserInterface
 				thickness
 			);
 	}
+
+	void ImDrawListWrapper::DrawImage(uint32_t textureID,
+		LibMath::Vector2 min, LibMath::Vector2 max,
+		LibMath::Vector2 uv0, LibMath::Vector2 uv1,
+		uint32_t tint)
+	{
+		if (!m_drawList || textureID == 0) return;
+		m_drawList->AddImage(
+			(ImTextureID)(uintptr_t)textureID,
+			ImVec2(min[0], min[1]),
+			ImVec2(max[0], max[1]),
+			ImVec2(uv0[0], uv0[1]),
+			ImVec2(uv1[0], uv1[1]),
+			tint
+		);
+	}
 } // namespace Apex::UserInterface

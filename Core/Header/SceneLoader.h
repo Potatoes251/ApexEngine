@@ -34,8 +34,8 @@ namespace Apex::Serialization
 
     private:
 
-        Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
-        void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
+        Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
+        void ParseComponents(Data::Object* obj, Apex::Serialization::SerialParser& parser);
         void ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 

@@ -1,10 +1,12 @@
 #include "FirstPersonCamera.h"
 
+#include "../../Resources/Header/Object.h"
+
 #include "LibMath/Angle.h"
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
 
-
+using namespace Apex::Data;
 using namespace Apex::Rendering;
 
 FirstPersonCamera::FirstPersonCamera(LibMath::Vector3 position)
@@ -21,6 +23,7 @@ FirstPersonCamera::FirstPersonCamera(FirstPersonCamera const& other)
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;
 	m_position = other.m_position;
+	m_isMain = other.m_isMain;
 }
 
 FirstPersonCamera& FirstPersonCamera::operator=(FirstPersonCamera const& other)
@@ -31,6 +34,7 @@ FirstPersonCamera& FirstPersonCamera::operator=(FirstPersonCamera const& other)
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;
 	m_position = other.m_position;
+	m_isMain = other.m_isMain;
 
 	return *this;
 }
@@ -90,4 +94,12 @@ void FirstPersonCamera::Serialize(std::ostream& out) const
 	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << "\n";
 	out << "      }";
+}
+
+void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)
+{
+	Object* owner = GetOwner();
+	if (!owner) return;
+
+	SetPosition(owner->GetGlobalTransform().getPosition());
 }

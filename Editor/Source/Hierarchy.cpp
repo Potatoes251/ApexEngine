@@ -404,8 +404,8 @@ Object* Hierarchy::DuplicateObject(Object* original)
 
 void Hierarchy::DestroyObject(size_t objId)
 {
-    if (m_selected && m_selected->GetId() == objId)
-        SelectObject(nullptr);
+    Data::Object* obj = m_scene->GetObjectWithId(objId);
+    obj->Destroy();
 
     m_scene->DestroyObject(objId);
 }

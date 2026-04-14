@@ -21,7 +21,7 @@ void RemoveObjectCommand::Execute()
 
 void RemoveObjectCommand::Undo()
 {
-	std::unique_ptr<Object> newObj = m_savedObject->Clone();
+	std::unique_ptr<Data::Object> newObj = m_savedObject->Clone();
 	newObj->SetId(m_targetId);
 	m_addObjectFunc(std::move(newObj));
 }

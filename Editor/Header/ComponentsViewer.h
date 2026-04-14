@@ -27,11 +27,12 @@ namespace Apex::Editor
 			Apex::Scripting::LuaManager& lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
+		void ClearSelection();
 
 		void Draw();
 
-		void DrawTransform(Object* obj);
-		void DrawComponent(Object* obj, Apex::Component* comp);
+		void DrawTransform(Data::Object* obj);
+		void DrawComponent(Data::Object* obj, Apex::Component* comp);
 		bool DrawTreeComp(Apex::Component* obj);
 
 		bool DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max);
@@ -63,7 +64,7 @@ namespace Apex::Editor
 		bool m_changed = false;
 
 		LibMath::Vector3 m_cachedEuler;
-		Object* m_lastTransformObj = nullptr;
+		Data::Object* m_lastTransformObj = nullptr;
 		LibMath::Vector3 m_lastPosition;
 	};
 }

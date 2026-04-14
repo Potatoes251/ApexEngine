@@ -275,6 +275,15 @@ void Object::Update(float deltaTime_s)
 	}
 }
 
+void Object::LateUpdate(float deltaTime_s)
+{
+	for (auto& comp : m_components)
+	{
+		if (comp->IsEnabled())
+			comp->OnLateUpdate(deltaTime_s);
+	}
+}
+
 void Object::OnTriggerEnter(Physic::Collider* other)
 {
 	for (auto& comp : m_components)
@@ -291,6 +300,26 @@ void Object::OnTriggerExit(Physic::Collider* other)
 		if (comp->IsEnabled())
 			comp->OnTriggerExit(other);
 	}
+}
+
+void Object::AddTag(std::string tag)
+{
+	m_tags.insert(std::move(tag));
+}
+
+void Object::RemoveTag(std::string const& tag)
+{
+	m_tags.erase(tag);
+}
+
+bool Object::HasTag(std::string const& tag) const
+{
+	return m_tags.contains(tag);
+}
+
+std::unordered_set<std::string> const& Apex::Data::Object::GetTags() const
+{
+	return m_tags;
 }
 
 size_t Object::AddComponentDirect(std::unique_ptr<Component> comp)

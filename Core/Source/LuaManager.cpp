@@ -1,13 +1,14 @@
 #include "LuaManager.h"
 
-#include "LuaFunction/Debug.h"
-#include "LuaFunction/DebugLuaBindings.h"
+#include "LuaFunction/HudFunc.h"
+#include "LuaFunction/InputLua.h"
+#include "LuaFunction/CameraLua.h"
+#include "LuaFunction/ObjectLua.h"
+#include "LuaFunction/Vector3Lua.h"
+#include "LuaFunction/ComponentLua.h"
 #include "LuaFunction/TransformFunc.h"
 #include "LuaFunction/HierarchyFunc.h"
-#include "LuaFunction/InputLua.h"
 #include "LuaFunction/CharacterControllerLua.h"
-#include "LuaFunction/Vector3Lua.h"
-#include "LuaFunction/CameraLua.h"
 
 #include <iostream>
 
@@ -67,15 +68,14 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
-	RegisterFunction("Print", Apex::Engine::Debug::Lua_ApexPrint);
-    RegisterFunction("AddChild_Internal", Apex::Hierarchy::Lua_AddChild);
-    RegisterFunction("RemoveChild_Internal", Apex::Hierarchy::Lua_RemoveChild);
-    RegisterFunction("Reparent_Internal", Apex::Hierarchy::Lua_SetParent);
-    Apex::Transform::RegisterLua(*this);
+    Apex::Comp::RegisterLua(*this);
+    Apex::Data::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
-    Apex::Controller::RegisterLua(*this);
-    Apex::Vector3::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);
+    Apex::Vector3::RegisterLua(*this);
+    Apex::Hierarchy::RegisterLua(*this);
+    Apex::Transform::RegisterLua(*this);
+    Apex::Controller::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
@@ -99,6 +99,40 @@ int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
     int instanceRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
     lua_pop(luaState, 1);
     return instanceRef;
+}
+
+bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::string& funcName)
+{
+    if (instanceRef == LUA_NOREF) return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instanceRef); // push instance
+    if (!lua_istable(luaState, -1))
+    {
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_getfield(luaState, -1, funcName.c_str()); // push function
+    if (!lua_isfunction(luaState, -1))
+    {
+        lua_pop(luaState, 1);
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_pushvalue(luaState, -2); // push self
+    int args = 1;
+
+    if (lua_pcall(luaState, args, 0, 0) != LUA_OK)
+    {
+        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        lua_pop(luaState, 1);
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_pop(luaState, 1); // pop instance
+    return true;
 }
 
 bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::string& funcName, float dt)
@@ -136,4 +170,51 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     lua_pop(luaState, 1); // pop instance
     return true;
+}
+
+bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::string& funcName, Apex::Physic::Collider* collider)
+{
+    if (instanceRef == LUA_NOREF) return false;
+
+    // ---------- 1. CREATE LUA COLLIDER ----------
+    lua_getglobal(luaState, "require");
+    lua_pushstring(luaState, "Collider");
+    lua_pcall(luaState, 1, 1, 0);
+
+    lua_getfield(luaState, -1, "New");
+    lua_pushvalue(luaState, -2);
+    lua_pushlightuserdata(luaState, collider);
+
+    if (lua_pcall(luaState, 2, 1, 0) != LUA_OK)
+        return false;
+
+    int colliderRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
+
+    // ---------- 2. CALL SCRIPT FUNCTION ----------
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instanceRef);
+
+    lua_getfield(luaState, -1, funcName.c_str());
+    if (!lua_isfunction(luaState, -1))
+    {
+        lua_pop(luaState, 2);
+        return false;
+    }
+
+    lua_pushvalue(luaState, -2); // self
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, colliderRef);
+
+    if (lua_pcall(luaState, 2, 0, 0) != LUA_OK)
+    {
+        std::cout << lua_tostring(luaState, -1) << std::endl;
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    lua_pop(luaState, 1); // instance
+    return true;
+}
+
+void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIManager* ui)
+{
+    Apex::HudBindings::RegisterHudFunctions(luaState, ui);
 }

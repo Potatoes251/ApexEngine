@@ -373,7 +373,7 @@ namespace Apex::UserInterface
         bool result = ImGui::ImageButton(id.c_str(),
             (ImTextureID)(uintptr_t)textureID,
             ImVec2(size[0], size[1]),
-            ImVec2(0, 0), ImVec2(1, 1),
+            ImVec2(0, 1), ImVec2(1, 0),
             bgV, tintV);
         return result;
     }
@@ -429,9 +429,14 @@ namespace Apex::UserInterface
         std::string sliderLabel = "##" + label;
         return ImGui::SliderInt(sliderLabel.c_str(), value, min, max);
     }
-    bool ImGUIManager::ColorEdit3(const std::string& label, float colors[3])
+    bool ImGUIManager::ColorEdit3(const std::string& label, float color[3])
     {
-        return ImGui::ColorEdit3(label.c_str(), colors);
+        return ImGui::ColorEdit3(label.c_str(), color);
+    }
+
+    bool ImGUIManager::ColorEdit4(const std::string& label, float color[4])
+    {
+		return ImGui::ColorEdit4(label.c_str(), color);
     }
 
     bool ImGUIManager::InputText(const std::string& label, char* buffer,
@@ -611,6 +616,12 @@ namespace Apex::UserInterface
         return &m_drawListWrapper;
     }
 
+    IDrawList* ImGUIManager::GetBackgroundDrawList()
+    {
+        m_drawListWrapper.Reset(ImGui::GetBackgroundDrawList());
+        return &m_drawListWrapper;
+    }
+
     Vector2 ImGUIManager::GetItemRectMin() const
     {
         ImVec2 v = ImGui::GetItemRectMin();
@@ -642,6 +653,11 @@ namespace Apex::UserInterface
     {
         m_hasModal = false;
         m_modalName.clear();
+    }
+
+    void ImGUIManager::Dummy(LibMath::Vector2 size)
+    {
+		ImGui::Dummy(ImVec2(size[0], size[1]));
     }
 }
 

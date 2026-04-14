@@ -18,8 +18,8 @@
 #include <iomanip>
 #include <algorithm>
 
-using namespace Apex::Physic;
 using namespace Apex::Data;
+using namespace Apex::Physic;
 
 namespace Apex::Rendering
 {
@@ -110,6 +110,24 @@ namespace Apex::Rendering
 		MarkDirty();
 	}
 
+	void Scene::DestroyPendingObject()
+	{
+		std::vector<Object*> destroyQueue;
+
+		for (std::unique_ptr<Object>& obj : m_objects)
+		{
+			if (obj->IsPendingDestroy())
+			{
+				destroyQueue.push_back(obj.get());
+			}
+		}
+
+		for (Object* obj : destroyQueue)
+		{
+			DestroyObject(obj);
+		}
+	}
+
 	void Scene::DestroyObject(Object* obj)
 	{
 		if (!obj)
@@ -130,6 +148,10 @@ namespace Apex::Rendering
 
 		if (it != m_objects.end())
 		{
+			RigidBodyComponent* body = obj->GetComponent<RigidBodyComponent>();
+			if (body)
+				m_physics.RemoveActor(*body);
+
 			m_objects.erase(it);
 			MarkDirty();
 		}
@@ -172,7 +194,7 @@ namespace Apex::Rendering
 			if (m_mainCamera) continue;
 
 			Camera* camera = obj->GetComponent<Camera>();
-			if (camera)
+			if (camera && camera->IsMainCamera())
 			{
 				m_mainCamera = camera;
 			}
@@ -185,11 +207,16 @@ namespace Apex::Rendering
 		{
 			obj->Update(deltaTime_s);
 		}
+	}
 
-		if (m_mainCamera)
+	void Scene::LateUpdate(float deltaTime_s)
+	{
+		for (auto& obj : m_objects)
 		{
-			m_mainCamera->SetPosition(m_mainCamera->GetOwner()->GetGlobalTransform().getPosition());
+			obj->LateUpdate(deltaTime_s);
 		}
+
+		DestroyPendingObject();
 	}
 
 	void Scene::FixedUpdate(float deltaTime_s)
