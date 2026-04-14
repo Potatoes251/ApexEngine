@@ -10,7 +10,7 @@ using namespace Apex::Rendering;
 Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager& resourceManager)
 {
     m_mesh = resourceManager.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    m_shader = resourceManager.CreateAsync<Shader>("Assets/Shaders/Cube.vert|Assets/Shaders/Cube.frag");
+    m_shader = resourceManager.CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag");
     m_texture = resourceManager.CreateAsync<Texture>("Assets/Textures/Blank.png");
 }
 

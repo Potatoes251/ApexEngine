@@ -7,6 +7,7 @@
 #include "Rigidbody.h"
 #include "ScriptComponent.h"
 #include "Lighting/Lights.h"
+#include "Animator.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -96,6 +97,11 @@ void ComponentsViewer::Draw()
 		if (m_gui.MenuItem("Spot Light"))
 		{
 			m_selectedObj->AddComponent<SpotLightComponent>();
+		}
+
+		if (m_gui.MenuItem("Animator"))
+		{
+			m_selectedObj->AddComponent<Animator>();
 		}
 
 		m_gui.EndPopup();

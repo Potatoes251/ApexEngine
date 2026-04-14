@@ -113,6 +113,27 @@
         "material": 0
       }
     }
+  },
+  {
+    "id": 6,
+    "parent": null,
+    "name": "Object6",
+    "position": [2.000000,0.000000,0.000000],
+    "rotation": [-0.552142,-0.229819,-0.376732,0.707386],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Withered_Freddy.fbx",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000
+      }
+    }
   }
 ]
 }

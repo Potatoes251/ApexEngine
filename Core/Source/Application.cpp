@@ -66,8 +66,7 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitUI(gui)
     || !InitAudio()
     || !InitLua()
-    || !InitScene()
-    || !InitAnimation())
+    || !InitScene())
         return false;
 
     return true;

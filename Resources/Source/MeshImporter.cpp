@@ -38,6 +38,8 @@ void MeshImporter::Import(std::string path, Mesh& mesh)
 
 bool MeshImporter::ImportBin(std::string path, Mesh& mesh)
 {
+    return false;       //skip truc from Matéo
+
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::ifstream file(binaryPath, std::ios::binary);
@@ -383,7 +385,12 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
                     auto it = mesh.m_boneMap.find(parentName);
                     if (it != mesh.m_boneMap.end())
                     {
+                        //set the parent index
                         boneInfo.m_parentIndex = it->second;
+
+                        //add the present index to the parent
+                        int currentIndex = static_cast<int>(mesh.m_bones.size());
+                        mesh.m_bones[it->second].m_children.push_back(currentIndex);
                     }
                 }
                 mesh.m_bones.push_back(boneInfo);

@@ -6,23 +6,31 @@
 #include "../../Resources/header/Shader.h"
 #include "../../Resources/header/Mesh.h"
 #include "../../Resources/header/ResourceManager.h"
+#include "../../Resources/header/Component.h"
 #include <memory>
 
 using std::weak_ptr;
 using std::shared_ptr;
 using Apex::Resources::ResourceHandle;
 using std::vector;
+using std::unique_ptr;
 
 namespace Apex::Rendering
 {
-	class Animator
+	class Animator : public Component
 	{
 	public:
 		Animator() = default;
 		Animator(ResourceHandle<Mesh> mesh, ResourceHandle<Shader> shader, float fps);
 		~Animator() = default;
-		Animator(const Animator& other) = delete;
-		Animator& operator=(const Animator&) = delete;
+		Animator(const Animator& other);
+		Animator& operator=(const Animator&) = default;
+
+		//Component
+		void					Serialize(std::ostream& out) const override;
+		unique_ptr<Component>	Clone() const override;
+		const char*				GetTypeName() const override	{ return "Animator"; };
+		std::vector<ExposedVar> GetExposedVariables() override;
 
 		//before update
 		void SetMesh(ResourceHandle<Mesh> mesh);
@@ -30,10 +38,11 @@ namespace Apex::Rendering
 		void SetFPS(float fps);				//base fps = 30
 
 		//during update
-		void Update(float deltaTime);
+		void OnUpdate(float deltaTime) override;
 
 		void Stop();
 
+		//Animations
 		void PlayRepeat(int animationIndex);															//Play_single_animation
 		void PlayRepeatInterpolated(int animationIndex);												//Play_single_animation_interpolated
 		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//Play_cross_fade_animation
@@ -41,6 +50,12 @@ namespace Apex::Rendering
 		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//Play_blend_space_animation
 		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//Play_blend_space_animation_interpolated
 		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//Play_layer_blend_space_animation
+
+		//IK
+		int  AddIKInstance(int endBoneIndex, int chainLenght);	//chainLenght don't include endBone
+		void SetIKTargetPosition(int index, LibMath::Vector3 newTargetPosition);
+		void ActivateIKInstace(int index);
+		void DeactivateIKInstace(int index);
 
 	private:
 		enum AnimatorState
@@ -58,6 +73,14 @@ namespace Apex::Rendering
 			Play_layer_blend_space_animation
 		};
 
+		struct IKInstance
+		{
+			bool				m_active = true;
+			int					m_endBoneIndex = -1;
+			int					m_chainLenght = 0;
+			LibMath::Vector3	m_targetPosition;
+		};
+
 		void WaitForResourcesToBeLoaded();
 
 		//help
@@ -66,6 +89,10 @@ namespace Apex::Rendering
 		void ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform);
 		void InterpoleSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t);
 		void ReplaceBones(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB);
+
+		LibMath::Vector3 GetPos(Matrix4& m);
+		void SetPos(Matrix4& m, const LibMath::Vector3& p);
+		void ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance& ik);
 
 		//gpu
 		void SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix);
@@ -78,6 +105,10 @@ namespace Apex::Rendering
 		void PlayBlendedAnimation(float deltaTime);						//Play_blend_space_animation
 		void PlayBlendedAnimationInterpolated(float deltaTime);			//Play_blend_space_animation_interpolated
 		void PlayLayerBlendAnimation(float deltaTime);					//Play_layer_blend_space_animation
+
+		//IK
+		void ApllyIKInstances(vector<KeyFrame>& globalSkeleton);
+
 
 		//
 		AnimatorState			m_state = Waiting_for_loaded_ressources;
@@ -111,6 +142,9 @@ namespace Apex::Rendering
 
 		//layer bending
 		int						m_layerBendingOrigine = 0;
+
+		//IK
+		vector<IKInstance>		m_IKInstances;
 	};
 }
 
