@@ -59,8 +59,8 @@ std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 {
 	std::vector<Apex::ExposedVar> var = Camera::GetExposedVariables();
 
-	var.push_back({ "distance to target" , Apex::ExposedVar::Float, &m_distance });
-	var.push_back({ "follow speed" , Apex::ExposedVar::Float, &m_speed });
+	var.push_back({ "Distance to Target" , Apex::ExposedVar::Float, &m_distance });
+	var.push_back({ "Follow Speed" , Apex::ExposedVar::Float, &m_speed });
 
 	return var;
 }

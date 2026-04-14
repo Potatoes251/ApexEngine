@@ -126,6 +126,7 @@ namespace Apex::UserInterface
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
         bool InputFloat(const std::string& label, float* value) override;
+		bool InputInt(const std::string& label, int* value) override;
 
         bool Combo(const std::string& label, int* currentItem, const char* items) override;
         bool ComboFormat(const std::string& label, int* currentItem, const char* items) override;

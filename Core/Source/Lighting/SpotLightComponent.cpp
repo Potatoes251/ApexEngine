@@ -51,10 +51,10 @@ std::vector<ExposedVar> SpotLightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
-    exposedVec.push_back({ "Near plane shadow", ExposedVar::Float, &m_nearShadow });
-    exposedVec.push_back({ "Far plane shadow", ExposedVar::Float, &m_farShadow });
-    exposedVec.push_back({ "Inner angle", ExposedVar::Float, &m_innerCutoff });
-    exposedVec.push_back({ "Outer angle", ExposedVar::Float, &m_outerCutoff });
+    exposedVec.push_back({ "Near Plane Shadow", ExposedVar::Float, &m_nearShadow });
+    exposedVec.push_back({ "Far Plane Shadow", ExposedVar::Float, &m_farShadow });
+    exposedVec.push_back({ "Inner Angle", ExposedVar::Float, &m_innerCutoff });
+    exposedVec.push_back({ "Outer Angle", ExposedVar::Float, &m_outerCutoff });
 
     return exposedVec;
 }

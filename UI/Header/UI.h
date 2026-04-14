@@ -203,6 +203,7 @@ namespace Apex::UserInterface
                                char* buffer, size_t bufferSize,
                                const std::string& hint = "") = 0;
         virtual bool InputFloat(const std::string& label, float* value) = 0;
+		virtual bool InputInt(const std::string& label, int* value) = 0;
 
         virtual bool Combo(const std::string& label, int* currentItem, const char* items) = 0;
         virtual bool ComboFormat(const std::string& label, int* currentItem, const char* items) = 0;

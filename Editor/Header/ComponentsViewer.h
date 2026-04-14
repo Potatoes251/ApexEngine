@@ -40,6 +40,9 @@ namespace Apex::Editor
 		void HandleSelection(Apex::Component* comp);
 
 	private:
+		void DrawScriptComponent(Apex::Scripting::ScriptComponent* script);
+		void DrawVar(ExposedVar& var);
+
 		void DrawComponentEnum(ExposedVar var);
 		void DrawComponentVector3(ExposedVar var);
 		void DrawComponentPhysMaterial(ExposedVar var);
@@ -65,7 +68,6 @@ namespace Apex::Editor
 
 		LibMath::Vector3 m_cachedEuler;
 		Object* m_lastTransformObj = nullptr;
-		LibMath::Vector3 m_lastPosition;
 	};
 }
 
