@@ -8,6 +8,8 @@
 #include "RenderPassInfo.h"
 #include "Camera.h"
 
+#include "Game.h"
+
 #include <memory>
 #include <filesystem>
 
@@ -31,7 +33,7 @@ static std::filesystem::path FindProjectRoot(std::filesystem::path dir)
     return dir;
 }
 
-int main(int argc, char* argv[])
+int main2(int argc, char* argv[])
 {
     std::filesystem::current_path(FindProjectRoot(GetExeDir()));
 
@@ -81,5 +83,21 @@ int main(int argc, char* argv[])
 
         app->GetResourceManager()->ProcessGpuUploads();
     }
+    return 0;
+}
+
+int main(int argc, char* argv[])
+{
+    std::filesystem::current_path(FindProjectRoot(GetExeDir()));
+
+    Apex::Game::Game game;
+
+    if (!game.Init()) return 1;
+
+    while (!game.GetWindow()->ShouldClose())
+    {
+        game.Update();
+    }
+
     return 0;
 }
