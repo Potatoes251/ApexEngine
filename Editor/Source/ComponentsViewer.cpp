@@ -33,6 +33,12 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene,
 {
 }
 
+void Apex::Editor::ComponentsViewer::ClearSelection()
+{
+	m_selectedObj = nullptr; 
+	m_selectedComp = nullptr; 
+}
+
 void ComponentsViewer::Draw()
 {
 	m_gui.PushFont(FontID::Default);
@@ -276,7 +282,6 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			}
 		}
 	}
-
 	else
 	{
 		for (auto& var : comp->GetExposedVariables())

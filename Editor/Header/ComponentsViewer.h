@@ -27,6 +27,7 @@ namespace Apex::Editor
 			Apex::Scripting::LuaManager& lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
+		void ClearSelection();
 
 		void Draw();
 

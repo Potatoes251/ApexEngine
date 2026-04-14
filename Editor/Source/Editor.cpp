@@ -310,7 +310,11 @@ namespace Apex::Editor
     {
         if (m_editorState == newState)
             return;
-        
+
+        // Always clear selection before destroying old scene objects
+        if (m_componentsViewer) m_componentsViewer->ClearSelection();
+        if (m_hierarchy)        m_hierarchy->SelectObject(nullptr);
+
         // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
