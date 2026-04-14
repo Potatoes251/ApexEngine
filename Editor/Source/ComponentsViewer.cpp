@@ -16,8 +16,9 @@
 
 #include "CharacterController.h"
 
-#include "Command/RemoveCompCommand.h"
 #include "Command/SetExposedVarCommand.h"
+#include "Command/SetScriptVarCommand.h"
+#include "Command/RemoveCompCommand.h"
 #include "Command/TransformCommand.h"
 #include "Command/AddCompCommand.h"
 #include "CommandManager.h"
@@ -289,13 +290,13 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 	if (!open)
 		return;
 
-	if (auto* script = dynamic_cast<ScriptComponent*>(comp))
+	if (ScriptComponent* script = dynamic_cast<ScriptComponent*>(comp))
 	{
 		m_gui.Text("Script: " + script->GetScriptPath());
 
 		if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
 		{
-			m_scriptPicker.Open(script);
+			m_scriptPicker.Open(&m_scene, script);
 		}
 
 		for (auto& var : script->GetExposedVariables())
@@ -304,22 +305,22 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 			{
 			case ExposedVar::Float:
 			{
-				float value = std::get<float>(var.value);
-				if (m_gui.SliderFloat(var.name, &value, 0.0f, 10.0f))
+				float oldVal = std::get<float>(var.value);
+				float newVal = oldVal;
+				if (m_gui.SliderFloat(var.name, &newVal, 0.0f, 10.0f))
 				{
-					var.value = value;
-					script->SetVariable(var.name, var);
+					CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<float>>(&m_scene, script, var.name, oldVal, newVal));
 				}
 				break;
 			}
 
 			case ExposedVar::Bool:
 			{
-				bool value = std::get<bool>(var.value);
-				if (m_gui.Checkbox(var.name, &value))
+				bool oldVal = std::get<bool>(var.value);
+				bool newVal = oldVal;
+				if (m_gui.Checkbox(var.name, &newVal))
 				{
-					var.value = value;
-					script->SetVariable(var.name, var);
+					CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<bool>>(&m_scene, script, var.name, oldVal, newVal));
 				}
 				break;
 			}
@@ -327,14 +328,13 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 			case ExposedVar::String:
 			{
 				char buffer[256];
-				const auto& str = std::get<std::string>(var.value);
-				strncpy(buffer, str.c_str(), 255);
+				std::string const& oldVal = std::get<std::string>(var.value);
+				strncpy_s(buffer, oldVal.c_str(), 255);
 				buffer[255] = '\0';
 
 				if (m_gui.InputText(var.name, buffer, 256))
 				{
-					var.value = std::string(buffer);
-					script->SetVariable(var.name, var);
+					CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<std::string>>(&m_scene, script, var.name, oldVal, std::string(buffer)));
 				}
 				break;
 			}
@@ -410,7 +410,12 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 
 			case ExposedVar::PhysMaterial:
 			{
-				DrawComponentPhysMaterial(var);
+				PhysicMaterial oldVal = *(PhysicMaterial*)var.data;
+				if (DrawComponentPhysMaterial(var))
+				{
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, &m_scene));
+				}
 				break;
 			}
 
@@ -425,10 +430,8 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component*
 				DrawComponentTexture(var);
 				break;
 			}
-
-			case ExposedVar::Script:
-				DrawComponentScript(var);
-				break;
+			default:
+				assert(false && "Unhandled case of ExposedVar in ComponentsViewer::DrawComponent\n");
 			}
 		}
 	}
@@ -557,5 +560,5 @@ void ComponentsViewer::DrawComponentScript(ExposedVar var)
 	m_gui.Text("Script: " + script->GetScriptPath());
 
 	if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
-		m_scriptPicker.Open(script);
+		m_scriptPicker.Open(&m_scene, script);
 }
