@@ -1,5 +1,4 @@
 #include "SceneLoader.h"
-#include "SceneLoader.h"
 #include "Object.h"
 
 #include "MeshRenderer.h"

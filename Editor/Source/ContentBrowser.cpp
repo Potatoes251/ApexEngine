@@ -1,6 +1,8 @@
 #include "ContentBrowser.h"
 #include "EditorIcon.h"
 
+#include "MeshLoader.h"
+
 #include <iostream>
 
 using namespace Apex::UserInterface;
@@ -319,6 +321,20 @@ namespace Apex::Editor
         BeginRename(target);
     }
 
+    bool IsPathInsideProject(const fs::path& projectRoot, const fs::path& path)
+    {
+        std::error_code ec;
+
+        fs::path root = fs::weakly_canonical(projectRoot, ec);
+        fs::path target = fs::weakly_canonical(path, ec);
+
+        if (ec) return false;
+
+        auto relative = target.lexically_relative(root);
+
+        return !relative.empty() && relative.native()[0] != '.';
+    }
+
     void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
     {
         const fs::path& destination = destDir.empty() ? m_currentPath : destDir;
@@ -326,6 +342,19 @@ namespace Apex::Editor
 
         for (const auto& src : sources)
         {
+            if (IsPathInsideProject(m_rootPath, src))
+            {
+                std::string ext = src.extension().string();
+                if (ext == ".obj" || ext == ".fbx" || ext == ".FBX" || ext == ".mesh")
+                {
+                    MeshLoader ml;
+                    Mesh mesh;
+                    ml.Import(src.string(), mesh);
+                }
+
+                continue;
+            }
+
             std::error_code error;
             fs::path target = destination / src.filename();
 

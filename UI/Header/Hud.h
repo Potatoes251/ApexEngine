@@ -13,7 +13,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 using LibMath::Vector2;
-//using namespace Apex::UserInterface;
 using Apex::UserInterface::FontID;
 using Apex::Resources::ResourceHandle;
 

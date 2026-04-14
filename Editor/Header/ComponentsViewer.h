@@ -31,7 +31,7 @@ namespace Apex::Editor
 		void Draw();
 
 		void DrawTransform(Object* obj);
-		void DrawComponent(Apex::Component* comp);
+		void DrawComponent(Object* obj, Apex::Component* comp);
 		bool DrawTreeComp(Apex::Component* obj);
 
 		bool DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max);
@@ -39,9 +39,9 @@ namespace Apex::Editor
 		void HandleSelection(Apex::Component* comp);
 
 	private:
-		void DrawComponentEnum(ExposedVar var);
-		void DrawComponentVector3(ExposedVar var);
-		void DrawComponentPhysMaterial(ExposedVar var);
+		bool DrawComponentEnum(ExposedVar var);
+		bool DrawComponentVector3(ExposedVar var);
+		bool DrawComponentPhysMaterial(ExposedVar var);
 		void DrawComponentMesh(ExposedVar var);
 		void DrawComponentTexture(ExposedVar var);
 		void DrawComponentScript(ExposedVar var);

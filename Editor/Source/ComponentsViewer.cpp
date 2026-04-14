@@ -17,6 +17,7 @@
 #include "CharacterController.h"
 
 #include "Command/RemoveCompCommand.h"
+#include "Command/SetExposedVarCommand.h"
 #include "Command/TransformCommand.h"
 #include "Command/AddCompCommand.h"
 #include "CommandManager.h"
@@ -196,7 +197,7 @@ void ComponentsViewer::Draw()
 			if (!comp)
 				continue;
 
-			DrawComponent(comp);
+			DrawComponent(m_selectedObj, comp);
 		}
 
 		if (m_pendingDelete)
@@ -269,7 +270,7 @@ bool ComponentsViewer::DrawVec3(const std::string& name, LibMath::Vector3& v, fl
 	return changed;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
+void Apex::Editor::ComponentsViewer::DrawComponent(Object* obj, Apex::Component* comp)
 {
 	bool open = DrawTreeComp(comp);
 	
@@ -348,20 +349,38 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 			switch (var.type)
 			{
 			case ExposedVar::Float:
+			{
+				float oldVal = *(float*)var.data;
 				if (m_gui.SliderFloatFormat(var.name, (float*)var.data, 0.0f, 10.0f, 50.f))
+				{
 					m_changed = true;
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, &m_scene));
+				}
 				break;
-
+			}
 			case ExposedVar::Int:
+			{
+				int oldVal = *(int*)var.data;
 				if (m_gui.SliderIntFormat(var.name, (int*)var.data, 0, 10, 50.f))
+				{
 					m_changed = true;
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+				}
 				break;
-
+			}
 			case ExposedVar::Bool:
+			{
+				bool oldVal = *(bool*)var.data;
 				if (m_gui.CheckboxFormat(var.name, (bool*)var.data))
+				{
 					m_changed = true;
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, &m_scene));
+				}
 				break;
-
+			}
 			case ExposedVar::String:
 				if (m_gui.InputText(var.name, (char*)var.data, 256))
 					m_changed = true;
@@ -369,13 +388,23 @@ void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
 
 			case ExposedVar::Enum:
 			{
-				DrawComponentEnum(var);
+				int oldVal = *(int*)var.data;
+				if (DrawComponentEnum(var))
+				{
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+				}
 				break;
 			}
 
 			case ExposedVar::Vector3:
 			{
-				DrawComponentVector3(var);
+				LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+				if (DrawComponentVector3(var))
+				{
+					CommandManager::Get().Execute(
+						std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, &m_scene));
+				}
 				break;
 			}
 
@@ -443,7 +472,7 @@ void Apex::Editor::ComponentsViewer::HandleSelection(Apex::Component* comp)
 		m_selectedComp = comp;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
+bool Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 {
 	int value = *(int*)var.data;
 
@@ -455,30 +484,44 @@ void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 	{
 		*(int*)var.data = value;
 		m_changed = true;
+		return true;
 	}
+	return false;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
+bool Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 {
 	float* v = (float*)var.data;
+
+	bool changed = false;
 
 	m_gui.Text(var.name);
 
 	m_gui.SameLine(150);
-	m_changed |= m_gui.SliderFloatFormat("X", &v[0], -1000.0f, 1000.0f, 50.0f);
+	changed |= m_gui.SliderFloatFormat("X", &v[0], -1000.0f, 1000.0f, 50.0f);
 	m_gui.SameLine();
-	m_changed |= m_gui.SliderFloatFormat("Y", &v[1], -1000.0f, 1000.0f, 50.0f);
+	changed |= m_gui.SliderFloatFormat("Y", &v[1], -1000.0f, 1000.0f, 50.0f);
 	m_gui.SameLine();
-	m_changed |= m_gui.SliderFloatFormat("Z", &v[2], -1000.0f, 1000.0f, 50.0f);
+	changed |= m_gui.SliderFloatFormat("Z", &v[2], -1000.0f, 1000.0f, 50.0f);
+
+	m_changed |= changed;
+
+	return changed;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
+bool Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
 {
 	PhysicMaterial* mat = (PhysicMaterial*)var.data;
 
-	m_changed |= m_gui.SliderFloatFormat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f, 50.0f, 200.f);
-	m_changed |= m_gui.SliderFloatFormat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f, 50.0f, 200.f);
-	m_changed |= m_gui.SliderFloatFormat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f, 50.0f, 200.f);
+	bool changed = false;
+
+	changed |= m_gui.SliderFloatFormat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f, 50.0f, 200.f);
+	changed |= m_gui.SliderFloatFormat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f, 50.0f, 200.f);
+	changed |= m_gui.SliderFloatFormat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f, 50.0f, 200.f);
+
+	m_changed |= changed;
+
+	return changed;
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
