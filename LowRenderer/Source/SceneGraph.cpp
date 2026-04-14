@@ -106,17 +106,17 @@ void SceneNode::Destroy()
 
 void SceneNode::SetParent(std::shared_ptr<SceneNode> const& newParent)
 {
-	if (m_parent == newParent	||	//No move to origine place
-		newParent.get() == this ||	//No move to itself
-		IsDescendantOf(newParent))	//No loop descendance
-	{
-		return;
-	}
-
 	if (!newParent)
 	{
 		m_parent->DetachChild(this);
 		m_parent = nullptr;
+		return;
+	}
+
+	if (m_parent == newParent ||	//No move to origine place
+		newParent.get() == this ||	//No move to itself
+		IsDescendantOf(newParent))	//No loop descendance
+	{
 		return;
 	}
 
@@ -127,17 +127,17 @@ void SceneNode::SetParent(std::shared_ptr<SceneNode> const& newParent)
 
 void Apex::SceneGraph::SceneNode::SetParent(SceneNode* newParent)
 {
-	if (m_parent.get() == newParent ||	//No move to origine place
-		newParent == this ||	//No move to itself
-		newParent->IsDescendantOf(this))	//No loop descendance
-	{
-		return;
-	}
-
 	if (!newParent)
 	{
 		m_parent->DetachChild(this);
 		m_parent = nullptr;
+		return;
+	}
+
+	if (m_parent.get() == newParent ||	//No move to origine place
+		newParent == this ||	//No move to itself
+		IsDescendantOf(newParent))	//No loop descendance
+	{
 		return;
 	}
 

@@ -23,6 +23,11 @@ namespace Apex::UserInterface
         virtual LibMath::Vector2 CalculateTextSize(const std::string& text) = 0;
         virtual LibMath::Vector2 CalculateTextSizeEx(const std::string& text, float fontSize) = 0;
         virtual void AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness = 1.f) = 0;
+        virtual void DrawImage(uint32_t textureID,
+            LibMath::Vector2 min, LibMath::Vector2 max,
+            LibMath::Vector2 uv0 = { 0.f, 0.f },
+            LibMath::Vector2 uv1 = { 1.f, 1.f },
+            uint32_t tint = 0xFFFFFFFF) = 0;
     };
 
 } // namespace Apex::UserInterface

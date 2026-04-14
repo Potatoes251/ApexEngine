@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "Physic.h"
+#include "LuaManager.h"
 
 #include <string>
 #include <vector>
@@ -22,7 +23,11 @@ namespace Apex::Serialization
     class SceneLoader
     {
     public:
-        SceneLoader(Apex::Resources::ResourceManager& resMgr, Apex::Physic::PhysicSystem& physics) : m_resourceManager(resMgr), m_physics(physics) {}
+        SceneLoader(Apex::Resources::ResourceManager& resMgr, 
+            Apex::Physic::PhysicSystem& physics, 
+            Apex::Scripting::LuaManager& luaManager) 
+            : m_resourceManager(resMgr), m_physics(physics), 
+            m_luaManager(luaManager) {}
 
         void LoadScene(Apex::Rendering::Scene& scene, const std::string& path);
 
@@ -30,12 +35,14 @@ namespace Apex::Serialization
         Apex::Resources::ResourceManager& m_resourceManager;
         Apex::Physic::PhysicSystem& m_physics;
         std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
+        Apex::Scripting::LuaManager& m_luaManager;
 
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;
         std::vector<std::pair<size_t, size_t>> parentLinks;
 
-        Apex::Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
-        void ParseComponents(Apex::Data::Object* obj, Apex::Serialization::SerialParser& parser);
+        Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
+        void ParseComponents(Data::Object* obj, Apex::Serialization::SerialParser& parser);
+        ExposedVar ParseScriptVar(SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 
         Apex::Physic::BodyType StringToBodyType(const std::string& str);

@@ -5,6 +5,7 @@
 
 #include <ostream>
 #include <vector>
+#include <variant>
 
 namespace Apex::Data { class Object; }
 namespace Apex::Physic { class Collider; }
@@ -15,8 +16,19 @@ namespace Apex
     {
         std::string name;
         enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Script } type;
-        void* data;
+        void* data = nullptr;
+        std::variant<float, int, bool, std::string> value;
         std::vector<std::string> enumNames;
+
+        ExposedVar() = default;
+
+        ExposedVar(std::string name, Type type, void* data)
+            : name(std::move(name)), type(type), data(data) {
+        }
+
+        ExposedVar(std::string name, Type type, void* data, std::vector<std::string> enumNames)
+            : name(std::move(name)), type(type), data(data), enumNames(std::move(enumNames)) {
+        }
     };  
 
     class Component
@@ -38,7 +50,7 @@ namespace Apex
 
         virtual void Serialize(std::ostream& out) const = 0;
 
-        virtual std::unique_ptr<Component> Clone() const = 0;
+        virtual std::unique_ptr<Component> Clone() = 0;
 
         virtual const char* GetTypeName() const = 0;
         virtual std::vector<ExposedVar> GetExposedVariables() = 0;

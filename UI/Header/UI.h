@@ -198,6 +198,7 @@ namespace Apex::UserInterface
         virtual bool SliderIntFormat(const std::string& label, int* value, int min, int max, 
                                         float size, float sliderPos = -1.f, float spacing = -1.f) = 0;
         virtual bool ColorEdit3(const std::string& label, float color[3]) = 0;
+		virtual bool ColorEdit4(const std::string& label, float color[4]) = 0;
         virtual bool InputText(const std::string& label,
                                char* buffer, size_t bufferSize,
                                const std::string& hint = "") = 0;
@@ -249,6 +250,7 @@ namespace Apex::UserInterface
         // Background draw list — for custom tile rendering inside panels.
         // Lifetime: valid for the current frame only.
         virtual IDrawList* GetDrawList() = 0;
+        virtual IDrawList* GetBackgroundDrawList() = 0;
 
         virtual Vector2 GetItemRectMin() const = 0;
         virtual Vector2 GetItemRectMax() const = 0;
@@ -257,6 +259,8 @@ namespace Apex::UserInterface
 
         virtual void BeginModalBlock(const std::string& name) = 0;
         virtual void EndModalBlock() = 0;
+
+        virtual void Dummy(LibMath::Vector2 size) = 0;
 	private:
 	};
 

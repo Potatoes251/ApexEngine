@@ -17,7 +17,7 @@ namespace Apex::Physic
 
 		~BoxCollider() = default;
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<BoxCollider>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<BoxCollider>(*this); }
 
 		ColliderType GetType() const override { return ColliderType::Box; }
 		const char* GetTypeName() const override { return "BoxCollider"; };

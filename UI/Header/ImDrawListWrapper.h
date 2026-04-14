@@ -24,6 +24,12 @@ namespace Apex::UserInterface
 
         void AddLine(LibMath::Vector2 p1, LibMath::Vector2 p2, uint32_t color, float thickness) override;
 
+        void DrawImage(uint32_t textureID,
+            LibMath::Vector2 min, LibMath::Vector2 max,
+            LibMath::Vector2 uv0 = { 0.f, 0.f },
+            LibMath::Vector2 uv1 = { 1.f, 1.f },
+            uint32_t tint = 0xFFFFFFFF) override;
+
         void Reset(ImDrawList* drawList) { m_drawList = drawList; }
 
     private:

@@ -16,7 +16,7 @@ namespace Apex::Scripting
         ScriptComponent(LuaManager& lua) : m_lua(lua) {};
         ~ScriptComponent() = default;
 
-        std::unique_ptr<Component> Clone() const override;
+        std::unique_ptr<Component> Clone() override;
 
         void SetScript(const std::string& path);
         void SetObjectPtr();
@@ -24,6 +24,8 @@ namespace Apex::Scripting
 
         const char* GetTypeName() const override { return "ScriptComponent"; };
         std::vector<ExposedVar> GetExposedVariables() override;
+
+        void SetVariable(const std::string& name, ExposedVar& var);
 
         int GetInstanceRef() const { return m_instanceRef; }
 

@@ -28,7 +28,7 @@ namespace Apex::Rendering
 		void Serialize(std::ostream& out) const override;
 		std::vector<ExposedVar> GetExposedVariables() override;
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<ThirdPersonCamera>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<ThirdPersonCamera>(*this); }
 
 		void OnLateUpdate(float deltatime_s) override;
 

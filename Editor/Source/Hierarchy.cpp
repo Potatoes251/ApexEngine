@@ -56,6 +56,11 @@ void Hierarchy::Draw()
     Vector2 size = m_gui.GetAvailableSize();
     m_gui.InvisibleButton("HierarchyDropArea", size);
 
+    if (m_gui.IsItemClicked())
+    {
+        SelectObject(nullptr);
+    }
+
     if (m_gui.BeginDropTarget())
     {
         if (const void* data = m_gui.AcceptDragPayload("SCENE_NODE"))
@@ -87,6 +92,9 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 
     if (selected && m_componentsViewer)
         m_componentsViewer->SetSelectedObject(selected);
+
+    if (!selected)
+        m_componentsViewer->SetSelectedObject(nullptr);
 }
 
 void Hierarchy::DrawNode(SceneNode* node)

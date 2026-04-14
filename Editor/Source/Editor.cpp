@@ -23,6 +23,7 @@ namespace Apex::Editor
     bool Editor::InitWindow()
     {
         m_window = std::unique_ptr<IWindow>(CreateWindow("Apex Editor", 1280, 720));
+        m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
 
         if (!m_window) return false;
 
@@ -44,7 +45,6 @@ namespace Apex::Editor
     {
         m_app = &app;
         m_audio = app.GetAudio();
-        m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
 
         if (!m_gui) return false;
 
@@ -147,6 +147,9 @@ namespace Apex::Editor
                 case AssetType::Sound:
                     OpenSoundPlayer(entry.m_path);
                     break;
+                case AssetType::Hud:
+                    OpenHudEditor(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -183,25 +186,29 @@ namespace Apex::Editor
                 textureEditor->Draw();
             m_textureEditors.erase(
                 std::remove_if(m_textureEditors.begin(), m_textureEditors.end(),
-                    [](const std::unique_ptr<TextureEditor>& textureEditor)
-                    { return !textureEditor->IsOpen(); }),
+                    [](const std::unique_ptr<TextureEditor>& textureEditor) { return !textureEditor->IsOpen(); }),
                 m_textureEditors.end());
             // Draw all open mesh viewers, then remove closed ones
             for (auto& meshViewer : m_meshViewers)
                 meshViewer->Draw();
             m_meshViewers.erase(
                 std::remove_if(m_meshViewers.begin(), m_meshViewers.end(),
-                    [](const std::unique_ptr<MeshViewer>& meshViewer) 
-                    { return !meshViewer->IsOpen(); }),
+                    [](const std::unique_ptr<MeshViewer>& meshViewer) { return !meshViewer->IsOpen(); }),
                 m_meshViewers.end());
             // Draw all open sound players, then remove closed ones
             for (auto& soundPlayer : m_soundPlayers)
                 soundPlayer->Draw();
             m_soundPlayers.erase(
                 std::remove_if(m_soundPlayers.begin(), m_soundPlayers.end(),
-                    [](const std::unique_ptr<SoundPlayer>& sp) 
-                    { return !sp->IsOpen(); }),
+                    [](const std::unique_ptr<SoundPlayer>& sp) { return !sp->IsOpen(); }),
                 m_soundPlayers.end());
+            // Draw all open HUD editors, then remove closed ones
+            for (auto& hudEditor : m_hudEditors)
+                hudEditor->Draw();
+            m_hudEditors.erase(
+                std::remove_if(m_hudEditors.begin(), m_hudEditors.end(),
+                    [](const std::unique_ptr<HudEditor>& he) { return !he->IsOpen(); }),
+                m_hudEditors.end());
         }
 
         if (m_viewport)
@@ -289,6 +296,7 @@ namespace Apex::Editor
         m_textureEditors.clear();
         m_meshViewers.clear();
         m_soundPlayers.clear();
+        m_hudEditors.clear();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -308,6 +316,13 @@ namespace Apex::Editor
             m_editScene = m_app->GetScene()->Clone();
             m_app->SetScene(m_editScene->Clone());
 
+            auto* ui = m_app->GetUI();
+            if (ui)
+            {
+                ui->ClearAll();
+                ui->ScanHUDs("Assets/");
+            }
+
             m_app->GetScene()->Start();
 
             m_hierarchy->SetScene(m_app->GetScene());
@@ -316,8 +331,11 @@ namespace Apex::Editor
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
-
             m_hierarchy->SetScene(m_app->GetScene());
+
+            auto* ui = m_app->GetUI();
+            if (ui)
+                ui->ClearAll();
         }
 
         // capture cursor when in play uncapture it when not in play
@@ -335,6 +353,7 @@ namespace Apex::Editor
         case AssetType::Sound:   return "Sound";
         case AssetType::Level:   return "Level";
         case AssetType::Script:  return "Script";
+        case AssetType::Hud:     return "HUD";
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
@@ -403,5 +422,20 @@ namespace Apex::Editor
         auto soundPlayer = std::make_unique<SoundPlayer>(*m_gui, *m_window, *m_audio);
         soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
         m_soundPlayers.push_back(std::move(soundPlayer));
+    }
+
+    void Editor::OpenHudEditor(const fs::path& path)
+    {
+        for (auto& hudEditor : m_hudEditors)
+        {
+            if (hudEditor->GetPath() == path)
+            {
+                hudEditor->Focus();
+                return;
+            }
+        }
+        auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager(), *m_app->GetRhi());
+        hudEditor->Open(path, static_cast<int>(m_hudEditors.size()));
+        m_hudEditors.push_back(std::move(hudEditor));
     }
 }

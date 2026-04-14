@@ -32,6 +32,8 @@ namespace LibMath
 		// assume two unit quaternions
 		float				angleBetween(Quaternion const&) const;
 
+		Vector3				toEuler() const;
+
 		float&			operator[](int);					// return this quaternion component value
 		float			operator[](int) const;				// return this quaternion component value
 

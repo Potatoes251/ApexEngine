@@ -1,25 +1,20 @@
 {
 "materials": [
-  {
-    "id": 0,
-    "static friction": 0.500000,
-    "dynamic friction": 0.500000,
-    "bounciness": 1.000000
-  }
+
 ],
 "objects": [
   {
-    "id": 15,
+    "id": 20,
     "parent": null,
-    "name": "Sphere",
-    "position": [-0.000406,2.872014,0.000156],
-    "rotation": [-0.000129,-0.000064,-0.000176,1.000000],
+    "name": "Player",
+    "position": [-3.364182,2.008404,-1.353822],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/sphere/sphere.mesh",
-        "texture": "Assets/Textures/container.jpg",
+        "mesh": "Assets/Meshes/padoru/padoru.mesh",
+        "texture": "Assets/Textures/padoru.png",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
       },
@@ -28,58 +23,44 @@
         "type": "Kinematic",
         "mass": 1.000000
       },
-      "SpotLight": {
-        "enabled": true,
-        "color": [0.000000, 1.000000, 0.000000],
-        "intensity": 0.000000,
-        "innerCutOff": 4.386000,
-        "outerCutOff": 5.405000
-      },
-      "PointLight": {
-        "enabled": true,
-        "color": [1.000000, 0.000000, 1.000000],
-        "intensity": 4.830000,
-        "radius": 10.000000
-      },
-      "DirectionalLight": {
-        "enabled": true,
-        "color": [1.000000, 1.000000, 1.000000],
-        "intensity": 10.000000,
-        "shadowDistance": 25.000000,
-        "shadowExtent": 10.000000
-      },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.500000,
+        "halfHeight": 0.250000,
         "radius": 0.200000,
         "isTrigger": false,
         "material": null
       },
       "CharacterController": {
         "enabled": true,
-        "groundedDistance": 0.800000,
-        "speed": 5.000000
+        "groundedDistance": 0.450000,
+        "speed": 1.000000
       },
       "ThirdPersonCamera": {
         "enabled": true,
         "isMain": true,
-        "distance": 10.000000,
+        "distance": 6.176000,
         "speed": 2.500000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
       }
     }
   },
   {
-    "id": 16,
+    "id": 21,
     "parent": null,
-    "name": "Padoru",
+    "name": "Platform",
     "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.000000,1.000000,1.000000],
+    "scale": [20.000000,1.000000,20.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/padoru/padoru.mesh",
-        "texture": "Assets/Textures/padoru.png",
+        "mesh": "Assets/Meshes/cube/cube.mesh",
+        "texture": "Assets/Textures/Blank.png",
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
       },
@@ -97,36 +78,40 @@
     }
   },
   {
-    "id": 17,
+    "id": 22,
     "parent": null,
-    "name": "Floor",
-    "position": [-0.000116,5.897200,-0.000184],
-    "rotation": [0.000229,-0.000007,-0.000208,1.000000],
+    "name": "HUDController",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
-      "MeshRenderer": {
+      "ScriptComponent": {
         "enabled": true,
-        "mesh": "Assets/Meshes/floor/floor.mesh",
-        "texture": "Assets/Textures/container.jpg",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-        "castShadow": true
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Dynamic",
-        "mass": 1.000000
-      },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/floor.obj",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": 0
+        "script": "Assets/Scripts/HudController.lua",
+        "vars": {
+        }
       }
     }
   },
   {
-    "id": 18,
+    "id": 23,
+    "parent": null,
+    "name": "Light",
+    "position": [-1.000000,2.000000,0.000000],
+    "rotation": [-0.341454,-0.286514,0.685735,-0.575400],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 4.412000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 24,
     "parent": null,
     "name": "Object6",
     "position": [-4.000000,2.000000,-2.000000],

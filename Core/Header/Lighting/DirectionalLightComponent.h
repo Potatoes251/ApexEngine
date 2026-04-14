@@ -15,7 +15,7 @@ namespace Apex::Lighting
 		DirectionalLightComponent(DirectionalLightComponent const&);
 		DirectionalLightComponent& operator=(DirectionalLightComponent const& other);
 
-		std::unique_ptr<Component> Clone() const override { return std::make_unique<DirectionalLightComponent>(*this); }
+		std::unique_ptr<Component> Clone() override { return std::make_unique<DirectionalLightComponent>(*this); }
 
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "DirectionalLight"; }
