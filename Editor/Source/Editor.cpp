@@ -106,6 +106,9 @@ namespace Apex::Editor
                 {
                     CommandManager::Get().Redo();
                 }
+
+                if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)

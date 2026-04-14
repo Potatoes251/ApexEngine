@@ -52,13 +52,18 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
-	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
+	if (m_editor->GetEditorState() != EditorState::Edit
+	    || mouseX < m_panelPos[0] || mouseX >  m_panelPos[0] + m_panelSize[0]
+		|| mouseY < m_panelPos[1] || mouseY >  m_panelPos[1] + m_panelSize[1])
+		return;
+
 	PerformPicking({ (float)mouseX, (float)mouseY });
 	CommandManager::Get().StartBatch();
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
+	if (!m_isFocus) return;
 	m_selectedAxis = Axis::None;
 	CommandManager::Get().EndBatch();
 }
