@@ -31,7 +31,7 @@ namespace Apex::Editor
 
 		void Draw();
 
-		void DrawTransform(Object* obj);
+		void DrawTransform(Data::Object* obj);
 		void DrawComponent(Apex::Component* comp);
 		bool DrawTreeComp(Apex::Component* obj);
 
@@ -64,7 +64,7 @@ namespace Apex::Editor
 		bool m_changed = false;
 
 		LibMath::Vector3 m_cachedEuler;
-		Object* m_lastTransformObj = nullptr;
+		Data::Object* m_lastTransformObj = nullptr;
 		LibMath::Vector3 m_lastPosition;
 	};
 }

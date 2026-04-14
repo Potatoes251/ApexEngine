@@ -2,6 +2,7 @@
 #include <../../Resources/Header/Object.h>
 
 using namespace Apex::SceneGraph;
+using namespace Apex::Data;
 
 SceneNode::SceneNode() :
 	m_object(nullptr) {}

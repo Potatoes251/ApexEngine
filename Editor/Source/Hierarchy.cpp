@@ -397,12 +397,7 @@ Object* Hierarchy::DuplicateObject(Object* original)
 
 void Hierarchy::DestroyObject(Object* obj)
 {
-    std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
-
-    if (node->GetParent())
-        node->GetParent()->DestroyChild(node);
-
-    m_scene->DestroyObject(obj);
+    obj->Destroy();
 
     if (m_selected == obj)
         SelectObject(nullptr);

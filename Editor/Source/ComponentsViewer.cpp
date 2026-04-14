@@ -23,6 +23,7 @@ using namespace Apex::Resources;
 using namespace Apex::Physic;
 using namespace Apex::Scripting;
 using namespace Apex::Lighting;
+using namespace Apex::Data;
 
 ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
 	Apex::Resources::ResourceManager& resourceManager, 

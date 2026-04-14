@@ -40,8 +40,8 @@ namespace Apex::Serialization
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;
         std::vector<std::pair<size_t, size_t>> parentLinks;
 
-        Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
-        void ParseComponents(Object* obj, Apex::Serialization::SerialParser& parser);
+        Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
+        void ParseComponents(Data::Object* obj, Apex::Serialization::SerialParser& parser);
         ExposedVar ParseScriptVar(SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 

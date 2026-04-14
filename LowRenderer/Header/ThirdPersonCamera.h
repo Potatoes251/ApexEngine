@@ -30,7 +30,7 @@ namespace Apex::Rendering
 
 		std::unique_ptr<Component> Clone() override { return std::make_unique<ThirdPersonCamera>(*this); }
 
-		void OnUpdate(float deltatime_s) override;
+		void OnLateUpdate(float deltatime_s) override;
 
 	private:
 		void UpdateMatrices() override;
