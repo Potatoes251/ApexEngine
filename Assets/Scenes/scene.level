@@ -4,10 +4,10 @@
 ],
 "objects": [
   {
-    "id": 20,
+    "id": 16,
     "parent": null,
     "name": "Player",
-    "position": [-3.364182,2.008404,-1.353822],
+    "position": [-2.689153,1.073233,-0.486195],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
@@ -37,7 +37,7 @@
       },
       "ThirdPersonCamera": {
         "enabled": true,
-        "isMain": true,
+        "isMain": false,
         "distance": 6.176000,
         "speed": 2.500000
       },
@@ -50,7 +50,7 @@
     }
   },
   {
-    "id": 21,
+    "id": 17,
     "parent": null,
     "name": "Platform",
     "position": [0.000000,0.000000,0.000000],
@@ -64,21 +64,21 @@
         "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
         "castShadow": true
       },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Static",
-        "mass": 0.000000
-      },
       "BoxCollider": {
         "enabled": true,
         "halfExtents": [10.000000, 0.500000, 10.000000],
         "isTrigger": false,
         "material": null
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
       }
     }
   },
   {
-    "id": 22,
+    "id": 18,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -94,7 +94,7 @@
     }
   },
   {
-    "id": 23,
+    "id": 19,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -107,34 +107,6 @@
         "intensity": 4.412000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
-      }
-    }
-  },
-  {
-    "id": 24,
-    "parent": null,
-    "name": "Object6",
-    "position": [-4.000000,2.000000,-2.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [2.000000,2.036985,2.000000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/cube/cube.mesh",
-        "texture": "Assets/Textures/Blank.png",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-        "castShadow": true
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Static",
-        "mass": 1.000000
-      },
-      "BoxCollider": {
-        "enabled": true,
-        "halfExtents": [1.000000, 1.000000, 1.000000],
-        "isTrigger": true,
-        "material": null
       }
     }
   }

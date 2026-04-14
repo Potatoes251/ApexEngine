@@ -10,6 +10,7 @@
 #include "Scene.h"
 #include "RHI.h"
 #include "Hud.h"
+#include "EditorIcon.h"
 
 using namespace Apex::Data;
 
@@ -442,61 +443,9 @@ void Viewport::Draw()
 
 void Viewport::DrawUI()
 {
-	m_gui->SetCursorPos(m_panelPos + LibMath::Vector2(10, 35));
-
-	if (m_gui->Button("Play")) m_editor->SetEditorState(EditorState::Play);
-	m_gui->SameLine();
-	if (m_gui->Button("Pause"))
-	{
-		if (m_editor->GetEditorState() == EditorState::Play)
-			m_editor->SetEditorState(EditorState::Pause);
-		else if (m_editor->GetEditorState() == EditorState::Pause)
-			m_editor->SetEditorState(EditorState::Play);
-	}
-	m_gui->SameLine();
-	if (m_gui->Button("Step") && m_editor->GetEditorState() == EditorState::Pause) m_editor->SetEditorState(EditorState::Step);
-	m_gui->SameLine();
-	if (m_gui->Button("Stop")) 
-	{
-		m_editor->SetEditorState(EditorState::Edit);
-		SelectObject(nullptr);
-		if (m_isFullScreen)
-		{
-			m_isFullScreen = false;
-			m_isFirstFullScreen = true;
-		}
-	}
-	m_gui->SameLine();
-	m_gui->Checkbox("Grid", &m_showGrid);
-	m_gui->SameLine();
-	m_gui->Checkbox("Colliders", &m_showColliders);
-
-	if (m_editor->GetEditorState() != EditorState::Edit) return;
-
-	m_gui->Checkbox("Local Gizmo", &m_localGizmo);
-	m_gui->SameLine();
-	if (m_gui->Button("Translate")) m_currentGizmoMode = GizmoMode::Translation;
-	m_gui->SameLine();
-	m_gui->Checkbox("Translate Snapping", &m_isTranslationSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->InputFloat("Translate value", &m_translateSnap);
-	m_gui->SameLine();
-
-	if (m_gui->Button("Rotate"))	m_currentGizmoMode = GizmoMode::Rotation;
-	m_gui->SameLine();
-	m_gui->Checkbox("Rotate Snapping", &m_isRotationSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->InputFloat("Rotate value", &m_rotateSnap);
-	m_gui->SameLine();
-
-	if (m_gui->Button("Scale"))		m_currentGizmoMode = GizmoMode::Scale;
-	m_gui->SameLine();
-	m_gui->Checkbox("Scale Snapping", &m_isScaleSnapping);
-	m_gui->SameLine();
-	m_gui->SetNextItemWidth(150.0f);
-	m_gui->InputFloat("Scale value", &m_scaleSnap);
+	DrawPlayBar();
+	if (m_editor->GetEditorState() == EditorState::Edit)
+		DrawRightToolbar();
 }
 
 void Viewport::DrawGrid()
@@ -514,4 +463,196 @@ void Viewport::DrawGrid()
 	m_gridShader->SetUniform("uCameraPos", m_camera.GetPosition());
 
 	m_rhi->DrawEmpty();
+}
+
+void Apex::Editor::Viewport::DrawPlayBar()
+{
+	EditorState state = m_editor->GetEditorState();
+
+	constexpr float BUTTON = 36.f;
+	constexpr float PAD = 4.f;
+	constexpr float ROUND = BUTTON * 0.5f;
+
+	auto drawBar = [&](float count)
+		{
+			float groupWidth = count * (BUTTON + PAD) - PAD + PAD * 7.f;
+			float startX = m_panelPos[0] + (m_panelSize[0] - groupWidth) * 0.5f;
+			float startY = m_panelPos[1] + 30.f;
+			DrawPillGroup({ startX - 2.f, startY - 2.f }, { groupWidth, BUTTON + PAD * 4.8f }, ROUND);
+			m_gui->SetCursorPos({ startX + PAD, startY + PAD * 0.5f });
+		};
+
+	if (state == EditorState::Edit)
+	{
+		drawBar(1); // only Play
+		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
+			m_editor->SetEditorState(EditorState::Play);
+	}
+	else
+	{
+		// Show Pause/Resume + Step + Stop in a pill group
+		bool playing = (state == EditorState::Play);
+		bool paused = (state == EditorState::Pause);
+
+		drawBar(3.8f);
+
+		if (IconButton("ApexAssets/Icons/pause.png", "||", { BUTTON, BUTTON }, paused))
+		{
+			if (playing) m_editor->SetEditorState(EditorState::Pause);
+			else if (paused) m_editor->SetEditorState(EditorState::Play);
+		}
+		m_gui->SameLine(0.f, PAD);
+
+		if (IconButton("ApexAssets/Icons/step.png", "|>", { BUTTON, BUTTON }))
+			if (paused) m_editor->SetEditorState(EditorState::Step);
+		m_gui->SameLine(0.f, PAD);
+
+		if (IconButton("ApexAssets/Icons/stop.png", "[]", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(1.0f, 0.0f, 0.0f, 1.0f)))
+		{
+			m_editor->SetEditorState(EditorState::Edit);
+			SelectObject(nullptr);
+			if (m_isFullScreen) 
+			{ 
+				m_isFullScreen = false; 
+				m_isFirstFullScreen = true; 
+			}
+		}
+	}
+}
+
+void Apex::Editor::Viewport::DrawRightToolbar()
+{
+	constexpr float BUTTON = 36.f;
+	constexpr float PAD = 4.f;
+	constexpr float ROUND = BUTTON * 0.5f;
+	constexpr float GROUP_X_OFFSET = 20.f; // padding from right edge
+
+	float rightX = m_panelPos[0] + m_panelSize[0] - BUTTON - PAD * 2.f - GROUP_X_OFFSET;
+	float curY = m_panelPos[1] + 32.f;
+
+	float groupHeight = 4.95f * (BUTTON + PAD) - PAD + PAD * 2.f;
+	DrawPillGroup({ rightX - PAD, curY - 6.f }, { BUTTON + PAD * 6.f, groupHeight }, ROUND);
+
+	auto gizmoButton = [&](const char* icon, const char* label, GizmoMode mode)
+		{
+			m_gui->SetCursorPos({ rightX, curY });
+			if (IconButton(icon, label, { BUTTON, BUTTON }, m_currentGizmoMode == mode))
+				m_currentGizmoMode = mode;
+			curY += BUTTON + PAD * 3.f;
+		};
+
+	gizmoButton("ApexAssets/Icons/translate.png", "+", GizmoMode::Translation);
+	gizmoButton("ApexAssets/Icons/rotate.png", "O", GizmoMode::Rotation);
+	gizmoButton("ApexAssets/Icons/scale.png", "#", GizmoMode::Scale);
+
+	m_gui->SetCursorPos({ rightX, curY });
+	if (IconButton(m_localGizmo ? "ApexAssets/Icons/local.png" : "ApexAssets/Icons/world.png", m_localGizmo ? "L" : "W", { BUTTON, BUTTON }))
+		m_localGizmo = !m_localGizmo;
+	if (m_gui->IsItemHovered())
+	{
+		m_gui->BeginTooltip();
+		m_gui->Text(m_localGizmo ? "Local Space" : "World Space");
+		m_gui->EndTooltip();
+	}
+	curY += BUTTON + PAD * 6.f;
+
+	float group2Height = 2.55f * (BUTTON + PAD) - PAD + PAD * 2.f;
+	DrawPillGroup({ rightX - PAD, curY - 6.f }, { BUTTON + PAD * 6.f, group2Height }, ROUND);
+
+	auto viewButton = [&](const char* icon, const char* label, bool& toggle, const char* tooltip)
+		{
+			m_gui->SetCursorPos({ rightX, curY });
+			if (IconButton(icon, label, { BUTTON, BUTTON }, toggle))
+				toggle = !toggle;
+			if (m_gui->IsItemHovered())
+			{
+				m_gui->BeginTooltip();
+				m_gui->Text(tooltip);
+				m_gui->EndTooltip();
+			}
+			curY += BUTTON + PAD * 3.f;
+		};
+
+	viewButton("ApexAssets/Icons/grid.png", "G", m_showGrid, "Toggle Grid");
+	viewButton("ApexAssets/Icons/collider.png", "C", m_showColliders, "Toggle Colliders");
+
+	curY += PAD * 5.f; 
+
+	DrawSnapButtons(BUTTON, PAD, rightX, curY, ROUND);
+}
+
+void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round)
+{
+	float SNAP_BUTTON_WIDTH = button;
+	float SNAP_INPUT_WIDTH = 60.f;
+	float SNAP_CELL_HEIGHT = button + pad * 3.f;
+	float snapGroupWidth = SNAP_BUTTON_WIDTH + pad + SNAP_INPUT_WIDTH + pad * 6.5f;
+	float snapGroupHeight = 3.f * SNAP_CELL_HEIGHT - pad + pad * 4.f;
+	float snapLeft = rightX + button + pad * 4.f - snapGroupWidth;
+	DrawPillGroup({ snapLeft + 2.f, curY - 6.f }, { snapGroupWidth, snapGroupHeight }, round);
+
+	struct SnapEntry
+	{
+		const char* m_icon;
+		const char* m_label;
+		bool* m_enabled;
+		float* m_value;
+	};
+
+	SnapEntry snaps[3] =
+	{
+		{ "ApexAssets/Icons/translate_snap.png", "Translate", &m_isTranslationSnapping, &m_translateSnap },
+		{ "ApexAssets/Icons/rotate_snap.png",    "Rotate", &m_isRotationSnapping,    &m_rotateSnap },
+		{ "ApexAssets/Icons/scale_snap.png",     "Scale", &m_isScaleSnapping,       &m_scaleSnap },
+	};
+
+	for (auto& element : snaps)
+	{
+		float rowX = snapLeft + pad * 2.f;
+		m_gui->SetCursorPos({ rowX, curY + pad * 0.5f });
+
+		if (IconButton(element.m_icon, element.m_label, { SNAP_BUTTON_WIDTH, SNAP_BUTTON_WIDTH }, *element.m_enabled))
+			*element.m_enabled = !*element.m_enabled;
+
+		if (m_gui->IsItemHovered())
+		{
+			m_gui->BeginTooltip();
+			m_gui->Text(std::string(*element.m_enabled ? "Snapping ON  — " : "Snapping OFF — ") + element.m_label);
+			m_gui->EndTooltip();
+		}
+		m_gui->SameLine(0.f, pad);
+		m_gui->SetNextItemWidth(SNAP_INPUT_WIDTH);
+		m_gui->PushFont(FontID::Default);
+		m_gui->InputFloat(std::string("##sv") + element.m_label, element.m_value);
+		m_gui->PopFont();
+		curY += SNAP_CELL_HEIGHT;
+	}
+}
+
+void Apex::Editor::Viewport::DrawPillGroup(LibMath::Vector2 topLeft, LibMath::Vector2 size, float rounding) const
+{
+	IDrawList* drawList = m_gui->GetDrawList();
+	LibMath::Vector2 bottomRight = { topLeft[0] + size[0], topLeft[1] + size[1] };
+	drawList->DrawRectFilled(topLeft, bottomRight, 0xCC1A1A1A, rounding);
+	drawList->DrawRect(topLeft, bottomRight, 0x66888888, rounding, 1.f);
+}
+
+bool Apex::Editor::Viewport::IconButton(const char* iconPath, const char* fallbackLabel, LibMath::Vector2 size, bool active, 
+										Apex::UserInterface::Color tint)
+{
+	uint32_t icon = EditorIcon::Get(iconPath);
+
+	if (active)
+		m_gui->PushColor(StyleColor::Button, { 0.26f, 0.59f, 0.98f, 1.f });
+
+	bool clicked = false;
+	if (icon != 0)
+		clicked = m_gui->ImageButton(fallbackLabel, icon, size, tint);
+	else
+		clicked = m_gui->ButtonSized(fallbackLabel, size);
+
+	if (active)
+		m_gui->PopColor();
+
+	return clicked;
 }

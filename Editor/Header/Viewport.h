@@ -66,6 +66,14 @@ namespace Apex::Editor
 
 		void				DrawUI();
 		void				DrawGrid();
+		void				DrawPlayBar();
+		void				DrawRightToolbar();
+
+		void				DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round);
+
+		void				DrawPillGroup(LibMath::Vector2 topLeft, LibMath::Vector2 size, float rounding) const;
+		bool				IconButton(const char* iconPath, const char* fallbackLabel, LibMath::Vector2 size, 
+										bool active = false, Apex::UserInterface::Color tint = Apex::UserInterface::Color(1.0f, 1.0f, 1.0f, 1.0f));
 
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
