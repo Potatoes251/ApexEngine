@@ -6,6 +6,7 @@
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
 
+using namespace Apex::Data;
 using namespace Apex::Rendering;
 
 ThirdPersonCamera::ThirdPersonCamera(LibMath::Vector3 target, float distance)
@@ -16,22 +17,28 @@ ThirdPersonCamera::ThirdPersonCamera(LibMath::Vector3 target, float distance)
 
 ThirdPersonCamera::ThirdPersonCamera(ThirdPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_target = other.m_target;
 	m_distance = other.m_distance;
 	m_fov = other.m_fov;
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;
 	m_position = other.m_position;
+	m_isMain = other.m_isMain;
 }
 
 ThirdPersonCamera& Apex::Rendering::ThirdPersonCamera::operator=(ThirdPersonCamera const& other)
 {
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
 	m_target = other.m_target;
 	m_distance = other.m_distance;
 	m_fov = other.m_fov;
 	m_yaw = other.m_yaw;
 	m_pitch = other.m_pitch;
 	m_position = other.m_position;
+	m_isMain = other.m_isMain;
 
 	return *this;
 }
@@ -65,7 +72,7 @@ std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 	return var;
 }
 
-void ThirdPersonCamera::OnUpdate(float deltatime_s)
+void ThirdPersonCamera::OnLateUpdate(float deltatime_s)
 {
 	Object* owner = GetOwner();
 	if (owner)
@@ -73,6 +80,7 @@ void ThirdPersonCamera::OnUpdate(float deltatime_s)
 		float lerpFactor = 1.0f - std::exp(-m_speed * deltatime_s);
 
 		m_target = LibMath::Vector3::lerp(m_target, owner->GetGlobalTransform().getPosition(), lerpFactor);
+		m_dirty = true;
 	}
 }
 

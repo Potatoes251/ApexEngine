@@ -26,6 +26,9 @@ namespace Apex::Scripting
         std::vector<ExposedVar> GetExposedVariables() override;
 
         void SetVariable(const std::string& name, ExposedVar& var);
+        void SetVariable(const std::string& name, float var);
+        void SetVariable(const std::string& name, bool var);
+        void SetVariable(const std::string& name, std::string const& var);
 
         int GetInstanceRef() const { return m_instanceRef; }
 

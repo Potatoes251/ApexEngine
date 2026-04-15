@@ -6,6 +6,8 @@
 #include "UI.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Command/SetAssetCommand.h"
+#include "CommandManager.h"
 
 #include <vector>
 #include <filesystem>
@@ -96,7 +98,9 @@ namespace Apex::Resources
             {
                 if (!m_target->IsValid() || (*m_target)->GetPath() != pathStr)
                 {
-                    *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                    ResourceHandle<T> newVal = m_resourceManager.CreateAsync<T>(pathStr);
+
+                    CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetAssetCommand<T>>(m_target, *m_target, newVal));
                     m_newAsset = true;
                 }
                 m_isOpen = false;

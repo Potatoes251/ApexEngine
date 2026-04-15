@@ -1,23 +1,24 @@
 #include "Editor.h"
+
 #include "EditorIcon.h"
 
-#include "Shader.h"
-#include "ResourceHandle.h"
 #include "Audio.h"
-#include "ResourceManager.h"
 #include "Scene.h"
+#include "Shader.h"
 #include "SceneLoader.h"
-
+#include "ResourceHandle.h"
+#include "ResourceManager.h"
 #include "Rigidbody.h"
-
-
-using namespace Apex::Windowing;
-using namespace Apex::UserInterface;
+#include "CommandManager.h"
+using namespace Apex::Data;
+using namespace Apex::CtrlZ;
 using namespace Apex::Audio;
-using namespace Apex::Rendering;
-using namespace Apex::Serialization;
-using namespace Apex::Physic;
 using namespace Apex::Input;
+using namespace Apex::Physic;
+using namespace Apex::Rendering;
+using namespace Apex::Windowing;
+using namespace Apex::Serialization;
+using namespace Apex::UserInterface;
 
 namespace Apex::Editor 
 {
@@ -96,6 +97,18 @@ namespace Apex::Editor
 
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
+
+                if (key == Input::Key::Z && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Undo();
+                }
+                if (key == Input::Key::Y && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CommandManager::Get().Redo();
+                }
+
+                if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -223,6 +236,18 @@ namespace Apex::Editor
 
         HandleEditorClosing();
 
+        bool editing = m_gui->IsAnyItemActive();
+        if (editing && !m_editingUI)
+        {
+            CommandManager::Get().StartBatch();
+        }
+        if (!editing && m_editingUI)
+        {
+            CommandManager::Get().EndBatch();
+        }
+        
+        m_editingUI = editing;
+
         m_gui->EndFrame();
 
         m_window->SwapBuffers();
@@ -330,7 +355,6 @@ namespace Apex::Editor
 
             m_app->GetScene()->Start();
 
-            m_window->SetCursorCaptured(true);
             m_hierarchy->SetScene(m_app->GetScene());
         }
         // stop
@@ -344,8 +368,8 @@ namespace Apex::Editor
                 ui->ClearAll();
         }
 
-        if (newState != EditorState::Play)
-            m_window->SetCursorCaptured(false);
+        // capture cursor when in play uncapture it when not in play
+        m_window->SetCursorCaptured(newState == EditorState::Play);
 
         m_editorState = newState;
     }

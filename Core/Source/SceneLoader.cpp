@@ -1,25 +1,26 @@
 #include "SceneLoader.h"
-#include "SceneLoader.h"
-#include "Object.h"
 
-#include "MeshRenderer.h"
+#include "Scene.h"
+#include "Object.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
-#include "CapsuleCollider.h"
+#include "MeshRenderer.h"
 #include "MeshCollider.h"
+#include "CapsuleCollider.h"
 #include "Lighting/Lights.h"
-#include "CharacterController.h"
+#include "ScriptComponent.h"
 #include "ThirdPersonCamera.h"
 #include "FirstPersonCamera.h"
-#include "ScriptComponent.h"
+#include "CharacterController.h"
 
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <cassert>
 
-using namespace Apex::Serialization;
+using namespace Apex::Data;
 using namespace Apex::Physic;
+using namespace Apex::Serialization;
 
 void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& path)
 {
@@ -487,13 +488,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
                 while (!parser.Peek('}'))
                 {
-                    std::string varName = parser.ParseString();
-                    parser.Expect(':');
-
-                    ExposedVar var = ParseScriptVar(parser);
-                    var.name = varName;
-
-                    comp.SetVariable(var.name, var);
+                    ParseScriptVar(comp, parser);
 
                     if (parser.Peek(','))
                         parser.Expect(',');
@@ -512,32 +507,28 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
     parser.Expect('}'); // "components" category end
 }
 
-Apex::ExposedVar SceneLoader::ParseScriptVar(SerialParser& parser)
+void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)
 {
-    ExposedVar var;
+    std::string varName = parser.ParseString();
+    parser.Expect(':');
 
     char c = parser.PeekChar();
 
     // STRING
     if (c == '"')
     {
-        var.type = ExposedVar::String;
-        var.value = parser.ParseString();
+        script.SetVariable(varName, parser.ParseString());
     }
     // BOOL
     else if (c == 't' || c == 'f')
     {
-        var.type = ExposedVar::Bool;
-        var.value = parser.ParseBool();
+        script.SetVariable(varName, parser.ParseBool());
     }
     // NUMBER
     else
     {
-        var.type = ExposedVar::Float;
-        var.value = parser.ParseFloat();
+        script.SetVariable(varName, parser.ParseFloat());
     }
-
-    return var;
 }
 
 void SceneLoader::ParseMaterials(SerialParser& parser)
@@ -613,18 +604,15 @@ Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::
 
 Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Mesh>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Mesh>(path);
 }
 
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Texture>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Texture>(path);
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Shader>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Shader>(path);
 }

@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace Apex::UserInterface { class UIManager; }
+namespace Apex::Physic { class Collider; }
 
 namespace Apex::Scripting
 {
@@ -29,7 +30,9 @@ namespace Apex::Scripting
         void RegisterHudBindings(Apex::UserInterface::UIManager* ui);
 
         int CreateScriptInstance(int scriptRef);
-        bool CallFunction(int instanceRef, const std::string& funcName, float dt = 0.f);
+        bool CallFunction(int instanceRef, const std::string& funcName);
+        bool CallFunction(int instanceRef, const std::string& funcName, float dt);
+        bool CallFunction(int instanceRef, const std::string& funcName, Apex::Physic::Collider* collider);
 
     private:
         lua_State* luaState;

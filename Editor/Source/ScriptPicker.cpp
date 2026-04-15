@@ -1,9 +1,16 @@
 #include "ScriptPicker.h"
 
-using namespace Apex::Resources;
+#include "Command/SetScriptPathCommand.h"
+#include "CommandManager.h"
 
-void ScriptPicker::Open(Apex::Scripting::ScriptComponent* target)
+#include <filesystem>
+
+using namespace Apex::Resources;
+using namespace Apex::Rendering;
+
+void ScriptPicker::Open(Rendering::Scene* scene, Apex::Scripting::ScriptComponent* target)
 {
+    m_scene = scene;
     m_target = target;
     m_isOpen = true;
 }
@@ -44,7 +51,7 @@ void ScriptPicker::Draw()
                 {
                     if (m_target->GetScriptPath() != path)
                     {
-                        m_target->SetScript(path);
+                        CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetScriptPathCommand>(m_scene, m_target, m_target->GetScriptPath(), path));
                         m_newScript = true;
                     }
                 }

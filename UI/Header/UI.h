@@ -218,6 +218,7 @@ namespace Apex::UserInterface
         // Query 
         virtual bool IsItemHovered() const = 0;
         virtual bool IsItemActive()     const = 0;
+        virtual bool IsAnyItemActive()     const = 0;
         virtual LibMath::Vector2 GetItemRectSize()  const = 0;
         virtual bool IsItemClicked(MouseButton button = MouseButton::Left) const = 0;
         virtual bool IsItemDoubleClicked(MouseButton button = MouseButton::Left) const = 0;

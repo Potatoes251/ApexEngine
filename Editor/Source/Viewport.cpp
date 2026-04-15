@@ -3,6 +3,9 @@
 #include <LibMath/Arithmetic.h>
 #include <LibMath/Colision3D.h>
 
+#include "Command/TransformCommand.h"
+#include "Command/SetValCommand.h"
+#include "CommandManager.h"
 #include "InputSystem.h"
 #include "Hierarchy.h"
 #include "Editor.h"
@@ -17,6 +20,7 @@ using namespace Apex::Data;
 using namespace Apex::Editor;
 using namespace Apex::Rendering;
 using namespace Apex::Input;
+using namespace Apex::CtrlZ;
 
 Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::ResourceHandle<Shader> gridShader,
 	Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor)
@@ -48,13 +52,20 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 
 void Viewport::OnMouseClick(double mouseX, double mouseY)
 {
-	if (!m_isFocus || m_editor->GetEditorState() != EditorState::Edit) return;
+	if (m_editor->GetEditorState() != EditorState::Edit
+	    || mouseX < m_panelPos[0] || mouseX >  m_panelPos[0] + m_panelSize[0]
+		|| mouseY < m_panelPos[1] || mouseY >  m_panelPos[1] + m_panelSize[1])
+		return;
+
 	PerformPicking({ (float)mouseX, (float)mouseY });
+	CommandManager::Get().StartBatch();
 }
 
 void Viewport::OnMouseRelease(double /*mouseX*/, double /*mouseY*/)
 {
+	if (!m_isFocus) return;
 	m_selectedAxis = Axis::None;
+	CommandManager::Get().EndBatch();
 }
 
 void Viewport::OnMouseMove(double mouseX, double mouseY)
@@ -84,17 +95,18 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		movementVec = delta;
 	}
 
+	LibMath::Transform newTransform = m_selectedObject->GetLocalTransform();
+
 	switch (m_currentGizmoMode)
 	{
 	case GizmoMode::Translation:
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setPosition(m_initialTransform.getPosition() + movementVec);
-		m_selectedObject->SetLocalTransform(transform);
+		newTransform.setPosition(m_initialTransform.getPosition() + movementVec);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
 		break;
 	}
-
 	case GizmoMode::Rotation:
 	{
 		assert(IsAxisSingle() && "Rotation are only allowed around a single axis");
@@ -109,9 +121,9 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setRotation(deltaAngle * m_initialTransform.getRotation());
-		m_selectedObject->SetLocalTransform(transform);
+		newTransform.setRotation(deltaAngle * m_initialTransform.getRotation());
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Scale:
@@ -125,9 +137,10 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		if (m_isScaleSnapping) Snap(scaleDelta);
 		LibMath::Vector3 newScale = m_initialTransform.getScale() + scaleDelta;
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
-		LibMath::Transform transform = m_selectedObject->GetLocalTransform();
-		transform.setScale(newScale);
-		m_selectedObject->SetLocalTransform(transform);
+
+		newTransform.setScale(newScale);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
 		break;
 	}
 	default:
@@ -612,7 +625,9 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 		m_gui->SetCursorPos({ rowX, curY + pad * 0.5f });
 
 		if (IconButton(element.m_icon, element.m_label, { SNAP_BUTTON_WIDTH, SNAP_BUTTON_WIDTH }, *element.m_enabled))
-			*element.m_enabled = !*element.m_enabled;
+		{
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(element.m_enabled, *element.m_enabled, !*element.m_enabled));
+		}
 
 		if (m_gui->IsItemHovered())
 		{
@@ -623,7 +638,11 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 		m_gui->SameLine(0.f, pad);
 		m_gui->SetNextItemWidth(SNAP_INPUT_WIDTH);
 		m_gui->PushFont(FontID::Default);
-		m_gui->InputFloat(std::string("##sv") + element.m_label, element.m_value);
+		float val = *element.m_value;
+		if (m_gui->InputFloat(std::string("##sv") + element.m_label, &val))
+		{
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<float>>(element.m_value, *element.m_value, val));
+		}
 		m_gui->PopFont();
 		curY += SNAP_CELL_HEIGHT;
 	}

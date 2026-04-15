@@ -1,4 +1,4 @@
-local Base = require("BaseObject")
+local Base = require("Object")
 
 local M = Base:New()
 
