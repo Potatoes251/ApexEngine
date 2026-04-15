@@ -11,8 +11,6 @@ namespace Apex::Transform
 
     int Lua_SetPosition(lua_State* L)
     {
-        std::cout << "SetPosition called\n";
-
         lua_getfield(L, 1, "__object");
         auto* obj = static_cast<Apex::Data::Object*>(lua_touserdata(L, -1));
         lua_pop(L, 1);
@@ -35,8 +33,6 @@ namespace Apex::Transform
 
     int Lua_SetScale(lua_State* L)
     {
-        std::cout << "SetPosition called\n";
-
         lua_getfield(L, 1, "__object");
         auto* obj = static_cast<Apex::Data::Object*>(lua_touserdata(L, -1));
         lua_pop(L, 1);

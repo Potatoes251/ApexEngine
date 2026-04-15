@@ -1,6 +1,7 @@
 ﻿#include "GLFWWindow.h"
 
 #include "InputSystem.h"
+#include "Log.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -12,7 +13,6 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 
 using namespace Apex::Input;
 
@@ -44,7 +44,7 @@ namespace Apex::Windowing
         if (m_isPrimary)
         {
             if (!glfwInit())
-                std::cout << "Failed to initialize GLFW" << std::endl;
+                LOG_ERROR("Failed to initialize GLFW");
         }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -55,7 +55,7 @@ namespace Apex::Windowing
         if (!m_window) 
         {
             if (m_isPrimary) glfwTerminate();
-            std::cout << "Failed to create GLFW window" << std::endl;
+            LOG_ERROR("Failed to create GLFW window");
             return;
         }
 
@@ -65,7 +65,7 @@ namespace Apex::Windowing
         if (m_isPrimary)
         {
             if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-                std::cout << "Failed to initialize GLAD" << std::endl;
+                LOG_ERROR("Failed to initialize GLAD");
         }
 
         // Store pointer for static callbacks

@@ -2,7 +2,7 @@
 #define LOG
 
 
-#include "LogSystem.h"
+#include "../../Resources/Header/LogSystem.h"
 
 #define LOG_INFO(msg, ...) Apex::LogSystem::Log(Apex::LogLevel::Info, msg, ##__VA_ARGS__)
 #define LOG_WARNING(msg, ...) Apex::LogSystem::Log(Apex::LogLevel::Warning, msg, ##__VA_ARGS__)

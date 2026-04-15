@@ -88,7 +88,6 @@ namespace Apex
         void UpdateAudioListener();
 
         bool m_running = true;
-        float m_totalTime = 0.0f;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
 

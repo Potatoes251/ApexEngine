@@ -96,6 +96,6 @@ Color Apex::Console::GetColorFromLevel(LogEntry const& entry)
 	case LogLevel::Debug:	return { .5f, .5f, .5f, 1.f };
 	default:
 		assert(false && "Unhandled case of LogLevel in Console::GetColorFromLevel");
-		break;
+		return { 1.f, 1.f, 1.f, 1.f };
 	}
 }

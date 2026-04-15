@@ -1,5 +1,7 @@
 ﻿#include "IrrKlangAudio.h"
 
+#include "Log.h"
+
 #include <irrKlang.h>   // the only file that touches irrKlang
 #include <iostream>
 
@@ -29,7 +31,7 @@ namespace Apex::Audio
         m_engine = irrklang::createIrrKlangDevice();
         if (!m_engine)
         {
-            std::cout << "[Audio] Failed to create irrKlang device.\n";
+            LOG_ERROR("[Audio] Failed to create irrKlang device");
             return false;
         }
         return true;

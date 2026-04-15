@@ -1,5 +1,7 @@
 #include "Cubemap.h"
 
+#include "Log.h"
+
 #include "stb_image.h"
 #include <sstream>
 
@@ -17,7 +19,7 @@ void Cubemap::LoadFromFile()
 
 		if (!desc.m_data)
 		{
-			std::cout << "Failed to load texture: " << item << std::endl;
+			LOG_WARNING("Failed to load texture: {}", item);
 			SetState(ResourceState::Failed);
 			for (Apex::Rendering::TextureDescription& description : m_descs) stbi_image_free(description.m_data);
 
@@ -30,7 +32,7 @@ void Cubemap::LoadFromFile()
 
 	if (m_descs.size() != 6)
 	{
-		std::cout << "Cubemap requires exactly 6 textures\n";
+		LOG_WARNING("Cubemap requires exactly 6 textures");
 		for (auto& d : m_descs)
 			stbi_image_free(d.m_data);
 		m_descs.clear();

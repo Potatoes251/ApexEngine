@@ -1,5 +1,7 @@
 #include "BinLoader.h"
 
+#include "Log.h"
+
 #include <fstream>
 #include <filesystem>
 
@@ -9,7 +11,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (!file.is_open())
     {
-        std::cout << "Failed to open bin file\n";
+        LOG_ERROR("Failed to open bin file : {}", path);
         return false;
     }
 
@@ -18,7 +20,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (size == 0)
     {
-        std::cout << "File is empty\n";
+        LOG_ERROR("File is empty : {}", path);
         return false;
     }
 
@@ -53,7 +55,7 @@ bool BinLoader::Load(std::string path, Animation& animation)
 
     if (!file.is_open())
     {
-        std::cout << "Failed to open file for reading animations" << std::endl;
+        LOG_ERROR("Failed to open file '{}' for reading", path);
         return false;
     }
 
@@ -89,7 +91,7 @@ bool BinLoader::Export(std::string path, Mesh const& mesh)
 
     if (!file.is_open())
     {
-        std::cout << "Failed to open file for writing\n";
+        LOG_ERROR("Failed to open file '{}' for writing", path);
         return false;
     }
 
@@ -130,19 +132,19 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
 
     if (header.m_magic != 0x4D455348)
     {
-        std::cout << "Invalid file format" << std::endl;
+        LOG_ERROR("Invalid file format");
         return false;
     }
     if (header.m_version != CURRENT_VERSION)
     {
-        std::cout << "File needs to be updated version was " << header.m_version << std::endl;
+        LOG_WARNING("File needs to be updated (version was {})", header.m_version);
         return false;
     }
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
         || header.m_keyframeSize != sizeof(KeyFrame)
         || header.m_boneinfoSize != sizeof(BoneInfo))
     {
-        std::cout << "Struct size doesnt match" << std::endl;
+        LOG_WARNING("Struct size doesnt match");
         return false;
     }
 
@@ -252,7 +254,7 @@ bool BinLoader::ReadAnimation(Mesh& mesh, std::filesystem::path const& path)
 
     if (!file.is_open())
     {
-        std::cout << "Failed to open file for reading animations" << std::endl;
+        LOG_ERROR("Failed to open file '{}' for reading", path.string());
         return false;
     }
 
@@ -447,7 +449,7 @@ bool BinLoader::WriteAnimations(Mesh const& mesh, std::filesystem::path const& p
 
         if (!file.is_open())
         {
-            std::cout << "Failed to open file for writing animations" << std::endl;
+            LOG_ERROR("Failed to open file '{}' for writing", path.string());
             return false;
         }
 

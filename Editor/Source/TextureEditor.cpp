@@ -161,9 +161,6 @@ namespace Apex::Editor
         DrawToolbarSave();
         m_gui.SameLine(0.f, 16.f);
         DrawToolbarEyeDropper();
-        // Only highlight if the current setting is different from the saved meta state
-        auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
-        bool needsApply = (m_compression != savedFormat) || m_metaDirty;
 
         m_gui.SameLine(0.f, 16.f);
         if (IsHDR())
@@ -181,6 +178,7 @@ namespace Apex::Editor
         }
         else
         {
+            // Only highlight if the current setting is different from the saved meta state
             auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
             bool needsApply = (m_compression != savedFormat) || m_metaDirty;
             if (needsApply)
@@ -1303,7 +1301,6 @@ namespace Apex::Editor
         int idx = (pickedY * m_width + pickedX) * 4;
         if (!m_pixelsHDR.empty())
         {
-            std::cout << "hi" << std::endl;
             if (static_cast<size_t>(idx + 3) >= m_pixelsHDR.size()) return false;
             m_pickedColor = { m_pixelsHDR[idx],     m_pixelsHDR[idx + 1],
                               m_pixelsHDR[idx + 2], m_pixelsHDR[idx + 3] };
