@@ -20,7 +20,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_FILES})
 # Add source files
 target_sources(${EXE_EDITOR_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
 
-
 # ---- Include directories ----
 target_include_directories(${EXE_EDITOR_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/header

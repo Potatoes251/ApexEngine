@@ -72,7 +72,7 @@ namespace Apex::UserInterface
         LibMath::Vector2 GetPanelPos()      const override;
         LibMath::Vector2 GetPanelSize()     const override;
 
-        void BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar) override;
+        void BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar, bool scrollable) override;
         void EndPanel() override;
 
         void BeginChildPanel(const std::string& id,

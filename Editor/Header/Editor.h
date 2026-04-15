@@ -18,6 +18,7 @@
 #include "SoundPlayer.h"
 #include "HudEditor.h"
 #include "ComponentsViewer.h"
+#include "Console.h"
 
 namespace Apex::Editor
 {
@@ -88,6 +89,7 @@ namespace Apex::Editor
 		std::unique_ptr<Viewport>					m_viewport;
 		std::unique_ptr<Rendering::Scene>			m_editScene;
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;
+		std::unique_ptr<Console>					m_console;
 
 		EditorState	m_editorState = EditorState::Edit;
 

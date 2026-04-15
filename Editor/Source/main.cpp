@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <iostream>
 
+#include "Log.h"
+
 #ifdef _WIN32
 #include <windows.h>
 static std::filesystem::path GetExeDir()
@@ -63,6 +65,7 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitPanels(*app))
         return 1;
 
+    LOG_WARNING("spam");
     while (!editor.GetWindow()->ShouldClose())
     {
         // Processes events for all windows must be unconditional
