@@ -47,6 +47,8 @@ namespace Apex::Lighting
 
 namespace Apex
 {        
+    class FileLog;
+
 	class Application
 	{
     public:
@@ -72,6 +74,7 @@ namespace Apex
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
     private:
+        bool InitLog();
         bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
         bool InitRHI();
@@ -91,11 +94,12 @@ namespace Apex
 
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
-        std::unique_ptr<Scripting::LuaManager> m_luaManager;
-        std::unique_ptr<Lighting::LightManager> m_lightManager;
-        std::unique_ptr<Lighting::ShadowManager> m_shadowManager;
+        std::unique_ptr<Scripting::LuaManager>      m_luaManager;
+        std::unique_ptr<Lighting::LightManager>     m_lightManager;
+        std::unique_ptr<Lighting::ShadowManager>    m_shadowManager;
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
-        std::unique_ptr<UserInterface::UIManager> m_uiManager;
+        std::unique_ptr<UserInterface::UIManager>   m_uiManager;
+        std::unique_ptr<FileLog>					m_fileLog;
 
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;

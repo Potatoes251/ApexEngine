@@ -35,12 +35,15 @@ void Apex::Console::Draw()
 void Apex::Console::DrawToolbar()
 {
 	if (m_gui->Button("-"))
-	{
 		m_fontSize = (FontID)std::max((int)m_fontSize - 1, 0);
-	}
+
 	m_gui->SameLine();
 	if (m_gui->Button("+"))
 		m_fontSize = (FontID)std::min((int)m_fontSize + 1, int(FontID::Count) - 1);
+
+	m_gui->SameLine();
+	if (m_gui->Button("clear"))
+		m_logs.clear();
 
 	bool show = m_flag & LogLevel::Info;
 	m_gui->SameLine();

@@ -16,6 +16,9 @@ namespace Apex
 	{
 	public:
 		Console(UserInterface::IGUI* gui) : m_gui(gui) {}
+		Console(Console const&) = delete;
+		Console& operator=(Console const&) = delete;
+		~Console() = default;
 
 		void Add(LogEntry entry) override;
 

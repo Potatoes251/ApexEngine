@@ -65,7 +65,11 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitPanels(*app))
         return 1;
 
-    LOG_WARNING("spam");
+    LOG_WARNING("warning");
+    LOG_INFO("info");
+    LOG_ERROR("error");
+    LOG_DEBUG("debug");
+
     while (!editor.GetWindow()->ShouldClose())
     {
         // Processes events for all windows must be unconditional
