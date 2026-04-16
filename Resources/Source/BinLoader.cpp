@@ -146,7 +146,7 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
         return false;
     }
 
-    return true;
+    return false;
 }
 
 bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)

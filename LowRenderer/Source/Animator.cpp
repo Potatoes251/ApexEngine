@@ -24,12 +24,13 @@ void Animator::Serialize(std::ostream& out) const
 	out << "      \"Animator\": {\n";
 	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 
-	out << "        \"fps\": " << m_fps << "\n";
+	out << "        \"fps\": " << m_fps << ",\n";
+	out << "		\"Mesh\": \"" << m_mesh->GetPath() << "\"\n";
 	out << "      }";
 }
 
 
-unique_ptr<Component> Animator::Clone() const
+unique_ptr<Component> Animator::Clone()
 {
 	auto clone = std::make_unique<Animator>(*this);
 	return clone;

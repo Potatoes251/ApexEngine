@@ -28,7 +28,7 @@ namespace Apex::Rendering
 
 		//Component
 		void					Serialize(std::ostream& out) const override;
-		unique_ptr<Component>	Clone() const override;
+		unique_ptr<Component>	Clone() override;
 		const char*				GetTypeName() const override	{ return "Animator"; };
 		std::vector<ExposedVar> GetExposedVariables() override;
 
