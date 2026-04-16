@@ -2,6 +2,7 @@
 #include "EditorIcon.h"
 
 #include "MeshLoader.h"
+#include "Log.h"
 
 #include <iostream>
 #include <fstream>
@@ -361,18 +362,17 @@ namespace Apex::Editor
 
         for (const auto& src : sources)
         {
-            if (IsPathInsideProject(m_rootPath, src))
+            std::string ext = src.extension().string();
+            if (ext == ".obj" || ext == ".fbx" || ext == ".FBX" || ext == ".mesh")
             {
-                std::string ext = src.extension().string();
-                if (ext == ".obj" || ext == ".fbx" || ext == ".FBX" || ext == ".mesh")
-                {
-                    MeshLoader ml;
-                    Mesh mesh;
-                    ml.Import(src.string(), mesh);
-                }
-
-                continue;
+                LOG_INFO("Start Importing : {}", src.string());
+                MeshLoader ml;
+                Mesh mesh;
+                ml.Import(src.string(), mesh);
             }
+
+            if (IsPathInsideProject(m_rootPath, src))
+                continue;
 
             std::error_code error;
             fs::path target = destination / src.filename();

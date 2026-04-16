@@ -29,13 +29,18 @@ namespace Apex
 
 		static UserInterface::Color GetColorFromLevel(LogEntry const& entry);
 
+		static std::string ToLower(std::string str);
+
+		char m_searchBuffer[256] = {};
+
 		std::vector<LogEntry> m_logs;
 
 		UserInterface::IGUI* m_gui;
 
 		UserInterface::FontID m_fontSize = UserInterface::FontID::Default;
 
-		uint8_t m_flag = true;
+		uint8_t m_level = LogLevel::Warning | LogLevel::Error;
+		bool	m_showCategory = true;
 	};
 }
 

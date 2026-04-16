@@ -16,6 +16,7 @@ namespace Apex
 		void Add(LogEntry entry) override;
 
 	private:
+		void AddLogLevel(LogEntry entry);
 		void CleanupLogs();
 
 		static inline const std::string m_logDir = "Logs";

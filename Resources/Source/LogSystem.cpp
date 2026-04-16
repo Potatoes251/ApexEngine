@@ -1,8 +1,8 @@
 #include "LogSystem.h"
 
-void Apex::LogSystem::Log(LogLevel lvl, std::string msg)
+void Apex::LogSystem::Log(LogLevel lvl, std::string cat, std::string msg)
 {
-	LogEntry entry = { msg, lvl };
+	LogEntry entry = { msg, cat, lvl };
 	for (auto& sink : m_sinks)
 	{
 		sink->Add(entry);

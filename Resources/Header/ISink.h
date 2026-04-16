@@ -16,7 +16,9 @@ namespace Apex
 	struct LogEntry
 	{
 		std::string m_message;
+		std::string m_category;
 		LogLevel	m_level;
+		int m_count = 1;
 	};
 
 	class ISink

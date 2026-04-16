@@ -26,28 +26,38 @@ Apex::FileLog::~FileLog()
 
 void Apex::FileLog::Add(LogEntry entry)
 {
-	if (entry.m_level & LogLevel::Debug)
-	{
-		m_currentLog << "[Debug] ";
-		m_latestLog << "[Debug] ";
-	}
-	if (entry.m_level & LogLevel::Error)
-	{
-		m_currentLog << "[Error] ";
-		m_latestLog << "[Error] ";
-	}
-	if (entry.m_level & LogLevel::Info)
-	{
-		m_currentLog << "[Info] ";
-		m_latestLog << "[Info] ";
-	}
-	if (entry.m_level & LogLevel::Warning)
-	{
-		m_currentLog << "[Warning] ";
-		m_latestLog << "[Warning] ";
-	}
+	m_currentLog << '[' << entry.m_category << ']';
+	m_latestLog << '[' << entry.m_category << ']';
+
+	AddLogLevel(entry);
+
 	m_currentLog << entry.m_message << std::endl;
 	m_latestLog << entry.m_message << std::endl;
+}
+
+void Apex::FileLog::AddLogLevel(LogEntry entry)
+{
+	switch (entry.m_level)
+	{
+	case LogLevel::Info:
+		m_currentLog << "[Info] ";
+		m_latestLog << "[Info] ";
+		break;
+	case LogLevel::Warning:
+		m_currentLog << "[Warning] ";
+		m_latestLog << "[Warning] ";
+		break;
+	case LogLevel::Error:
+		m_currentLog << "[Error] ";
+		m_latestLog << "[Error] ";
+		break;
+	case LogLevel::Debug:
+		m_currentLog << "[Debug] ";
+		m_latestLog << "[Debug] ";
+		break;
+	default:
+		break;
+	}
 }
 
 void Apex::FileLog::CleanupLogs()
