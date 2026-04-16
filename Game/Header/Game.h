@@ -9,6 +9,12 @@ namespace Apex::Game
 	class Game
 	{
     public:
+        Game() = default;
+        ~Game() = default;
+
+        Game(const Game&) = delete;
+        Game& operator=(const Game&) = delete;
+
         bool Init();
 
         bool InitWindow();

@@ -33,6 +33,7 @@ namespace Apex::Resources
 		std::vector<ResourceHandle<T>> GetAll();
 
 		void ProcessGpuUploads();
+		void CollectGarbage(float deltaTime);
 
 		void SetRHI(Rendering::IRHI* rhi) { m_rhi = rhi; }
 

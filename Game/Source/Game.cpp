@@ -66,6 +66,4 @@ void Game::Render(const Apex::Rendering::RenderPassInfo& pass)
     m_app->Render(pass);
 
     m_window->SwapBuffers();
-
-    m_app->GetResourceManager()->ProcessGpuUploads();
 }

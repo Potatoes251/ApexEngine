@@ -32,11 +32,18 @@ ShadowManager::~ShadowManager()
 {
 	if (m_rhi)
 	{
+		m_rhi->DeleteFrameBuffer(m_shadowFbo);
+
 		for (ShadowMap& shadow : m_shadowMaps)
 		{
 			m_rhi->DeleteTexture(shadow.m_shadowTexture);
 		}
-		m_rhi->DeleteFrameBuffer(m_shadowFbo);
+
+		for (ShadowCubeMap& shadowCube : m_shadowCubeMaps)
+		{
+			m_rhi->DeleteTexture(shadowCube.m_shadowTexture);
+		}
+
 		m_rhi->DeleteUniformBuffer(m_lightMatrixBuffer);
 	}
 }

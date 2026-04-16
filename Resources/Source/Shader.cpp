@@ -8,6 +8,15 @@
 
 using namespace Apex::Rendering;
 
+Shader::~Shader()
+{
+	if (m_shader != Apex::Rendering::RHI_INVALID)
+	{
+		if (m_rhi) m_rhi->DeleteShader(m_shader);
+		m_shader = Apex::Rendering::RHI_INVALID;
+	}
+}
+
 void Shader::UploadToGpu()
 {
 	std::vector<std::string> files;

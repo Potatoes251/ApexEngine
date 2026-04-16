@@ -33,59 +33,6 @@ static std::filesystem::path FindProjectRoot(std::filesystem::path dir)
     return dir;
 }
 
-int main2(int argc, char* argv[])
-{
-    std::filesystem::current_path(FindProjectRoot(GetExeDir()));
-
-    auto window = std::unique_ptr<Apex::Windowing::IWindow>(Apex::Windowing::CreateWindow("Apex Legends", 1280, 720));
-    if (!window) return 1;
-
-    auto app = std::make_unique<Apex::Application>();
-    if (!app->Init(window.get(), nullptr))
-        return 1;
-
-    app->LoadScene();
-    app->GetScene()->Start();
-
-    window->SetCursorCaptured(true);
-
-    window->SetMouseMoveCallback([&](double x, double y)
-        {
-            Apex::Rendering::Camera* cam = app->GetScene()->GetMainCamera();
-            if (cam) cam->ProcessMouse(x, y);
-        });
-
-    Apex::Rendering::Camera* cam = app->GetScene()->GetMainCamera();
-    if (cam)
-    {
-        float aspect = 1280.f / 720.f;
-        cam->SetProjectionMatrix(aspect);
-    }
-
-    while (!window->ShouldClose())
-    {
-        Apex::Windowing::PollAllEvents();
-        app->Tick();
-
-        int width = window->GetWidth();
-        int height = window->GetHeight();
-
-        window->Clear();
-
-        Apex::Rendering::RenderPassInfo pass;
-        pass.m_camera = app->GetScene()->GetMainCamera();
-        pass.m_flags = Apex::Rendering::RenderSkybox;
-        pass.m_width = width;
-        pass.m_height = height;
-        app->Render(pass);
-
-        window->SwapBuffers();
-
-        app->GetResourceManager()->ProcessGpuUploads();
-    }
-    return 0;
-}
-
 int main(int argc, char* argv[])
 {
     std::filesystem::current_path(GetExeDir());

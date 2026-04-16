@@ -50,11 +50,8 @@ using namespace Apex::Serialization;
 using namespace Apex::Lighting;
 using namespace Apex::Input;
 
-namespace Apex
-{
-    Application::Application() = default;
-    Application::~Application() = default;
-}
+Apex::Application::Application() = default;
+Apex::Application::~Application() = default;
 
 bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
@@ -240,6 +237,9 @@ void Apex::Application::Tick()
         m_scene->FixedUpdate(fixedUpdateTime_s);
         m_accumulator_s -= fixedUpdateTime_s;
     }
+
+    m_resourceManager->ProcessGpuUploads();
+    m_resourceManager->CollectGarbage(m_deltaTime_s);
 }
 
 void Apex::Application::UpdateAudioListener()

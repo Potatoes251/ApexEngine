@@ -22,6 +22,35 @@ void ResourceManager::ProcessGpuUploads()
 	}
 }
 
+void Apex::Resources::ResourceManager::CollectGarbage(float deltaTime)
+{
+	std::unique_lock lock(m_mapMutex);
+
+	for (auto it = m_resources.begin(); it != m_resources.end(); )
+	{
+		auto& [id, entry] = *it;
+
+		if (entry->m_refCount.load() == 0 && !entry->m_persistent)
+		{
+			entry->m_timeSinceUnused += deltaTime;
+
+			if (entry->m_timeSinceUnused > 5.0f)
+			{
+				printf("Releasing resource %s\n", id.c_str());
+				entry->m_resource.reset();
+				it = m_resources.erase(it);
+				continue;
+			}
+		}
+		else
+		{
+			entry->m_timeSinceUnused = 0.f;
+		}
+
+		++it;
+	}
+}
+
 void ResourceManager::AddToGpuQueue(ResourceHandle<IResource> resource)
 {
 	std::lock_guard<std::mutex> lock(m_gpuQueueMutex);

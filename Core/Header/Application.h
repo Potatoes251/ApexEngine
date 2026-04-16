@@ -71,6 +71,8 @@ namespace Apex
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
+        float                       GetDeltaTime() { return m_deltaTime_s; }
+
     private:
         bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
