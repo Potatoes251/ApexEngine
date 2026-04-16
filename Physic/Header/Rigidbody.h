@@ -29,7 +29,7 @@ namespace Apex::Physic
 		ForceType			m_type = ForceType::Force;
 	};
 
-	class RigidBodyComponent : public Apex::Component
+	class RigidBodyComponent : public Component
 	{
 	public:
 		RigidBodyComponent(float mass, BodyType type = BodyType::Dynamic);

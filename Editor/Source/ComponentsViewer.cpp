@@ -10,6 +10,7 @@
 #include "ScriptComponent.h"
 
 #include "Lighting/Lights.h"
+#include "Animator.h"
 
 #include "FirstPersonCamera.h"
 #include "ThirdPersonCamera.h"
@@ -191,6 +192,11 @@ void ComponentsViewer::Draw()
 					Component* comp = &obj->AddComponent<Controller::CharacterController>();
 					return comp->GetId();
 				}));
+		}
+
+		if (m_gui.MenuItem("Animator"))
+		{
+			m_selectedObj->AddComponent<Animator>(m_resourceManager, m_selectedObj->GetComponent<MeshRenderer>()->GetMesh());
 		}
 
 		m_gui.EndPopup();

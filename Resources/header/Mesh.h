@@ -20,8 +20,9 @@ using std::unordered_map;
 
 struct BoneInfo
 {
-	int32_t		m_parentIndex;
-	Matrix4		m_offsetMatrix;
+	Matrix4				m_offsetMatrix;
+	int32_t					m_parentIndex = -1;
+	std::vector<int32_t>	m_children;
 };
 
 struct KeyFrame
@@ -75,7 +76,7 @@ public:
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<uint32_t>					m_indices;
 
-	std::vector<BoneInfo>					m_bones;		// m_offsetMatrix | inverse bind pose
+	std::vector<BoneInfo>					m_bones;		//with m_offsetMatrix = inverse bind pose
  	unordered_map<std::string, int>			m_boneMap;
 	std::vector<Animation>					m_animations;
 
