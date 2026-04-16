@@ -65,6 +65,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Script") != std::string::npos) return COL_SCRIPT;
 	if (type.find("Camera") != std::string::npos) return COL_CAMERA;
 	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
+	if (type.find("Animator") != std::string::npos) return COL_RENDER;
 	return COL_DEFAULT;
 }
 

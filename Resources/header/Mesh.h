@@ -20,7 +20,7 @@ using std::unordered_map;
 
 struct BoneInfo
 {
-	Matrix4				m_offsetMatrix;
+	Matrix4					m_offsetMatrix;
 	int32_t					m_parentIndex = -1;
 	std::vector<int32_t>	m_children;
 };

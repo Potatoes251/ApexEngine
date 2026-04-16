@@ -148,7 +148,7 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
         return false;
     }
 
-    return false;
+    return true;
 }
 
 bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
@@ -177,7 +177,7 @@ bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
     {
         uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
 
-        for (size_t i = 0; i < indices.size(); i++)
+        for (uint32_t i = 0; i < indexCount; i++)
         {
             data[i] = _byteswap_ulong(data[i]);
         }
@@ -206,18 +206,44 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
 
     std::vector<BoneInfo> bones(boneCount);
 
-    if (!file.read((char*)bones.data(), boneCount * sizeof(BoneInfo)))
-        return false;
-
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    for (uint32_t i = 0; i < boneCount; i++)
     {
-        uint32_t* data = reinterpret_cast<uint32_t*>(bones.data());
-        size_t totalU32 = (bones.size() * sizeof(BoneInfo)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
+        if (!file.read((char*)&bones[i].m_offsetMatrix, sizeof(Matrix4)))
+            return false;
+        
+        // swap all byte if big endian
+        if constexpr (IsBigEndian())
         {
-            data[i] = _byteswap_ulong(data[i]);
+            uint32_t* data = reinterpret_cast<uint32_t*>(&bones[i].m_offsetMatrix[0][0]);
+
+            constexpr size_t totalU32 = sizeof(Matrix4) / 4;
+
+            for (size_t i = 0; i < totalU32; i++)
+            {
+                data[i] = _byteswap_ulong(data[i]);
+            }
+        }
+
+        if (!Read32Bits(file, *reinterpret_cast<uint32_t*>(&bones[i].m_parentIndex)))
+            return false;
+
+        uint32_t nbChild;
+        if (!Read32Bits(file, nbChild))
+            return false;
+
+        bones[i].m_children.resize(nbChild);
+        if (!file.read((char*)bones[i].m_children.data(), nbChild * sizeof(uint32_t)))
+            return false;
+
+        // swap all byte if big endian
+        if constexpr (IsBigEndian())
+        {
+            uint32_t* data = reinterpret_cast<uint32_t*>(bones[i].m_children.data());
+
+            for (size_t i = 0; i < bones[i].m_children.size(); i++)
+            {
+                data[i] = _byteswap_ulong(data[i]);
+            }
         }
     }
 
@@ -399,26 +425,33 @@ void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
 
     Write32Bits(file, boneCount);
 
-    // Data
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    for (BoneInfo bone : mesh.m_bones)
     {
-        std::vector<BoneInfo> bones = mesh.m_bones;
-
-        // only works if bones uses only 4 bytes types
-        uint32_t* data = reinterpret_cast<uint32_t*>(bones.data());
-        size_t totalU32 = (bones.size() * sizeof(BoneInfo)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
+        uint32_t* matrix = reinterpret_cast<uint32_t*>(&bone.m_offsetMatrix[0][0]);
+        if constexpr (IsBigEndian())
         {
-            data[i] = _byteswap_ulong(data[i]);
+            size_t size = sizeof(Matrix4) / 4;
+            for (size_t i = 0; i < size; i++)
+            {
+                matrix[i] = _byteswap_ulong(matrix[i]);
+            }
         }
+        file.write((char*)matrix, sizeof(Matrix4));
 
-        file.write((char*)data, boneCount * sizeof(BoneInfo));
-    }
-    else
-    {
-        file.write((char*)mesh.m_bones.data(), boneCount * sizeof(BoneInfo));
+        Write32Bits(file, *(reinterpret_cast<uint32_t*>(&bone.m_parentIndex)));
+
+        uint32_t nbChild = bone.m_children.size();
+        Write32Bits(file, nbChild);
+
+        int32_t* data = bone.m_children.data();
+        if constexpr (IsBigEndian())
+        {
+            for (size_t i = 0; i < bone.m_children.size(); i++)
+            {
+                data[i] = _byteswap_ulong(data[i]);
+            }
+        }
+        file.write((char*)data, bone.m_children.size() * 4);
     }
 }
 

@@ -85,8 +85,6 @@ bool Apex::Application::InitResourceManager()
 
 bool Apex::Application::InitLog()
 {
-
-
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
     std::ostringstream oss;
