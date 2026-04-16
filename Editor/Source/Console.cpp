@@ -4,11 +4,14 @@
 
 #include <cassert>
 #include <algorithm>
+#include <unordered_map>
 
 using namespace Apex::UserInterface;
 
 void Apex::Console::Add(LogEntry entry)
 {
+	m_collapsedDirty = true;
+
 	if (m_logs.empty())
 	{
 		m_logs.push_back(entry);
@@ -31,41 +34,12 @@ void Apex::Console::Draw()
 {
 	m_gui->BeginPanel("Console", nullptr, true, false, false);
 	DrawToolbar();
-	
-	std::string search = m_searchBuffer;
 
-	m_gui->BeginChildPanel("##logs", 0.f, 0.f, false);
+	if (m_collapseAll && m_collapsedDirty)
+		CollapseLogs();
 
-	Color color = {1,1,1,1};
-	m_gui->PushFont((FontID)m_fontSize);
-	for (auto& log : m_logs)
-	{
-		if (m_level & log.m_level)
-		{
-			std::string str = log.m_message;
-			if (!search.empty())
-			{
-				search = ToLower(search);
-				std::string msg = ToLower(log.m_message);
-				std::string cat = ToLower(log.m_category);
-				if (msg.find(search) == std::string::npos
-					&& cat.find(search) == std::string::npos)
-					continue;
-			}
+	DrawLogs(m_collapseAll ? m_collapsedLogs : m_logs);
 
-			if (m_showCategory)
-				str = '[' + log.m_category + "] " + str;
-
-			if (log.m_count > 1)
-				str += "(x" + std::to_string(log.m_count) + ')';
-
-			m_gui->TextColored(GetColorFromLevel(log), str);
-		}
-	}
-	m_gui->PopFont();
-
-
-	m_gui->EndChildPanel();
 	m_gui->EndPanel();
 }
 
@@ -83,7 +57,10 @@ void Apex::Console::DrawToolbar()
 
 	m_gui->SameLine(0.f, 16.f);
 	if (m_gui->Button("clear"))
+	{
 		m_logs.clear();
+		m_collapsedDirty = true;
+	}
 
 	m_gui->SameLine(0.f, 16.f);
 	m_gui->VerticalSeparator();
@@ -131,6 +108,8 @@ void Apex::Console::DrawToolbar()
 	m_gui->VerticalSeparator();
 	m_gui->SameLine(0.f, 16.f);
 	m_gui->Checkbox("Category", &m_showCategory);
+	m_gui->SameLine(0.f, 16.f);
+	m_gui->Checkbox("Collapse", &m_collapseAll);
 
 	m_gui->SameLine(0.f, 16.f);
 	m_gui->SetNextItemWidth(220.f);
@@ -138,6 +117,70 @@ void Apex::Console::DrawToolbar()
 
 	m_gui->PopFont();
 	m_gui->PopStyleVariable();
+}
+
+void Apex::Console::DrawLogs(std::vector<LogEntry> const& logs)
+{
+	m_gui->BeginChildPanel("##logs", 0.f, 0.f, false);
+
+	std::string search = m_searchBuffer;
+
+	m_gui->PushFont((FontID)m_fontSize);
+	for (auto& log : logs)
+	{
+		if (m_level & log.m_level)
+		{
+			std::string str = log.m_message;
+			if (!search.empty())
+			{
+				search = ToLower(search);
+				std::string msg = ToLower(log.m_message);
+				std::string cat = ToLower(log.m_category);
+				if (msg.find(search) == std::string::npos
+					&& cat.find(search) == std::string::npos)
+					continue;
+			}
+
+			if (m_showCategory)
+				str = '[' + log.m_category + "] " + str;
+
+			if (log.m_count > 1)
+				str += "(x" + std::to_string(log.m_count) + ')';
+
+			m_gui->TextColored(GetColorFromLevel(log), str);
+		}
+	}
+	m_gui->PopFont();
+
+	m_gui->EndChildPanel();
+}
+
+void Apex::Console::CollapseLogs()
+{
+	m_collapsedLogs.clear();
+
+	std::unordered_map<std::string, LogEntry> map;
+
+	for (const LogEntry& log : m_logs)
+	{
+		std::string key = log.m_category + "|" + log.m_message + "|" + std::to_string((int)log.m_level);
+
+
+		auto it = map.find(key);
+		if (it == map.end())
+		{
+			map[key] = log;
+		}
+		else
+		{
+			map[key].m_count++;
+		}
+	}
+
+	for (auto& [_, entry] : map)
+		m_collapsedLogs.push_back(entry);
+
+	m_collapsedDirty = false;
 }
 
 Color Apex::Console::GetColorFromLevel(LogEntry const& entry)

@@ -26,6 +26,9 @@ namespace Apex
 
 	private:
 		void DrawToolbar();
+		void DrawLogs(std::vector<LogEntry> const& logs);
+
+		void CollapseLogs();
 
 		static UserInterface::Color GetColorFromLevel(LogEntry const& entry);
 
@@ -34,6 +37,7 @@ namespace Apex
 		char m_searchBuffer[256] = {};
 
 		std::vector<LogEntry> m_logs;
+		std::vector<LogEntry> m_collapsedLogs;
 
 		UserInterface::IGUI* m_gui;
 
@@ -41,6 +45,8 @@ namespace Apex
 
 		uint8_t m_level = LogLevel::Warning | LogLevel::Error;
 		bool	m_showCategory = true;
+		bool	m_collapseAll = false;
+		bool	m_collapsedDirty = false;
 	};
 }
 
