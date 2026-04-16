@@ -6,8 +6,6 @@
 #include <filesystem>
 #include <iostream>
 
-#include "Log.h"
-
 #ifdef _WIN32
 #include <windows.h>
 static std::filesystem::path GetExeDir()
@@ -65,13 +63,8 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitPanels(*app))
         return 1;
 
-    LOG_INFO("tgzpuibnt");
-    LOG_WARNING_CAT("cat", "tgzpuibnt");
-
     while (!editor.GetWindow()->ShouldClose())
     {
-        LOG_ERROR("spam");
-        LOG_ERROR("nope");
         // Processes events for all windows must be unconditional
         // so the editor window stays responsive when the game is stopped.
         Apex::Windowing::PollAllEvents();

@@ -165,7 +165,6 @@ void Apex::Console::CollapseLogs()
 	{
 		std::string key = log.m_category + "|" + log.m_message + "|" + std::to_string((int)log.m_level);
 
-
 		auto it = map.find(key);
 		if (it == map.end())
 		{
