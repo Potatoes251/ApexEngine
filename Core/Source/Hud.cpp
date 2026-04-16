@@ -1,6 +1,8 @@
 #include "Hud.h"
 #include "SerializationParser.h"
 
+#include "Log.h"
+
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -569,8 +571,8 @@ void UIManager::ScanHUDs(const fs::path& assetsRoot)
         {
             std::string name = e.path().stem().string();
             m_registry[name] = e.path();
-            std::cout << "[HUD] Registered HUD: " << name
-                << " -> " << e.path() << "\n";
+
+            LOG_INFO("[HUD] Registered HUD: {} -> {}", name, e.path().string());
         }
     }
 }
@@ -590,7 +592,7 @@ int UIManager::CreateHUD(const std::string& name)
         fs::path direct = fs::path("Assets") / (name + ".hud");
         if (!fs::exists(direct))
         {
-            std::cerr << "[HUD] CreateHUD: '" << name << "' not found\n";
+            LOG_ERROR("[HUD] CreateHUD: '{}' not found", name);
             return 0;
         }
         m_registry[name] = direct;
@@ -603,13 +605,13 @@ int UIManager::CreateHUD(const std::string& name)
 
     if (!m_resourceManager || !inst->m_canvas.Load(it->second, *m_resourceManager))
     {
-        std::cerr << "[HUD] CreateHUD: failed to load '" << it->second << "'\n";
+        LOG_ERROR("[HUD] CreateHUD: failed to load '{}'", it->second.string());
         return 0;
     }
 
     m_instances.push_back(std::move(inst));
     int handle = static_cast<int>(m_instances.size());
-    std::cout << "[HUD] Created HUD '" << name << "' -> handle " << handle << "\n";
+    LOG_ERROR("[HUD] CreateHUD: '{}' -> handle ", name, handle);
     return handle;
 }
 

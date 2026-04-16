@@ -61,9 +61,6 @@ namespace Apex::Physic
 		void SetPosition(LibMath::Vector3 pos);
 		void SetScale(LibMath::Vector3 scale);
 
-		void OnTriggerEnter(RigidBodyComponent* otherActor);
-		void OnTriggerExit(RigidBodyComponent* otherActor);
-
 		void Serialize(std::ostream& out) const override;
 
 		bool m_lockRotationX = false;

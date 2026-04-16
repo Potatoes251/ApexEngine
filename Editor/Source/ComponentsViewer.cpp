@@ -196,7 +196,12 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Animator"))
 		{
-			m_selectedObj->AddComponent<Animator>(m_resourceManager, m_selectedObj->GetComponent<MeshRenderer>()->GetMesh());
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Animator>(m_resourceManager, obj->GetComponent<MeshRenderer>()->GetMesh());
+					return comp->GetId();
+				}));
 		}
 
 		m_gui.EndPopup();

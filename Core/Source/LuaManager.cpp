@@ -1,5 +1,7 @@
 #include "LuaManager.h"
 
+#include "Log.h"
+
 #include "LuaFunction/HudFunc.h"
 #include "LuaFunction/InputLua.h"
 #include "LuaFunction/CameraLua.h"
@@ -44,14 +46,14 @@ int Apex::Scripting::LuaManager::LoadScript(const std::string& path)
     if (luaL_dofile(luaState, path.c_str()) != LUA_OK)
     {
         const char* msg = lua_tostring(luaState, -1);
-        std::cerr << "Lua error: " << (msg ? msg : "unknown") << std::endl;
+        LOG_ERROR("Lua error: {}", (msg ? msg : "unknown"));
         lua_pop(luaState, 1);
         return LUA_NOREF;
     }
 
     if (!lua_istable(luaState, -1))
     {
-        std::cerr << "Lua error: script did not return a table!" << std::endl;
+        LOG_ERROR("Lua error: script did not return a table!");
         lua_pop(luaState, 1);
         return LUA_NOREF;
     }
@@ -91,7 +93,7 @@ int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
     lua_pushvalue(luaState, -2);
     if (lua_pcall(luaState, 1, 1, 0) != LUA_OK)
     {
-        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        LOG_ERROR("Lua error: {}", lua_tostring(luaState, -1));
         lua_pop(luaState, 1);
         return LUA_NOREF;
     }
@@ -125,7 +127,7 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     if (lua_pcall(luaState, args, 0, 0) != LUA_OK)
     {
-        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        LOG_ERROR("Lua error: {}", lua_tostring(luaState, -1));
         lua_pop(luaState, 1);
         lua_pop(luaState, 1);
         return false;
@@ -162,7 +164,7 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     if (lua_pcall(luaState, args, 0, 0) != LUA_OK)
     {
-        std::cerr << "Lua error: " << lua_tostring(luaState, -1) << std::endl;
+        LOG_ERROR("Lua error: {}", lua_tostring(luaState, -1));
         lua_pop(luaState, 1);
         lua_pop(luaState, 1);
         return false;
@@ -176,7 +178,6 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 {
     if (instanceRef == LUA_NOREF) return false;
 
-    // ---------- 1. CREATE LUA COLLIDER ----------
     lua_getglobal(luaState, "require");
     lua_pushstring(luaState, "Collider");
     lua_pcall(luaState, 1, 1, 0);
@@ -190,7 +191,6 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     int colliderRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
 
-    // ---------- 2. CALL SCRIPT FUNCTION ----------
     lua_rawgeti(luaState, LUA_REGISTRYINDEX, instanceRef);
 
     lua_getfield(luaState, -1, funcName.c_str());
@@ -205,7 +205,7 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 
     if (lua_pcall(luaState, 2, 0, 0) != LUA_OK)
     {
-        std::cout << lua_tostring(luaState, -1) << std::endl;
+        LOG_ERROR("Lua error: {}", lua_tostring(luaState, -1));
         lua_pop(luaState, 1);
         return false;
     }

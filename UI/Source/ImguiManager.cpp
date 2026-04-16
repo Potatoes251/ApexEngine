@@ -266,17 +266,17 @@ namespace Apex::UserInterface
         return LibMath::Vector2(size.x, size.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar)
+    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar, bool scrollable)
     {
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse;
         if (!dock)
             flags |= ImGuiWindowFlags_NoDocking;
-
         if (m_hasModal && title != m_modalName)
             flags |= ImGuiWindowFlags_NoInputs;
-
         if (!titleBar) 
             flags |= ImGuiWindowFlags_NoTitleBar;
+        if (!scrollable)
+            flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
         ImGui::Begin(title.c_str(), open, flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
