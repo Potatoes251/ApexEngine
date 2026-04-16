@@ -20,8 +20,8 @@ namespace Apex::Rendering
 	class Animator : public Component
 	{
 	public:
-		Animator() = default;
-		Animator(ResourceHandle<Mesh> mesh, ResourceHandle<Shader> shader, float fps);
+		Animator() = delete;
+		Animator(Resources::ResourceManager& resourceManager, ResourceHandle<Mesh> mesh);
 		~Animator() = default;
 		Animator(const Animator& other);
 		Animator& operator=(const Animator&) = default;

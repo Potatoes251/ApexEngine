@@ -39,8 +39,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
 			m_gui.MenuItem("Mesh"))
 		{
-			auto& comp = m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
-			comp.SetEnabled(true);
+			m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
 		}
 
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
@@ -101,7 +100,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui.MenuItem("Animator"))
 		{
-			m_selectedObj->AddComponent<Animator>();
+			m_selectedObj->AddComponent<Animator>(m_resourceManager, m_selectedObj->GetComponent<MeshRenderer>()->GetMesh());
 		}
 
 		m_gui.EndPopup();

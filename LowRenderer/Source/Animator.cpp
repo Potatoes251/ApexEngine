@@ -7,8 +7,10 @@ using namespace Apex::Rendering;
 using Apex::Component;
 using Apex::ExposedVar;
 
-Animator::Animator(ResourceHandle<Mesh> mesh, ResourceHandle<Shader> shader, float fps) :
-	m_mesh(mesh), m_shader(shader), m_fps(fps) {}
+Animator::Animator(Resources::ResourceManager& resourceManager, ResourceHandle<Mesh> mesh) : m_mesh(mesh)
+{
+	m_shader = resourceManager.CreateAsync<Shader>("ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl");
+}
 
 Animator::Animator(const Animator& other)
 {
