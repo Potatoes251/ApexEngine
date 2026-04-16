@@ -1,11 +1,48 @@
-#include "Animator.h"
+﻿#include "Animator.h"
 
 #include <cmath>
 
 using namespace Apex::Rendering;
 
-Animator::Animator(ResourceHandle<Mesh> mesh, ResourceHandle<Shader> shader, float fps) :
-	m_mesh(mesh), m_shader(shader), m_fps(fps) {}
+using Apex::Component;
+using Apex::ExposedVar;
+
+Animator::Animator(Resources::ResourceManager& resourceManager, ResourceHandle<Mesh> mesh) : m_mesh(mesh)
+{
+	m_shader = resourceManager.CreateAsync<Shader>("ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl");
+}
+
+Animator::Animator(const Animator& other)
+{
+	m_mesh = other.m_mesh;
+	m_shader = other.m_shader;
+	m_fps = other.m_fps;
+}
+
+void Animator::Serialize(std::ostream& out) const
+{
+	out << "      \"Animator\": {\n";
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+
+	out << "        \"fps\": " << m_fps << ",\n";
+	out << "		\"Mesh\": \"" << m_mesh->GetPath() << "\"\n";
+	out << "      }";
+}
+
+
+unique_ptr<Component> Animator::Clone()
+{
+	auto clone = std::make_unique<Animator>(*this);
+	return clone;
+}
+
+std::vector<ExposedVar> Animator::GetExposedVariables()
+{
+	return
+	{
+		{ "FPS", ExposedVar::Float, &m_fps },
+	};
+}
 
 void Animator::SetMesh(ResourceHandle<Mesh> mesh)
 {
@@ -24,7 +61,7 @@ void Animator::SetFPS(float fps)
 	m_fps = fps;
 }
 
-void Animator::Update(float deltaTime)
+void Animator::OnUpdate(float deltaTime)
 {
 	switch (m_state)
 	{
@@ -227,6 +264,52 @@ void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int ori
 	}
 }
 
+int Animator::AddIKInstance(int endBoneIndex, int chainLenght)
+{
+	if (endBoneIndex < 0 || chainLenght <= 0) return -1;
+
+	//check if the lenght is right
+	int currentBoneIndex = endBoneIndex;
+
+	for (int chainNode = 0; chainNode < chainLenght; chainNode++)
+	{
+		if (m_mesh->m_bones[currentBoneIndex].m_parentIndex <= -1)
+		{
+			return -1;
+		}
+
+		currentBoneIndex = m_mesh->m_bones[currentBoneIndex].m_parentIndex;
+	}
+
+	//create the IKInstace
+	IKInstance ikInstance = {true, endBoneIndex, chainLenght, Vector3(0.f)};
+	m_IKInstances.push_back(ikInstance);
+
+	//return the IKIstance index
+	return m_IKInstances.size() - 1;		
+}
+
+void Animator::SetIKTargetPosition(int index, LibMath::Vector3 newTargetPosition)
+{
+	if (index < 0 || index >= m_IKInstances.size()) return;
+
+	m_IKInstances[index].m_targetPosition = newTargetPosition;
+}
+
+void Animator::ActivateIKInstace(int index)
+{
+	if (index < 0 || index >= m_IKInstances.size()) return;
+
+	m_IKInstances[index].m_active = true;
+}
+
+void Animator::DeactivateIKInstace(int index)
+{
+	if (index < 0 || index >= m_IKInstances.size()) return;
+
+	m_IKInstances[index].m_active = false;
+}
+
 void Animator::WaitForResourcesToBeLoaded()
 {
 	//check if the mesh, animations and shader are loaded
@@ -329,6 +412,101 @@ void Animator::ReplaceBones(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& sk
 			skeleton_out[bone] = skeletonA[bone];
 		}
 	}
+}
+
+LibMath::Vector3 Animator::GetPos(Matrix4& m)
+{
+	return LibMath::Vector3(m[3][0], m[3][1], m[3][2]);
+}
+
+void Animator::SetPos(Matrix4& m, const LibMath::Vector3& p)
+{
+	
+	m[3][0] = p[0];	//x
+	m[3][1] = p[1];	//y
+	m[3][2] = p[2];	//z
+	
+}
+
+void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance& ik)
+{
+	if (!ik.m_active) return;
+
+	//build chain
+	std::vector<int>	chain;
+	int					current = ik.m_endBoneIndex;
+
+	for (int i = 0; i < ik.m_chainLenght; i++)
+	{
+		if (current < 0)
+			return;
+
+		chain.push_back(current);
+		current = m_mesh->m_bones[current].m_parentIndex;
+	}
+
+	const int count = (int)chain.size();
+
+	//extract positions
+	std::vector<LibMath::Vector3> position(count);
+	for (int i = 0; i < count; i++)
+	{
+		position[i] = GetPos(globalSkeleton[chain[i]].m_matrix);
+	}
+
+	//get lenght
+	std::vector<float> lengths(count - 1);
+	float totalLength = 0.f;
+
+	for (int i = 0; i < count - 1; i++)
+	{
+		lengths[i] = (position[i] - position[i + 1]).magnitude();
+		totalLength += lengths[i];
+	}
+
+	//Fabrix
+	LibMath::Vector3 rootPos = position[count - 1];
+	LibMath::Vector3 target = ik.m_targetPosition;
+
+	const int iterations = 10;
+
+	if ((target - rootPos).magnitude() > totalLength)
+	{
+		// unreachable → stretch
+		for (int i = count - 2; i >= 0; i--)
+		{
+			LibMath::Vector3 dir = (target - position[i + 1]).normalized();
+			position[i] = position[i + 1] + dir * lengths[i];
+		}
+	}
+	else
+	{
+		for (int iter = 0; iter < iterations; iter++)
+		{
+			// backward
+			position[0] = target;
+			for (int i = 1; i < count; i++)
+			{
+				LibMath::Vector3 dir = (position[i] - position[i - 1]).normalized();
+				position[i] = position[i - 1] + dir * lengths[i - 1];
+			}
+
+			// forward
+			position[count - 1] = rootPos;
+			for (int i = count - 2; i >= 0; i--)
+			{
+				LibMath::Vector3 dir = (position[i] - position[i + 1]).normalized();
+				position[i] = position[i + 1] + dir * lengths[i];
+			}
+		}
+	}
+
+	//replace POsition
+	for (int i = 0; i < count; i++)
+	{
+		SetPos(globalSkeleton[chain[i]].m_matrix, position[i]);
+	}
+
 }
 
 void Animator::SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix)
@@ -584,5 +762,16 @@ void Animator::PlayLayerBlendAnimation(float deltaTime)
 
 	//send to shader (GPU)
 	SendSkeletonMatrixToGPU(SkeletonMatrices);
+}
+
+void Animator::ApllyIKInstances(vector<KeyFrame>& globalSkeleton)
+{
+	for (const IKInstance& instance : m_IKInstances)
+	{
+		if (instance.m_active)
+		{
+			ApllyIKFabrik(globalSkeleton, instance);
+		}
+	}
 }
 

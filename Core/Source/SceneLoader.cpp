@@ -12,6 +12,7 @@
 #include "ThirdPersonCamera.h"
 #include "FirstPersonCamera.h"
 #include "CharacterController.h"
+#include "Animator.h"
 
 #include <fstream>
 #include <sstream>
@@ -496,7 +497,26 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
                 parser.Expect('}');
             }
-            }
+        }
+
+        else if (compName == "Animator")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            float fps = parser.ParseFloat();
+
+            parser.Expect(',');
+            parser.ParseString(); parser.Expect(':');
+            std::string meshPath = parser.ParseString();
+
+            obj->AddComponent<Rendering::Animator>(m_resourceManager, GetMeshHandle(meshPath));
+        }
 
         parser.Expect('}'); // component end
 
