@@ -100,7 +100,7 @@ void ComponentsViewer::Draw()
 	for (Component* comp : m_selectedObj->GetComponents())
 	{
 		if (!comp) continue;
-		DrawComponent(comp);
+		DrawComponent(m_selectedObj, comp);
 	}
 
 	if (m_pendingDelete)
@@ -278,7 +278,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 	bool externalChange = (obj != m_lastTransformObj);
 	if (externalChange)
 	{
-		m_cachedEuler = trans.getEulerRotation() * (180.0f / g_Pi);
+		m_cachedEuler = transform.getEulerRotation() * (180.0f / g_Pi);
 		m_lastTransformObj = obj;
 	}
 
@@ -297,7 +297,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		transform.setScale(scale);
 		obj->SetLocalTransform(transform);
 		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(&m_scene, obj, trans, false));
+			std::make_unique<TransformCommand>(&m_scene, obj, transform, false));
 	}
 }
 
@@ -383,7 +383,7 @@ void ComponentsViewer::DrawComponent(Object* obj, Apex::Component* comp)
 	else
 	{
 		for (auto& var : comp->GetExposedVariables())
-			DrawVar(var);
+			DrawVar(var, obj, comp);
 	}
 
 	if (m_changed) m_selectedObj->OnChanged();
@@ -422,7 +422,7 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 
 	float width = m_gui.GetAvailableSize()[0];
 	if (m_gui.ButtonSized("Select Script##" + std::to_string(script->GetId()), { width, 22.f }))
-		m_scriptPicker.Open(script);
+		m_scriptPicker.Open(&m_scene, script);
 
 	// Exposed variables from Lua
 	for (auto& var : script->GetExposedVariables())
@@ -435,11 +435,11 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 			m_gui.Text(var.name);
 			m_gui.SameLine(LABEL_WIDTH);
 			m_gui.SetNextItemWidth(-1.f);
-			float value = std::get<float>(var.value);
-			if (m_gui.InputFloat(std::string("##") + var.name, &value))
+			float oldVal = std::get<float>(var.value);
+			float newVal = oldVal;
+			if (m_gui.InputFloat(std::string("##") + var.name, &newVal))
 			{
-				var.value = value; 
-				script->SetVariable(var.name, var);
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<float>>(&m_scene, script, var.name, oldVal, newVal));
 			}
 			break;
 		}
@@ -448,11 +448,11 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 			m_gui.AlignTextToFramePadding();
 			m_gui.Text(var.name);
 			m_gui.SameLine(LABEL_WIDTH);
-			bool value = std::get<bool>(var.value);
-			if (m_gui.Checkbox(std::string("##") + var.name, &value))
+			bool oldVal = std::get<bool>(var.value);
+			bool newVal = oldVal;
+			if (m_gui.Checkbox(std::string("##") + var.name, &newVal))
 			{
-				var.value = value; 
-				script->SetVariable(var.name, var);
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<bool>>(&m_scene, script, var.name, oldVal, newVal));
 			}
 			break;
 		}
@@ -462,13 +462,13 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 			m_gui.Text(var.name);
 			m_gui.SameLine(LABEL_WIDTH);
 			m_gui.SetNextItemWidth(-1.f);
-			char buf[256];
-			const auto& str = std::get<std::string>(var.value);
-			strncpy(buf, str.c_str(), 255); buf[255] = '\0';
-			if (m_gui.InputText(std::string("##") + var.name, buf, 256))
+			char buffer[256];
+			std::string const& oldVal = std::get<std::string>(var.value);
+			strncpy_s(buffer, oldVal.c_str(), 255);
+			buffer[255] = '\0';
+			if (m_gui.InputText(std::string("##") + var.name, buffer, 256))
 			{
-				var.value = std::string(buf); 
-				script->SetVariable(var.name, var);
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<std::string>>(&m_scene, script, var.name, oldVal, std::string(buffer)));
 			}
 			break;
 		}
@@ -477,101 +477,132 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 	}
 }
 
-void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var)
+void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex::Component* comp)
 {
 	std::string wid = std::string("##") + var.name;
 	switch (var.type)
 	{
-	case ExposedVar::Float:
-		m_gui.AlignTextToFramePadding();
-		m_gui.Text(var.name);
-		m_gui.SameLine(LABEL_WIDTH);
-		m_gui.SetNextItemWidth(-1.f);
-		if (m_gui.InputFloat(wid, (float*)var.data))
+		case ExposedVar::Float:
 		{
-			m_changed = true;
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, &m_scene));
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			float oldVal = *(float*)var.data;
+			if (m_gui.InputFloat(wid, (float*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::Int:
-		m_gui.AlignTextToFramePadding();
-		m_gui.Text(var.name);
-		m_gui.SameLine(LABEL_WIDTH);
-		m_gui.SetNextItemWidth(-1.f);
-		if (m_gui.InputInt(wid, (int*)var.data))
+		case ExposedVar::Int:
 		{
-			m_changed = true;
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			int oldVal = *(int*)var.data;
+			if (m_gui.InputInt(wid, (int*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::Bool:
-		m_gui.AlignTextToFramePadding();
-		m_gui.Text(var.name);
-		m_gui.SameLine(LABEL_WIDTH);
-		if (m_gui.Checkbox(wid, (bool*)var.data))
+		case ExposedVar::Bool:
 		{
-			m_changed = true;
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, &m_scene));
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			bool oldVal = *(bool*)var.data;
+			if (m_gui.Checkbox(wid, (bool*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::String:
-		m_gui.AlignTextToFramePadding();
-		m_gui.Text(var.name);
-		m_gui.SameLine(LABEL_WIDTH);
-		m_gui.SetNextItemWidth(-1.f);
-		if (m_gui.InputText(wid, (char*)var.data, 256))
+		case ExposedVar::String:
 		{
-			m_changed = true;
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, &m_scene));
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			std::string oldVal = *(std::string*)var.data;
+			if (m_gui.InputText(wid, (char*)var.data, 256))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::Enum:
-		if (DrawComponentEnum(var))
+		case ExposedVar::Enum:
 		{
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+			int oldVal = *(int*)var.data;
+			if (DrawComponentEnum(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::Vector3:
-		if (DrawComponentVector3(var))
+		case ExposedVar::Vector3:
 		{
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, &m_scene));
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+			if (DrawComponentVector3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
-
-	case ExposedVar::PhysMaterial:
-		if (DrawComponentPhysMaterial(var))
+		case ExposedVar::PhysMaterial:
 		{
-			CommandManager::Get().Execute(
-				std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, &m_scene));
+			PhysicMaterial oldVal = *(PhysicMaterial*)var.data;
+			if (DrawComponentPhysMaterial(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, &m_scene));
+			}
+			break;
 		}
-		break;
+		case ExposedVar::Mesh:
+			DrawComponentMesh(var);
+			break;
 
-	case ExposedVar::Mesh:
-		DrawComponentMesh(var);
-		break;
+		case ExposedVar::Texture:
+			DrawComponentTexture(var);
+			break;
+		case ExposedVar::Color3:
+		{
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+			if (DrawComponentColor3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, &m_scene));
+			}
+			break;
+		}
 
-	case ExposedVar::Texture:
-		DrawComponentTexture(var);
-		break;
-
-	case ExposedVar::Script:
-		DrawComponentScript(var);
-		break;
+		case ExposedVar::Color4:
+		{
+			LibMath::Vector4 oldVal = *(LibMath::Vector4*)var.data;
+			if (DrawComponentColor3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data, &m_scene));
+			}
+			break;
+		}
 	}
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
+bool Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 {
 	m_gui.AlignTextToFramePadding();
 	m_gui.Text(var.name);
@@ -596,28 +627,64 @@ bool Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 	LibMath::Vector3 vec(v[0], v[1], v[2]);
 	if (DrawVec3(var.name, vec, -1000.f, 1000.f))
 	{
-		v[0] = vec[0]; v[1] = vec[1]; v[2] = vec[2]; 
+		v[0] = vec[0]; 
+		v[1] = vec[1]; 
+		v[2] = vec[2]; 
 		m_changed = true;
+		return true;
 	}
+	return false;
 }
 
 bool Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
 {
 	PhysicMaterial* mat = (PhysicMaterial*)var.data;
 
+	bool changed = false;
 	auto row = [&](const char* label, const char* id, float& val, float mn, float mx)
 		{
 			m_gui.AlignTextToFramePadding();
 			m_gui.Text(label);
 			m_gui.SameLine(LABEL_WIDTH);
 			m_gui.SetNextItemWidth(-1.f);
-			if (m_gui.InputFloat(id, &val))
-				m_changed = true;
+			changed |= m_gui.InputFloat(id, &val);
 		};
 
 	row("Static Friction", "##sf", mat->GetStaticFriction(), 0.f, 1.f);
 	row("Dynamic Friction", "##df", mat->GetDynamicFriction(), 0.f, 1.f);
 	row("Bounciness", "##bo", mat->GetBounciness(), 0.f, 1.f);
+
+	m_changed |= changed;
+
+	return changed;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
+{
+	float* v = (float*)var.data;
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text(var.name);
+	m_gui.SameLine(LABEL_WIDTH);
+	if (m_gui.ColorEdit3("##c3", v))
+	{
+		m_changed = true;
+		return true;
+	}
+	return false;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
+{
+	float* v = (float*)var.data;
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text(var.name);
+	m_gui.SameLine(LABEL_WIDTH);
+	if (m_gui.ColorEdit4("##c4", v))
+	{
+		m_changed = true;
+		return true;
+	}
+	return false;
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
@@ -646,18 +713,4 @@ void Apex::Editor::ComponentsViewer::DrawComponentTexture(ExposedVar var)
 	float w = m_gui.GetAvailableSize()[0];
 	if (m_gui.ButtonSized(std::string("Select##") + var.name, { w, 22.f }))
 		m_texturePicker.Open(texture);
-}
-
-void ComponentsViewer::DrawComponentScript(ExposedVar var)
-{
-	auto* script = (ScriptComponent*)var.data;
-
-	m_gui.AlignTextToFramePadding();
-	m_gui.Text("Script:");
-	m_gui.SameLine(LABEL_WIDTH);
-	m_gui.TextDisabled(script->GetScriptPath().empty() ? "None" : script->GetScriptPath());
-
-	float w = m_gui.GetAvailableSize()[0];
-	if (m_gui.ButtonSized("Select Script##" + std::to_string(script->GetId()), { w, 22.f }))
-		m_scriptPicker.Open(script);
 }

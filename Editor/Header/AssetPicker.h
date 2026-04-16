@@ -81,7 +81,7 @@ namespace Apex::Resources
     template<typename T>
     inline void AssetPicker<T>::Draw()
     {
-        if (!m_isOpen) return;
+        if (!m_isOpen || !m_target) return;
 
         m_gui.BeginModalBlock("Select Asset");
         
@@ -109,8 +109,7 @@ namespace Apex::Resources
 
         m_gui.EndPanel();
 
-        if (!m_isOpen)
-            m_gui.EndModalBlock();
+        m_gui.EndModalBlock();
     }
 }
 

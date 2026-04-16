@@ -31,9 +31,8 @@ namespace Apex::Editor
 
 		void Draw();
 
-		void DrawTransform(Data::Object* obj);
-		void DrawComponent(Data::Object* obj, Apex::Component* comp);
-		bool DrawTreeComp(Apex::Component* obj);
+		void DrawTransform(Apex::Data::Object* obj);
+		void DrawComponent(Apex::Data::Object* obj, Apex::Component* comp);
 
 		bool DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max);
 
@@ -41,14 +40,15 @@ namespace Apex::Editor
 
 	private:
 		void DrawScriptComponent(Apex::Scripting::ScriptComponent* script);
-		void DrawVar(ExposedVar& var);
+		void DrawVar(ExposedVar& var, Apex::Data::Object* obj, Apex::Component* comp);
 
-		void DrawComponentEnum(ExposedVar var);
-		void DrawComponentVector3(ExposedVar var);
-		void DrawComponentPhysMaterial(ExposedVar var);
+		bool DrawComponentEnum(ExposedVar var);
+		bool DrawComponentVector3(ExposedVar var);
+		bool DrawComponentPhysMaterial(ExposedVar var);
+		bool DrawComponentColor3(ExposedVar var);
+		bool DrawComponentColor4(ExposedVar var);
 		void DrawComponentMesh(ExposedVar var);
 		void DrawComponentTexture(ExposedVar var);
-		void DrawComponentScript(ExposedVar var);
 
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;
@@ -67,7 +67,7 @@ namespace Apex::Editor
 		bool m_changed = false;
 
 		LibMath::Vector3 m_cachedEuler;
-		Object* m_lastTransformObj = nullptr;
+		Apex::Data::Object* m_lastTransformObj = nullptr;
 	};
 }
 

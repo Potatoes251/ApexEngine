@@ -17,8 +17,11 @@ void ScriptPicker::Open(Rendering::Scene* scene, Apex::Scripting::ScriptComponen
 
 void ScriptPicker::Draw()
 {
-    if (!m_isOpen)
+    if (!m_isOpen || !m_target)
+    {
+        m_isOpen = false;
         return;
+    }
 
     m_gui.BeginModalBlock("Select Script");
 
@@ -67,6 +70,5 @@ void ScriptPicker::Draw()
 
     m_gui.EndPanel();
 
-    if (!m_isOpen)
-        m_gui.EndModalBlock();
+    m_gui.EndModalBlock();
 }
