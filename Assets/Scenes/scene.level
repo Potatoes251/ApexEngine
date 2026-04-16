@@ -113,9 +113,9 @@
   {
     "id": 6,
     "parent": null,
-    "name": "Object6",
-    "position": [2.000000,0.000000,0.000000],
-    "rotation": [-0.552142,-0.229819,-0.376732,0.707386],
+    "name": "Bear",
+    "position": [2.000000,1.000000,0.000000],
+    "rotation": [-0.707107,0.000000,0.000000,0.707107],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
@@ -128,7 +128,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-        "Mesh": "Assets/Meshes/Withered_Freddy/Withered_Freddy.mesh"
+		"Mesh": "Assets/Meshes/Withered_Freddy/Withered_Freddy.mesh"
       }
     }
   }

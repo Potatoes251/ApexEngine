@@ -39,6 +39,7 @@ namespace Apex::Editor
 			ComponentsViewer* compViewer, Apex::Windowing::IWindow& window);
 
 		void Draw();
+		void Rename();
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
 		void SetViewport(Viewport* viewport) { m_viewport = viewport; }
 		void SelectObject(Apex::Data::Object* selected, bool send = true);

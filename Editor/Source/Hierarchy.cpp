@@ -60,12 +60,9 @@ void Hierarchy::Draw()
 
     HandlePending();
 
-    if (m_selected && m_gui.IsPanelFocused() && m_gui.IsKeyPressed(UIKey::F2))
+    if (m_selected && m_gui.IsPanelFocused() && (m_gui.IsKeyPressed(UIKey::F2) || m_gui.IsItemDoubleClicked()))
     {
-        m_renaming = m_selected;
-        m_renameFocusPending = true;
-        strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
-        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+        Rename();
     }
 
     Vector2 size = m_gui.GetAvailableSize();
@@ -97,6 +94,14 @@ void Hierarchy::Draw()
     m_gui.PopFont();
 
     ApplyPendingOp();
+}
+
+void Apex::Editor::Hierarchy::Rename()
+{
+    m_renaming = m_selected;
+    m_renameFocusPending = true;
+    strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
+    m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
 }
 
 void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
@@ -251,6 +256,9 @@ void Hierarchy::HandleContextMenu(SceneNode* node)
 
     if (m_gui.MenuItem("Create Child"))
         m_pendingParent = node;
+
+    if (m_gui.MenuItem("Rename"))
+        Rename();
 
     if (m_gui.MenuItem("Duplicate"))
         m_pendingClone = obj;
