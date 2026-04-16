@@ -6,9 +6,7 @@
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Quaternion.h"
 
-#include "ResourceHandle.h"
 #include "Mesh.h"
-#include "Shader.h"
 
 #include "PhysicMaterial.h"
 #include "Collider.h"
@@ -18,6 +16,9 @@
 
 namespace Apex::Physic
 {
+	inline LibMath::Vector3 GRAVITY = { 0.f, -9.81f, 0.f };
+
+
 	class BoxCollider;
 	class MeshCollider;
 	class CapsuleCollider;
@@ -32,6 +33,7 @@ namespace Apex::Physic
 
 	struct HitResult
 	{
+		Collider*			m_collider;
 		RigidBodyComponent* m_body;
 		LibMath::Vector3	m_position;
 		LibMath::Vector3	m_normal;

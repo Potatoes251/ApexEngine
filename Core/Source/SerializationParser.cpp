@@ -152,3 +152,9 @@ Quaternion SerialParser::ParseQuaternion()
 
     return { x,y,z,w };
 }
+
+char SerialParser::PeekChar()
+{
+    SkipWhitespace();
+    return m_text[m_index];
+}

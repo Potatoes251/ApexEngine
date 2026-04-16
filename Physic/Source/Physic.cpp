@@ -16,6 +16,7 @@
 
 #include "DebugRenderer.h"
 
+using namespace Apex::Data;
 using namespace Apex::Physic;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
@@ -152,6 +153,17 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 		if (it->m_owner == &rigidbody)
 		{
 			m_scene->removeActor(*(it->m_actor));
+
+			it->m_actor->userData = nullptr;
+			physx::PxU32 nbShapes = it->m_actor->getNbShapes();
+			std::vector<physx::PxShape*> shapes(nbShapes);
+			it->m_actor->getShapes(shapes.data(), nbShapes);
+
+			for (auto* shape : shapes)
+			{
+				shape->userData = nullptr;
+			}
+
 			it->m_actor->release();
 			m_rigidBodies.erase(it);
 			return;
@@ -172,6 +184,7 @@ bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMat
 	if (!result) return false;
 
 	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = ToLibVec(hit.block.position);
 	hit_out.m_normal = ToLibVec(hit.block.normal);
@@ -193,6 +206,7 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 		const physx::PxRaycastHit& h = hitBuffer.getTouch(i);
 		HitResult result;
 		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_collider = static_cast<Collider*>(h.shape->userData);
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -203,7 +217,8 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 }
 
 bool PhysicSystem::Sweep(
-	HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance)
+	HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, 
+	Collider const& collider, float distance)
 {
 	physx::PxTransform startPose(ToPxVec(position));
 
@@ -237,6 +252,7 @@ bool PhysicSystem::Sweep(
 	if (!result) return false;
 	
 	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = LibMath::Vector3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
 	hit_out.m_normal = LibMath::Vector3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
@@ -285,6 +301,7 @@ bool PhysicSystem::Sweep(
 		const physx::PxSweepHit& h = sweepBuffer.getTouch(i);
 		HitResult result;
 		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_collider = static_cast<Collider*>(h.shape->userData);
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -459,7 +476,11 @@ physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& colli
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
 {
-	return m_pxCtx.m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
+	physx::PxShape* shape = m_pxCtx.m_physics->createShape(physx::PxBoxGeometry(ToPxVec(box.GetHalfExtents())), *GetMaterial(box));
+
+	shape->userData = (void*)&box;
+
+	return shape;
 }
 
 physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
@@ -467,7 +488,14 @@ physx::PxShape* PhysicSystem::CreateShapeCapsule(CapsuleCollider const& capsule)
 	float halfHeight = capsule.GetHalfHeight();
 	float radius = capsule.GetRadius();
 
-	return m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
+	physx::PxShape* shape = m_pxCtx.m_physics->createShape(physx::PxCapsuleGeometry(radius, halfHeight), *GetMaterial(capsule));
+	
+	physx::PxQuat rotation(physx::PxHalfPi, physx::PxVec3(0, 0, 1));
+	shape->setLocalPose(physx::PxTransform(rotation));
+
+	shape->userData = (void*)&capsule;
+
+	return shape;
 }
 
 physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBodyComponent const& rigidBody)
@@ -487,7 +515,11 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
 			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
-			return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+			physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+
+			shape->userData = (void*)&mesh;
+
+			return shape;
 		}
 	case MeshColliderType::Convex:
 	{
@@ -499,7 +531,11 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 
 		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
 
-		return m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+		physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
+		
+		shape->userData = (void*)&mesh;
+
+		return shape;
 	}
 	default:
 		assert(false && "Unhandled mesh collider type");
@@ -516,16 +552,20 @@ void PhysicSystem::CreateActorDynamic(physx::PxShape* shape, RigidBodyComponent&
 	physx::PxRigidDynamic* body = m_pxCtx.m_physics->createRigidDynamic(transform);
 
 	body->attachShape(*shape);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBody.m_lockRotationX);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidBody.m_lockRotationY);
+	body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidBody.m_lockRotationZ);
 
 	physx::PxRigidBodyExt::updateMassAndInertia(*body, rigidBody.GetMass());
-
 	m_scene->addActor(*body);
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor
+	{
+		.m_actor = body,
+		.m_owner = &rigidBody
+	};
 
 	m_rigidBodies.push_back(actor);
 }
@@ -542,9 +582,11 @@ void PhysicSystem::CreateActorStatic(physx::PxShape* shape, RigidBodyComponent& 
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor
+	{
+		.m_actor = body,
+		.m_owner = &rigidBody
+	};
 
 	m_rigidBodies.push_back(actor);
 }
@@ -744,15 +786,24 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 {
 	for (unsigned int i = 0; i < count; i++)
 	{
-		RigidBodyComponent* otherbody = static_cast<RigidBodyComponent*>(pairs[i].otherActor->userData);
-		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(pairs[i].triggerActor->userData);
+		Collider* collider = static_cast<Collider*>(pairs[i].triggerShape->userData);
+		if (!collider) continue;
+
+		Collider* otherCollider = static_cast<Collider*>(pairs[i].otherShape->userData);
+		if (!otherCollider) continue;
+
+		Object* owner = collider->GetOwner();
+		Object* otherOwner = otherCollider->GetOwner();
+		
 		switch (pairs[i].status)
 		{
 		case physx::PxPairFlag::eNOTIFY_TOUCH_FOUND:
-			otherbody->OnTriggerEnter(body);
+			owner->OnTriggerEnter(otherCollider);
+			otherOwner->OnTriggerEnter(collider);
 			break;
 		case physx::PxPairFlag::eNOTIFY_TOUCH_LOST:
-			otherbody->OnTriggerExit(body);
+			owner->OnTriggerExit(otherCollider);
+			otherOwner->OnTriggerExit(collider);
 			break;
 		default:
 			assert(false && "Unhandled Trigger status");

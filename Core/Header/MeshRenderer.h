@@ -36,7 +36,7 @@ namespace Apex::Rendering
         const char* GetTypeName() const override { return "MeshRenderer"; };
         std::vector<ExposedVar> GetExposedVariables() override;
 
-        std::unique_ptr<Apex::Component> Clone() const override;
+        std::unique_ptr<Apex::Component> Clone() override;
 
         void Render(RenderPassInfo passInfo);
 

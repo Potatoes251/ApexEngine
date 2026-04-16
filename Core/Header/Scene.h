@@ -19,6 +19,8 @@
 
 namespace Apex::Rendering
 {
+	class Camera;
+
 	class Scene
 	{
 	public:
@@ -33,9 +35,10 @@ namespace Apex::Rendering
 
 		Lighting::VisibleLights GetVisibleLights();
 
-		Object* CreateObject();
-		const std::vector<std::unique_ptr<Object>>& GetObjects() const;
-		void DestroyObject(Object* obj);
+		Data::Object* CreateObject();
+		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
+		void AddObject(std::unique_ptr<Data::Object> obj);
+		void DestroyObject(size_t objId);
 
 		void MarkDirty();
 		void ClearDirty() { m_isDirty = false; }
@@ -43,26 +46,35 @@ namespace Apex::Rendering
 
 		void Start();
 		void Update(float deltaTime_s);
+		void LateUpdate(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
-		Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
+		Data::Object* GetObjectWithId(size_t id);
+		Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
-		void InsertBefore(Object* dragged, Object* target);
-		void InsertAfter(Object* dragged, Object* target);
+		Camera* GetMainCamera() const { return m_mainCamera; }
+		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
+
+		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
+		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
 
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
+		void DestroyPendingObject();
+		void DestroyObject(Apex::Data::Object* obj);
+
 		Physic::PhysicSystem m_physics;
 
-		std::vector<std::unique_ptr<Object>> m_objects;
+		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;
 
-		bool m_isDirty = false;
+		Camera* m_mainCamera = nullptr;
 
 		std::function<void()> m_onMarkedDirty;
+		bool m_isDirty = false;
 	};
 }
 

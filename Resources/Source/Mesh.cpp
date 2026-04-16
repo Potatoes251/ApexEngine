@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-#include "MeshImporter.h"
+#include "MeshLoader.h"
 
 using namespace Apex::Rendering;
 
@@ -14,8 +14,8 @@ Mesh::~Mesh()
 
 void Mesh::LoadFromFile()
 {
-	MeshImporter importer;
-	importer.Import(m_path, *this);
+	MeshLoader loader;
+	loader.Load(m_path, *this);
 
 	for (const auto& v : m_vertices)
 	{

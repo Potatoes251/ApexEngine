@@ -1,16 +1,42 @@
 #include "FirstPersonCamera.h"
 
+#include "../../Resources/Header/Object.h"
+
 #include "LibMath/Angle.h"
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
 
-
+using namespace Apex::Data;
 using namespace Apex::Rendering;
 
 FirstPersonCamera::FirstPersonCamera(LibMath::Vector3 position)
 {
 	m_position = position;
 	UpdateVectors();
+}
+
+FirstPersonCamera::FirstPersonCamera(FirstPersonCamera const& other)
+{
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+	m_isMain = other.m_isMain;
+}
+
+FirstPersonCamera& FirstPersonCamera::operator=(FirstPersonCamera const& other)
+{
+	m_isMain = other.m_isMain;
+	m_speed = other.m_speed;
+	m_fov = other.m_fov;
+	m_yaw = other.m_yaw;
+	m_pitch = other.m_pitch;
+	m_position = other.m_position;
+	m_isMain = other.m_isMain;
+
+	return *this;
 }
 
 void FirstPersonCamera::ProcessKeyboard(bool moveForward, bool moveBackward, bool moveLeft,
@@ -60,4 +86,20 @@ void FirstPersonCamera::ProcessScroll(double yoffset)
 {
 	m_fov -= LibMath::Degree((float)yoffset);
 	m_fov = LibMath::Degree(LibMath::clamp(m_fov.raw(), 1.f, 90.f));
+}
+
+void FirstPersonCamera::Serialize(std::ostream& out) const
+{
+	out << "      \"ThirdPersonCamera\": {\n";
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << "\n";
+	out << "      }";
+}
+
+void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)
+{
+	Object* owner = GetOwner();
+	if (!owner) return;
+
+	SetPosition(owner->GetGlobalTransform().getPosition());
 }

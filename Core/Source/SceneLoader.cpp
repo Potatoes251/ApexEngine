@@ -1,22 +1,26 @@
 #include "SceneLoader.h"
-#include "SceneLoader.h"
-#include "Object.h"
 
-#include "MeshRenderer.h"
+#include "Scene.h"
+#include "Object.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
+#include "MeshRenderer.h"
 #include "MeshCollider.h"
-#include "Lighting/DirectionalLightComponent.h"
-#include "Lighting/SpotLightComponent.h"
-#include "Lighting/PointLightComponent.h"
+#include "CapsuleCollider.h"
+#include "Lighting/Lights.h"
+#include "ScriptComponent.h"
+#include "ThirdPersonCamera.h"
+#include "FirstPersonCamera.h"
+#include "CharacterController.h"
 
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <cassert>
 
-using namespace Apex::Serialization;
+using namespace Apex::Data;
 using namespace Apex::Physic;
+using namespace Apex::Serialization;
 
 void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& path)
 {
@@ -262,6 +266,40 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
             comp.SetEnabled(enabled);
         }
+        else if (compName == "CapsuleCollider")
+        {
+            parser.ParseString(); parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            float halfHeight = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            float radius = parser.ParseFloat();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            bool isTrigger = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+
+            PhysMatHandle material;
+
+            if (!parser.Match("null"))
+            {
+                size_t id = parser.ParseInt();
+                auto it = m_materials.find(id);
+                assert(it != m_materials.end() && "Material id not found");
+
+                material = it->second;
+            }
+
+            auto& comp = obj->AddComponent<Apex::Physic::CapsuleCollider>(halfHeight, radius, isTrigger, material);
+            comp.SetEnabled(enabled);
+        }
         else if (compName == "DirectionalLight")
         {
             parser.ParseString(); 
@@ -364,6 +402,101 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
                 LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
             comp.SetEnabled(enabled);
         }
+        else if (compName == "CharacterController")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float groundedDistance = parser.ParseFloat();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
+            comp.SetEnabled(enabled);
+            comp.SetSpeed(speed);
+            comp.SetGroundedDistance(groundedDistance);
+        }
+        else if (compName == "ThirdPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float distance = parser.ParseFloat();
+
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float speed = parser.ParseFloat();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::ThirdPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
+            comp.SetDistance(distance);
+            comp.SetSpeed(speed);
+        }
+        else if (compName == "FirstPersonCamera")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            bool main = parser.ParseBool();
+
+            auto& comp = obj->AddComponent<Apex::Rendering::FirstPersonCamera>();
+            comp.SetEnabled(enabled);
+            comp.SetMainCamera(main);
+        }
+
+        else if (compName == "ScriptComponent")
+        {
+            parser.ParseString(); parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            parser.ParseString(); parser.Expect(':');
+            std::string scriptPath = parser.ParseString();
+
+            auto& comp = obj->AddComponent<Apex::Scripting::ScriptComponent>(m_luaManager);
+            comp.SetEnabled(enabled);
+            comp.SetScript(scriptPath);
+
+            if (parser.Peek(','))
+            {
+                parser.Expect(',');
+
+                parser.ParseString(); parser.Expect(':');
+                parser.Expect('{');
+
+                while (!parser.Peek('}'))
+                {
+                    ParseScriptVar(comp, parser);
+
+                    if (parser.Peek(','))
+                        parser.Expect(',');
+                }
+
+                parser.Expect('}');
+            }
+            }
 
         parser.Expect('}'); // component end
 
@@ -372,6 +505,30 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
     }
 
     parser.Expect('}'); // "components" category end
+}
+
+void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)
+{
+    std::string varName = parser.ParseString();
+    parser.Expect(':');
+
+    char c = parser.PeekChar();
+
+    // STRING
+    if (c == '"')
+    {
+        script.SetVariable(varName, parser.ParseString());
+    }
+    // BOOL
+    else if (c == 't' || c == 'f')
+    {
+        script.SetVariable(varName, parser.ParseBool());
+    }
+    // NUMBER
+    else
+    {
+        script.SetVariable(varName, parser.ParseFloat());
+    }
 }
 
 void SceneLoader::ParseMaterials(SerialParser& parser)
@@ -447,18 +604,15 @@ Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::
 
 Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Mesh>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Mesh>(path);
 }
 
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Texture>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Texture>(path);
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)
 {
-    auto handle = m_resourceManager.CreateAsync<Shader>(path);
-    return handle;
+    return m_resourceManager.CreateAsync<Shader>(path);
 }

@@ -42,6 +42,7 @@ namespace Apex::Editor
 		void SetScene(Rendering::Scene* newScene) { m_scene = newScene; }
 		void SetViewport(Viewport* viewport) { m_viewport = viewport; }
 		void SelectObject(Apex::Data::Object* selected, bool send = true);
+		Apex::Data::Object* GetSelected() const { return m_selected; }
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
@@ -65,7 +66,7 @@ namespace Apex::Editor
 
 		Apex::Data::Object* DuplicateObject(Apex::Data::Object* original);
 
-		void DestroyObject(Apex::Data::Object* obj);
+		void DestroyObject(size_t objId);
 
 	private:
 		Apex::UserInterface::IGUI& m_gui;

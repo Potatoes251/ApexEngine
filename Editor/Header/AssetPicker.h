@@ -6,6 +6,8 @@
 #include "UI.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Command/SetAssetCommand.h"
+#include "CommandManager.h"
 
 #include <vector>
 #include <filesystem>
@@ -68,7 +70,7 @@ namespace Apex::Resources
         for (auto& c : ext) c = static_cast<char>(::tolower(c));
 
         if constexpr (std::is_same_v<T, Mesh>)
-            return ext == ".obj" || ext == ".fbx";
+            return ext == ".mesh";
         else if constexpr (std::is_same_v<T, Texture>)
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg"
             || ext == ".hdr" || ext == ".tga";
@@ -96,7 +98,9 @@ namespace Apex::Resources
             {
                 if (!m_target->IsValid() || (*m_target)->GetPath() != pathStr)
                 {
-                    *m_target = m_resourceManager.CreateAsync<T>(pathStr);
+                    ResourceHandle<T> newVal = m_resourceManager.CreateAsync<T>(pathStr);
+
+                    CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetAssetCommand<T>>(m_target, *m_target, newVal));
                     m_newAsset = true;
                 }
                 m_isOpen = false;

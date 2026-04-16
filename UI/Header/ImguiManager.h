@@ -122,6 +122,7 @@ namespace Apex::UserInterface
         bool SliderIntFormat(const std::string& label, int* value, int min, int max, float size, 
                                 float sliderPos = -1.f, float spacing = -1.f) override;
         bool ColorEdit3(const std::string& label, float color[3]) override;
+		bool ColorEdit4(const std::string& label, float color[4]) override;
         bool InputText(const std::string& label, char* buffer, size_t bufferSize,
                        const std::string& hint) override;
         bool InputFloat(const std::string& label, float* value) override;
@@ -135,6 +136,7 @@ namespace Apex::UserInterface
 
         bool IsItemHovered() const override;
         bool IsItemActive() const override;
+        bool IsAnyItemActive() const override;
         LibMath::Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
@@ -163,6 +165,7 @@ namespace Apex::UserInterface
         void DrawImage(uint32_t textureID, LibMath::Vector2 size, bool flipY = true) override;
         void DrawImageTinted(uint32_t textureID, LibMath::Vector2 size, Color tint, bool flipY = true) override;
         IDrawList* GetDrawList();
+        IDrawList* GetBackgroundDrawList();
         Vector2 GetItemRectMin() const override;
         Vector2 GetItemRectMax() const override;
 
@@ -170,6 +173,8 @@ namespace Apex::UserInterface
 
         void BeginModalBlock(const std::string& name) override;
         void EndModalBlock() override;
+
+        void Dummy(LibMath::Vector2 size) override;
 
 	private:
         static int ToImGuiMouseButton(MouseButton button);

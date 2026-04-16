@@ -21,8 +21,8 @@ using std::unordered_map;
 struct BoneInfo
 {
 	Matrix4				m_offsetMatrix;
-	int					m_parentIndex = -1;
-	std::vector<int>	m_children;
+	int32_t					m_parentIndex = -1;
+	std::vector<int32_t>	m_children;
 };
 
 struct KeyFrame
@@ -74,7 +74,7 @@ public:
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
-	std::vector<unsigned int>				m_indices;
+	std::vector<uint32_t>					m_indices;
 
 	std::vector<BoneInfo>					m_bones;		//with m_offsetMatrix = inverse bind pose
  	unordered_map<std::string, int>			m_boneMap;

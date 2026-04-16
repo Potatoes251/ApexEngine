@@ -16,21 +16,28 @@ namespace Apex::Scripting
         ScriptComponent(LuaManager& lua) : m_lua(lua) {};
         ~ScriptComponent() = default;
 
-        std::unique_ptr<Component> Clone() const override;
+        std::unique_ptr<Component> Clone() override;
 
         void SetScript(const std::string& path);
+        void SetObjectPtr();
         const std::string GetScriptPath() const { return m_scriptPath; }
 
         const char* GetTypeName() const override { return "ScriptComponent"; };
         std::vector<ExposedVar> GetExposedVariables() override;
 
+        void SetVariable(const std::string& name, ExposedVar& var);
+        void SetVariable(const std::string& name, float var);
+        void SetVariable(const std::string& name, bool var);
+        void SetVariable(const std::string& name, std::string const& var);
+
         int GetInstanceRef() const { return m_instanceRef; }
 
         void Serialize(std::ostream& out) const override;
 
-    protected:
         void OnStart() override;
         void OnUpdate(float deltaTime) override;
+        void OnTriggerEnter(Physic::Collider* other) override;
+        void OnTriggerExit(Physic::Collider* other) override;
 
     private:
         int m_instanceRef = LUA_REFNIL;

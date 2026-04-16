@@ -47,6 +47,8 @@ namespace Apex::Editor
 
 		void				Draw();
 
+		bool				IsFocus() const { return m_isFocus; }
+
 	private:
 		int					GetMousePixelInFbo(float mouseX, float mouseY);
 
@@ -64,6 +66,14 @@ namespace Apex::Editor
 
 		void				DrawUI();
 		void				DrawGrid();
+		void				DrawPlayBar();
+		void				DrawRightToolbar();
+
+		void				DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round);
+
+		void				DrawPillGroup(LibMath::Vector2 topLeft, LibMath::Vector2 size, float rounding) const;
+		bool				IconButton(const char* iconPath, const char* fallbackLabel, LibMath::Vector2 size, 
+										bool active = false, Apex::UserInterface::Color tint = Apex::UserInterface::Color(1.0f, 1.0f, 1.0f, 1.0f));
 
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
@@ -102,6 +112,7 @@ namespace Apex::Editor
 		float	m_rotateSnap = 2.f;
 		float	m_scaleSnap = 1.f;
 
+		bool	m_isFocus = false;
 		bool	m_localGizmo = true;
 		bool	m_isTranslationSnapping = true;
 		bool	m_isRotationSnapping = true;
