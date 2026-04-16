@@ -2,6 +2,8 @@
 
 #include "../../Physic/Header/Rigidbody.h"
 
+#include "Log.h"
+
 using namespace Apex::Data;
 using namespace LibMath;
 using namespace Apex::SceneGraph;	
@@ -67,7 +69,7 @@ std::unique_ptr<Object> Object::Clone()
 
 		if (!newComp)
 		{
-			std::cerr << "Clone returned nullptr for component: " << comp->GetTypeName() << std::endl;
+			LOG_ERROR("Clone returned nullptr for component: {}", comp->GetTypeName());
 			continue;
 		}
 

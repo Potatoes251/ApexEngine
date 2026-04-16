@@ -78,16 +78,6 @@ void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 	GetOwner()->SetLocalTransform(transform);
 }
 
-void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* otherActor)
-{
-	printf("Send OnTriggerEnter to the object\n");
-}
-
-void RigidBodyComponent::OnTriggerExit(RigidBodyComponent* otherActor)
-{
-	printf("Send OnTriggerExit to the object\n");
-}
-
 void RigidBodyComponent::Serialize(std::ostream& out) const
 {
 	out << "      \"RigidBody\": {\n";

@@ -10,6 +10,8 @@
 #include "ResourceManager.h"
 #include "Rigidbody.h"
 #include "CommandManager.h"
+#include "LogSystem.h"
+
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
 using namespace Apex::Audio;
@@ -58,6 +60,9 @@ namespace Apex::Editor
             {
                 m_window->SetWindowTitle("Apex Editor *");
             });
+
+        m_console = std::make_unique<Console>(m_gui.get());
+        LogSystem::AddSink(m_console.get());
 
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
@@ -194,6 +199,7 @@ namespace Apex::Editor
 
         if (m_contentBrowser)
         {
+            m_console->Draw();
             m_contentBrowser->Draw();
             // Draw all open texture editors, then remove any that were closed
             for (auto& textureEditor : m_textureEditors)

@@ -13,6 +13,8 @@
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
 
+#include "Log.h"
+
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -320,7 +322,7 @@ namespace Apex::Rendering
 
 		if (!file)
 		{
-			std::cout << "Failed to open file\n";
+			LOG_ERROR("Scene::Save Failed to open file : {}", path);
 			return;
 		}
 
@@ -411,7 +413,7 @@ namespace Apex::Rendering
 		file << "]\n";
 		file << "}\n";
 
-		std::cout << "Scene saved to " << path << std::endl;
+		LOG_INFO("Scene saved to {}", path);
 
 		ClearDirty();
 	}

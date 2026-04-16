@@ -33,6 +33,9 @@
 #include "Lighting/LightManager.h"
 #include "Lighting/ShadowManager.h"
 
+#include "FileLog.h"
+#include "LogSystem.h"
+
 #include <chrono>
 #include <iostream>
 
@@ -59,7 +62,8 @@ namespace Apex
 
 bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
-    if (!InitWindow(window)
+    if (!InitLog()
+    || !InitWindow(window)
     || !InitResourceManager()  
     || !InitRHI()  
     || !InitLighting()
@@ -76,6 +80,21 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
 bool Apex::Application::InitResourceManager()
 {
     m_resourceManager = std::make_unique<ResourceManager>(m_threadPool);
+    return true;
+}
+
+bool Apex::Application::InitLog()
+{
+
+
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S.log");
+
+    m_fileLog = std::make_unique<FileLog>(oss.str());
+    LogSystem::AddSink(m_fileLog.get());
+
     return true;
 }
 

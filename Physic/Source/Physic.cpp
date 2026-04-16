@@ -3,7 +3,6 @@
 #include <PxPhysicsAPI.h>
 #include <cooking/PxCooking.h>
 
-#include <iostream>
 #include <cassert>
 
 #include "Rigidbody.h"
@@ -15,6 +14,8 @@
 #include "Shader.h"
 
 #include "DebugRenderer.h"
+
+#include "Log.h"
 
 using namespace Apex::Data;
 using namespace Apex::Physic;
@@ -31,7 +32,7 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		if (!m_pxCtx.m_foundation)
 		{
-			std::cerr << "PhysX foundation creation failed." << std::endl;
+			LOG_ERROR("PhysX foundation creation failed.");
 			m_pxCtx.m_physics = nullptr;
 			return;
 		}
@@ -40,7 +41,7 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		if (!m_pxCtx.m_physics)
 		{
-			std::cerr << "PhysX physics creation failed." << std::endl;
+			LOG_ERROR("PhysX physics creation failed.");
 			m_pxCtx.m_foundation->release();
 			m_pxCtx.m_foundation = nullptr;
 			return;

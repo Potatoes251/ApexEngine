@@ -1,6 +1,6 @@
 #include "CommandManager.h"
 
-#include <cassert>
+#include "Log.h"
 
 using namespace Apex::CtrlZ;
 
@@ -37,7 +37,7 @@ void CommandManager::StartBatch()
 {
 	if (m_batching)
 	{
-		printf("Warning: StartBatch called twice without EndBatch\n");
+		LOG_WARNING("StartBatch called twice without EndBatch");
 		return;
 	}
 
@@ -49,7 +49,7 @@ void CommandManager::EndBatch()
 {
 	if (!m_batching)
 	{
-		printf("Warning: EndBatch called without StartBatch\n");
+		LOG_WARNING("EndBatch called without StartBatch");
 		return;
 	}
 

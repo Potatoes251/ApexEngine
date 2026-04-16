@@ -53,7 +53,7 @@
     "id": 1,
     "parent": null,
     "name": "Platform",
-    "position": [0.000000,0.000000,0.000000],
+    "position": [1.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [20.000000,1.000000,20.000000],
     "components": {
@@ -107,6 +107,28 @@
         "intensity": 0.883000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 6,
+    "parent": null,
+    "name": "Object6",
+    "position": [2.000000,0.000000,0.000000],
+    "rotation": [-0.552142,-0.229819,-0.376732,0.707386],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Withered_Freddy/Withered_Freddy.mesh",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+        "Mesh": "Assets/Meshes/Withered_Freddy/Withered_Freddy.mesh"
       }
     }
   }
