@@ -262,7 +262,7 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
 				[this](Object* obj)
 				{
-					Component* comp = &obj->AddComponent<Animator>(m_resourceManager, obj->GetComponent<MeshRenderer>()->GetMesh());
+					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
 					return comp->GetId();
 				}));
 		}

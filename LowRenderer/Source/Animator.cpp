@@ -1,21 +1,18 @@
 ﻿#include "Animator.h"
 
-#include <cmath>
+#include "Log.h"
 
 using namespace Apex::Rendering;
 
 using Apex::Component;
 using Apex::ExposedVar;
 
-Animator::Animator(Resources::ResourceManager& resourceManager, ResourceHandle<Mesh> mesh) : m_mesh(mesh)
-{
-	m_shader = resourceManager.CreateAsync<Shader>("ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl");
-}
+Animator::Animator(ResourceHandle<Mesh> mesh) : m_mesh(mesh)
+{}
 
 Animator::Animator(const Animator& other)
 {
 	m_mesh = other.m_mesh;
-	m_shader = other.m_shader;
 	m_fps = other.m_fps;
 }
 
@@ -49,11 +46,12 @@ void Animator::SetMesh(ResourceHandle<Mesh> mesh)
 	m_mesh = mesh;
 
 	m_boneCount = static_cast<int>(mesh->m_bones.size());
-}
+	m_skeletonMatrix.resize(m_boneCount);
 
-void Animator::SetShader(ResourceHandle<Shader> shader)
-{
-	m_shader = shader;
+	for (size_t i = 0; i < m_boneCount; i++)
+	{
+		m_skeletonMatrix[i] = m_mesh->m_bones[i].m_offsetMatrix;
+	}
 }
 
 void Animator::SetFPS(float fps)
@@ -65,41 +63,39 @@ void Animator::OnUpdate(float deltaTime)
 {
 	switch (m_state)
 	{
-	case Waiting_for_loaded_ressources:
+	case WaitingForLoadedResources:
 		WaitForResourcesToBeLoaded();
 		break;
 
-	case Play_no_animation:
-		break;
-
-	case Play_single_animation:
+	case PlaySingleAnim:
 		PlaySingleAnimation(deltaTime);
 		break;
 
-	case Play_single_animation_interpolated:
+	case PlaySingleAnimInterpolated:
 		PlaySingleAnimationInterpolated(deltaTime);
 		break;
 
-	case Play_cross_fade_animation:
+	case PlayCrossFadeAnim:
 		PlayCrossFadeAnimation(deltaTime);
 		break;
 
-	case Play_cross_fade_animation_interpolated:
+	case PlayCrossFadeAnimInterpolated:
 		PlayCrossFadeAnimationInterpolated(deltaTime);
 		break;
 
-	case Play_blend_space_animation:
+	case PlayBlendSpaceAnim:
 		PlayBlendedAnimation(deltaTime);
 		break;
 
-	case Play_blend_space_animation_interpolated:
+	case PlayBlendSpaceAnimInterpolated:
 		PlayBlendedAnimationInterpolated(deltaTime);
 		break;
 
-	case Play_layer_blend_space_animation:
+	case PlayLayerBlendSpaceAnim:
 		PlayLayerBlendAnimation(deltaTime);
 		break;
 
+	case PlayNoAnim:
 	default:
 		break;
 	}
@@ -107,36 +103,36 @@ void Animator::OnUpdate(float deltaTime)
 
 void Animator::Stop()
 {
-	m_nextState = Play_no_animation;
+	m_nextState = PlayNoAnim;
 }
 
 void Animator::PlayRepeat(int animationIndex)
 {
-	if (m_state == Waiting_for_loaded_ressources)
+	if (m_state == WaitingForLoadedResources)
 	{
 		m_animationIndexA = animationIndex;
-		m_nextState = Play_single_animation;
+		m_nextState = PlaySingleAnim;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndex];
 		m_elapse = 0.f;
-		m_state = Play_single_animation;
+		m_state = PlaySingleAnim;
 	}
 }
 
 void Animator::PlayRepeatInterpolated(int animationIndex)
 {
-	if (m_state == Waiting_for_loaded_ressources)
+	if (m_state == WaitingForLoadedResources)
 	{
 		m_animationIndexA = animationIndex;
-		m_nextState = Play_single_animation_interpolated;
+		m_nextState = PlaySingleAnimInterpolated;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndex];
 		m_elapse = 0.f;
-		m_state = Play_single_animation_interpolated;
+		m_state = PlaySingleAnimInterpolated;
 	}
 }
 
@@ -144,19 +140,19 @@ void Animator::PlayCrossFade(int animationIndexA, int animationIndexB, float cro
 {
 	if (crossfadeTime <= 0.f) return;							//check if the cross fade time isn't negatif
 
-	if (m_state == Waiting_for_loaded_ressources)				//if the ressources are not already loaded 
+	if (m_state == WaitingForLoadedResources)				//if the ressources are not already loaded 
 	{
 		m_animationIndexA = animationIndexA;
 		m_animationIndexB = animationIndexB;
 
-		m_nextState = Play_cross_fade_animation;
+		m_nextState = PlayCrossFadeAnim;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndexA];
 		m_animationB = &m_mesh->m_animations[animationIndexB];
 
-		m_state = Play_cross_fade_animation;
+		m_state = PlayCrossFadeAnim;
 
 		m_elapse = 0.f;
 		m_crossFadeElapseTime = 0;
@@ -169,19 +165,19 @@ void Animator::PlayCrossFadeInterpolated(int animationIndexA, int animationIndex
 {
 	if (crossfadeTime <= 0.f) return;							//check if the cross fade time isn't negatif
 
-	if (m_state == Waiting_for_loaded_ressources)				//if the ressources are not already loaded 
+	if (m_state == WaitingForLoadedResources)				//if the ressources are not already loaded 
 	{
 		m_animationIndexA = animationIndexA;
 		m_animationIndexB = animationIndexB;
 
-		m_nextState = Play_cross_fade_animation_interpolated;
+		m_nextState = PlayCrossFadeAnimInterpolated;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndexA];
 		m_animationB = &m_mesh->m_animations[animationIndexB];
 
-		m_state = Play_cross_fade_animation_interpolated;
+		m_state = PlayCrossFadeAnimInterpolated;
 
 		m_elapse = 0.f;
 		m_crossFadeElapseTime = 0;
@@ -194,19 +190,19 @@ void Animator::PlayBlended(int animationIndexA, int animationIndexB, float ratio
 {
 	if (ratio < 0.f || ratio > 1.f) return;							//check if the ratio is between 0% and 100%
 
-	if (m_state == Waiting_for_loaded_ressources)					//if the ressources are not already loaded 
+	if (m_state == WaitingForLoadedResources)					//if the ressources are not already loaded 
 	{
 		m_animationIndexA = animationIndexA;
 		m_animationIndexB = animationIndexB;
 
-		m_nextState = Play_blend_space_animation;
+		m_nextState = PlayBlendSpaceAnim;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndexA];
 		m_animationB = &m_mesh->m_animations[animationIndexB];
 
-		m_state = Play_blend_space_animation;
+		m_state = PlayBlendSpaceAnim;
 
 		m_elapse = 0.f;
 	}
@@ -218,19 +214,19 @@ void Animator::PlayBlendedInterpolated(int animationIndexA, int animationIndexB,
 {
 	if (ratio < 0.f || ratio > 1.f) return;							//check if the ratio is between 0% and 100%
 
-	if (m_state == Waiting_for_loaded_ressources)					//if the ressources are not already loaded 
+	if (m_state == WaitingForLoadedResources)					//if the ressources are not already loaded 
 	{
 		m_animationIndexA = animationIndexA;
 		m_animationIndexB = animationIndexB;
 
-		m_nextState = Play_blend_space_animation_interpolated;
+		m_nextState = PlayBlendSpaceAnimInterpolated;
 	}
 	else
 	{
 		m_animationA = &m_mesh->m_animations[animationIndexA];
 		m_animationB = &m_mesh->m_animations[animationIndexB];
 
-		m_state = Play_blend_space_animation_interpolated;
+		m_state = PlayBlendSpaceAnimInterpolated;
 
 		m_elapse = 0.f;
 	}
@@ -240,12 +236,12 @@ void Animator::PlayBlendedInterpolated(int animationIndexA, int animationIndexB,
 
 void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine)
 {
-	if (m_state == Waiting_for_loaded_ressources)					//if the ressources are not already loaded 
+	if (m_state == WaitingForLoadedResources)					//if the ressources are not already loaded 
 	{
 		m_animationIndexA = animationIndexA;
 		m_animationIndexB = animationIndexB;
 
-		m_nextState = Play_layer_blend_space_animation;
+		m_nextState = PlayLayerBlendSpaceAnim;
 
 		m_layerBendingOrigine = origine;
 	}
@@ -258,20 +254,20 @@ void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int ori
 		m_animationA = &m_mesh->m_animations[animationIndexA];
 		m_animationB = &m_mesh->m_animations[animationIndexB];
 
-		m_state = Play_layer_blend_space_animation;
+		m_state = PlayLayerBlendSpaceAnim;
 
 		m_elapse = 0.f;
 	}
 }
 
-int Animator::AddIKInstance(int endBoneIndex, int chainLenght)
+int Animator::AddIKInstance(int endBoneIndex, int chainLength)
 {
-	if (endBoneIndex < 0 || chainLenght <= 0) return -1;
+	if (endBoneIndex < 0 || chainLength <= 0) return -1;
 
 	//check if the lenght is right
 	int currentBoneIndex = endBoneIndex;
 
-	for (int chainNode = 0; chainNode < chainLenght; chainNode++)
+	for (int chainNode = 0; chainNode < chainLength; chainNode++)
 	{
 		if (m_mesh->m_bones[currentBoneIndex].m_parentIndex <= -1)
 		{
@@ -282,7 +278,7 @@ int Animator::AddIKInstance(int endBoneIndex, int chainLenght)
 	}
 
 	//create the IKInstace
-	IKInstance ikInstance = {true, endBoneIndex, chainLenght, Vector3(0.f)};
+	IKInstance ikInstance = {true, endBoneIndex, chainLength, Vector3(0.f)};
 	m_IKInstances.push_back(ikInstance);
 
 	//return the IKIstance index
@@ -312,10 +308,15 @@ void Animator::DeactivateIKInstace(int index)
 
 void Animator::WaitForResourcesToBeLoaded()
 {
-	//check if the mesh, animations and shader are loaded
-	if (m_mesh.IsReady() && m_shader.IsReady())
+	//check if the mesh is loaded
+	if (m_mesh.IsReady())
 	{
 		m_boneCount = static_cast<int>(m_mesh->m_bones.size());
+		m_skeletonMatrix.resize(m_boneCount);
+		for (size_t i = 0; i < m_boneCount; i++)
+		{
+			m_skeletonMatrix[i] = m_mesh->m_bones[i].m_offsetMatrix;
+		}
 
 		m_state = m_nextState;
 
@@ -329,12 +330,12 @@ void Animator::WaitForResourcesToBeLoaded()
 		}
 		if (m_layerBendingOrigine < 0 || m_layerBendingOrigine > m_boneCount)
 		{
-			m_state = Play_no_animation;
+			m_state = PlayNoAnim;
 		}
 	}
 }
 
-void Animator::ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame)
+void Animator::ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame) const
 {
 	skeleton_out.clear();
 	skeleton_out.resize(m_boneCount);
@@ -345,7 +346,7 @@ void Animator::ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animat
 	}
 }
 
-void Animator::GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& localSkeleton)
+void Animator::GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, const vector<KeyFrame>& localSkeleton)
 {
 	skeleton_out.resize(m_boneCount);
 
@@ -370,17 +371,17 @@ void Animator::GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, vector<KeyFra
 	}
 }
 
-void Animator::ApplyOffset(vector<Matrix4>& skeletonMatrix_out, const vector<KeyFrame>& globalTransform)
+void Animator::ApplyOffset(const vector<KeyFrame>& globalTransform)
 {
-	skeletonMatrix_out.resize(m_boneCount);
-
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
-		skeletonMatrix_out[bone] = globalTransform[bone].m_matrix * m_mesh->m_bones[bone].m_offsetMatrix;
+		m_skeletonMatrix[bone] = globalTransform[bone].m_matrix * m_mesh->m_bones[bone].m_offsetMatrix;
 	}
 }
 
-void Animator::InterpoleSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB, const float& t)
+void Animator::InterpoleSkeletons(
+	vector<KeyFrame>& interlopedSkeleton_out, const vector<KeyFrame>& skeletonA, 
+	const vector<KeyFrame>& skeletonB, float t) const
 {
 	interlopedSkeleton_out.resize(m_boneCount);
 
@@ -397,7 +398,8 @@ void Animator::InterpoleSkeletons(vector<KeyFrame>& interlopedSkeleton_out, vect
 	}
 }
 
-void Animator::ReplaceBones(vector<KeyFrame>& skeleton_out, vector<KeyFrame>& skeletonA, vector<KeyFrame>& skeletonB)
+void Animator::ReplaceBones(
+	vector<KeyFrame>& skeleton_out, const vector<KeyFrame>& skeletonA, const vector<KeyFrame>& skeletonB) const
 {
 	skeleton_out.resize(m_boneCount);
 
@@ -420,12 +422,10 @@ LibMath::Vector3 Animator::GetPos(Matrix4& m)
 }
 
 void Animator::SetPos(Matrix4& m, const LibMath::Vector3& p)
-{
-	
+{	
 	m[3][0] = p[0];	//x
 	m[3][1] = p[1];	//y
 	m[3][2] = p[2];	//z
-	
 }
 
 void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance& ik)
@@ -509,9 +509,10 @@ void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance&
 
 }
 
-void Animator::SendSkeletonMatrixToGPU(vector<Matrix4>& skeletonMatrix)
-{	
-	m_shader->SetUniform("u_Bones[0]", skeletonMatrix[0], (int)skeletonMatrix.size());
+void Animator::SendSkeletonMatrixToGPU(const ResourceHandle<Shader>& shader)
+{
+	if (m_skeletonMatrix.size() > 0)
+		shader->SetUniform("u_Bones", m_skeletonMatrix[0], (int)m_skeletonMatrix.size());
 }
 
 void Animator::PlaySingleAnimation(float deltaTime)
@@ -526,11 +527,7 @@ void Animator::PlaySingleAnimation(float deltaTime)
 	ExtractFrameSkeleton(animationSkeleton, *m_animationA, currentFrame);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, animationSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(animationSkeleton);
 }
 
 void Animator::PlaySingleAnimationInterpolated(float deltaTime)
@@ -554,11 +551,7 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, interlopedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlayCrossFadeAnimation(float deltaTime)
@@ -602,11 +595,7 @@ void Animator::PlayCrossFadeAnimation(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
@@ -659,11 +648,7 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4> SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlayBlendedAnimation(float deltaTime)
@@ -688,11 +673,7 @@ void Animator::PlayBlendedAnimation(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, blendedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
@@ -728,11 +709,7 @@ void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, blendedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlayLayerBlendAnimation(float deltaTime)
@@ -757,11 +734,7 @@ void Animator::PlayLayerBlendAnimation(float deltaTime)
 	GetSkeletonToGlobal(globalSkeleton, LayberBlendedSkeleton);
 
 	//transforms -> matrix
-	vector<Matrix4>	SkeletonMatrices;
-	ApplyOffset(SkeletonMatrices, globalSkeleton);
-
-	//send to shader (GPU)
-	SendSkeletonMatrixToGPU(SkeletonMatrices);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::ApllyIKInstances(vector<KeyFrame>& globalSkeleton)

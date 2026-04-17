@@ -1,5 +1,7 @@
 #include "MeshRenderer.h"
 
+#include "Animator.h"
+
 #include "Camera.h"
 
 using namespace LibMath;
@@ -83,6 +85,14 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     {
         currentShader = m_shader;
         m_shader->Use();
+    }
+
+    Data::Object* owner = GetOwner();
+    if (owner)
+    {
+        Animator* animator = owner->GetComponent<Animator>();
+
+        if (animator) animator->SendSkeletonMatrixToGPU(currentShader);
     }
 
     Matrix4 model = GetOwner()->GetGlobalTransform();

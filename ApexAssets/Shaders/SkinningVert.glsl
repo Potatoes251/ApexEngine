@@ -12,8 +12,7 @@ layout (location = 4) in vec4 aWeights;
 uniform mat4 u_Bones[MAX_BONES];
 
 uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
+uniform mat4 uViewProj;
 
 out vec2 TexCoord;
 
@@ -28,7 +27,7 @@ void main()
 
     vec4 skinnedPosition = skinMatrix * vec4(aPosition, 1.0);
 
-    gl_Position = uProjection * uView * uModel * skinnedPosition;
+    gl_Position = uViewProj * uModel * skinnedPosition;
 
     TexCoord = aTexCoord;
 }

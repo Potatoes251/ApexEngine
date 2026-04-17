@@ -515,7 +515,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.ParseString(); parser.Expect(':');
             std::string meshPath = parser.ParseString();
 
-            obj->AddComponent<Rendering::Animator>(m_resourceManager, GetMeshHandle(meshPath));
+            obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
         }
 
         parser.Expect('}'); // component end

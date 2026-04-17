@@ -106,7 +106,7 @@
         "color": [1.000000, 1.000000, 1.000000],
         "intensity": 0.883000,
         "shadowDistance": 25.000000,
-        "shadowExtent": 25.000000
+        "shadowExtent": 10.000000
       }
     }
   },
@@ -114,7 +114,7 @@
     "id": 3,
     "parent": null,
     "name": "Object3",
-    "position": [0.000000,1.000000,0.000000],
+    "position": [0.000000,2.000000,0.000000],
     "rotation": [-0.707107,0.000000,0.000000,0.707107],
     "scale": [0.001000,0.001000,0.001000],
     "components": {
@@ -122,8 +122,30 @@
         "enabled": true,
         "mesh": "Assets/Meshes/M_B_44_Qishilong_skin_Skeleton/M_B_44_Qishilong_skin_Skeleton.mesh",
         "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "shader": "ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl",
         "castShadow": false 
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [1.000000, 1.000000, 1.000000],
+        "isTrigger": true,
+        "material": null
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+	"Mesh": "Assets/Meshes/M_B_44_Qishilong_skin_Skeleton/M_B_44_Qishilong_skin_Skeleton.mesh"
       }
     }
   }

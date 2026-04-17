@@ -282,8 +282,8 @@ void Apex::Application::Render(RenderPassInfo pass)
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
-    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    m_shadowManager->BindShadowMaps();
+    //m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    //m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {

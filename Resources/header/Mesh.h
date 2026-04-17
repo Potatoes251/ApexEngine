@@ -73,11 +73,14 @@ public:
 	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
+	int GetAnimationIdx(std::string const& name);
+
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<uint32_t>					m_indices;
 
 	std::vector<BoneInfo>					m_bones;		//with m_offsetMatrix = inverse bind pose
  	unordered_map<std::string, int>			m_boneMap;
+	std::vector<std::string> m_boneNames;
 	std::vector<Animation>					m_animations;
 
 private:

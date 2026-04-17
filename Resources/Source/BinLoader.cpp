@@ -123,7 +123,6 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
     if (!Read32Bits(file, header.m_version)) return false;
     if (!Read32Bits(file, header.m_vertexSize)) return false;
     if (!Read32Bits(file, header.m_keyframeSize)) return false;
-    if (!Read32Bits(file, header.m_boneinfoSize)) return false;
     if (!ReadString(file, sourcePath_out))
     {
         sourcePath_out.clear();
@@ -141,8 +140,7 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
         return false;
     }
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
-        || header.m_keyframeSize != sizeof(KeyFrame)
-        || header.m_boneinfoSize != sizeof(BoneInfo))
+        || header.m_keyframeSize != sizeof(KeyFrame))
     {
         LOG_WARNING("Struct size doesnt match");
         return false;
@@ -362,7 +360,6 @@ void BinLoader::WriteHeader(std::ofstream& file)
     header.m_version = CURRENT_VERSION;
     header.m_vertexSize = sizeof(Apex::Rendering::Vertex);
     header.m_keyframeSize = sizeof(KeyFrame);
-    header.m_boneinfoSize = sizeof(BoneInfo);
 
     if constexpr (IsBigEndian())
     {
@@ -370,7 +367,6 @@ void BinLoader::WriteHeader(std::ofstream& file)
         header.m_version = _byteswap_ulong(header.m_version);
         header.m_vertexSize = _byteswap_ulong(header.m_vertexSize);
         header.m_keyframeSize = _byteswap_ulong(header.m_keyframeSize);
-        header.m_boneinfoSize = _byteswap_ulong(header.m_boneinfoSize);
     }
 
     file.write((char*)&header, sizeof(header));
