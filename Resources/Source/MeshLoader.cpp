@@ -3,6 +3,8 @@
 #include "BinLoader.h"
 #include "MeshImporter.h"
 
+#include "Log.H"
+
 #include <filesystem>
 
 void MeshLoader::Load(std::string path, Mesh& mesh)
@@ -13,6 +15,8 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     BinLoader binLoader;
     std::string sourcePath;
     if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
+
+    LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
 
     if (!sourcePath.empty()) path = sourcePath;
 

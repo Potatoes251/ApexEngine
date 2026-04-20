@@ -43,6 +43,10 @@ namespace Apex::Rendering
 		void SetFPS(float fps);				//base fps = 30
 
 		//during update
+		void OnStart() override
+		{
+			PlayRepeatInterpolated(1);
+		}
 		void OnUpdate(float deltaTime) override;
 
 		void Stop();

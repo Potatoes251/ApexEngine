@@ -61,6 +61,8 @@ void Animator::SetFPS(float fps)
 
 void Animator::OnUpdate(float deltaTime)
 {
+	m_skeletonMatrix.clear();
+	m_skeletonMatrix.resize(m_boneCount);
 	switch (m_state)
 	{
 	case WaitingForLoadedResources:
@@ -360,6 +362,9 @@ void Animator::GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, const vector<
 
 		//create the global matrix
 		int	parent = m_mesh->m_bones[bone].m_parentIndex;
+
+		assert(parent < bone);
+
 		if (parent < 0)
 		{
 			skeleton_out[bone].m_matrix = local;

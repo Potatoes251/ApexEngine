@@ -34,6 +34,8 @@ bool MeshImporter::Import(std::string path, Mesh& mesh)
     }
     // eventually load another way
 
+
+    LOG_ERROR_CAT("Resource", "Fail to import {}", path);
     return false;
 }
 
