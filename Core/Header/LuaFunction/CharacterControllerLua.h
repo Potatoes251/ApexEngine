@@ -15,6 +15,7 @@ namespace Apex::Controller
 	int Lua_CC_Move(lua_State* L);
 	int Lua_CC_Jump(lua_State* L);
 	int Lua_CC_GetVelocity(lua_State* L);
+	int Lua_CC_IsGrounded(lua_State* L);
 
 	int Lua_GetCharacterController(lua_State* L);
 }

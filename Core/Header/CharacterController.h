@@ -26,7 +26,8 @@ namespace Apex::Controller
 		void SetSpeed(float speed) { m_speed = speed; }
 		void SetGroundedDistance(float groundedDistance) { m_groundedDistance = groundedDistance; }
 
-		float GetVelocity() { return m_velocity.magnitude(); }
+		float GetHorizontalVelocity() const;
+		bool IsGrounded() const { return m_grounded; }
 
 		void Move(LibMath::Vector3 movement);
 		void Jump();
@@ -42,8 +43,6 @@ namespace Apex::Controller
 		const char* GetTypeName() const override { return "CharacterController"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 
-		bool IsGrounded() const { return m_grounded; }
-
 	private:
 		bool FindClosestHit(std::vector<Physic::HitResult> const& hits, Physic::HitResult& closest_out) const;
 
@@ -58,8 +57,11 @@ namespace Apex::Controller
 		LibMath::Vector3			m_previousPos;
 		float						m_verticalVelocity = 0.f;
 
+		LibMath::Radian m_targetYaw;
+
 		float m_jumpForce = 5.f;
 		float m_speed = 5.f;
+		float m_rotationSpeed = 5.f;
 		// distance to be considered grounded
 		float m_groundedDistance = 0.5f;
 

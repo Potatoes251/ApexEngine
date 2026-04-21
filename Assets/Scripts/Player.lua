@@ -25,8 +25,6 @@ function Player:Update(dt)
     local x = Input.GetAxis("Horizontal")
     local z = Input.GetAxis("Vertical")
 
-    local speed = self.cc:GetVelocity()
-
     if x ~= 0 or z ~= 0 then
         local forward = self.cam:GetFront()
         local right   = self.cam:GetRight()
@@ -40,6 +38,7 @@ function Player:Update(dt)
         self.cc:Move(moveDir)
     end
 
+    local speed = self.cc:GetVelocity()
     local walkSpeed = 2.0
     local blend = speed / walkSpeed
 

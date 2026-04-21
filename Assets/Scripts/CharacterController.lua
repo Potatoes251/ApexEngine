@@ -32,4 +32,8 @@ function CharacterController:GetVelocity()
     return CC_GetVelocity_Internal(self)
 end
 
+function CharacterController:IsGrounded()
+    return CC_IsGrounded_Internal(self)
+end
+
 return CharacterController

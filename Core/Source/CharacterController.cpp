@@ -5,9 +5,18 @@
 #include "Rigidbody.h"
 #include "CapsuleCollider.h"
 
+#include "LibMath/Trigonometry.h"
+
 using namespace Apex::Data;
 using namespace Apex::Physic;
 using namespace Apex::Controller;
+
+float CharacterController::GetHorizontalVelocity() const
+{
+	LibMath::Vector3 horizontalVelocity = m_velocity;
+	horizontalVelocity[1] = 0.f;
+	return horizontalVelocity.magnitude();
+}
 
 void CharacterController::Move(LibMath::Vector3 movement)
 {
@@ -49,7 +58,11 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	velocity[1] = m_verticalVelocity;
 	LibMath::Vector3 displacement = velocity * deltatime_s;
 
-	if (displacement.magnitudeSquared() == 0.f) return;
+	if (displacement.magnitudeSquared() == 0.f) 
+	{
+		m_velocity = {};
+		return;
+	}
 
 	std::vector<HitResult> hits;
 	HitResult hit;
@@ -73,6 +86,22 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 
 	m_velocity = (m_targetPos - m_previousPos) / deltatime_s;
 
+	LibMath::Vector3 horizontalVel = m_velocity;
+	horizontalVel[1] = 0.0f;
+
+	if (horizontalVel.magnitudeSquared() > 0.0001f)
+	{
+		horizontalVel = horizontalVel.normalized();
+
+		LibMath::Radian targetYaw = LibMath::atan(horizontalVel[0], horizontalVel[2]);
+
+		// Smooth rotation
+		float rotationSpeed = 10.0f; // tweak
+		LibMath::Radian delta = targetYaw - m_targetYaw;
+
+		m_targetYaw += delta * std::min(rotationSpeed * deltatime_s, 1.0f);
+	}
+
 	m_moveInput = LibMath::Vector3(0.0f);
 }
 
@@ -88,6 +117,7 @@ void CharacterController::OnUpdate(float deltatime_s)
 	float lerpFactor = 1.0f - exp(-smoothSpeed * deltatime_s);
 
 	owner->SetLocalPosition(LibMath::Vector3::lerp(pos, m_targetPos, lerpFactor));
+	owner->SetLocalRotation({ LibMath::Radian(), m_targetYaw, LibMath::Radian() });
 }
 
 void CharacterController::Serialize(std::ostream& out) const
@@ -95,7 +125,8 @@ void CharacterController::Serialize(std::ostream& out) const
 	out << "      \"CharacterController\": {\n";
 	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"groundedDistance\": " << m_groundedDistance << ",\n";
-	out << "        \"speed\": " << m_speed << "\n";
+	out << "        \"speed\": " << m_speed << ",\n";
+	out << "        \"rotationSpeed\": " << m_rotationSpeed << "\n";
 
 	out << "      }";
 }
@@ -103,7 +134,9 @@ void CharacterController::Serialize(std::ostream& out) const
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
 	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "Speed", ExposedVar::Float, &m_speed } };
+			{ "Speed", ExposedVar::Float, &m_speed },
+			{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
+	};
 }
 
 bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, HitResult& closest_out) const
