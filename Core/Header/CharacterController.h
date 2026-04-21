@@ -24,6 +24,7 @@ namespace Apex::Controller
 
 		void SetPhysic(Physic::PhysicSystem* physic) { m_physic = physic; }
 		void SetSpeed(float speed) { m_speed = speed; }
+		void SetRotationSpeed(float speed) { m_rotationSpeed = speed; }
 		void SetGroundedDistance(float groundedDistance) { m_groundedDistance = groundedDistance; }
 
 		float GetHorizontalVelocity() const;
