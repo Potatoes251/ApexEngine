@@ -26,6 +26,8 @@ namespace Apex::Controller
 		void SetSpeed(float speed) { m_speed = speed; }
 		void SetGroundedDistance(float groundedDistance) { m_groundedDistance = groundedDistance; }
 
+		float GetVelocity() { return m_velocity.magnitude(); }
+
 		void Move(LibMath::Vector3 movement);
 		void Jump();
 
@@ -52,6 +54,8 @@ namespace Apex::Controller
 		Physic::CapsuleCollider*	m_collider = nullptr;
 		LibMath::Vector3			m_moveInput;
 		LibMath::Vector3			m_targetPos;
+		LibMath::Vector3			m_velocity;
+		LibMath::Vector3			m_previousPos;
 		float						m_verticalVelocity = 0.f;
 
 		float m_jumpForce = 5.f;

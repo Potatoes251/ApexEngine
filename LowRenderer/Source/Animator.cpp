@@ -2,6 +2,8 @@
 
 #include "Log.h"
 
+#include "../../Physic/Header/DebugRenderer.h"
+
 using namespace Apex::Rendering;
 
 using Apex::Component;
@@ -59,10 +61,23 @@ void Animator::SetFPS(float fps)
 	m_fps = fps;
 }
 
+void Animator::DrawSkeleton(std::vector<KeyFrame>& globalSkeleton)
+{
+	for (int bone = 0; bone < m_boneCount; ++bone)
+	{
+		int parent = m_mesh->m_bones[bone].m_parentIndex;
+		if (parent < 0)
+			continue;
+
+		LibMath::Vector3 a = GetPos(globalSkeleton[bone].m_matrix);
+		LibMath::Vector3 b = GetPos(globalSkeleton[parent].m_matrix);
+
+		DebugRenderer::Get().AddLine(a, b); // red lines
+	}
+}
+
 void Animator::OnUpdate(float deltaTime)
 {
-	m_skeletonMatrix.clear();
-	m_skeletonMatrix.resize(m_boneCount);
 	switch (m_state)
 	{
 	case WaitingForLoadedResources:
@@ -339,12 +354,24 @@ void Animator::WaitForResourcesToBeLoaded()
 
 void Animator::ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame) const
 {
-	skeleton_out.clear();
 	skeleton_out.resize(m_boneCount);
 
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
 		skeleton_out[bone] = animation.m_boneAnimations[bone].m_frames[currentFrame];
+	}
+}
+
+void Animator::RemoveRootMotion(vector<KeyFrame>& localSkeleton)
+{
+	for (int bone = 0; bone < m_boneCount; ++bone)
+	{
+		if (m_mesh->m_bones[bone].m_parentIndex == -1)
+		{
+			localSkeleton[bone].m_position = { 0.f, 0.f, 0.f };
+			// optionally also lock rotation:
+			// localSkeleton[bone].m_rotation = Quaternion::identity();
+		}
 	}
 }
 
@@ -523,7 +550,7 @@ void Animator::SendSkeletonMatrixToGPU(const ResourceHandle<Shader>& shader)
 void Animator::PlaySingleAnimation(float deltaTime)
 {
 	m_elapse += deltaTime;
-
+	
 	//get current frame
 	int currentFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
 
@@ -531,8 +558,13 @@ void Animator::PlaySingleAnimation(float deltaTime)
 	vector<KeyFrame> animationSkeleton;
 	ExtractFrameSkeleton(animationSkeleton, *m_animationA, currentFrame);
 
+	RemoveRootMotion(animationSkeleton);
+
+	vector<KeyFrame> globalSkeleton;
+	GetSkeletonToGlobal(globalSkeleton, animationSkeleton);
+	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
-	ApplyOffset(animationSkeleton);
+	ApplyOffset(globalSkeleton);
 }
 
 void Animator::PlaySingleAnimationInterpolated(float deltaTime)
@@ -552,9 +584,12 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 	vector<KeyFrame> interlopedSkeleton;
 	InterpoleSkeletons(interlopedSkeleton, animationSkeleton, nextAnimationSkeleton, ratio);
 
+	RemoveRootMotion(interlopedSkeleton);
+
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, interlopedSkeleton);
 
+	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
 	ApplyOffset(globalSkeleton);
 }
@@ -596,6 +631,8 @@ void Animator::PlayCrossFadeAnimation(float deltaTime)
 	std::vector<KeyFrame> crossFadedSkeleton;
 	InterpoleSkeletons(crossFadedSkeleton, animationSkeletonA, animationSkeletonB, crossFadePercentage);
 
+	RemoveRootMotion(crossFadedSkeleton);
+
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
 
@@ -611,8 +648,8 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 	float crossFadePercentage = m_elapse / m_crossFadeDuration;
 	if (crossFadePercentage > 1.f) crossFadePercentage = 1.f; 
 
-	int nbFrameAnimationA = m_animationA->m_boneAnimations.size();
-	int nbFrameAnimationB = m_animationB->m_boneAnimations.size();
+	int nbFrameAnimationA = m_animationA->m_boneAnimations[0].m_frames.size();
+	int nbFrameAnimationB = m_animationB->m_boneAnimations[0].m_frames.size();
 
 	//get phase
 	float	aps = 1.0f + (nbFrameAnimationA / nbFrameAnimationB - 1.0f) * crossFadePercentage;
@@ -649,6 +686,8 @@ void Animator::PlayCrossFadeAnimationInterpolated(float deltaTime)
 	std::vector<KeyFrame> crossFadedSkeleton;
 	InterpoleSkeletons(crossFadedSkeleton, AnimationASkeleton, AnimationBSkeleton, crossFadePercentage);
 
+	RemoveRootMotion(crossFadedSkeleton);
+
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, crossFadedSkeleton);
 
@@ -673,6 +712,8 @@ void Animator::PlayBlendedAnimation(float deltaTime)
 	std::vector<KeyFrame> blendedSkeleton;
 	InterpoleSkeletons(blendedSkeleton, animationASkeleton, animationBSkeleton, m_blendRatio);
 
+	RemoveRootMotion(blendedSkeleton);
+
 	//local -> global
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, blendedSkeleton);
@@ -689,7 +730,7 @@ void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 	int animationACurrentFrame = static_cast<int>(m_elapse * m_fps) % m_animationA->m_boneAnimations[0].m_frames.size();
 	int animationANextFrame = (animationACurrentFrame + 1) % m_animationA->m_boneAnimations[0].m_frames.size();
 	int animationBCurrentFrame = static_cast<int>(m_elapse * m_fps) % m_animationB->m_boneAnimations[0].m_frames.size();
-	int animationBNextFrame = (animationACurrentFrame + 1) % m_animationB->m_boneAnimations[0].m_frames.size();
+	int animationBNextFrame = (animationBCurrentFrame + 1) % m_animationB->m_boneAnimations[0].m_frames.size();
 
 	float ratio = (m_elapse * m_fps) - std::floor(m_elapse * m_fps);
 
@@ -708,6 +749,8 @@ void Animator::PlayBlendedAnimationInterpolated(float deltaTime)
 	//blend
 	std::vector<KeyFrame> blendedSkeleton;
 	InterpoleSkeletons(blendedSkeleton, animationAInterpolatedSkeleton, animationBInterpolatedSkeleton, m_blendRatio);
+
+	RemoveRootMotion(blendedSkeleton);
 
 	//local -> global
 	vector<KeyFrame> globalSkeleton;

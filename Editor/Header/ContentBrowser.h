@@ -116,6 +116,7 @@ namespace Apex::Editor
 		static AssetEntry  ClassifyEntry(const fs::directory_entry& entry);
 		static const char* IconPathForType(AssetType type);
 		static void		   PopulateThumbnailsForList(std::vector<AssetEntry>& entries, ThumbnailRenderer& thumbnails);
+		static bool		   IsPathInsideProject(const fs::path& projectRoot, const fs::path& path);
 
 		// State
 		Apex::UserInterface::IGUI&			m_gui;

@@ -38,8 +38,9 @@ void MeshLoader::Load(std::string path, Animation& animation)
     if (IsBinFile(extension) && binLoader.Load(path, animation)) return;
 }
 
-void MeshLoader::Import(std::string path, Mesh& mesh)
+void MeshLoader::Import(std::string path)
 {
+    Mesh mesh;
     MeshImporter importer;
     if (importer.Import(path, mesh))
     {

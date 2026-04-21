@@ -39,6 +39,8 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 
 	if (!m_collider) return;
 
+	m_previousPos = m_targetPos;
+
 	m_verticalVelocity += GRAVITY[1] * deltatime_s;
 	if (m_grounded && m_verticalVelocity < 0.f)
 		m_verticalVelocity = 0.f;
@@ -68,6 +70,8 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	{
 		m_targetPos += displacement;
 	}
+
+	m_velocity = (m_targetPos - m_previousPos) / deltatime_s;
 
 	m_moveInput = LibMath::Vector3(0.0f);
 }

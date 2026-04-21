@@ -1,6 +1,7 @@
 #include "ContentBrowser.h"
 #include "EditorIcon.h"
 
+#include "ThreadPool.h"
 #include "MeshLoader.h"
 #include "Log.h"
 
@@ -328,7 +329,7 @@ namespace Apex::Editor
         BeginRename(target);
     }
 
-    bool IsPathInsideProject(const fs::path& projectRoot, const fs::path& path)
+    bool ContentBrowser::IsPathInsideProject(const fs::path& projectRoot, const fs::path& path)
     {
         std::error_code ec;
 
@@ -363,16 +364,16 @@ namespace Apex::Editor
         for (const auto& src : sources)
         {
             std::string ext = src.extension().string();
-            if (ext == ".obj" || ext == ".fbx" || ext == ".FBX" || ext == ".mesh")
-            {
-                LOG_INFO("Start Importing : {}", src.string());
-                MeshLoader ml;
-                Mesh mesh;
-                ml.Import(src.string(), mesh);
-            }
+            bool isMesh = ext == ".obj" || ext == ".fbx" || ext == ".FBX";
 
             if (IsPathInsideProject(m_rootPath, src))
+            {
+                if (isMesh)
+                {
+                    Core::ThreadPool::Get().Enqueue(&MeshLoader::Import, src.string());
+                }
                 continue;
+            }
 
             std::error_code error;
             fs::path target = destination / src.filename();
@@ -389,7 +390,13 @@ namespace Apex::Editor
                 std::cerr << "[ContentBrowser] Import failed for "
                 << src << ": " << error.message() << "\n";
             else
+            {
+                if (isMesh)
+                {
+                    Core::ThreadPool::Get().Enqueue(&MeshLoader::Import, target.string());
+                }
                 anyChange = true;
+            }
         }
 
         if (anyChange)

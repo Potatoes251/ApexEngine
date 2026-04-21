@@ -1,11 +1,10 @@
 ﻿#include "MeshImporter.h"
 
-#include "Vertex.h"
-
 #include "Log.h"
 
 #include <fstream>
 #include <filesystem>
+#include <queue>
 
 constexpr double ANIMATION_FPS = 30;
 
@@ -30,12 +29,13 @@ bool MeshImporter::Import(std::string path, Mesh& mesh)
     LOG_INFO_CAT("Resource", "Start importing {}", path);
     if (ImportFbx(path, mesh))
     {
+        LOG_INFO_CAT("Resource", "Successfully imported {}", path);
         return true;
     }
     // eventually load another way
 
 
-    LOG_ERROR_CAT("Resource", "Fail to import {}", path);
+    LOG_ERROR_CAT("Resource", "Fail to import \"{}\"", path);
     return false;
 }
 
@@ -52,7 +52,6 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
 
     if (!importer->Initialize(path.c_str(), -1, s_manager->GetIOSettings()))
     {
-        LOG_ERROR_CAT("Resource", "failed to import {}", path);
         mesh.SetState(ResourceState::Failed);
         importer->Destroy();
         scene->Destroy();
@@ -88,6 +87,13 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
         ProcessNode(root->GetChild(i), mesh);
     }
 
+    ResolveAndSortBones(scene, mesh);
+
+    for (auto& vertex : mesh.m_vertices)
+    {
+        NormalizeVertexWeights(vertex);
+    }
+
     ExtractAnimations(scene, mesh);
 
     m_ctrlPointToVertices.clear();
@@ -106,6 +112,7 @@ void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)
 
     if (fbxMesh)
     {
+        m_ctrlPointToVertices.clear();
         ProcessMesh(fbxMesh, mesh);
         ExtractBones(fbxMesh, mesh);
     }
@@ -164,6 +171,117 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
     }
 }
 
+void MeshImporter::NormalizeVertexWeights(Apex::Rendering::Vertex& vertex)
+{
+    float sum = 0.0f;
+
+    for (int i = 0; i < 4; i++)
+        sum += vertex.m_weights[i];
+
+    if (sum > 0.0f)
+    {
+        for (int i = 0; i < 4; i++)
+            vertex.m_weights[i] /= sum;
+    }
+}
+
+void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
+{
+    // ── Build a full scene node map ───────────────────────────────────────────
+    std::unordered_map<std::string, FbxNode*> nodeMap;
+    BuildNodeMap(scene->GetRootNode(), nodeMap);
+
+    const int boneCount = static_cast<int>(mesh.m_bones.size());
+
+    // ── Second pass: resolve every bone's parent now that all are registered ──
+    for (auto& bone : mesh.m_bones)
+    {
+        bone.m_parentIndex = -1;
+        bone.m_children.clear();
+    }
+
+    for (int i = 0; i < boneCount; ++i)
+    {
+        auto nodeIt = nodeMap.find(mesh.m_boneNames[i]);
+        if (nodeIt == nodeMap.end()) continue;
+
+        FbxNode* parent = nodeIt->second->GetParent();
+        if (!parent) continue;
+
+        auto parentIt = mesh.m_boneMap.find(parent->GetName());
+        if (parentIt == mesh.m_boneMap.end()) continue;
+
+        int parentIdx = parentIt->second;
+        mesh.m_bones[i].m_parentIndex = parentIdx;
+        mesh.m_bones[parentIdx].m_children.push_back(i);
+    }
+
+    // ── Topological sort so every parent precedes its children ────────────────
+    // Kahn's algorithm: seed with roots (parentIndex == -1)
+    std::vector<int> inDegree(boneCount, 0);
+    for (int i = 0; i < boneCount; ++i)
+        if (mesh.m_bones[i].m_parentIndex != -1)
+            ++inDegree[i];
+
+    std::queue<int> queue;
+    for (int i = 0; i < boneCount; ++i)
+        if (inDegree[i] == 0)
+            queue.push(i);
+
+    std::vector<int> sortedOrder;
+    sortedOrder.reserve(boneCount);
+
+    while (!queue.empty())
+    {
+        int cur = queue.front(); queue.pop();
+        sortedOrder.push_back(cur);
+
+        for (int child : mesh.m_bones[cur].m_children)
+            if (--inDegree[child] == 0)
+                queue.push(child);
+    }
+
+    // ── Build old→new index remap ─────────────────────────────────────────────
+    std::vector<int> remap(boneCount);
+    for (int newIdx = 0; newIdx < boneCount; ++newIdx)
+        remap[sortedOrder[newIdx]] = newIdx;
+
+    // ── Reorder bones and names arrays ────────────────────────────────────────
+    std::vector<BoneInfo>    sortedBones(boneCount);
+    std::vector<std::string> sortedNames(boneCount);
+
+    for (int oldIdx = 0; oldIdx < boneCount; ++oldIdx)
+    {
+        int newIdx = remap[oldIdx];
+        sortedBones[newIdx] = mesh.m_bones[oldIdx];
+        sortedNames[newIdx] = mesh.m_boneNames[oldIdx];
+    }
+
+    // ── Fix stored indices inside each BoneInfo ───────────────────────────────
+    for (auto& bone : sortedBones)
+    {
+        if (bone.m_parentIndex != -1)
+            bone.m_parentIndex = remap[bone.m_parentIndex];
+
+        for (int& child : bone.m_children)
+            child = remap[child];
+    }
+
+    mesh.m_bones = std::move(sortedBones);
+    mesh.m_boneNames = std::move(sortedNames);
+
+    // ── Rebuild boneMap to reflect new indices ────────────────────────────────
+    mesh.m_boneMap.clear();
+    for (int i = 0; i < boneCount; ++i)
+        mesh.m_boneMap[mesh.m_boneNames[i]] = i;
+
+    // ── Remap bone IDs in every vertex ────────────────────────────────────────
+    for (auto& vertex : mesh.m_vertices)
+        for (int i = 0; i < 4; ++i)
+            if (vertex.m_weights[i] > 0.0f)
+                vertex.m_boneIDs[i] = remap[vertex.m_boneIDs[i]];
+}
+
 void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
 {
     int skinCount = fbxMesh->GetDeformerCount(FbxDeformer::eSkin);
@@ -213,21 +331,6 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
 
                 boneInfo.m_offsetMatrix = ConvertFBXMatrix(m_offsetMatrix);
 
-                if (boneNode->GetParent()) //check if node has a parent
-                {
-                    std::string parentName = boneNode->GetParent()->GetName();
-
-                    auto it = mesh.m_boneMap.find(parentName);
-                    if (it != mesh.m_boneMap.end())
-                    {
-                        //set the parent index
-                        boneInfo.m_parentIndex = it->second;
-
-                        //add the present index to the parent
-                        int currentIndex = static_cast<int>(mesh.m_bones.size());
-                        mesh.m_bones[it->second].m_children.push_back(currentIndex);
-                    }
-                }
                 mesh.m_bones.push_back(boneInfo);
             }
             else
@@ -271,9 +374,22 @@ void MeshImporter::AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float wei
             return;
         }
     }
+
+    int smallestIndex = 0;
+    for (int i = 1; i < 4; i++)
+    {
+        if (vertex.m_weights[i] < vertex.m_weights[smallestIndex])
+            smallestIndex = i;
+    }
+
+    if (weight > vertex.m_weights[smallestIndex])
+    {
+        vertex.m_boneIDs[smallestIndex] = boneID;
+        vertex.m_weights[smallestIndex] = weight;
+    }
 }
 
-void BuildNodeMap(FbxNode* node, std::unordered_map<std::string, FbxNode*>& map)
+void MeshImporter::BuildNodeMap(FbxNode* node, std::unordered_map<std::string, FbxNode*>& map)
 {
     if (!node) return;
 
@@ -364,24 +480,9 @@ void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
                 key.m_position = { (float)t[0], (float)t[1], (float)t[2] };
                 key.m_rotation = { (float)r[0], (float)r[1], (float)r[2], (float)r[3] };
                 key.m_scale = { (float)s[0], (float)s[1], (float)s[2] };
-
-                // ❌ REMOVED:
-                // EvaluateGlobalTransform
-                // matrix conversion (expensive)
             }
         }
     }
-}
-
-const std::string& MeshImporter::GetBoneNameFromIndex(const Mesh& mesh, int index)
-{
-    for (const auto& [name, i] : mesh.m_boneMap)
-    {
-        if (i == index) return name;
-    }
-
-    static std::string empty = "";
-    return empty;
 }
 
 FbxAMatrix MeshImporter::GetGeometryTransform(FbxNode* node)

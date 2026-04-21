@@ -64,6 +64,7 @@ namespace Apex::Physic
 		void	Update(float deltaTime_s);
 
 		void	DrawColliders();
+		void	EditorSync();
 
 	private:
 		// class to get the events callback for physic interaction

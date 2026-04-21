@@ -103,7 +103,6 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        Core::ThreadPool m_threadPool;
         std::unique_ptr<Rendering::Scene> m_scene = nullptr;
 	};
 }

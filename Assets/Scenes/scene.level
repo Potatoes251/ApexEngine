@@ -6,52 +6,6 @@
   {
     "id": 0,
     "parent": null,
-    "name": "Player",
-    "position": [-2.689153,1.073233,-0.486195],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.000000,1.000000,1.000000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/padoru/padoru.mesh",
-        "texture": "Assets/Textures/padoru.png",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-        "castShadow": true
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Kinematic",
-        "mass": 1.000000
-      },
-      "CapsuleCollider": {
-        "enabled": true,
-        "halfHeight": 0.250000,
-        "radius": 0.200000,
-        "isTrigger": false,
-        "material": null
-      },
-      "CharacterController": {
-        "enabled": true,
-        "groundedDistance": 0.450000,
-        "speed": 1.000000
-      },
-      "ThirdPersonCamera": {
-        "enabled": true,
-        "isMain": true,
-        "distance": 6.176000,
-        "speed": 2.500000
-      },
-      "ScriptComponent": {
-        "enabled": true,
-        "script": "Assets/Scripts/Player.lua",
-        "vars": {
-        }
-      }
-    }
-  },
-  {
-    "id": 1,
-    "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
@@ -78,7 +32,7 @@
     }
   },
   {
-    "id": 2,
+    "id": 1,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -94,7 +48,7 @@
     }
   },
   {
-    "id": 19,
+    "id": 2,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -113,39 +67,68 @@
   {
     "id": 3,
     "parent": null,
-    "name": "Object3",
-    "position": [0.000000,2.000000,0.000000],
-    "rotation": [-0.707107,0.000000,0.000000,0.707107],
-    "scale": [0.001000,0.001000,0.001000],
+    "name": "Object4",
+    "position": [0.230901,1.694018,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/M_B_44_Qishilong_skin_Skeleton/M_B_44_Qishilong_skin_Skeleton.mesh",
+        "mesh": "Assets/Meshes/Player/Player.mesh",
         "texture": "Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
         "shader": "ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl",
-        "castShadow": false 
-      },
-      "ScriptComponent": {
-        "enabled": true,
-        "script": "Assets/Scripts/Coin.lua",
-        "vars": {
-        }
+        "castShadow": true
       },
       "RigidBody": {
         "enabled": true,
-        "type": "Static",
+        "type": "Kinematic",
         "mass": 1.000000
       },
-      "BoxCollider": {
+      "CapsuleCollider": {
         "enabled": true,
-        "halfExtents": [1.000000, 1.000000, 1.000000],
-        "isTrigger": true,
+        "halfHeight": 0.750000,
+        "radius": 0.200000,
+        "isTrigger": false,
         "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 1.000000,
+        "speed": 5.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
       },
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-	"Mesh": "Assets/Meshes/M_B_44_Qishilong_skin_Skeleton/M_B_44_Qishilong_skin_Skeleton.mesh"
+		"Mesh": "Assets/Meshes/Player/Player.mesh"
+      }
+    }
+  },
+  {
+    "id": 6,
+    "parent": null,
+    "name": "Object6",
+    "position": [3.011898,1.203338,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Player/Player.mesh",
+        "texture": "Assets/Textures/container.jpg",
+        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+        "castShadow": true
       }
     }
   }

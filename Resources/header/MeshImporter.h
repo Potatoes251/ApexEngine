@@ -27,10 +27,12 @@ private:
 	void ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh);
 	void				ExtractBones(FbxMesh* fbxMesh, Mesh& mesh);
 	void				AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight);
+	void				BuildNodeMap(FbxNode* node, std::unordered_map<std::string, FbxNode*>& map);
 	void				ExtractAnimations(FbxScene* scene, Mesh& mesh);
-	const std::string&	GetBoneNameFromIndex(const Mesh& mesh, int index);
 	FbxAMatrix			GetGeometryTransform(FbxNode* node);
 
+	void NormalizeVertexWeights(Apex::Rendering::Vertex& vertex);
+	void ResolveAndSortBones(FbxScene* scene, Mesh& mesh);
 	Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
 
 

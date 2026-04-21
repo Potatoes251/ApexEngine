@@ -77,6 +77,7 @@ bool BinLoader::Load(std::string path, Animation& animation)
 
 bool BinLoader::Export(std::string path, Mesh const& mesh)
 {
+    LOG_INFO_CAT("Resource", "Start exporting {} to bin", path.c_str());
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::filesystem::path folderPath = binaryPath.parent_path();
@@ -131,18 +132,18 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
 
     if (header.m_magic != 0x4D455348)
     {
-        LOG_ERROR("Invalid file format");
+        LOG_ERROR_CAT("Resource", "Invalid file format");
         return false;
     }
     if (header.m_version != CURRENT_VERSION)
     {
-        LOG_WARNING("File needs to be updated (version was {})", header.m_version);
+        LOG_ERROR_CAT("Resource", "File needs to be updated (version was {})", header.m_version);
         return false;
     }
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
         || header.m_keyframeSize != sizeof(KeyFrame))
     {
-        LOG_WARNING("Struct size doesnt match");
+        LOG_ERROR_CAT("Resource", "Struct size doesnt match");
         return false;
     }
 

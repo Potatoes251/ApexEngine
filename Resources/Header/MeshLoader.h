@@ -15,14 +15,14 @@ public:
 
 	// regular loading use custom files
 
-	void Load(std::string path, Mesh& mesh);
-	void Load(std::string path, Animation& animation);
+	static void Load(std::string path, Mesh& mesh);
+	static void Load(std::string path, Animation& animation);
 	// force skip custom file and overwrite them
 	
-	void Import(std::string path, Mesh& mesh);
+	static void Import(std::string path);
 
 private:
-	bool IsBinFile(std::string const& extension);
+	static bool IsBinFile(std::string const& extension);
 };
 
 

@@ -79,7 +79,7 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
 
 bool Apex::Application::InitResourceManager()
 {
-    m_resourceManager = std::make_unique<ResourceManager>(m_threadPool);
+    m_resourceManager = std::make_unique<ResourceManager>();
     return true;
 }
 
@@ -293,6 +293,6 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     m_scene->Render(pass);
 
-    if (pass.m_flags & ShowCollider)
+    //if (pass.m_flags & ShowCollider)
         DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

@@ -264,17 +264,20 @@ namespace Apex::Editor
         m_window->UpdateDeltaTime();
         m_viewport->UpdateCamera(m_window.get());
 
+        if (EditorState::Play != m_editorState)
+            m_app->GetScene()->GetPhysic()->EditorSync();
+
         switch (m_editorState)
         {
-        case Apex::Editor::EditorState::Edit:
+        case EditorState::Edit:
             break;
-        case Apex::Editor::EditorState::Play:
+        case EditorState::Play:
             m_app->Tick();
             if (InputSystem::Get().IsKeyDown(Key::Escape)) SetEditorState(EditorState::Pause);
             break;
-        case Apex::Editor::EditorState::Pause:
+        case EditorState::Pause:
             break;
-        case Apex::Editor::EditorState::Step:
+        case EditorState::Step:
             m_app->Tick();
             m_editorState = EditorState::Pause;
             break;

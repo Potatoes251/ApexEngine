@@ -29,7 +29,7 @@ namespace Apex::Rendering
 		Animator& operator=(const Animator&) = default;
 
 		ResourceHandle<Mesh>	GetMesh() const { return m_mesh; }
-
+		void DrawSkeleton(std::vector<KeyFrame>& globalSkeleton);
 		void SetBlendRatio(float newRatio) { m_blendRatio = newRatio; }
 
 		//Component
@@ -43,10 +43,6 @@ namespace Apex::Rendering
 		void SetFPS(float fps);				//base fps = 30
 
 		//during update
-		void OnStart() override
-		{
-			PlayRepeatInterpolated(1);
-		}
 		void OnUpdate(float deltaTime) override;
 
 		void Stop();
@@ -96,6 +92,7 @@ namespace Apex::Rendering
 
 		//helper
 		void ExtractFrameSkeleton(vector<KeyFrame>& skeleton_out, const Animation& animation, int currentFrame) const;
+		void RemoveRootMotion(vector<KeyFrame>& localSkeleton);
 		void GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, const vector<KeyFrame>& localSkeleton);
 		void ApplyOffset(const vector<KeyFrame>& globalTransform);
 		void InterpoleSkeletons(

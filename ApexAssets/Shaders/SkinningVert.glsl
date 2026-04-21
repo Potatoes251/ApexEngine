@@ -1,6 +1,6 @@
 #version 330 core
 
-#define MAX_BONES 100
+#define MAX_BONES 200
 #define MAX_BONE_INFLUENCE 4
 
 layout (location = 0) in vec3 aPosition;
@@ -18,12 +18,18 @@ out vec2 TexCoord;
 
 void main()
 {
-
-    mat4 skinMatrix =
-          aWeights[0] * u_Bones[aBoneIDs[0]]
-        + aWeights[1] * u_Bones[aBoneIDs[1]]
-        + aWeights[2] * u_Bones[aBoneIDs[2]]
-        + aWeights[3] * u_Bones[aBoneIDs[3]];
+    mat4 skinMatrix = mat4(0.0);
+    
+    for (int i = 0; i < 4; ++i)
+    {
+        int id = aBoneIDs[i];
+        float weight = aWeights[i];
+    
+        if (id >= 0 && weight > 0.0)
+        {
+            skinMatrix += weight * u_Bones[id];
+        }
+    }
 
     vec4 skinnedPosition = skinMatrix * vec4(aPosition, 1.0);
 
