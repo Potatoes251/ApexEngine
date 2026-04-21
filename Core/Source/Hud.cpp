@@ -11,7 +11,7 @@
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
 
-Vector2 UIElement::ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screen)
+LibMath::Vector2 UIElement::ApplyAnchor(LibMath::Vector2 pos, UIAnchor anchor, LibMath::Vector2 screen)
 {
     float anchorX = 0.f, anchorY = 0.f;
     switch (anchor)
@@ -54,13 +54,13 @@ Vector2 UIElement::ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screen)
              anchorY * screen[1] + pos[1] * screen[1] };
 }
 
-Vector2 UIElement::GetScreenPos(const UIDrawContext& context) const
+LibMath::Vector2 UIElement::GetScreenPos(const UIDrawContext& context) const
 {
-    Vector2 position = ApplyAnchor(m_position, m_anchor, context.m_screenSize);
+    LibMath::Vector2 position = ApplyAnchor(m_position, m_anchor, context.m_screenSize);
     return { position[0] + context.m_origin[0], position[1] + context.m_origin[1] };
 }
 
-Vector2 UIElement::GetScreenSize(const UIDrawContext& context) const
+LibMath::Vector2 UIElement::GetScreenSize(const UIDrawContext& context) const
 {
     return { m_size[0] * context.m_screenSize[0], m_size[1] * context.m_screenSize[1] };
 }
@@ -69,10 +69,10 @@ void UIText::Draw(const UIDrawContext& context) const
 {
     if (!m_visible || !context.m_drawList) return;
 
-    Vector2 origin = GetScreenPos(context);
-    Vector2 bounds = GetScreenSize(context);
+    LibMath::Vector2 origin = GetScreenPos(context);
+    LibMath::Vector2 bounds = GetScreenSize(context);
 
-    Vector2 textSize = context.m_drawList->CalculateTextSizeEx(m_text, m_fontSize);
+    LibMath::Vector2 textSize = context.m_drawList->CalculateTextSizeEx(m_text, m_fontSize);
 
     // Horizontal alignment within the widget bounds
     float x = origin[0];
@@ -84,7 +84,7 @@ void UIText::Draw(const UIDrawContext& context) const
     if (m_vAlign == TextVAlign::Middle) y += (bounds[1] - textSize[1]) * 0.5f;
     else if (m_vAlign == TextVAlign::Bottom) y += bounds[1] - textSize[1];
 
-    Vector2 drawPos = { x, y };
+    LibMath::Vector2 drawPos = { x, y };
     context.m_drawList->DrawTextEx(drawPos, UIColorPack(m_textColor), m_text, m_fontSize);
 
     if (context.m_isEditor && context.m_selected)
@@ -94,9 +94,9 @@ void UIText::Draw(const UIDrawContext& context) const
 void UIImage::Draw(const UIDrawContext& context) const
 {
     if (!m_visible || !context.m_drawList) return;
-    Vector2 pos = GetScreenPos(context);
-    Vector2 size = GetScreenSize(context);
-    Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
+    LibMath::Vector2 pos = GetScreenPos(context);
+    LibMath::Vector2 size = GetScreenSize(context);
+    LibMath::Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
 
     if (m_glTexID != 0)
     {
@@ -127,14 +127,17 @@ void UIImage::LoadTexture(ResourceManager& resourceManager)
 void UIButton::Draw(const UIDrawContext& context) const
 {
     if (!m_visible || !context.m_drawList) return;
-    Vector2 pos = GetScreenPos(context);
-    Vector2 size = GetScreenSize(context);
-    Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
+    LibMath::Vector2 pos = GetScreenPos(context);
+    LibMath::Vector2 size = GetScreenSize(context);
+    LibMath::Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
 
     context.m_drawList->DrawRectFilled(pos, max, UIColorPack(m_color), 4.f);
 
-    Vector2 center = { pos[0] + size[0] * 0.5f, pos[1] + size[1] * 0.5f - m_fontSize * 0.5f };
-    context.m_drawList->DrawTextEx(center, UIColorPack(m_colorText), m_label, m_fontSize);
+    UIDrawContext labelContext = context;
+    labelContext.m_origin = pos;
+    labelContext.m_screenSize = size;
+    labelContext.m_isEditor = false;
+    m_labelText.Draw(labelContext);
 
     if (context.m_isEditor && context.m_selected)
         context.m_drawList->DrawRect(pos, max, 0xFF44AAFF, 4.f, 1.5f);
@@ -143,14 +146,14 @@ void UIButton::Draw(const UIDrawContext& context) const
 void UIProgressBar::Draw(const UIDrawContext& context) const
 {
     if (!m_visible || !context.m_drawList) return;
-    Vector2 pos = GetScreenPos(context);
-    Vector2 size = GetScreenSize(context);
-    Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
+    LibMath::Vector2 pos = GetScreenPos(context);
+    LibMath::Vector2 size = GetScreenSize(context);
+    LibMath::Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
 
     context.m_drawList->DrawRectFilled(pos, max, UIColorPack(m_colorBg), m_rounding);
 
     float fill = std::max(0.f, std::min(1.f, m_value));
-    Vector2 fillMax = { pos[0] + size[0] * fill, max[1] };
+    LibMath::Vector2 fillMax = { pos[0] + size[0] * fill, max[1] };
     if (fill > 0.f)
         context.m_drawList->DrawRectFilled(pos, fillMax, UIColorPack(m_colorFill), m_rounding);
 
@@ -161,15 +164,23 @@ void UIProgressBar::Draw(const UIDrawContext& context) const
 void UIPanel::Draw(const UIDrawContext& context) const
 {
     if (!m_visible || !context.m_drawList) return;
-    Vector2 pos = GetScreenPos(context);
-    Vector2 size = GetScreenSize(context);
-    Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
+    LibMath::Vector2 pos = GetScreenPos(context);
+    LibMath::Vector2 size = GetScreenSize(context);
+    LibMath::Vector2 max = { pos[0] + size[0], pos[1] + size[1] };
 
     context.m_drawList->DrawRectFilled(pos, max, UIColorPack(m_colorBg), m_rounding);
 
+    // Children use the panel's screen rect as their coordinate space.
+    // origin = panel top-left, screenSize = panel pixel size.
+    // PushClipRect ensures children can't draw outside the panel.
     UIDrawContext childContext = context;
+    childContext.m_origin = pos;
+    childContext.m_screenSize = size;
+
+    context.m_drawList->PushClipRect(pos, max);
     for (const auto& child : m_children)
         if (child) child->Draw(childContext);
+    context.m_drawList->PopClipRect();
 
     if (context.m_isEditor && context.m_selected)
         context.m_drawList->DrawRect(pos, max, 0xFF44AAFF, m_rounding, 1.5f);
@@ -319,7 +330,7 @@ static UIColor ParseColor(SerialParser& parser)
     return color;
 }
 
-static Vector2 ParseVec2(SerialParser& parser)
+static LibMath::Vector2 ParseVec2(SerialParser& parser)
 {
     parser.Expect('[');
     float x = parser.ParseFloat(); parser.Expect(',');
@@ -367,11 +378,11 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
         case UIWidgetType::Button:
         {
             const auto& button = static_cast<const UIButton&>(element);
-            file << indent << "  \"label\": \"" << button.m_label << "\",\n";
-            file << indent << "  \"fontSize\": " << button.m_fontSize << ",\n";
+            file << indent << "  \"label\": \"" << button.m_labelText.m_text << "\",\n";
+            file << indent << "  \"fontSize\": " << button.m_labelText.m_fontSize << ",\n";
             WriteColor(file, "colorHover", button.m_colorHover, (indent + "  ").c_str()); file << ",\n";
             WriteColor(file, "colorPressed", button.m_colorPressed, (indent + "  ").c_str()); file << ",\n";
-            WriteColor(file, "colorText", button.m_colorText, (indent + "  ").c_str()); file << "\n";
+            WriteColor(file, "colorText", button.m_labelText.m_textColor, (indent + "  ").c_str()); file << "\n";
             break;
         }
         case UIWidgetType::ProgressBar:
@@ -456,11 +467,11 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
         }
         else if (auto* button = dynamic_cast<UIButton*>(element.get()))
         {
-            if (key == "label")             button->m_label = parser.ParseString();
-            else if (key == "fontSize")     button->m_fontSize = parser.ParseFloat();
+            if (key == "label")             button->m_labelText.m_text = parser.ParseString();
+            else if (key == "fontSize")     button->m_labelText.m_fontSize = parser.ParseFloat();
             else if (key == "colorHover")   button->m_colorHover = ParseColor(parser);
             else if (key == "colorPressed") button->m_colorPressed = ParseColor(parser);
-            else if (key == "colorText")    button->m_colorText = ParseColor(parser);
+            else if (key == "colorText")    button->m_labelText.m_textColor = ParseColor(parser);
         }
         else if (auto* progressBar = dynamic_cast<UIProgressBar*>(element.get()))
         {
@@ -548,19 +559,6 @@ UIManager::UIManager(IGUI* gui, ResourceManager* resourceManager, Apex::Renderin
 {
 }
 
-bool UIManager::LoadHUD(const fs::path& path)
-{
-    if (!m_resourceManager) return false;
-    bool ok = m_legacyCanvas.Load(path, *m_resourceManager);
-    if (ok) m_legacyVisible = true;
-    return ok;
-}
-
-bool UIManager::SaveHUD(const fs::path& path) const
-{
-    return m_legacyCanvas.Save(path);
-}
-
 void UIManager::ScanHUDs(const fs::path& assetsRoot)
 {
     m_registry.clear();
@@ -643,8 +641,6 @@ bool UIManager::IsHUDVisible(int handle) const
 void UIManager::ClearAll()
 {
     m_instances.clear();
-    m_legacyCanvas.Clear();
-    m_legacyVisible = false;
 }
 
 HUDInstance* UIManager::GetInstance(int handle)
@@ -659,12 +655,11 @@ const HUDInstance* UIManager::GetInstance(int handle) const
     return m_instances[static_cast<size_t>(handle) - 1].get();
 }
 
-void UIManager::RenderHUD(IDrawList* drawList, Vector2 viewportPos, Vector2 viewportSize)
+void UIManager::RenderHUD(IDrawList* drawList, LibMath::Vector2 viewportPos, LibMath::Vector2 viewportSize)
 {
     if (!m_gui || !drawList) return;
 
-    Vector2 screen = (viewportSize[0] > 0.f && viewportSize[1] > 0.f) ? viewportSize : m_gui->GetScreenSize();
-
+    LibMath::Vector2 screen = (viewportSize[0] > 0.f && viewportSize[1] > 0.f) ? viewportSize : m_gui->GetScreenSize();
     UIDrawContext context;
     context.m_drawList = drawList;
     context.m_rhi = m_rhi;
@@ -672,12 +667,6 @@ void UIManager::RenderHUD(IDrawList* drawList, Vector2 viewportPos, Vector2 view
     context.m_isEditor = false;
     context.m_selected = false;
     context.m_origin = viewportPos;
-
-    if (m_legacyVisible)
-    {
-        m_legacyCanvas.PrepareForRender(m_rhi);
-        m_legacyCanvas.Draw(context);
-    }
 
     for (auto& inst : m_instances)
     {

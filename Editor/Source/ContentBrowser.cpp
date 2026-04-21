@@ -463,6 +463,11 @@ namespace Apex::Editor
         PopulateThumbnailsForList(m_searchEntries, m_thumbnails);
     }
 
+    ThumbnailRenderer& ContentBrowser::GetThumbnails()
+    {
+        return m_thumbnails;
+    }
+
     fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
         for (const auto& rect : m_breadcrumbRects)

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IMDRAWLISTWRAPPER_H
+#define IMDRAWLISTWRAPPER_H
 // ============================================================
 // ImDrawListWrapper.h - INTERNAL.
 // Concrete IDrawList backed by ImDrawList.
@@ -30,6 +31,9 @@ namespace Apex::UserInterface
             LibMath::Vector2 uv1 = { 1.f, 1.f },
             uint32_t tint = 0xFFFFFFFF) override;
 
+        void PushClipRect(LibMath::Vector2 min, LibMath::Vector2 max) override;
+        void PopClipRect() override;
+
         void Reset(ImDrawList* drawList) { m_drawList = drawList; }
 
     private:
@@ -37,3 +41,4 @@ namespace Apex::UserInterface
     };
 
 } // namespace Apex::UserInterface
+#endif

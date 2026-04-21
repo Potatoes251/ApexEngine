@@ -48,5 +48,5 @@ void Camera::OnStart()
 
 std::vector<Apex::ExposedVar> Camera::GetExposedVariables()
 {
-	return { { "main camera" , Apex::ExposedVar::Bool, &m_isMain } };
+	return { { "Main Camera" , Apex::ExposedVar::Bool, &m_isMain } };
 }

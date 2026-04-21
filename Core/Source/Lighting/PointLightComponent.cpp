@@ -47,8 +47,8 @@ std::vector<ExposedVar> PointLightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
-    exposedVec.push_back({ "Near plane shadow", ExposedVar::Float, &m_nearShadow });
-    exposedVec.push_back({ "Far plane shadow", ExposedVar::Float, &m_farShadow });
+    exposedVec.push_back({ "Near Plane Shadow", ExposedVar::Float, &m_nearShadow });
+    exposedVec.push_back({ "Far Plane Shadow", ExposedVar::Float, &m_farShadow });
     exposedVec.push_back({ "Radius", ExposedVar::Float, &m_radius });
 
     return exposedVec;

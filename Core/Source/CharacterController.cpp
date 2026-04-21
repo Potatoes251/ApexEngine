@@ -98,8 +98,8 @@ void CharacterController::Serialize(std::ostream& out) const
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
-	return { { "distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "speed", ExposedVar::Float, &m_speed } };
+	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
+			{ "Speed", ExposedVar::Float, &m_speed } };
 }
 
 bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, HitResult& closest_out) const
