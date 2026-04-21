@@ -189,6 +189,7 @@ void ComponentsViewer::Draw()
 			}
 		}
 
+		m_gui.Separator();
 		if (m_gui.MenuItem("Lua Script"))
 		{
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
@@ -312,7 +313,6 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		transform.setPosition(pos);
 		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.f));
 		transform.setScale(scale);
-		obj->SetLocalTransform(transform);
 		CommandManager::Get().Execute(
 			std::make_unique<TransformCommand>(m_scene, obj, transform, false));
 	}
@@ -640,13 +640,8 @@ bool Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 
 bool Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
 {
-	float* v = (float*)var.data;
-	LibMath::Vector3 vec(v[0], v[1], v[2]);
-	if (DrawVec3(var.name, vec, -1000.f, 1000.f))
+	if (DrawVec3(var.name, *(LibMath::Vector3*)var.data, -1000.f, 1000.f))
 	{
-		v[0] = vec[0]; 
-		v[1] = vec[1]; 
-		v[2] = vec[2]; 
 		m_changed = true;
 		return true;
 	}
@@ -678,11 +673,10 @@ bool Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
 
 bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
 {
-	float* v = (float*)var.data;
 	m_gui.AlignTextToFramePadding();
 	m_gui.Text(var.name);
 	m_gui.SameLine(LABEL_WIDTH);
-	if (m_gui.ColorEdit3("##c3", v))
+	if (m_gui.ColorEdit3("##c3", (float*)var.data))
 	{
 		m_changed = true;
 		return true;
@@ -692,11 +686,10 @@ bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
 
 bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
 {
-	float* v = (float*)var.data;
 	m_gui.AlignTextToFramePadding();
 	m_gui.Text(var.name);
 	m_gui.SameLine(LABEL_WIDTH);
-	if (m_gui.ColorEdit4("##c4", v))
+	if (m_gui.ColorEdit4("##c4", (float*)var.data))
 	{
 		m_changed = true;
 		return true;
