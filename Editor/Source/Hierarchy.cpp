@@ -117,6 +117,16 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
         m_componentsViewer->SetSelectedObject(nullptr);
 }
 
+void Apex::Editor::Hierarchy::ClearSelection()
+{
+    SelectObject(nullptr);
+	m_pendingClone = nullptr;
+    m_pendingDelete = nullptr;
+    m_pendingParent = nullptr;
+    m_pendingReparent = nullptr;
+	m_pendingTarget = nullptr;
+}
+
 void Hierarchy::DrawNode(SceneNode* node)
 {
     Object* obj = node->GetObject();
@@ -413,6 +423,9 @@ Object* Hierarchy::DuplicateObject(Object* original)
 void Hierarchy::DestroyObject(size_t objId)
 {
     Data::Object* obj = m_scene->GetObjectWithId(objId);
+
+    if (m_selected == obj)
+        SelectObject(nullptr);
     obj->Destroy();
 
     m_scene->DestroyObject(objId);

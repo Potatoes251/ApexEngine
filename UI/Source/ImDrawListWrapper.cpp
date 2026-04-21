@@ -88,4 +88,16 @@ namespace Apex::UserInterface
 			tint
 		);
 	}
+
+	void ImDrawListWrapper::PushClipRect(LibMath::Vector2 min, LibMath::Vector2 max)
+	{
+		if (m_drawList)
+			m_drawList->PushClipRect(ImVec2(min[0], min[1]), ImVec2(max[0], max[1]), true);
+	}
+
+	void ImDrawListWrapper::PopClipRect()
+	{
+		if (m_drawList)
+			m_drawList->PopClipRect();
+	}
 } // namespace Apex::UserInterface

@@ -1,5 +1,6 @@
 #include "HudEditor.h"
 #include "EditorIcon.h"
+#include "AssetPicker.h"
 
 using namespace Apex::UserInterface;
 
@@ -480,12 +481,6 @@ namespace Apex::Editor
         if (!m_gui.BeginPopupModal("Pick Texture", { 540.f, 420.f }))
             return;
 
-        UIImage* image = nullptr;
-        {
-            UIElement* selected = ResolveSelected();
-            if (selected) image = dynamic_cast<UIImage*>(selected);
-        }
-
         m_gui.Text("Click a texture to select:");
         m_gui.Separator();
 
@@ -495,7 +490,18 @@ namespace Apex::Editor
         }
         else
         {
-			DrawTextureTiles(image);
+            int cols = Apex::Resources::PickerColumnCount(m_gui.GetAvailableSize()[0]);
+
+            std::string picked = DrawTextureGrid(cols);
+            if (!picked.empty())
+            {
+                CommitTextureSelection(picked);
+                m_showTexturePicker = false;
+                m_texPickerOpened = false;
+                m_gui.CloseCurrentPopup();
+                m_gui.EndPopup();
+                return;
+            }
         }
 
         m_gui.Separator();
@@ -508,63 +514,45 @@ namespace Apex::Editor
         m_gui.EndPopup();
     }
 
-    void HudEditor::DrawTextureTiles(UIImage* image)
+    std::string HudEditor::DrawTextureGrid(int cols)
     {
-        constexpr float THUMB_SIZE = 60.f;
-        constexpr float SPACING = 8.f;
+        m_gui.BeginChildPanel("##tp_grid", 0.f, -50.f, false);
 
-        float availableWidth = m_gui.GetAvailableSize()[0] - 16.f;
-
-        int cols = std::max(1, static_cast<int>((availableWidth + SPACING) / (THUMB_SIZE + SPACING)));
-        int currentCol = 0;
-
-        m_gui.BeginChildPanel("TextureScrollingRegion", 0.f, -50.f, false);
+        int col = 0;
+        for (const auto& path : m_textureFiles)
         {
-            for (const auto& path : m_textureFiles)
+            std::string key = path.generic_string();
+
+            if (col > 0 && col % cols != 0)
+                m_gui.SameLine(0.f, Apex::Resources::PICKER_SPACING);
+
+            m_gui.PushID(key);
+            uint32_t tid = EditorIcon::Get(key);
+            bool picked = Apex::Resources::DrawPickerCell(m_gui, key, tid);
+            m_gui.PopID();
+
+            if (picked)
             {
-                std::string key = path.generic_string();
-
-                m_gui.PushID(key);
-
-                uint32_t tid = EditorIcon::Get(key);
-                bool picked = false;
-
-                if (tid != 0)
-                    picked = m_gui.ImageButton("##img", tid, { THUMB_SIZE, THUMB_SIZE });
-
-                if (m_gui.IsItemHovered())
-                {
-                    m_gui.BeginTooltip();
-                    m_gui.Text(path.filename().string());
-                    m_gui.EndTooltip();
-                }
-
-                if (picked && image)
-                {
-                    image->m_texturePath = key;
-                    image->m_glTexID = 0;
-                    image->LoadTexture(m_resourceManager);
-                    m_dirty = true;
-                    m_showTexturePicker = false;
-                    m_texPickerOpened = false;
-
-                    m_gui.PopID();
-                    m_gui.EndChildPanel();
-                    m_gui.CloseCurrentPopup();
-                    m_gui.EndPopup();
-                    return;
-                }
-
-                m_gui.PopID();
-
-                currentCol++;
-                if (currentCol < cols)
-                    m_gui.SameLine(0.f, SPACING);
-                else
-                    currentCol = 0;
+                m_gui.EndChildPanel();
+                return key;
             }
+            col++;
         }
+
         m_gui.EndChildPanel();
+        return {};
+    }
+
+    void HudEditor::CommitTextureSelection(const std::string& key)
+    {
+        UIElement* sel = ResolveSelected();
+        UIImage* img = sel ? dynamic_cast<UIImage*>(sel) : nullptr;
+        if (!img) return;
+
+        img->m_texturePath = key;
+        img->m_glTexID = 0;
+        img->LoadTexture(m_resourceManager);
+        m_dirty = true;
     }
 
     void HudEditor::DrawProperties()
@@ -755,16 +743,16 @@ namespace Apex::Editor
         m_gui.Separator();
         DrawRow("Label:");
 
-        char buf[128]; std::strncpy(buf, button->m_label.c_str(), 127); buf[127] = '\0';
+        char buf[128]; std::strncpy(buf, button->m_labelText.m_text.c_str(), 127); buf[127] = '\0';
         if (m_gui.InputText("##bl", buf, 128)) 
         { 
-            button->m_label = buf;
+            button->m_labelText.m_text = buf;
             m_dirty = true; 
         }
 
         DrawRow("FontSize:");
-        if (m_gui.InputFloat("##bfs", &button->m_fontSize)) m_dirty = true;
-        DrawColorRow("Text:", "##btc", button->m_colorText);
+        if (m_gui.InputFloat("##bfs", &button->m_labelText.m_fontSize)) m_dirty = true;
+        DrawColorRow("Text:", "##btc", button->m_labelText.m_textColor);
         DrawColorRow("Hover:", "##bhc", button->m_colorHover);
         DrawColorRow("Press:", "##bpc", button->m_colorPressed);
     }

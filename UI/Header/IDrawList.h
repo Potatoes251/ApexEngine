@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IDRAWLIST_H
+#define IDRAWLIST_H
 // ============================================================
 // IDrawList.h - Backend-agnostic immediate draw interface.
 // Used by editor panels to draw custom geometry inside ImGui
@@ -28,6 +29,10 @@ namespace Apex::UserInterface
             LibMath::Vector2 uv0 = { 0.f, 0.f },
             LibMath::Vector2 uv1 = { 1.f, 1.f },
             uint32_t tint = 0xFFFFFFFF) = 0;
+
+        virtual void PushClipRect(LibMath::Vector2 min, LibMath::Vector2 max) = 0;
+        virtual void PopClipRect() = 0;
     };
 
 } // namespace Apex::UserInterface
+#endif
