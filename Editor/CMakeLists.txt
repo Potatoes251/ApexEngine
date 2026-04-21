@@ -54,6 +54,12 @@ target_link_libraries(${EXE_EDITOR_NAME}
     PRIVATE ${CORE_NAME}
 )
 
+add_dependencies(${EXE_EDITOR_NAME} ${EXE_NAME})
+
+target_compile_definitions(${EXE_EDITOR_NAME} PRIVATE
+    GAME_EXE_DIR="$<TARGET_FILE_DIR:${EXE_NAME}>"
+)
+
 add_custom_command(TARGET ${EXE_EDITOR_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets

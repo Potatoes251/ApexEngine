@@ -106,31 +106,3 @@ add_custom_command(TARGET ${EXE_NAME} POST_BUILD
 
     $<TARGET_FILE_DIR:${EXE_NAME}>
 )
-
-# =============================
-# FINAL BUILD (propre)
-# =============================
-
-set(FINAL_DIR "${CMAKE_BINARY_DIR}/Game/Final")
-
-add_custom_command(TARGET ${EXE_NAME} POST_BUILD
-
-    COMMAND ${CMAKE_COMMAND} -E echo "=== COPYING TO FINAL ==="
-
-    # Créer dossier
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${FINAL_DIR}
-
-    # Copier runtime
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        $<TARGET_FILE_DIR:${EXE_NAME}>
-        ${FINAL_DIR}
-
-    # Copier Assets (ATTENTION casse)
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/assets
-        ${FINAL_DIR}/Assets
-
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/apexassets
-        ${FINAL_DIR}/ApexAssets
-)

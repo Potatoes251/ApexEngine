@@ -57,6 +57,8 @@ namespace Apex::Editor
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
+		void Build();
+
 		// main.cpp uses this to drive the outer loop.
 		Apex::Windowing::IWindow*	GetWindow() { return m_window.get(); }
 		Apex::Application*			GetApp() { return m_app; }

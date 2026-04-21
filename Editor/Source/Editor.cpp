@@ -11,6 +11,12 @@
 #include "Rigidbody.h"
 
 
+#ifdef _WIN32
+#include <windows.h>
+#undef CreateWindow  // windows.h defines CreateWindow which clashes with yours
+#endif
+
+
 using namespace Apex::Windowing;
 using namespace Apex::UserInterface;
 using namespace Apex::Audio;
@@ -405,5 +411,39 @@ namespace Apex::Editor
         auto soundPlayer = std::make_unique<SoundPlayer>(*m_gui, *m_window, *m_audio);
         soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
         m_soundPlayers.push_back(std::move(soundPlayer));
+    }
+    void Editor::Build()
+    {
+        namespace fs = std::filesystem;
+
+        fs::path gameExeDir = fs::path(GAME_EXE_DIR);
+        fs::path outputDir = fs::current_path() / "Build/Apex Game";
+
+        std::error_code ec;
+        fs::create_directories(outputDir, ec);
+
+        constexpr auto copyOpts = fs::copy_options::overwrite_existing
+            | fs::copy_options::recursive;
+
+        // Copy main_game executable
+        fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
+            fs::copy_options::overwrite_existing, ec);
+
+        // Copy all DLLs next to the game exe
+        for (auto& entry : fs::directory_iterator(gameExeDir, ec))
+        {
+            if (entry.path().extension() == ".dll")
+                fs::copy(entry.path(), outputDir / entry.path().filename(),
+                    fs::copy_options::overwrite_existing, ec);
+        }
+
+        // Copy asset folders
+        fs::copy(fs::current_path() / "Assets", outputDir / "Assets", copyOpts, ec);
+        fs::copy(fs::current_path() / "ApexAssets", outputDir / "ApexAssets", copyOpts, ec);
+
+        if (ec)
+            printf("Build warning: %s\n", ec.message().c_str());
+        else
+            printf("Build complete -> %s\n", outputDir.string().c_str());
     }
 }

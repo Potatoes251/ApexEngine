@@ -222,13 +222,13 @@ LibMath::Vector3 Viewport::GetAxis()
 	LibMath::Vector3 axis;
 	switch (m_selectedAxis)
 	{
-	case Axis::X:		
+	case Axis::X:
 		axis = { 1, 0, 0 };	
 		break;
-	case Axis::Y:		
+	case Axis::Y:
 		axis = { 0, 1, 0 };	
 		break;
-	case Axis::Z:		
+	case Axis::Z:
 		axis = { 0, 0, 1 };	
 		break;
 	case Axis::None:	return { 0, 0, 0 };
@@ -490,6 +490,8 @@ void Viewport::DrawUI()
 	m_gui->SameLine();
 	m_gui->SetNextItemWidth(150.0f);
 	m_gui->InputFloat("Scale value", &m_scaleSnap);
+
+	if (m_gui->Button("Build Game")) m_editor->Build();
 }
 
 void Viewport::DrawGrid()
