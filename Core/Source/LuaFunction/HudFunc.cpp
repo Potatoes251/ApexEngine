@@ -131,26 +131,31 @@ namespace Apex::HudBindings
 
     int Lua_HUD_SetVisible(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        bool vis = lua_toboolean(L, 3) != 0;
-        auto* canvas = GetCanvas(GetUI(L), h);
+        bool visibility = lua_toboolean(L, 3) != 0;
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (e) e->m_visible = vis;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (element) element->m_visible = visibility;
         return 0;
     }
 
     int Lua_HUD_SetPosition(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
+
         float x = static_cast<float>(luaL_checknumber(L, 3));
         float y = static_cast<float>(luaL_checknumber(L, 4));
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (e) e->m_position = { x, y };
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (element) element->m_position = { x, y };
         return 0;
     }
 
@@ -158,61 +163,79 @@ namespace Apex::HudBindings
     {
         int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        float w = static_cast<float>(luaL_checknumber(L, 3));
-        float h = static_cast<float>(luaL_checknumber(L, 4));
+        float width = static_cast<float>(luaL_checknumber(L, 3));
+        float height = static_cast<float>(luaL_checknumber(L, 4));
+
         auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (e) e->m_size = { w, h };
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (element) element->m_size = { width, height };
         return 0;
     }
 
     int Lua_HUD_GetVisible(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        auto* canvas = GetCanvas(GetUI(L), h);
-        if (!canvas) { lua_pushboolean(L, 0); return 1; }
-        UIElement* e = FindWidget(*canvas, name);
-        lua_pushboolean(L, e && e->m_visible ? 1 : 0);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
+        if (!canvas) 
+        { 
+            lua_pushboolean(L, 0); 
+            return 1; 
+        }
+
+        UIElement* element = FindWidget(*canvas, name);
+        lua_pushboolean(L, element && element->m_visible ? 1 : 0);
         return 1;
     }
 
     int Lua_HUD_SetText(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
         const char* text = luaL_checkstring(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* t = dynamic_cast<UIText*>(e))
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* t = dynamic_cast<UIText*>(element))
             t->m_text = text;
         return 0;
     }
 
     int Lua_HUD_SetTextColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* t = dynamic_cast<UIText*>(e))
-            t->m_textColor = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* text = dynamic_cast<UIText*>(element))
+            text->m_textColor = color;
         return 0;
     }
 
     int Lua_HUD_GetText(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        auto* canvas = GetCanvas(GetUI(L), h);
-        if (!canvas) { lua_pushstring(L, ""); return 1; }
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* t = dynamic_cast<UIText*>(e))
-            lua_pushstring(L, t->m_text.c_str());
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
+        if (!canvas) 
+        { 
+            lua_pushstring(L, ""); 
+            return 1; 
+        }
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* text = dynamic_cast<UIText*>(element))
+            lua_pushstring(L, text->m_text.c_str());
         else
             lua_pushstring(L, "");
         return 1;
@@ -220,15 +243,18 @@ namespace Apex::HudBindings
 
     int Lua_HUD_SetTexture(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
         const char* path = luaL_checkstring(L, 3);
+
         auto* ui = GetUI(L);
         if (!ui) return 0;
-        auto* canvas = GetCanvas(ui, h);
+
+        auto* canvas = GetCanvas(ui, handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* img = dynamic_cast<UIImage*>(e))
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* img = dynamic_cast<UIImage*>(element))
         {
             img->m_texturePath = path;
             img->m_glTexID = 0;
@@ -239,67 +265,82 @@ namespace Apex::HudBindings
 
     int Lua_HUD_SetImageTint(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (dynamic_cast<UIImage*>(e))
-            e->m_color = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (dynamic_cast<UIImage*>(element))
+            element->m_color = color;
         return 0;
     }
 
     int Lua_HUD_SetProgress(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
+
         float val = static_cast<float>(luaL_checknumber(L, 3));
         if (val < 0.f) val = 0.f;
         if (val > 1.f) val = 1.f;
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* pb = dynamic_cast<UIProgressBar*>(e))
-            pb->m_value = val;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* progressBar = dynamic_cast<UIProgressBar*>(element))
+            progressBar->m_value = val;
         return 0;
     }
 
     int Lua_HUD_SetBarFillColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* pb = dynamic_cast<UIProgressBar*>(e))
-            pb->m_colorFill = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* progressBar = dynamic_cast<UIProgressBar*>(element))
+            progressBar->m_colorFill = color;
         return 0;
     }
 
     int Lua_HUD_SetBarBgColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* pb = dynamic_cast<UIProgressBar*>(e))
-            pb->m_colorBg = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* progressBar = dynamic_cast<UIProgressBar*>(element))
+            progressBar->m_colorBg = color;
         return 0;
     }
 
     int Lua_HUD_GetProgress(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        auto* canvas = GetCanvas(GetUI(L), h);
-        if (!canvas) { lua_pushnumber(L, 0.0); return 1; }
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* pb = dynamic_cast<UIProgressBar*>(e))
-            lua_pushnumber(L, static_cast<double>(pb->m_value));
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
+        if (!canvas) 
+        { 
+            lua_pushnumber(L, 0.0); 
+            return 1; 
+        }
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* progressBar = dynamic_cast<UIProgressBar*>(element))
+            lua_pushnumber(L, static_cast<double>(progressBar->m_value));
         else
             lua_pushnumber(L, 0.0);
         return 1;
@@ -307,105 +348,121 @@ namespace Apex::HudBindings
 
     int Lua_HUD_SetButtonLabel(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
         const char* label = luaL_checkstring(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_labelText.m_text = label;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_labelText.m_text = label;
         return 0;
     }
 
     int Lua_HUD_SetButtonColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_color = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_color = color;
         return 0;
     }
 
     int Lua_HUD_SetButtonTextColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_labelText.m_textColor = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_labelText.m_textColor = color;
         return 0;
     }
 
     int Lua_HUD_SetButtonHoverColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_colorHover = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_colorHover = color;
         return 0;
     }
 
     int Lua_HUD_SetButtonPressColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_colorPressed = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_colorPressed = color;
         return 0;
     }
 
     int Lua_HUD_SetButtonHAlign(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
         int align = static_cast<int>(luaL_checkinteger(L, 3));
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_labelText.m_hAlign = static_cast<TextHAlign>(align);
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_labelText.m_hAlign = static_cast<TextHAlign>(align);
         return 0;
     }
 
     int Lua_HUD_SetButtonVAlign(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
         int align = static_cast<int>(luaL_checkinteger(L, 3));
-        auto* canvas = GetCanvas(GetUI(L), h);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* btn = dynamic_cast<UIButton*>(e))
-            btn->m_labelText.m_vAlign = static_cast<TextVAlign>(align);
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+            button->m_labelText.m_vAlign = static_cast<TextVAlign>(align);
         return 0;
     }
 
     int Lua_HUD_SetPanelColor(lua_State* L)
     {
-        int h = static_cast<int>(luaL_checkinteger(L, 1));
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
         const char* name = luaL_checkstring(L, 2);
-        UIColor c = ReadColor(L, 3);
-        auto* canvas = GetCanvas(GetUI(L), h);
+        UIColor color = ReadColor(L, 3);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
         if (!canvas) return 0;
-        UIElement* e = FindWidget(*canvas, name);
-        if (auto* panel = dynamic_cast<UIPanel*>(e))
-            panel->m_colorBg = c;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* panel = dynamic_cast<UIPanel*>(element))
+            panel->m_colorBg = color;
         return 0;
     }
 

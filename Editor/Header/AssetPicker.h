@@ -56,9 +56,9 @@ namespace Apex::Resources
         IDrawList* drawList = gui.GetDrawList();
 
         bool     hovered = gui.IsItemHovered();
-        uint32_t bgCol = hovered ? 0xFF2A3A4A : 0xFF1A1E26;
+		uint32_t bgCol = hovered ? 0xFF2A3A4A : 0xFF1A1E26; // dark grey-blue or darker variant on hover
         drawList->DrawRectFilled(bMin, bMax, bgCol, 4.f);
-        drawList->DrawRect(bMin, bMax, 0xFF333D4D, 4.f, 1.f);
+        drawList->DrawRect(bMin, bMax, 0xFF333D4D, 4.f, 1.f); // dark grey
 
         LibMath::Vector2 thumbMax = { bMin[0] + thumbSize, bMin[1] + thumbSize };
         if (thumb != 0)
@@ -67,23 +67,23 @@ namespace Apex::Resources
         }
         else
         {
-            drawList->DrawRectFilled(bMin, thumbMax, 0xFF141820, 0.f);
+			drawList->DrawRectFilled(bMin, thumbMax, 0xFF141820, 0.f); // darker grey for missing thumbnail
             std::string ext = fs::path(pathStr).extension().string();
             LibMath::Vector2 textSize = drawList->CalculateTextSize(ext);
             drawList->DrawText(
                 { bMin[0] + std::floor((thumbSize - textSize[0]) * 0.5f),
-                 bMin[1] + std::floor((thumbSize - textSize[1]) * 0.5f) }, 0xFF88CCFF, ext);
+                 bMin[1] + std::floor((thumbSize - textSize[1]) * 0.5f) }, 0xFF88CCFF, ext); // light blue
         }
 
         float stripY = bMin[1] + thumbSize;
-        drawList->DrawRectFilled({ bMin[0], stripY }, bMax, 0xEE0D1117, 0.f);
+		drawList->DrawRectFilled({ bMin[0], stripY }, bMax, 0xEE0D1117, 0.f); // semi-transparent very dark grey for label background
 
         std::string stem = fs::path(pathStr).stem().string();
         if (stem.size() > 7) stem = stem.substr(0, 6) + "~";
         LibMath::Vector2 textSize = drawList->CalculateTextSize(stem);
         drawList->DrawText(
             { bMin[0] + std::floor((thumbSize - textSize[0]) * 0.5f),
-             stripY + std::floor((labelH - textSize[1]) * 0.5f) }, 0xFFE8E8E8, stem);
+             stripY + std::floor((labelH - textSize[1]) * 0.5f) }, 0xFFE8E8E8, stem); // light grey
 
         if (hovered)
         {
@@ -151,8 +151,7 @@ namespace Apex::Resources
     inline void AssetPicker<T>::ScanAssets()
     {
         m_cachedPaths.clear();
-        std::error_code error;
-        for (auto& entry : std::filesystem::recursive_directory_iterator("Assets/", error))
+        for (auto& entry : std::filesystem::recursive_directory_iterator("Assets/"))
         {
             if (!entry.is_regular_file()) continue;
             if (MatchesType(entry.path()))
