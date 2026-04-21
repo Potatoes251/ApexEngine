@@ -12,6 +12,7 @@
 #include "FirstPersonCamera.h"
 #include "CharacterController.h"
 #include "Animator.h"
+#include "ViewComponent.h"
 
 #include <fstream>
 #include <sstream>
@@ -562,6 +563,31 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             float flowSpeed = parser.ParseFloat();
 
             obj->AddComponent<Physic::WaterVolume>(halfExtents, density, drag, buoyencyMult, flowDir, flowSpeed);
+        }
+
+        else if (compName == "ViewComponent")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+
+            float range = parser.ParseFloat();
+            parser.Expect(',');
+
+            float horizontalFov = parser.ParseFloat();
+            parser.Expect(',');
+
+            float vertitalFov = parser.ParseFloat();
+            parser.Expect(',');
+
+            int horizontalRays = parser.ParseInt();
+            parser.Expect(',');
+
+            int vertitalRays = parser.ParseInt();
+            parser.Expect(',');
+
+            obj->AddComponent<Perception::ViewComponent>(&m_physics, range, horizontalFov, vertitalFov, horizontalRays, vertitalRays);
         }
 
         parser.Expect('}'); // component end

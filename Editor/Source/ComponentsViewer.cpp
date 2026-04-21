@@ -18,6 +18,8 @@
 
 #include "CharacterController.h"
 
+#include "ViewComponent.h"
+
 #include "Command/SetExposedVarCommand.h"
 #include "Command/SetScriptVarCommand.h"
 #include "Command/RemoveCompCommand.h"
@@ -34,6 +36,7 @@ using namespace Apex::Scripting;
 using namespace Apex::Lighting;
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
+using namespace Apex::Perception;
 
 // Accent colors per component category
 static constexpr uint32_t COL_RENDER = 0xFF81C784; // green
@@ -282,6 +285,16 @@ void ComponentsViewer::Draw()
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("View Component"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<ViewComponent>(&m_phys, 10.f, 1.5f, 1.f, 10, 10);
 					return comp->GetId();
 				}));
 		}
