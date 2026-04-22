@@ -18,6 +18,8 @@ namespace LibMath
 		Radian&		operator=(Radian);
 		Radian&		operator+=(Radian);			// Radian angle += Radian{0.5};
 		Radian&		operator-=(Radian);			// Radian angle -= Radian{0.5};
+		Radian&		operator+=(float);			// Radian angle += Radian{0.5};
+		Radian&		operator-=(float);			// Radian angle -= Radian{0.5};
 		Radian&		operator*=(float);			// Radian angle *= 3;
 		Radian&		operator/=(float);			// Radian angle /= 3;
 

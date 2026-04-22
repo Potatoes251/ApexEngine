@@ -8,7 +8,14 @@ local Input = require("Input")
 local Player = Object:New()
 
 function Player:New()
-    local instance = { cc = nil, cam = nil, anim = nil, coinCount = 0 }
+    local instance = { 
+     -- component
+    cc = nil, 
+    cam = nil, 
+    anim = nil,
+    coinCount = 0;
+    wasGrounded = true, 
+    }
     setmetatable(instance, { __index = self })
     return instance
 end
@@ -39,17 +46,29 @@ function Player:Update(dt)
     end
 
     local speed = self.cc:GetVelocity()
-    local walkSpeed = 2.0
+    local walkSpeed = 2.0 -- step/second
     local blend = speed / walkSpeed
 
-    -- clamp between 0 and 1
     if blend > 1 then blend = 1 end
 
     self.anim:SetBlendRatio(blend)
 
-    if (Input.IsKeyDown("Space")) then
+    isGrounded = self.cc:IsGrounded()
+
+    if (Input.IsKeyDown("Space") and isGrounded) then
+        if (blend > 0.5) then
+            self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
+        else
+            self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
+        end
         self.cc:Jump()
     end
+
+    if (not wasGrounded and isGrounded) then 
+        self.anim:StartBlend("Idle", "Walking", 0, true)
+    end
+
+    wasGrounded = isGrounded
 end
 
 function Player:OnTriggerEnter(col)

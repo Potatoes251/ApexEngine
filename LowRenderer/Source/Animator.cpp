@@ -229,6 +229,7 @@ void Animator::PlayBlended(int animationIndexA, int animationIndexB, float ratio
 
 void Animator::PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio)
 {
+	LOG_DEBUG("gbvnqeiobvn");
 	if (ratio < 0.f || ratio > 1.f) return;							//check if the ratio is between 0% and 100%
 
 	if (m_state == WaitingForLoadedResources)					//if the ressources are not already loaded 

@@ -60,11 +60,7 @@ int Apex::Controller::Lua_CC_GetVelocity(lua_State* L)
 
     if (!cc) return 0;
 
-    float vel = cc->GetHorizontalVelocity();
-
-    LOG_DEBUG_CAT("Lua", "velocity : {}", vel);
-
-    lua_pushnumber(L, vel);
+    lua_pushnumber(L, cc->GetHorizontalVelocity());
 
     return 1;
 }

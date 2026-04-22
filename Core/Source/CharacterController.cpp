@@ -99,7 +99,7 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 		float rotationSpeed = 10.0f; // tweak
 		LibMath::Radian delta = targetYaw - m_targetYaw;
 
-		m_targetYaw += delta * std::min(rotationSpeed * deltatime_s, 1.0f);
+		m_targetYaw += delta.radian() * std::min(rotationSpeed * deltatime_s, 1.0f);
 	}
 
 	m_moveInput = LibMath::Vector3(0.0f);
