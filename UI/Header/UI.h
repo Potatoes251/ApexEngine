@@ -257,6 +257,9 @@ namespace Apex::UserInterface
 
         virtual void BeginModalBlock(const std::string& name) = 0;
         virtual void EndModalBlock() = 0;
+
+        virtual void BeginDisabled(bool disabled = true) = 0;
+        virtual void EndDisabled() = 0;
 	private:
 	};
 

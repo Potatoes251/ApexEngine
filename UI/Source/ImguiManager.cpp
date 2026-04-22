@@ -642,6 +642,16 @@ namespace Apex::UserInterface
         m_hasModal = false;
         m_modalName.clear();
     }
+
+    void ImGUIManager::BeginDisabled(bool disabled)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+
+    void ImGUIManager::EndDisabled()
+    {
+        ImGui::EndDisabled();
+    }
 }
 
 

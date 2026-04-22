@@ -171,6 +171,9 @@ namespace Apex::UserInterface
         void BeginModalBlock(const std::string& name) override;
         void EndModalBlock() override;
 
+        void BeginDisabled(bool disabled = true) override;
+        void EndDisabled() override;
+
 	private:
         static int ToImGuiMouseButton(MouseButton button);
         static int ToImGuiTreeFlags(TreeNodeFlags flags);

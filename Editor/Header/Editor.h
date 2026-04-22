@@ -57,7 +57,7 @@ namespace Apex::Editor
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
-		void Build();
+		void Build(const std::vector<std::string>& scenePaths);
 
 		// main.cpp uses this to drive the outer loop.
 		Apex::Windowing::IWindow*	GetWindow() { return m_window.get(); }
@@ -73,6 +73,8 @@ namespace Apex::Editor
 		void OpenTextureEditor(const std::filesystem::path& path);
 		void OpenMeshViewer(const std::filesystem::path& path);
 		void OpenSoundPlayer(const std::filesystem::path& path);
+
+		void CollectAssetPaths(const std::string& scenePath, std::unordered_set<std::string>& out);
 
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;

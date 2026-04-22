@@ -24,6 +24,12 @@ namespace Apex::Rendering
 
 namespace Apex::Editor
 {
+	struct BuildSceneEntry
+	{
+		std::string path;
+		bool        selected = true;
+	};
+
 	class Editor;
 	class Hierarchy;
 
@@ -66,6 +72,8 @@ namespace Apex::Editor
 
 		void				DrawUI();
 		void				DrawGrid();
+		void				DrawBuildPopup();
+
 
 		Gizmos		m_gizmo;
 		GizmoMode	m_currentGizmoMode = GizmoMode::Translation;
@@ -96,6 +104,7 @@ namespace Apex::Editor
 		LibMath::Plane			m_axisPlane;
 		LibMath::Vector3		m_startingPoint;
 
+		std::vector<BuildSceneEntry>  m_buildScenes;
 
 		float	m_width = 1280;
 		float	m_height = 720;
@@ -113,6 +122,10 @@ namespace Apex::Editor
 		bool	m_isFirstFullScreen = false;
 		bool	m_showGrid = false;
 		bool	m_showColliders = false;
+
+		bool    m_showBuildPopup = false;
+
+
 	};
 }
 

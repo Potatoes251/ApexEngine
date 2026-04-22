@@ -413,7 +413,91 @@ namespace Apex::Editor
         soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
         m_soundPlayers.push_back(std::move(soundPlayer));
     }
-    void Editor::Build()
+
+    void Editor::CollectAssetPaths(const std::string& scenePath, std::unordered_set<std::string>& out)
+    {
+        std::ifstream file(scenePath);
+        if (!file.is_open())
+        {
+            printf("Build warning: could not open scene %s\n", scenePath.c_str());
+            return;
+        }
+
+        std::string text((std::istreambuf_iterator<char>(file)),
+            std::istreambuf_iterator<char>());
+
+        Serialization::SerialParser parser(text);
+
+        // Walk every key-value pair in the JSON.
+        // When a string value starts with "Assets/", collect it.
+        // Shader paths are pipe-separated ("a.vert|b.frag") so split those too.
+        // We don't need to understand the schema — just find all strings.
+        std::function<void()> collectValues;
+        collectValues = [&]()
+            {
+                char c = parser.PeekChar();
+
+                if (c == '"')
+                {
+                    std::string val = parser.ParseString();
+
+                    // Split on '|' for shader paths
+                    std::stringstream ss(val);
+                    std::string part;
+                    while (std::getline(ss, part, '|'))
+                    {
+                        if (part.starts_with("Assets/"))
+                            out.insert(part);
+                    }
+                }
+                else if (c == '{')
+                {
+                    parser.Expect('{');
+                    if (parser.Peek('}')) { parser.Expect('}'); return; }
+
+                    while (true)
+                    {
+                        parser.ParseString(); // key — discard
+                        parser.Expect(':');
+                        collectValues();      // value — recurse
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+                    parser.Expect('}');
+                }
+                else if (c == '[')
+                {
+                    parser.Expect('[');
+                    if (parser.Peek(']')) { parser.Expect(']'); return; }
+
+                    while (true)
+                    {
+                        collectValues();
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+                    parser.Expect(']');
+                }
+                else
+                {
+                    // number, bool, or null — consume until delimiter
+                    // ParseFloat handles numbers; Match handles true/false/null
+                    if (c == 't' || c == 'f') parser.ParseBool();
+                    else if (c == 'n')        parser.Match("null");
+                    else                      parser.ParseFloat();
+                }
+            };
+
+        try { collectValues(); }
+        catch (const std::exception& e)
+        {
+            printf("Build warning: failed to parse %s: %s\n", scenePath.c_str(), e.what());
+        }
+    }
+
+    void Editor::Build(const std::vector<std::string>& scenePaths)
     {
         namespace fs = std::filesystem;
 
@@ -426,11 +510,10 @@ namespace Apex::Editor
         constexpr auto copyOpts = fs::copy_options::overwrite_existing
             | fs::copy_options::recursive;
 
-        // Copy game executable
+        // Game exe + DLLs
         fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
             fs::copy_options::overwrite_existing, ec);
 
-        // Copy all DLLs next to the game exe
         for (auto& entry : fs::directory_iterator(gameExeDir, ec))
         {
             if (entry.path().extension() == ".dll")
@@ -438,37 +521,50 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        // Copy ApexAssets entirely
+        // Engine assets + fonts (always needed)
         fs::copy(fs::current_path() / "ApexAssets", outputDir / "ApexAssets", copyOpts, ec);
+        fs::copy(fs::current_path() / "Assets" / "Fonts",
+            outputDir / "Assets" / "Fonts", copyOpts, ec);
 
-        // Always copy fonts — they are loaded by the GUI system, not the ResourceManager
-        fs::copy(fs::current_path() / "Assets" / "Fonts", outputDir / "Assets" / "Fonts", copyOpts, ec);
+        // Selected scene files
+        for (const auto& scenePath : scenePaths)
+        {
+            fs::path src = fs::current_path() / scenePath;
+            fs::path dst = outputDir / scenePath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
 
-        fs::copy(fs::current_path() / "Assets" / "Scenes", outputDir / "Assets" / "Scenes", copyOpts, ec);
+        // Scene order manifest
+        {
+            fs::path manifestPath = outputDir / "Assets" / "build_scenes.json";
+            fs::create_directories(manifestPath.parent_path(), ec);
+            std::ofstream manifest(manifestPath);
+            manifest << "{\n  \"scenes\": [\n";
+            for (size_t i = 0; i < scenePaths.size(); ++i)
+            {
+                manifest << "    \"" << scenePaths[i] << "\"";
+                if (i + 1 < scenePaths.size()) manifest << ",";
+                manifest << "\n";
+            }
+            manifest << "  ]\n}\n";
+        }
 
-        // Copy only the Assets that were actually loaded by the ResourceManager
-        for (const auto& assetPath : m_app->GetResourceManager()->GetLoadedAssets())
+        // Collect all asset paths referenced by the selected scenes
+        // by parsing their JSON directly — no dependency on what
+        // the editor happened to load in this session.
+        std::unordered_set<std::string> assetsToCopy;
+
+        for (const auto& scenePath : scenePaths)
+            CollectAssetPaths(scenePath, assetsToCopy);
+
+        // Copy all collected assets
+        for (const auto& assetPath : assetsToCopy)
         {
             fs::path src = fs::current_path() / assetPath;
             fs::path dst = outputDir / assetPath;
             fs::create_directories(dst.parent_path(), ec);
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
-        }
-
-        // Copy only the scripts actually used by objects in the scene
-        for (auto& objPtr : m_app->GetScene()->GetObjects())
-        {
-            if (auto* script = objPtr->GetComponent<ScriptComponent>())
-            {
-                const std::string& scriptPath = script->GetScriptPath();
-                if (!scriptPath.empty())
-                {
-                    fs::path src = fs::current_path() / scriptPath;
-                    fs::path dst = outputDir / scriptPath;
-                    fs::create_directories(dst.parent_path(), ec);
-                    fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
-                }
-            }
         }
 
         if (ec)

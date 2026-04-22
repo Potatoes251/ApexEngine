@@ -430,6 +430,8 @@ void Viewport::Draw()
 
 	DrawUI();
 
+	DrawBuildPopup();
+
 	m_gui->EndPanel();
 }
 
@@ -491,7 +493,25 @@ void Viewport::DrawUI()
 	m_gui->SetNextItemWidth(150.0f);
 	m_gui->InputFloat("Scale value", &m_scaleSnap);
 
-	if (m_gui->Button("Build Game")) m_editor->Build();
+	if (m_gui->Button("Build Game"))
+	{
+		// Scan for .level files once when the popup opens
+		m_buildScenes.clear();
+		namespace fs = std::filesystem;
+		std::error_code ec;
+		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
+		{
+			if (entry.path().extension() == ".level")
+			{
+				BuildSceneEntry e;
+				e.path = entry.path().generic_string();
+				e.selected = true;
+				m_buildScenes.push_back(std::move(e));
+			}
+		}
+		m_showBuildPopup = true;
+		m_gui->OpenPopup("BuildGame");
+	}
 }
 
 void Viewport::DrawGrid()
@@ -509,4 +529,70 @@ void Viewport::DrawGrid()
 	m_gridShader->SetUniform("uCameraPos", m_camera.GetPosition());
 
 	m_rhi->DrawEmpty();
+}
+
+void Viewport::DrawBuildPopup()
+{
+	if (!m_showBuildPopup) return;
+
+	if (!m_gui->BeginPopupModal("BuildGame", { 500.f, 0.f }))
+		return;
+
+	m_gui->Text("Select scenes to include in the build.");
+	m_gui->Text("The first checked scene will be loaded on startup.");
+	m_gui->Separator();
+
+	for (int i = 0; i < (int)m_buildScenes.size(); ++i)
+	{
+		auto& entry = m_buildScenes[i];
+
+		// Checkbox
+		m_gui->Checkbox(("##sel" + std::to_string(i)).c_str(), &entry.selected);
+		m_gui->SameLine();
+
+		// Path label (just the filename for readability, full path as tooltip)
+		std::string filename = std::filesystem::path(entry.path).filename().string();
+		m_gui->Text(filename + "  (" + entry.path + ")");
+
+		// Reorder buttons
+		m_gui->SameLine();
+		m_gui->PushID(i);
+		if (i > 0 && m_gui->Button("^"))
+			std::swap(m_buildScenes[i], m_buildScenes[i - 1]);
+		m_gui->SameLine();
+		if (i < (int)m_buildScenes.size() - 1 && m_gui->Button("v"))
+			std::swap(m_buildScenes[i], m_buildScenes[i + 1]);
+		m_gui->PopID();
+	}
+
+	if (m_buildScenes.empty())
+		m_gui->Text("(No .level files found under Assets/)");
+
+	m_gui->Separator();
+
+	bool anySelected = false;
+	for (auto& e : m_buildScenes) if (e.selected) { anySelected = true; break; }
+
+	if (!anySelected) m_gui->BeginDisabled();
+	if (m_gui->Button("Build"))
+	{
+		std::vector<std::string> selected;
+		for (auto& e : m_buildScenes)
+			if (e.selected) selected.push_back(e.path);
+
+		m_editor->Build(selected);
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+	if (!anySelected) m_gui->EndDisabled();
+
+	m_gui->SameLine();
+
+	if (m_gui->Button("Cancel"))
+	{
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+
+	m_gui->EndPopup();
 }
