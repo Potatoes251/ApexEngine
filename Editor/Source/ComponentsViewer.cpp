@@ -50,6 +50,7 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene,
 	Apex::Physic::PhysicSystem& phys, LuaManager& lua)
 	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), 
 	m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), 
+	m_materialPicker(gui, m_resourceManager), 
 	m_phys(phys), m_luaManager(lua), m_scriptPicker(gui)
 {
 }
@@ -273,6 +274,7 @@ void ComponentsViewer::Draw()
 	m_gui.EndPanel();
 
 	m_meshPicker.Draw();
+	m_materialPicker.Draw();
 	m_texturePicker.Draw();
 	m_scriptPicker.Draw();
 
@@ -586,7 +588,9 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 		case ExposedVar::Mesh:
 			DrawComponentMesh(var);
 			break;
-
+		case ExposedVar::Material:
+			DrawComponentMat(var);
+			break;
 		case ExposedVar::Texture:
 			DrawComponentTexture(var);
 			break;
@@ -711,6 +715,20 @@ void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
 	float width = m_gui.GetAvailableSize()[0];
 	if (m_gui.ButtonSized(std::string("Select##") + var.name, { width, 22.f }))
 		m_meshPicker.Open(mesh);
+}
+
+void Apex::Editor::ComponentsViewer::DrawComponentMat(ExposedVar var)
+{
+	auto* material = (ResourceHandle<Material>*)var.data;
+
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text("Material:");
+	m_gui.SameLine(LABEL_WIDTH);
+	m_gui.TextDisabled(material->IsValid() ? (*material)->GetPath() : "None");
+
+	float width = m_gui.GetAvailableSize()[0];
+	if (m_gui.ButtonSized(std::string("Select##") + var.name, { width, 22.f }))
+		m_materialPicker.Open(material);
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentTexture(ExposedVar var)

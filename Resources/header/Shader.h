@@ -2,6 +2,7 @@
 #define SHADER
 
 #include "IResource.h"
+#include "RHI.h"
 
 #include <string>
 #include <vector>

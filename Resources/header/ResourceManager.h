@@ -69,6 +69,7 @@ namespace Apex::Resources
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
 		entry->m_resource->SetRhi(m_rhi);
+		entry->m_resource->SetResourceManager(this);
 
 		Core::ThreadPool::Get().Enqueue(&ResourceManager::Create<ResourceType>, this, id);
 

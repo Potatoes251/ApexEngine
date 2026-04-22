@@ -133,6 +133,26 @@ Vector3 SerialParser::ParseVector3()
     return { x,y,z };
 }
 
+Vector4 SerialParser::ParseVector4()
+{
+    Expect('[');
+
+    float x = ParseFloat();
+    Expect(',');
+
+    float y = ParseFloat();
+    Expect(',');
+
+    float z = ParseFloat();
+    Expect(',');
+
+    float w = ParseFloat();
+
+    Expect(']');
+
+    return { x,y,z,w };
+}
+
 Quaternion SerialParser::ParseQuaternion()
 {
     Expect('[');

@@ -26,6 +26,8 @@ namespace Apex::Editor
             return AssetType::Script;
         if (ext == ".hud")
             return AssetType::Hud;
+        if (ext == ".mat")
+            return AssetType::Material;
         return AssetType::Unknown;
     }
 
@@ -741,6 +743,12 @@ namespace Apex::Editor
             Refresh();
         }
 
+        if (m_gui.MenuItem("New Material"))
+        {
+            CreateAssetFile(m_currentPath, "NewMaterial", ".mat", "{\n}"); 
+            Refresh();
+        }
+
         if (m_gui.MenuItem("New Level"))
         {
             CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
@@ -1016,6 +1024,12 @@ namespace Apex::Editor
         if (m_gui.MenuItem("New HUD"))
         {
             CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            Refresh();
+        }
+
+        if (m_gui.MenuItem("New Material"))
+        {
+            CreateAssetFile(m_currentPath, "NewMaterial", ".mat", "{\n}");
             Refresh();
         }
 

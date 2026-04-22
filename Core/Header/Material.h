@@ -1,0 +1,59 @@
+#ifndef MATERIAL
+#define MATERIAL
+
+#include <unordered_map>
+#include <variant>
+#include <string>
+#include <vector>
+
+#include "ResourceHandle.h"
+#include "ResourceManager.h"
+#include "SerializationParser.h"
+
+#include "LibMath/Vector.h"
+
+class Texture;
+class Shader;
+
+namespace Apex::Rendering
+{
+	class Material : public IResource
+	{
+	public:
+		Material(std::string path) : IResource(path) {}
+
+		void SetMaterialUniform(std::string name, int val) { m_uniforms[name] = val; }
+		void SetMaterialUniform(std::string name, float val) { m_uniforms[name] = val; }
+		void SetMaterialUniform(std::string name, LibMath::Vector3& val) { m_uniforms[name] = val; }
+		void SetMaterialUniform(std::string name, LibMath::Vector4& val) { m_uniforms[name] = val; }
+
+		void Bind();
+
+		void LoadFromFile() override;
+		void Save();
+
+		void SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
+
+		void AddEmptyTexture();
+
+		Resources::ResourceHandle<Shader> GetShader() const { return m_shader; }
+		std::vector<Resources::ResourceHandle<Texture>>& GetTextures() { return m_textures; }
+
+	private:
+		void WriteProperties(std::ofstream& file_out);
+
+		void ParseProperties(Serialization::SerialParser& parser);
+		void ParseTextures(Serialization::SerialParser& parser);
+
+		using UniformValue = std::variant<int, float, LibMath::Vector3, LibMath::Vector4>;
+		std::unordered_map<std::string, UniformValue> m_uniforms;
+
+		static constexpr int MAX_TEXTURES = 5;
+		std::vector<Resources::ResourceHandle<Texture>> m_textures;
+
+		Resources::ResourceHandle<Shader> m_shader;
+	};
+}
+
+
+#endif

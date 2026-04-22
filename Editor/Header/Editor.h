@@ -19,6 +19,7 @@
 #include "HudEditor.h"
 #include "ComponentsViewer.h"
 #include "Console.h"
+#include "MaterialEditor.h"
 
 namespace Apex::Editor
 {
@@ -74,6 +75,7 @@ namespace Apex::Editor
 		void OpenMeshViewer(const std::filesystem::path& path);
 		void OpenSoundPlayer(const std::filesystem::path& path);
 		void OpenHudEditor(const std::filesystem::path& path);
+		void OpenMaterialEditor(const std::filesystem::path& path);
 
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;
@@ -86,6 +88,7 @@ namespace Apex::Editor
 		std::vector<std::unique_ptr<MeshViewer>>    m_meshViewers;
 		std::vector<std::unique_ptr<SoundPlayer>>   m_soundPlayers;
 		std::vector<std::unique_ptr<HudEditor>>     m_hudEditors;
+		std::unique_ptr<MaterialEditor>				m_materialEditor;
 		std::unique_ptr<Viewport>					m_viewport;
 		std::unique_ptr<Rendering::Scene>			m_editScene;
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;

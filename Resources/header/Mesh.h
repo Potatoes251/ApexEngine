@@ -2,6 +2,7 @@
 #define MESH
 
 #include "IResource.h"
+#include "RHI.h"
 
 #include "LibMath/Vector.h"
 #include "LibMath/Matrix/Matrix4.h"

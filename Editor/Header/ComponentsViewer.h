@@ -11,6 +11,7 @@
 #include "ScriptComponent.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "Material.h"
 #include "ResourceManager.h"
 #include "Physic.h"
 #include "LuaManager.h"
@@ -48,12 +49,14 @@ namespace Apex::Editor
 		bool DrawComponentColor3(ExposedVar var);
 		bool DrawComponentColor4(ExposedVar var);
 		void DrawComponentMesh(ExposedVar var);
+		void DrawComponentMat(ExposedVar var);
 		void DrawComponentTexture(ExposedVar var);
 
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene& m_scene;
 		Apex::Resources::ResourceManager& m_resourceManager;
 		Apex::Resources::AssetPicker<Mesh> m_meshPicker;
+		Apex::Resources::AssetPicker<Rendering::Material> m_materialPicker;
 		Apex::Resources::AssetPicker<Texture> m_texturePicker;
 		Apex::Resources::ScriptPicker m_scriptPicker;
 		Apex::Physic::PhysicSystem& m_phys;

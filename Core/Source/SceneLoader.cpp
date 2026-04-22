@@ -159,11 +159,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.Expect(',');
 
             parser.ParseString(); parser.Expect(':');
-            std::string texture = parser.ParseString();
-            parser.Expect(',');
-
-            parser.ParseString(); parser.Expect(':');
-            std::string shader = parser.ParseString();
+            std::string material = parser.ParseString();
             parser.Expect(',');
 
             parser.ParseString(); parser.Expect(':');
@@ -173,12 +169,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             comp.SetEnabled(enabled);
 
             auto a = GetMeshHandle(mesh);
-            auto b = GetTextureHandle(texture);
-            auto c = GetShaderHandle(shader);
+            auto b = GetMaterialHandle(material);
             
             comp.SetMesh(a);
-            comp.SetTexture(b);
-            comp.SetShader(c);
+            comp.SetMaterial(b);
             comp.SetCastShadow(shadow);
         }
         else if (compName == "RigidBody")
@@ -636,6 +630,11 @@ Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::stri
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
     return m_resourceManager.CreateAsync<Texture>(path);
+}
+
+Apex::Resources::ResourceHandle<Apex::Rendering::Material> Apex::Serialization::SceneLoader::GetMaterialHandle(const std::string& path)
+{
+    return m_resourceManager.CreateAsync<Rendering::Material>(path);
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)

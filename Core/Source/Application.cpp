@@ -213,10 +213,7 @@ void Apex::Application::LoadScene()
                 if (!renderer->GetMesh().IsReady())
                     ready = false;
 
-                if (!renderer->GetTexture().IsReady())
-                    ready = false;
-
-                if (!renderer->GetShader().IsReady())
+                if (!renderer->GetMaterial().IsReady())
                     ready = false;
             }
 
