@@ -53,20 +53,24 @@ using namespace Apex::Input;
 Apex::Application::Application() = default;
 Apex::Application::~Application() = default;
 
-bool Apex::Application::Init(IWindow* window, IGUI* gui)
+bool Apex::Application::Init(IWindow* window)
 {
     if (!InitWindow(window)
     || !InitResourceManager()  
     || !InitRHI()  
     || !InitLighting()
     || !InitRendering()
-    || !InitUI(gui)
     || !InitAudio()
     || !InitLua()
     || !InitScene())
         return false;
 
     return true;
+}
+
+bool Apex::Application::InitGUI(UserInterface::IGUI* gui)
+{
+    return InitUI(gui);
 }
 
 bool Apex::Application::InitResourceManager()

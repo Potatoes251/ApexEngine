@@ -2,6 +2,11 @@
 
 using namespace Apex::Resources;
 
+const std::unordered_set<std::string>& Apex::Resources::ResourceManager::GetLoadedAssets() const
+{
+	return m_loadedAssets;
+}
+
 void ResourceManager::ProcessGpuUploads()
 {
 	while (true)

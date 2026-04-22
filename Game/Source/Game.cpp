@@ -13,7 +13,7 @@ bool Game::Init()
     if (!m_gui) return false;
 
     m_app = std::make_unique<Apex::Application>();
-    if (!m_app->Init(m_window.get(), m_gui.get()))
+    if (!m_app->Init(m_window.get()))
         return false;
 
     m_app->LoadScene();

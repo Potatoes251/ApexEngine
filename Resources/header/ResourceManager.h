@@ -5,9 +5,11 @@
 #include "ThreadPool.h"
  
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <shared_mutex>
 #include <cassert>
+#include <sstream>
 
 namespace Apex::Resources
 {
@@ -32,6 +34,8 @@ namespace Apex::Resources
 		template<typename T>
 		std::vector<ResourceHandle<T>> GetAll();
 
+		const std::unordered_set<std::string>& GetLoadedAssets() const;
+
 		void ProcessGpuUploads();
 		void CollectGarbage(float deltaTime);
 
@@ -51,6 +55,8 @@ namespace Apex::Resources
 
 		std::shared_mutex		m_mapMutex;
 		std::unordered_map<std::string, std::unique_ptr<ResourceEntry>> m_resources;
+
+		std::unordered_set<std::string> m_loadedAssets;
 	};
 
 
@@ -74,6 +80,17 @@ namespace Apex::Resources
 		entry->m_resource->SetRhi(m_rhi);
 
 		m_threadPool.Enqueue(&ResourceManager::Create<ResourceType>, this, id);
+		
+		if (id.starts_with("Assets/") || id.find("|Assets/") != std::string::npos)
+		{
+			std::stringstream ss(id);
+			std::string part;
+			while (std::getline(ss, part, '|'))
+			{
+				if (part.starts_with("Assets/"))
+					m_loadedAssets.insert(part);
+			}
+		}
 
 		return ResourceHandle<ResourceType>(entry);
 	}

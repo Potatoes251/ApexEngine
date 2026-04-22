@@ -24,6 +24,7 @@ using namespace Apex::Rendering;
 using namespace Apex::Serialization;
 using namespace Apex::Physic;
 using namespace Apex::Input;
+using namespace Apex::Scripting;
 
 namespace Apex::Editor 
 {
@@ -417,7 +418,7 @@ namespace Apex::Editor
         namespace fs = std::filesystem;
 
         fs::path gameExeDir = fs::path(GAME_EXE_DIR);
-        fs::path outputDir = fs::current_path() / "Build/Apex Game";
+        fs::path outputDir = fs::current_path() / "ApexBuild";
 
         std::error_code ec;
         fs::create_directories(outputDir, ec);
@@ -425,7 +426,7 @@ namespace Apex::Editor
         constexpr auto copyOpts = fs::copy_options::overwrite_existing
             | fs::copy_options::recursive;
 
-        // Copy main_game executable
+        // Copy game executable
         fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
             fs::copy_options::overwrite_existing, ec);
 
@@ -437,9 +438,38 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        // Copy asset folders
-        fs::copy(fs::current_path() / "Assets", outputDir / "Assets", copyOpts, ec);
+        // Copy ApexAssets entirely
         fs::copy(fs::current_path() / "ApexAssets", outputDir / "ApexAssets", copyOpts, ec);
+
+        // Always copy fonts — they are loaded by the GUI system, not the ResourceManager
+        fs::copy(fs::current_path() / "Assets" / "Fonts", outputDir / "Assets" / "Fonts", copyOpts, ec);
+
+        fs::copy(fs::current_path() / "Assets" / "Scenes", outputDir / "Assets" / "Scenes", copyOpts, ec);
+
+        // Copy only the Assets that were actually loaded by the ResourceManager
+        for (const auto& assetPath : m_app->GetResourceManager()->GetLoadedAssets())
+        {
+            fs::path src = fs::current_path() / assetPath;
+            fs::path dst = outputDir / assetPath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
+
+        // Copy only the scripts actually used by objects in the scene
+        for (auto& objPtr : m_app->GetScene()->GetObjects())
+        {
+            if (auto* script = objPtr->GetComponent<ScriptComponent>())
+            {
+                const std::string& scriptPath = script->GetScriptPath();
+                if (!scriptPath.empty())
+                {
+                    fs::path src = fs::current_path() / scriptPath;
+                    fs::path dst = outputDir / scriptPath;
+                    fs::create_directories(dst.parent_path(), ec);
+                    fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+                }
+            }
+        }
 
         if (ec)
             printf("Build warning: %s\n", ec.message().c_str());
