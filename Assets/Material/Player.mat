@@ -1,5 +1,5 @@
 {
 	"shader": "ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl",
-	"textures": {		"Assets/Textures/T_M_B_44_Qishilong_body01_B.png",
+	"textures": {		"Assets/Textures/container.jpg",
 }
 }

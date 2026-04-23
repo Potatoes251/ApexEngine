@@ -89,11 +89,12 @@ void MaterialEditor::DrawTexture(Resources::ResourceHandle<Texture>* texture, in
 {
     m_gui->AlignTextToFramePadding();
     m_gui->Text("Texture:");
-    m_gui->SameLine(200);
+    m_gui->SameLine();
     m_gui->TextDisabled(texture->IsValid() ? (*texture)->GetPath() : "None");
 
     float width = m_gui->GetAvailableSize()[0];
-    if (m_gui->ButtonSized(std::string("Select##") + (*texture)->GetPath() + std::to_string(id), {width, 22.f}))
+    constexpr float height = 22.f;
+    if (m_gui->ButtonSized(std::string("Select##") + (*texture)->GetPath() + std::to_string(id), {width, height }))
         m_texturePicker.Open(texture);
 }
 
@@ -101,12 +102,13 @@ void MaterialEditor::DrawShaderPicker(std::string& shaderPath, bool& open, std::
 {
     m_gui->AlignTextToFramePadding();
     m_gui->Text(shaderType + " Shader:");
-    m_gui->SameLine(200);
+    m_gui->SameLine();
 
     m_gui->TextDisabled(shaderPath.empty() ? "None" : shaderPath.c_str());
 
     float width = m_gui->GetAvailableSize()[0];
-    if (m_gui->ButtonSized("Select " + shaderType + " Shader", { width, 22.f }))
+    constexpr float height = 22.f;
+    if (m_gui->ButtonSized("Select " + shaderType + " Shader", { width, height }))
     {
         open = true;
     }

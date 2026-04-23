@@ -1,5 +1,5 @@
 {
 	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-	"textures": {		"Assets/Textures/container.jpg",
+	"textures": {		"Assets/Textures/awesomeface.png",
 }
 }
