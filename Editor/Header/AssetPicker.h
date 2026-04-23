@@ -9,6 +9,7 @@
 #include "ThumbnailRenderer.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Material.h"
 #include "Command/SetAssetCommand.h"
 #include "CommandManager.h"
 
@@ -168,6 +169,8 @@ namespace Apex::Resources
 
         if constexpr (std::is_same_v<T, Mesh>)
             return ext == ".mesh";
+        if constexpr (std::is_same_v<T, Rendering::Material>)
+            return ext == ".mat";
         else if constexpr (std::is_same_v<T, Texture>)
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg"
             || ext == ".hdr" || ext == ".tga";

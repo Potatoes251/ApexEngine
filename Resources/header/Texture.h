@@ -2,6 +2,7 @@
 #define TEXTURE
 
 #include "IResource.h"
+#include "RHI.h"
 
 #include <string>
 #include <vector>

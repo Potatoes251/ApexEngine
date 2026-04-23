@@ -1,5 +1,7 @@
 #include "MeshRenderer.h"
 
+#include "Animator.h"
+
 #include "Camera.h"
 
 using namespace LibMath;
@@ -10,8 +12,7 @@ using namespace Apex::Rendering;
 Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager& resourceManager)
 {
     m_mesh = resourceManager.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    m_shader = resourceManager.CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag");
-    m_texture = resourceManager.CreateAsync<Texture>("Assets/Textures/Blank.png");
+    m_material = resourceManager.CreateAsync<Material>("Assets/Textures/Default.mat");
 }
 
 void MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
@@ -19,14 +20,9 @@ void MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
     m_mesh = mesh;
 }
 
-void MeshRenderer::SetTexture(ResourceHandle<Texture>& texture)
+void MeshRenderer::SetMaterial(ResourceHandle<Material>& material)
 {
-    m_texture = texture;
-}
-
-void MeshRenderer::SetShader(ResourceHandle<Shader>& shader)
-{
-    m_shader = shader;
+    m_material = material;
 }
 
 ResourceHandle<Mesh>& MeshRenderer::GetMesh()
@@ -34,14 +30,9 @@ ResourceHandle<Mesh>& MeshRenderer::GetMesh()
     return m_mesh;
 }
 
-ResourceHandle<Texture>& MeshRenderer::GetTexture()
+ResourceHandle<Material>& MeshRenderer::GetMaterial()
 {
-    return m_texture;
-}
-
-ResourceHandle<Shader>& MeshRenderer::GetShader()
-{
-    return m_shader;
+    return m_material;
 }
 
 std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
@@ -49,7 +40,7 @@ std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
     return
     {
         { "Mesh", ExposedVar::Mesh, &m_mesh },
-        { "Texture", ExposedVar::Texture, &m_texture },
+        { "Material", ExposedVar::Material, &m_material },
         { "Cast Shadow", ExposedVar::Bool, &m_castShadow }
     };
 }
@@ -59,8 +50,7 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
     auto clone = std::make_unique<MeshRenderer>();
 
     clone->m_mesh = m_mesh;
-    clone->m_shader = m_shader;
-    clone->m_texture = m_texture;
+    clone->m_material = m_material;
     clone->m_castShadow = m_castShadow;
 
     return clone;
@@ -68,12 +58,13 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
 
 void MeshRenderer::Render(RenderPassInfo passInfo)
 {
-    if (!m_shader.IsReady() ||
-        !m_mesh.IsReady() ||
-        !m_texture.IsReady() ||
+    if (!m_mesh.IsReady() ||
+        !m_material.IsReady() ||
+        !m_material->GetShader().IsReady() ||
         (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
     ResourceHandle<Shader> currentShader;
+
     if (passInfo.m_flags & IgnoreModelShader)
     {
         currentShader = passInfo.m_shader;
@@ -81,8 +72,16 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     }
     else
     {
-        currentShader = m_shader;
-        m_shader->Use();
+        currentShader = m_material->GetShader();
+        m_material->Bind();
+    }
+
+    Data::Object* owner = GetOwner();
+    if (owner)
+    {
+        Animator* animator = owner->GetComponent<Animator>();
+
+        if (animator) animator->SendSkeletonMatrixToGPU(currentShader);
     }
 
     Matrix4 model = GetOwner()->GetGlobalTransform();
@@ -103,8 +102,6 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         currentShader->SetUniform("uColor", color / 255.f);
     }
 
-    m_texture->Bind(0);
-    currentShader->SetUniform("uUseTexture", 1);
     m_mesh->Draw();
 }
 
@@ -117,11 +114,8 @@ void MeshRenderer::Serialize(std::ostream& out) const
     if (m_mesh.IsValid() && m_mesh->GetPath().size())
         out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
 
-    if (m_texture.IsValid() && m_texture->GetPath().size())
-        out << "        \"texture\": \"" << m_texture->GetPath() << "\",\n";
-
-    if (m_shader.IsValid() && m_shader->GetPath().size())
-        out << "        \"shader\": \"" << m_shader->GetPath() << "\",\n";
+    if (m_material.IsValid() && m_material->GetPath().size())
+        out << "        \"material\": \"" << m_material->GetPath() << "\",\n";
 
     out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
 

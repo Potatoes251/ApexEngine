@@ -98,6 +98,7 @@ namespace Apex::Rendering
 		virtual void SetUniformInt(RHIShaderHandle program, const std::string& name, int value) = 0;
 		virtual void SetUniformFloat(RHIShaderHandle program, const std::string& name, float value) = 0;
 		virtual void SetUniformVec3(RHIShaderHandle program, const std::string& name, const LibMath::Vector3& vec) = 0;
+		virtual void SetUniformVec4(RHIShaderHandle program, const std::string& name, const LibMath::Vector4& vec) = 0;
 		virtual void SetUniformMat4(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
 		virtual void SetUniformMat4Array(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix, int count) = 0;
 

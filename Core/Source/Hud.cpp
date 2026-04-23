@@ -570,7 +570,7 @@ void UIManager::ScanHUDs(const fs::path& assetsRoot)
             std::string name = e.path().stem().string();
             m_registry[name] = e.path();
 
-            LOG_INFO("[HUD] Registered HUD: {} -> {}", name, e.path().string());
+            LOG_INFO_CAT("HUD", "Registered HUD: {} -> {}", name, e.path().string());
         }
     }
 }
@@ -590,7 +590,7 @@ int UIManager::CreateHUD(const std::string& name)
         fs::path direct = fs::path("Assets") / (name + ".hud");
         if (!fs::exists(direct))
         {
-            LOG_ERROR("[HUD] CreateHUD: '{}' not found", name);
+            LOG_ERROR_CAT("HUD", "CreateHUD: '{}' not found", name);
             return 0;
         }
         m_registry[name] = direct;
@@ -603,13 +603,13 @@ int UIManager::CreateHUD(const std::string& name)
 
     if (!m_resourceManager || !inst->m_canvas.Load(it->second, *m_resourceManager))
     {
-        LOG_ERROR("[HUD] CreateHUD: failed to load '{}'", it->second.string());
+        LOG_ERROR_CAT("HUD", "CreateHUD: failed to load '{}'", it->second.string());
         return 0;
     }
 
     m_instances.push_back(std::move(inst));
     int handle = static_cast<int>(m_instances.size());
-    LOG_ERROR("[HUD] CreateHUD: '{}' -> handle ", name, handle);
+    LOG_INFO_CAT("HUD", "CreateHUD: '{}' -> handle ", name, handle);
     return handle;
 }
 

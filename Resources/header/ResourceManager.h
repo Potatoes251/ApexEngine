@@ -19,7 +19,7 @@ namespace Apex::Resources
 	class ResourceManager
 	{
 	public:
-		ResourceManager(Core::ThreadPool& threadPool) : m_threadPool(threadPool) {}
+		ResourceManager() = default;
 		ResourceManager(ResourceManager const&) = delete;
 		ResourceManager& operator=(ResourceManager const&) = delete;
 		~ResourceManager() = default;
@@ -43,9 +43,7 @@ namespace Apex::Resources
 
 		Rendering::IRHI* m_rhi = nullptr;
 
-		Core::ThreadPool&	m_threadPool;
-
-		std::mutex					m_gpuQueueMutex;
+		std::mutex								m_gpuQueueMutex;
 		std::queue<ResourceHandle<IResource>>	m_gpuUploadQueue;
 
 		std::shared_mutex		m_mapMutex;
@@ -71,8 +69,9 @@ namespace Apex::Resources
 		entry->m_resource = std::make_unique<ResourceType>(id);
 		entry->m_resource->SetState(ResourceState::Loading);
 		entry->m_resource->SetRhi(m_rhi);
+		entry->m_resource->SetResourceManager(this);
 
-		m_threadPool.Enqueue(&ResourceManager::Create<ResourceType>, this, id);
+		Core::ThreadPool::Get().Enqueue(&ResourceManager::Create<ResourceType>, this, id);
 
 		return ResourceHandle<ResourceType>(entry);
 	}

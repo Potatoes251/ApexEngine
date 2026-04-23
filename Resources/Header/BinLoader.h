@@ -8,7 +8,7 @@
 #include "Mesh.h"
 
 // to be increased after each modifictation to the bin loader
-constexpr int CURRENT_VERSION = 5;
+constexpr int CURRENT_VERSION = 6;
 
 struct MeshHeader
 {
@@ -16,7 +16,6 @@ struct MeshHeader
 	uint32_t m_version = 1;
 	uint32_t m_vertexSize = 0;
 	uint32_t m_keyframeSize = 0;
-	uint32_t m_boneinfoSize = 0;
 };
 
 

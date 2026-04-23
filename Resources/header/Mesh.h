@@ -2,6 +2,7 @@
 #define MESH
 
 #include "IResource.h"
+#include "RHI.h"
 
 #include "LibMath/Vector.h"
 #include "LibMath/Matrix/Matrix4.h"
@@ -20,7 +21,7 @@ using std::unordered_map;
 
 struct BoneInfo
 {
-	Matrix4				m_offsetMatrix;
+	Matrix4					m_offsetMatrix;
 	int32_t					m_parentIndex = -1;
 	std::vector<int32_t>	m_children;
 };
@@ -73,11 +74,14 @@ public:
 	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
+	int GetAnimationIdx(std::string const& name);
+
 	std::vector<Apex::Rendering::Vertex>	m_vertices;
 	std::vector<uint32_t>					m_indices;
 
 	std::vector<BoneInfo>					m_bones;		//with m_offsetMatrix = inverse bind pose
  	unordered_map<std::string, int>			m_boneMap;
+	std::vector<std::string> m_boneNames;
 	std::vector<Animation>					m_animations;
 
 private:

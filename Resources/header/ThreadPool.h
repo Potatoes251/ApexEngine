@@ -11,11 +11,12 @@ namespace Apex::Core
 	class ThreadPool
 	{
 	public:
-		ThreadPool(int nbThreads = std::thread::hardware_concurrency());
 		ThreadPool(ThreadPool const&) = delete;
 		ThreadPool& operator=(ThreadPool const&) = delete;
 
 		~ThreadPool();
+
+		static ThreadPool& Get();
 
 		template <class Func, typename... Args>
 		void Enqueue(Func&& func, Args&&... args)
@@ -27,6 +28,8 @@ namespace Apex::Core
 
 
 	private:
+		ThreadPool(int nbThreads = std::thread::hardware_concurrency() - 1);
+
 		void WorkerLoop();
 
 		std::vector<std::thread> m_threads;

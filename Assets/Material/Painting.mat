@@ -1,0 +1,5 @@
+{
+	"shader": "ApexAssets/Shaders/PaintingVert.glsl|ApexAssets/Shaders/PaintingFrag.glsl",
+	"textures": {		"Assets/Textures/awesomeface.png",
+}
+}
