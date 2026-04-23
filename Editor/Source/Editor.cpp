@@ -446,7 +446,7 @@ namespace Apex::Editor
                     std::string part;
                     while (std::getline(ss, part, '|'))
                     {
-                        if (part.starts_with("Assets/"))
+                        if (part.starts_with("Assets/") || part.starts_with("ApexAssets/"))
                             out.insert(part);
                     }
                 }
@@ -505,6 +505,18 @@ namespace Apex::Editor
         fs::path outputDir = fs::current_path() / "ApexBuild";
 
         std::error_code ec;
+
+        // Wipe the previous build entirely so no stale files from
+        // old scenes or renamed assets can linger across builds.
+        if (fs::exists(outputDir))
+            fs::remove_all(outputDir, ec);
+
+        if (ec)
+        {
+            printf("Build error: could not clear previous build: %s\n", ec.message().c_str());
+            return;
+        }
+
         fs::create_directories(outputDir, ec);
 
         constexpr auto copyOpts = fs::copy_options::overwrite_existing
@@ -521,10 +533,42 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        // Engine assets + fonts (always needed)
-        fs::copy(fs::current_path() / "ApexAssets", outputDir / "ApexAssets", copyOpts, ec);
         fs::copy(fs::current_path() / "Assets" / "Fonts",
             outputDir / "Assets" / "Fonts", copyOpts, ec);
+
+        // Engine-level ApexAssets always required by Application.cpp —
+        // these are never referenced in scene files so must be listed explicitly.
+        static const char* s_engineAssets[] =
+        {
+            // DebugRenderer (InitRendering)
+            "ApexAssets/Shaders/LineVert.glsl",
+            "ApexAssets/Shaders/LineFrag.glsl",
+            // Shadow system (InitLighting)
+            "ApexAssets/Shaders/DirShadowVert.glsl",
+            "ApexAssets/Shaders/DirShadowFrag.glsl",
+            "ApexAssets/Shaders/OmniShadowVert.glsl",
+            "ApexAssets/Shaders/OmniShadowFrag.glsl",
+            "ApexAssets/Shaders/OmniShadowGeo.glsl",
+            // Skybox (LoadScene)
+            "ApexAssets/Shaders/SkyboxVert.glsl",
+            "ApexAssets/Shaders/SkyboxFrag.glsl",
+            "ApexAssets/Textures/Skybox/px.png",
+            "ApexAssets/Textures/Skybox/nx.png",
+            "ApexAssets/Textures/Skybox/ny.png",
+            "ApexAssets/Textures/Skybox/py.png",
+            "ApexAssets/Textures/Skybox/pz.png",
+            "ApexAssets/Textures/Skybox/nz.png",
+            // Skybox mesh — lives in Assets/ but is engine-owned
+            "Assets/Meshes/cube.obj",
+        };
+
+        for (const char* assetPath : s_engineAssets)
+        {
+            fs::path src = fs::current_path() / assetPath;
+            fs::path dst = outputDir / assetPath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
 
         // Selected scene files
         for (const auto& scenePath : scenePaths)
@@ -537,7 +581,7 @@ namespace Apex::Editor
 
         // Scene order manifest
         {
-            fs::path manifestPath = outputDir / "Assets" / "build_scenes.json";
+            fs::path manifestPath = outputDir / "Assets" / "Scenes" / "build_scenes.json";
             fs::create_directories(manifestPath.parent_path(), ec);
             std::ofstream manifest(manifestPath);
             manifest << "{\n  \"scenes\": [\n";
