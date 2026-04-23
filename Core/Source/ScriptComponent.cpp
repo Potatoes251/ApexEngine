@@ -19,10 +19,17 @@ std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 
 void ScriptComponent::SetScript(const std::string& path)
 {
-    if (!path.empty() && (m_scriptPath == path && m_instanceRef != LUA_REFNIL))
+    if ((m_scriptPath == path && m_instanceRef != LUA_REFNIL))
         return;
 
     m_scriptPath = path;
+
+    if (path.empty()) 
+    {
+        m_instanceRef = LUA_REFNIL;
+        return;
+    }
+
     m_scriptRef = m_lua.LoadScript(path);
     m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
 
@@ -153,23 +160,64 @@ void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
     case ExposedVar::Float:
         lua_pushnumber(L, std::get<float>(var.value));
         break;
-
-    case ExposedVar::Int:
-        lua_pushinteger(L, std::get<int>(var.value));
-        break;
-
     case ExposedVar::Bool:
         lua_pushboolean(L, std::get<bool>(var.value));
         break;
-
     case ExposedVar::String:
         lua_pushstring(L, std::get<std::string>(var.value).c_str());
         break;
-
     default:
         lua_pop(L, 1);
         return;
     }
+
+    lua_setfield(L, -2, name.c_str()); // instance[name] = value
+
+    lua_pop(L, 1); // pop instance
+}
+
+void ScriptComponent::SetVariable(const std::string& name, float var)
+{
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
+    lua_State* L = m_lua.GetState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
+
+    lua_pushnumber(L, var);
+
+    lua_setfield(L, -2, name.c_str()); // instance[name] = value
+
+    lua_pop(L, 1); // pop instance
+}
+
+void ScriptComponent::SetVariable(const std::string& name, bool var)
+{
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
+    lua_State* L = m_lua.GetState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
+
+    lua_pushboolean(L, var);
+
+    lua_setfield(L, -2, name.c_str()); // instance[name] = value
+
+    lua_pop(L, 1); // pop instance
+}
+
+void Apex::Scripting::ScriptComponent::SetVariable(const std::string& name, std::string const& var)
+{
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
+    lua_State* L = m_lua.GetState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
+
+    lua_pushstring(L, var.c_str());
 
     lua_setfield(L, -2, name.c_str()); // instance[name] = value
 
@@ -194,13 +242,13 @@ void ScriptComponent::OnUpdate(float deltaTime)
 void ScriptComponent::OnTriggerEnter(Physic::Collider* other)
 {
     if (m_instanceRef != LUA_REFNIL)
-        m_lua.CallFunction(m_instanceRef, "OnTriggerEnter");
+        m_lua.CallFunction(m_instanceRef, "OnTriggerEnter", other);
 }
 
 void ScriptComponent::OnTriggerExit(Physic::Collider* other)
 {
     if (m_instanceRef != LUA_REFNIL)
-        m_lua.CallFunction(m_instanceRef, "OnTriggerExit");
+        m_lua.CallFunction(m_instanceRef, "OnTriggerExit", other);
 }
 
 void ScriptComponent::Serialize(std::ostream& out) const
@@ -223,10 +271,6 @@ void ScriptComponent::Serialize(std::ostream& out) const
         {
         case ExposedVar::Float:
             out << std::get<float>(var.value);
-            break;
-
-        case ExposedVar::Int:
-            out << std::get<int>(var.value);
             break;
 
         case ExposedVar::Bool:

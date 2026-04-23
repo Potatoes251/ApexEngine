@@ -3,7 +3,6 @@
 #include <PxPhysicsAPI.h>
 #include <cooking/PxCooking.h>
 
-#include <iostream>
 #include <cassert>
 
 #include "Rigidbody.h"
@@ -16,6 +15,9 @@
 
 #include "DebugRenderer.h"
 
+#include "Log.h"
+
+using namespace Apex::Data;
 using namespace Apex::Physic;
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
@@ -30,7 +32,7 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		if (!m_pxCtx.m_foundation)
 		{
-			std::cerr << "PhysX foundation creation failed." << std::endl;
+			LOG_ERROR("PhysX foundation creation failed.");
 			m_pxCtx.m_physics = nullptr;
 			return;
 		}
@@ -39,7 +41,7 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		if (!m_pxCtx.m_physics)
 		{
-			std::cerr << "PhysX physics creation failed." << std::endl;
+			LOG_ERROR("PhysX physics creation failed.");
 			m_pxCtx.m_foundation->release();
 			m_pxCtx.m_foundation = nullptr;
 			return;
@@ -152,6 +154,17 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 		if (it->m_owner == &rigidbody)
 		{
 			m_scene->removeActor(*(it->m_actor));
+
+			it->m_actor->userData = nullptr;
+			physx::PxU32 nbShapes = it->m_actor->getNbShapes();
+			std::vector<physx::PxShape*> shapes(nbShapes);
+			it->m_actor->getShapes(shapes.data(), nbShapes);
+
+			for (auto* shape : shapes)
+			{
+				shape->userData = nullptr;
+			}
+
 			it->m_actor->release();
 			m_rigidBodies.erase(it);
 			return;
@@ -172,6 +185,7 @@ bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMat
 	if (!result) return false;
 
 	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = ToLibVec(hit.block.position);
 	hit_out.m_normal = ToLibVec(hit.block.normal);
@@ -193,6 +207,7 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 		const physx::PxRaycastHit& h = hitBuffer.getTouch(i);
 		HitResult result;
 		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_collider = static_cast<Collider*>(h.shape->userData);
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -238,6 +253,7 @@ bool PhysicSystem::Sweep(
 	if (!result) return false;
 	
 	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = LibMath::Vector3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
 	hit_out.m_normal = LibMath::Vector3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
@@ -286,6 +302,7 @@ bool PhysicSystem::Sweep(
 		const physx::PxSweepHit& h = sweepBuffer.getTouch(i);
 		HitResult result;
 		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
+		result.m_collider = static_cast<Collider*>(h.shape->userData);
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -771,17 +788,23 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 	for (unsigned int i = 0; i < count; i++)
 	{
 		Collider* collider = static_cast<Collider*>(pairs[i].triggerShape->userData);
-		Object* owner = collider->GetOwner();
+		if (!collider) continue;
 
 		Collider* otherCollider = static_cast<Collider*>(pairs[i].otherShape->userData);
+		if (!otherCollider) continue;
+
+		Object* owner = collider->GetOwner();
+		Object* otherOwner = otherCollider->GetOwner();
 		
 		switch (pairs[i].status)
 		{
 		case physx::PxPairFlag::eNOTIFY_TOUCH_FOUND:
 			owner->OnTriggerEnter(otherCollider);
+			otherOwner->OnTriggerEnter(collider);
 			break;
 		case physx::PxPairFlag::eNOTIFY_TOUCH_LOST:
 			owner->OnTriggerExit(otherCollider);
+			otherOwner->OnTriggerExit(collider);
 			break;
 		default:
 			assert(false && "Unhandled Trigger status");

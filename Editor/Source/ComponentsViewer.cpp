@@ -10,11 +10,19 @@
 #include "ScriptComponent.h"
 
 #include "Lighting/Lights.h"
+#include "Animator.h"
 
 #include "FirstPersonCamera.h"
 #include "ThirdPersonCamera.h"
 
 #include "CharacterController.h"
+
+#include "Command/SetExposedVarCommand.h"
+#include "Command/SetScriptVarCommand.h"
+#include "Command/RemoveCompCommand.h"
+#include "Command/TransformCommand.h"
+#include "Command/AddCompCommand.h"
+#include "CommandManager.h"
 
 using namespace Apex::Editor;
 using namespace Apex::UserInterface;
@@ -23,8 +31,18 @@ using namespace Apex::Resources;
 using namespace Apex::Physic;
 using namespace Apex::Scripting;
 using namespace Apex::Lighting;
+using namespace Apex::Data;
+using namespace Apex::CtrlZ;
 
-ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene, 
+// Accent colors per component category
+static constexpr uint32_t COL_RENDER = 0xFF81C784; // green
+static constexpr uint32_t COL_PHYSICS = 0xFFFF69B4; // pink
+static constexpr uint32_t COL_SCRIPT = 0xFFFFA500; // orange
+static constexpr uint32_t COL_LIGHT = 0xFFFFEE58; // yellow
+static constexpr uint32_t COL_CAMERA = 0xFF80DEEA; // cyan
+static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
+
+ComponentsViewer::ComponentsViewer(IGUI& gui, Scene* scene,
 	Apex::Resources::ResourceManager& resourceManager, 
 	Apex::Physic::PhysicSystem& phys, LuaManager& lua)
 	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), 
@@ -33,114 +51,229 @@ ComponentsViewer::ComponentsViewer(IGUI& gui, Scene& scene,
 {
 }
 
+static uint32_t AccentForType(const char* typeName)
+{
+	if (!typeName) return COL_DEFAULT;
+	std::string type(typeName);
+	if (type.find("MeshRenderer") != std::string::npos) return COL_RENDER;
+	if (type.find("Light") != std::string::npos) return COL_LIGHT;
+	if (type.find("Rigidbody") != std::string::npos ||
+		type.find("Collider") != std::string::npos) return COL_PHYSICS;
+	if (type.find("Script") != std::string::npos) return COL_SCRIPT;
+	if (type.find("Camera") != std::string::npos) return COL_CAMERA;
+	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
+	if (type.find("Animator") != std::string::npos) return COL_RENDER;
+	return COL_DEFAULT;
+}
+
+void Apex::Editor::ComponentsViewer::ClearSelection()
+{
+	m_selectedObj = nullptr; 
+	m_selectedComp = nullptr;
+	m_pendingDelete = nullptr;
+}
+
+void Apex::Editor::ComponentsViewer::SetThumbnailRenderer(ThumbnailRenderer* t)
+{
+	m_thumbnailRenderer = t;
+	m_meshPicker.SetThumbnailRenderer(t);
+	m_texturePicker.SetThumbnailRenderer(t);
+}
+
 void ComponentsViewer::Draw()
 {
+	m_changed = false;
+
 	m_gui.PushFont(FontID::Default);
 	m_gui.BeginPanel("Components");
 
-	if (m_selectedObj && m_gui.Button(" + Add "))
+	if (!m_selectedObj)
+	{
+		m_gui.TextDisabled("No object selected.");
+		m_gui.EndPanel();
+		m_gui.PopFont();
+		return;
+	}
+
+	m_gui.PushFont(FontID::Large);
+	m_gui.Text(m_selectedObj->GetName());
+	m_gui.PopFont();
+	m_gui.Separator();
+
+	m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 4.f, ROW_PAD);
+
+	DrawTransform(m_selectedObj);
+
+	for (Component* comp : m_selectedObj->GetComponents())
+	{
+		if (!comp) continue;
+		DrawComponent(m_selectedObj, comp);
+	}
+
+	if (m_pendingDelete)
+	{
+		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_scene, m_selectedObj, m_pendingDelete, &m_phys));
+		m_pendingDelete = nullptr;
+	}
+
+	m_gui.PopStyleVariable();
+
+	m_gui.Separator();
+
+	float availableWidth = m_gui.GetAvailableSize()[0];
+	m_gui.SetNextItemWidth(availableWidth);
+	if (m_gui.ButtonSized("+ Add Component", { availableWidth, 28.f }))
 		m_gui.OpenPopup("AddComponent");
 
 	if (m_gui.BeginPopup("AddComponent") && m_selectedObj)
 	{
-		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr && 
-			m_gui.MenuItem("Mesh"))
+		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr &&
+			m_gui.MenuItem("Mesh Renderer"))
 		{
-			auto& comp = m_selectedObj->AddComponent<MeshRenderer>(m_resourceManager);
-			comp.SetEnabled(true);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, 
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
+					return comp->GetId();
+				}));
 		}
 
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
 			m_gui.MenuItem("Rigidbody"))
 		{
-			m_selectedObj->AddComponent<RigidBodyComponent>(1.0f);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
+					return comp->GetId();
+				}));
 		}
 
 		RigidBodyComponent* rb = m_selectedObj->GetComponent<RigidBodyComponent>();
-
 		if (rb && m_selectedObj->GetComponent<Collider>() == nullptr)
 		{
-			auto* meshRenderer = m_selectedObj->GetComponent<MeshRenderer>();
-
-			if (meshRenderer && m_gui.MenuItem("Mesh Collider"))
+			auto* mr = m_selectedObj->GetComponent<MeshRenderer>();
+			if (mr && m_gui.MenuItem("Mesh Collider"))
 			{
-				m_selectedObj->AddComponent<MeshCollider>(m_resourceManager.Get<Mesh>(
-					m_selectedObj->GetComponent<MeshRenderer>()->GetMesh()->GetPath()),
-					MeshColliderType::Convex, false);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						Collider& comp = obj->AddComponent<MeshCollider>(
+							m_selectedObj->GetComponent<MeshRenderer>()->GetMesh(),
+							MeshColliderType::Convex, false);
 
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return comp.GetId();
+					}));
 			}
-
 			else if (m_gui.MenuItem("Box Collider"))
 			{
-				m_selectedObj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
 
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return comp.GetId();
+					}));
 			}
-
 			else if (m_gui.MenuItem("Capsule Collider"))
 			{
-				m_selectedObj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
-
-				m_phys.CreateActor(*m_selectedObj->GetComponentsByType<Collider>().back(), *rb);
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, &m_phys,
+					[this](Object* obj)
+					{
+						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
+						m_phys.CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						return comp.GetId();
+					}));
 			}
 		}
 
+		m_gui.Separator();
 		if (m_gui.MenuItem("Lua Script"))
 		{
-			m_selectedObj->AddComponent<ScriptComponent>(m_luaManager);
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
+					return comp->GetId();
+				}));
 		}
 
+		m_gui.Separator();
 		if (m_gui.MenuItem("Directional Light"))
 		{
-			m_selectedObj->AddComponent<DirectionalLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
+					return comp->GetId();
+				}));
 		}
 
 		if (m_gui.MenuItem("Point Light"))
 		{
-			m_selectedObj->AddComponent<PointLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<PointLightComponent>();
+					return comp->GetId();
+				}));
 		}
 
 		if (m_gui.MenuItem("Spot Light"))
 		{
-			m_selectedObj->AddComponent<SpotLightComponent>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<SpotLightComponent>();
+					return comp->GetId();
+				}));
 		}
 
+		m_gui.Separator();
 		if (m_gui.MenuItem("First Person Camera"))
 		{
-			m_selectedObj->AddComponent<FirstPersonCamera>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<FirstPersonCamera>();
+					return comp->GetId();
+				}));
 		}
 
 		if (m_gui.MenuItem("Third Person Camera"))
 		{
-			m_selectedObj->AddComponent<ThirdPersonCamera>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
+					return comp->GetId();
+				}));
 		}
 
+		m_gui.Separator();
 		if (m_gui.MenuItem("Character Controller"))
 		{
-			m_selectedObj->AddComponent<Controller::CharacterController>();
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Controller::CharacterController>();
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui.MenuItem("Animator"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Animator>(m_resourceManager, obj->GetComponent<MeshRenderer>()->GetMesh());
+					return comp->GetId();
+				}));
 		}
 
 		m_gui.EndPopup();
-	}
-
-	if (m_selectedObj)
-	{
-		DrawTransform(m_selectedObj);
-
-		for (Component* comp : m_selectedObj->GetComponents())
-		{
-			if (!comp)
-				continue;
-
-			DrawComponent(comp);
-		}
-
-		if (m_pendingDelete)
-		{
-			m_selectedObj->RemoveComponent(m_pendingDelete, m_phys);
-			m_pendingDelete = nullptr;
-		}
 	}
 
 	m_gui.EndPanel();
@@ -154,13 +287,11 @@ void ComponentsViewer::Draw()
 
 void ComponentsViewer::DrawTransform(Object* obj)
 {
+	bool open = m_gui.CollapsingHeader("Transform", true);
+
+	if (!open) return;
+
 	LibMath::Transform transform = obj->GetLocalTransform();
-
-	if (!m_gui.BeginTreeNode("Transform", TreeNodeFlags::SpanAvailWidth))
-		return;
-
-	LibMath::Vector3 pos = transform.getPosition();
-	LibMath::Vector3 scale = transform.getScale();
 
 	bool externalChange = (obj != m_lastTransformObj);
 	if (externalChange)
@@ -169,208 +300,127 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		m_lastTransformObj = obj;
 	}
 
+	LibMath::Vector3 pos = transform.getPosition();
+	LibMath::Vector3 scale = transform.getScale();
+
 	bool changed = false;
-	changed |= DrawVec3("Position", pos, -1000.0f, 1000.0f);
-	changed |= DrawVec3("Rotation", m_cachedEuler, 0.0f, 360.0f);
-	changed |= DrawVec3("Scale", scale, -1000.0f, 1000.0f);
+	changed |= DrawVec3("Position", pos, -1000.f, 1000.f);
+	changed |= DrawVec3("Rotation", m_cachedEuler, 0.f, 360.f);
+	changed |= DrawVec3("Scale", scale, -1000.f, 1000.f);
 
 	if (changed)
 	{
 		transform.setPosition(pos);
-		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.0f));
+		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.f));
 		transform.setScale(scale);
-		obj->SetLocalTransform(transform);
+		CommandManager::Get().Execute(
+			std::make_unique<TransformCommand>(m_scene, obj, transform, false));
 	}
-
-	m_gui.EndTreeNode();
 }
 
 bool ComponentsViewer::DrawVec3(const std::string& name, LibMath::Vector3& v, float min, float max)
 {
 	bool changed = false;
 
+	m_gui.AlignTextToFramePadding();
 	m_gui.Text(name);
-	m_gui.SameLine(150);
+	m_gui.SameLine(LABEL_WIDTH);
 
 	m_gui.PushID(name.c_str());
 
-	changed |= m_gui.SliderFloatFormat("X", &v[0], min, max, 50.0f);
-	m_gui.SameLine();
-	changed |= m_gui.SliderFloatFormat("Y", &v[1], min, max, 50.0f);
-	m_gui.SameLine();
-	changed |= m_gui.SliderFloatFormat("Z", &v[2], min, max, 50.0f);
+	struct Channel 
+	{ 
+		const char* id; 
+		float* ptr; 
+		uint32_t col; 
+	};
+	Channel channels[3] = 
+	{ 
+		{"X", &v[0], 0xFFFF0000},
+		{"Y", &v[1], 0xFF00FF00}, 
+		{"Z", &v[2], 0xFF0000FF}
+	};
+
+	float available = m_gui.GetAvailableSize()[0];
+	float sliderWidth = (available - 36.f) / 3.f;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (i > 0) m_gui.SameLine(0.f, 2.f);
+
+		m_gui.PushColor(StyleColor::Text, Color{
+			((channels[i].col >> 16) & 0xFF) / 255.f,
+			((channels[i].col >> 8) & 0xFF) / 255.f,
+			((channels[i].col >> 0) & 0xFF) / 255.f, 1.f });
+		m_gui.Text(channels[i].id);
+		m_gui.PopColor();
+
+		m_gui.SameLine(0.f, 2.f);
+		m_gui.SetNextItemWidth(sliderWidth);
+		changed |= m_gui.InputFloat(std::string("##") + channels[i].id + std::to_string(i), channels[i].ptr);
+	}
 
 	m_gui.PopID();
-
 	return changed;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(Apex::Component* comp)
+void ComponentsViewer::DrawComponent(Object* obj, Apex::Component* comp)
 {
-	bool open = DrawTreeComp(comp);
-	
+	uint32_t accent = AccentForType(comp->GetTypeName());
+
+	float r = ((accent >> 16) & 0xFF) / 255.f;
+	float g = ((accent >> 8) & 0xFF) / 255.f;
+	float b = ((accent >> 0) & 0xFF) / 255.f;
+
+	m_gui.PushColor(StyleColor::Header, { r * 0.6f, g * 0.6f, b * 0.6f, 1.f });
+	m_gui.PushColor(StyleColor::HeaderHovered, { r , g , b , 1.f });
+
+	std::string label = std::string(comp->GetTypeName()) + "##comp" + std::to_string(comp->GetId());
+	bool open = m_gui.CollapsingHeader(label, false);
+
+	m_gui.PopColor(2);
+
 	HandleSelection(comp);
 
 	if (m_gui.BeginContextMenu(std::to_string(comp->GetId()).c_str()))
 	{
 		if (m_gui.MenuItem("Delete"))
-		{
 			m_pendingDelete = comp;
-		}
-
 		m_gui.EndPopup();
 	}
 
-	if (!open)
-		return;
+	if (!open) return;
 
-	if (auto* script = dynamic_cast<ScriptComponent*>(comp))
+	m_gui.PushStyleVariable(StyleVariable::IndentSpacing, 8.f);
+
+	if (ScriptComponent* script = dynamic_cast<ScriptComponent*>(comp))
 	{
-		m_gui.Text("Script: " + script->GetScriptPath());
-
-		if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
-		{
-			m_scriptPicker.Open(script);
-		}
-
-		for (auto& var : script->GetExposedVariables())
-		{
-			switch (var.type)
-			{
-			case ExposedVar::Float:
-			{
-				float value = std::get<float>(var.value);
-				if (m_gui.SliderFloat(var.name, &value, 0.0f, 10.0f))
-				{
-					var.value = value;
-					script->SetVariable(var.name, var);
-				}
-				break;
-			}
-
-			case ExposedVar::Bool:
-			{
-				bool value = std::get<bool>(var.value);
-				if (m_gui.Checkbox(var.name, &value))
-				{
-					var.value = value;
-					script->SetVariable(var.name, var);
-				}
-				break;
-			}
-
-			case ExposedVar::String:
-			{
-				char buffer[256];
-				const auto& str = std::get<std::string>(var.value);
-				strncpy(buffer, str.c_str(), 255);
-				buffer[255] = '\0';
-
-				if (m_gui.InputText(var.name, buffer, 256))
-				{
-					var.value = std::string(buffer);
-					script->SetVariable(var.name, var);
-				}
-				break;
-			}
-			}
-		}
+		DrawScriptComponent(script);
 	}
-
 	else
 	{
 		for (auto& var : comp->GetExposedVariables())
-		{
-			switch (var.type)
-			{
-			case ExposedVar::Float:
-				if (m_gui.SliderFloatFormat(var.name, (float*)var.data, 0.0f, 10.0f, 50.f))
-					m_changed = true;
-				break;
-
-			case ExposedVar::Int:
-				if (m_gui.SliderIntFormat(var.name, (int*)var.data, 0, 10, 50.f))
-					m_changed = true;
-				break;
-
-			case ExposedVar::Bool:
-				if (m_gui.CheckboxFormat(var.name, (bool*)var.data))
-					m_changed = true;
-				break;
-
-			case ExposedVar::String:
-				if (m_gui.InputText(var.name, (char*)var.data, 256))
-					m_changed = true;
-				break;
-
-			case ExposedVar::Enum:
-			{
-				DrawComponentEnum(var);
-				break;
-			}
-
-			case ExposedVar::Vector3:
-			{
-				DrawComponentVector3(var);
-				break;
-			}
-
-			case ExposedVar::PhysMaterial:
-			{
-				DrawComponentPhysMaterial(var);
-				break;
-			}
-
-			case ExposedVar::Mesh:
-			{
-				DrawComponentMesh(var);
-				break;
-			}
-
-			case ExposedVar::Texture:
-			{
-				DrawComponentTexture(var);
-				break;
-			}
-
-			case ExposedVar::Script:
-				DrawComponentScript(var);
-				break;
-			}
-		}
+			DrawVar(var, obj, comp);
 	}
 
-	if (m_changed)
-		m_selectedObj->OnChanged();
-
+	if (m_changed) m_selectedObj->OnChanged();
 	if (m_meshPicker.HasNewAsset())
 	{
 		m_selectedObj->OnChanged();
 		m_meshPicker.ResetNewAsset();
 	}
-
 	if (m_texturePicker.HasNewAsset())
 	{
 		m_selectedObj->OnChanged();
 		m_texturePicker.ResetNewAsset();
 	}
-
 	if (m_scriptPicker.HasNewScript())
 	{
 		m_selectedObj->OnChanged();
 		m_scriptPicker.ResetNewScript();
 	}
 
-	m_gui.EndTreeNode();
-}
-
-bool Apex::Editor::ComponentsViewer::DrawTreeComp(Apex::Component* comp)
-{
-	TreeNodeFlags flags = TreeNodeFlags::SpanAvailWidth;
-	if (comp == m_selectedComp) flags = flags | TreeNodeFlags::Selected;
-
-	std::string label = std::to_string(comp->GetId()) + ". " + comp->GetTypeName();
-	return m_gui.BeginTreeNode(label.c_str(), flags);
+	m_gui.PopStyleVariable();
 }
 
 void Apex::Editor::ComponentsViewer::HandleSelection(Apex::Component* comp)
@@ -379,76 +429,339 @@ void Apex::Editor::ComponentsViewer::HandleSelection(Apex::Component* comp)
 		m_selectedComp = comp;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
+void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::ScriptComponent* script)
 {
-	int value = *(int*)var.data;
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text("Script:");
+	m_gui.SameLine(LABEL_WIDTH);
+	std::string name = script->GetScriptPath().empty() ? "None" : std::filesystem::path(script->GetScriptPath()).filename().string();
+	m_gui.TextDisabled(name);
 
-	std::string items;
-	for (const auto& name : var.enumNames)
-		items += name + '\0';
+	float width = m_gui.GetAvailableSize()[0];
+	if (m_gui.ButtonSized("Select Script##" + std::to_string(script->GetId()), { width, 22.f }))
+		m_scriptPicker.Open(m_scene, script);
 
-	if (m_gui.ComboFormat(var.name, &value, items.c_str()))
+	// Exposed variables from Lua
+	for (auto& var : script->GetExposedVariables())
 	{
-		*(int*)var.data = value;
-		m_changed = true;
+		switch (var.type)
+		{
+		case ExposedVar::Float:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			float oldVal = std::get<float>(var.value);
+			float newVal = oldVal;
+			if (m_gui.InputFloat(std::string("##") + var.name, &newVal))
+			{
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<float>>(m_scene, script, var.name, oldVal, newVal));
+			}
+			break;
+		}
+		case ExposedVar::Bool:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			bool oldVal = std::get<bool>(var.value);
+			bool newVal = oldVal;
+			if (m_gui.Checkbox(std::string("##") + var.name, &newVal))
+			{
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<bool>>(m_scene, script, var.name, oldVal, newVal));
+			}
+			break;
+		}
+		case ExposedVar::String:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			char buffer[256];
+			std::string const& oldVal = std::get<std::string>(var.value);
+			strncpy_s(buffer, oldVal.c_str(), 255);
+			buffer[255] = '\0';
+			if (m_gui.InputText(std::string("##") + var.name, buffer, 256))
+			{
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<std::string>>(m_scene, script, var.name, oldVal, std::string(buffer)));
+			}
+			break;
+		}
+		default: break;
+		}
 	}
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
+void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex::Component* comp)
 {
-	float* v = (float*)var.data;
+	std::string wid = std::string("##") + var.name;
+	switch (var.type)
+	{
+		case ExposedVar::Float:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			float oldVal = *(float*)var.data;
+			if (m_gui.InputFloat(wid, (float*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::Int:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			int oldVal = *(int*)var.data;
+			if (m_gui.InputInt(wid, (int*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::Bool:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			bool oldVal = *(bool*)var.data;
+			if (m_gui.Checkbox(wid, (bool*)var.data))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::String:
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(var.name);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			std::string oldVal = *(std::string*)var.data;
+			if (m_gui.InputText(wid, (char*)var.data, 256))
+			{
+				m_changed = true;
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::Enum:
+		{
+			int oldVal = *(int*)var.data;
+			if (DrawComponentEnum(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::Vector3:
+		{
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+			if (DrawComponentVector3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::PhysMaterial:
+		{
+			PhysicMaterial oldVal = *(PhysicMaterial*)var.data;
+			if (DrawComponentPhysMaterial(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, m_scene));
+			}
+			break;
+		}
+		case ExposedVar::Mesh:
+			DrawComponentMesh(var);
+			break;
 
-	m_gui.Text(var.name);
+		case ExposedVar::Texture:
+			DrawComponentTexture(var);
+			break;
+		case ExposedVar::Color3:
+		{
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+			if (DrawComponentColor3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+			}
+			break;
+		}
 
-	m_gui.SameLine(150);
-	m_changed |= m_gui.SliderFloatFormat("X", &v[0], -1000.0f, 1000.0f, 50.0f);
-	m_gui.SameLine();
-	m_changed |= m_gui.SliderFloatFormat("Y", &v[1], -1000.0f, 1000.0f, 50.0f);
-	m_gui.SameLine();
-	m_changed |= m_gui.SliderFloatFormat("Z", &v[2], -1000.0f, 1000.0f, 50.0f);
+		case ExposedVar::Color4:
+		{
+			LibMath::Vector4 oldVal = *(LibMath::Vector4*)var.data;
+			if (DrawComponentColor3(var))
+			{
+				CommandManager::Get().Execute(
+					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data, m_scene));
+			}
+			break;
+		}
+	}
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
+bool Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
+{
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text(var.name);
+	m_gui.SameLine(LABEL_WIDTH);
+	m_gui.SetNextItemWidth(-1.f);
+
+	int value = *(int*)var.data;
+	std::string items;
+	for (const auto& n : var.enumNames) items += n + '\0';
+	if (m_gui.Combo(std::string("##") + var.name, &value, items.c_str()))
+	{
+		*(int*)var.data = value; 
+		m_changed = true;
+		return true;
+	}
+	return false;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentVector3(ExposedVar var)
+{
+	if (DrawVec3(var.name, *(LibMath::Vector3*)var.data, -1000.f, 1000.f))
+	{
+		m_changed = true;
+		return true;
+	}
+	return false;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentPhysMaterial(ExposedVar var)
 {
 	PhysicMaterial* mat = (PhysicMaterial*)var.data;
 
-	m_changed |= m_gui.SliderFloatFormat("Static friction", &mat->GetStaticFriction(), 0.0f, 1.0f, 50.0f, 200.f);
-	m_changed |= m_gui.SliderFloatFormat("Dynamic friction", &mat->GetDynamicFriction(), 0.0f, 1.0f, 50.0f, 200.f);
-	m_changed |= m_gui.SliderFloatFormat("Bounciness", &mat->GetBounciness(), 0.0f, 1.0f, 50.0f, 200.f);
+	bool changed = false;
+	auto row = [&](const char* label, const char* id, float& val, float mn, float mx)
+		{
+			m_gui.AlignTextToFramePadding();
+			m_gui.Text(label);
+			m_gui.SameLine(LABEL_WIDTH);
+			m_gui.SetNextItemWidth(-1.f);
+			changed |= m_gui.InputFloat(id, &val);
+		};
+
+	row("Static Friction", "##sf", mat->GetStaticFriction(), 0.f, 1.f);
+	row("Dynamic Friction", "##df", mat->GetDynamicFriction(), 0.f, 1.f);
+	row("Bounciness", "##bo", mat->GetBounciness(), 0.f, 1.f);
+
+	m_changed |= changed;
+
+	return changed;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
+{
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text(var.name);
+	m_gui.SameLine(LABEL_WIDTH);
+	if (m_gui.ColorEdit3("##c3", (float*)var.data))
+	{
+		m_changed = true;
+		return true;
+	}
+	return false;
+}
+
+bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
+{
+	m_gui.AlignTextToFramePadding();
+	m_gui.Text(var.name);
+	m_gui.SameLine(LABEL_WIDTH);
+	if (m_gui.ColorEdit4("##c4", (float*)var.data))
+	{
+		m_changed = true;
+		return true;
+	}
+	return false;
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentMesh(ExposedVar var)
 {
-	auto* mesh = (ResourceHandle<Mesh>*)var.data;
+	auto* handle = (ResourceHandle<Mesh>*)var.data;
 
-	if (mesh->IsValid())
-		m_gui.Text("Mesh: " + (*mesh)->GetPath());
-	else
-		m_gui.Text("Mesh: None");
+	uint32_t thumb = handle->IsValid() ? ResolveMeshPreview((*handle)->GetPath()) : 0;
+	DrawAssetPreview(thumb, "Mesh", PREVIEW_SIZE);
+	m_gui.SameLine(0.f, 6.f);
 
-	if (m_gui.Button(("Select##" + var.name).c_str()))
-		m_meshPicker.Open(mesh);
+	m_gui.BeginChildPanel(std::string("##meshcol") + var.name, 0.f, PREVIEW_SIZE, false);
+	m_gui.TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	float width = m_gui.GetAvailableSize()[0];
+	if (m_gui.ButtonSized(std::string("Select##") + var.name, { width, 22.f }))
+		m_meshPicker.Open(handle);
+	m_gui.EndChildPanel();
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponentTexture(ExposedVar var)
 {
-	auto* texture = (ResourceHandle<Texture>*)var.data;
+	auto* handle = (ResourceHandle<Texture>*)var.data;
 
-	if (texture->IsValid())
-		m_gui.Text("Texture: " + (*texture)->GetPath());
-	else
-		m_gui.Text("Texture: None");
+	uint32_t thumb = handle->IsValid() ? ResolveTexturePreview(handle) : 0;
+	DrawAssetPreview(thumb, "Tex", PREVIEW_SIZE);
+	m_gui.SameLine(0.f, 6.f);
 
-	if (m_gui.Button(("Select##" + var.name).c_str()))
-		m_texturePicker.Open(texture);
+	m_gui.BeginChildPanel(std::string("##texcol") + var.name, 0.f, PREVIEW_SIZE, false);
+	m_gui.TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	float width = m_gui.GetAvailableSize()[0];
+	if (m_gui.ButtonSized(std::string("Select##") + var.name, { width, 22.f }))
+		m_texturePicker.Open(handle);
+	m_gui.EndChildPanel();
 }
 
-void ComponentsViewer::DrawComponentScript(ExposedVar var)
+uint32_t Apex::Editor::ComponentsViewer::ResolveTexturePreview(Apex::Resources::ResourceHandle<Texture>* handle) const
 {
-	auto* script = (ScriptComponent*)var.data;
+	if (!handle || !handle->IsValid()) return 0;
+	return EditorIcon::Get((*handle)->GetPath());
+}
 
-	m_gui.Text("Script: " + script->GetScriptPath());
+uint32_t Apex::Editor::ComponentsViewer::ResolveMeshPreview(const std::string& path) const
+{
+	if (path.empty() || !m_thumbnailRenderer) return 0;
+	return m_thumbnailRenderer->GetOrRender(path);
+}
 
-	if (m_gui.Button(("Select Script##" + std::to_string(script->GetId())).c_str()))
-		m_scriptPicker.Open(script);
+void Apex::Editor::ComponentsViewer::DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size)
+{
+	m_gui.InvisibleButton(std::string("##prev") + fallbackLabel, { size, size });
+	LibMath::Vector2 bMin = m_gui.GetItemRectMin();
+	LibMath::Vector2 bMax = m_gui.GetItemRectMax();
+
+	IDrawList* drawList = m_gui.GetDrawList();
+
+	drawList->DrawRectFilled(bMin, bMax, PackColor(25, 25, 28), 4.f);
+	drawList->DrawRect(bMin, bMax, PackColor(80, 80, 85), 4.f, 1.f);
+
+	if (texID != 0)
+	{
+		LibMath::Vector2 afterBtn = bMax;
+		m_gui.SetCursorPos(bMin);
+		m_gui.DrawImageTinted(texID, { size, size }, { 1.f, 1.f, 1.f, 1.f }, true);
+		m_gui.SetCursorPos({ afterBtn[0], bMin[1] });
+	}
+	else
+	{
+		LibMath::Vector2 tsz = drawList->CalculateTextSize(fallbackLabel);
+		drawList->DrawText({ bMin[0] + (size - tsz[0]) * 0.5f, bMin[1] + (size - tsz[1]) * 0.5f }, 0xFF888888, fallbackLabel);
+	}
 }

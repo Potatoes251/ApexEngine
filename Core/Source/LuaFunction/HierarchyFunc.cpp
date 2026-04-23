@@ -1,7 +1,15 @@
 #include "LuaFunction/HierarchyFunc.h"
+
 #include "SceneGraph.h"
 
 using namespace Apex::SceneGraph;
+
+void Apex::Hierarchy::RegisterLua(Scripting::LuaManager& lua)
+{
+    lua.RegisterFunction("AddChild_Internal", Apex::Hierarchy::Lua_AddChild);
+    lua.RegisterFunction("Reparent_Internal", Apex::Hierarchy::Lua_SetParent);
+    lua.RegisterFunction("RemoveChild_Internal", Apex::Hierarchy::Lua_RemoveChild);
+}
 
 Apex::Data::Object* Apex::Hierarchy::GetObject(lua_State* L, int index)
 {

@@ -41,8 +41,8 @@ std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()
 {
     std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
 
-    exposedVec.push_back({ "Shadow distance", ExposedVar::Float, &m_shadowDistance });
-    exposedVec.push_back({ "Shadow extent", ExposedVar::Float, &m_shadowExtents });
+    exposedVec.push_back({ "Shadow Distance", ExposedVar::Float, &m_shadowDistance });
+    exposedVec.push_back({ "Shadow Extent", ExposedVar::Float, &m_shadowExtents });
 
     return exposedVec;
 }

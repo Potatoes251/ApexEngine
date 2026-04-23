@@ -266,17 +266,17 @@ namespace Apex::UserInterface
         return LibMath::Vector2(size.x, size.y);
     }
 
-    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar)
+    void ImGUIManager::BeginPanel(const std::string& title, bool* open, bool dock, bool titleBar, bool scrollable)
     {
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse;
         if (!dock)
             flags |= ImGuiWindowFlags_NoDocking;
-
         if (m_hasModal && title != m_modalName)
             flags |= ImGuiWindowFlags_NoInputs;
-
         if (!titleBar) 
             flags |= ImGuiWindowFlags_NoTitleBar;
+        if (!scrollable)
+            flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
         ImGui::Begin(title.c_str(), open, flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -373,7 +373,7 @@ namespace Apex::UserInterface
         bool result = ImGui::ImageButton(id.c_str(),
             (ImTextureID)(uintptr_t)textureID,
             ImVec2(size[0], size[1]),
-            ImVec2(0, 0), ImVec2(1, 1),
+            ImVec2(0, 1), ImVec2(1, 0),
             bgV, tintV);
         return result;
     }
@@ -429,9 +429,14 @@ namespace Apex::UserInterface
         std::string sliderLabel = "##" + label;
         return ImGui::SliderInt(sliderLabel.c_str(), value, min, max);
     }
-    bool ImGUIManager::ColorEdit3(const std::string& label, float colors[3])
+    bool ImGUIManager::ColorEdit3(const std::string& label, float color[3])
     {
-        return ImGui::ColorEdit3(label.c_str(), colors);
+        return ImGui::ColorEdit3(label.c_str(), color);
+    }
+
+    bool ImGUIManager::ColorEdit4(const std::string& label, float color[4])
+    {
+		return ImGui::ColorEdit4(label.c_str(), color);
     }
 
     bool ImGUIManager::InputText(const std::string& label, char* buffer,
@@ -443,6 +448,11 @@ namespace Apex::UserInterface
     bool ImGUIManager::InputFloat(const std::string& label, float* value)
     {
         return ImGui::InputFloat(label.c_str(), value);
+    }
+
+    bool ImGUIManager::InputInt(const std::string& label, int* value)
+    {
+		return ImGui::InputInt(label.c_str(), value);
     }
 
     bool ImGUIManager::Combo(const std::string& label, int* currentItem, const char* items)
@@ -473,6 +483,7 @@ namespace Apex::UserInterface
 
     bool ImGUIManager::IsItemHovered() const { return ImGui::IsItemHovered(); }
     bool ImGUIManager::IsItemActive()  const { return ImGui::IsItemActive(); }
+    bool ImGUIManager::IsAnyItemActive() const { return ImGui::IsAnyItemHovered(); }
 
     LibMath::Vector2 ImGUIManager::GetItemRectSize() const
     {
@@ -610,6 +621,12 @@ namespace Apex::UserInterface
         return &m_drawListWrapper;
     }
 
+    IDrawList* ImGUIManager::GetBackgroundDrawList()
+    {
+        m_drawListWrapper.Reset(ImGui::GetBackgroundDrawList());
+        return &m_drawListWrapper;
+    }
+
     Vector2 ImGUIManager::GetItemRectMin() const
     {
         ImVec2 v = ImGui::GetItemRectMin();
@@ -651,6 +668,11 @@ namespace Apex::UserInterface
     void ImGUIManager::EndDisabled()
     {
         ImGui::EndDisabled();
+    }
+
+    void ImGUIManager::Dummy(LibMath::Vector2 size)
+    {
+		ImGui::Dummy(ImVec2(size[0], size[1]));
     }
 }
 

@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
 namespace Apex::Editor
 {
 	// Asset type 
-	enum class AssetType { Mesh, Texture, Sound, Level, Script, Folder, Unknown };
+	enum class AssetType { Mesh, Texture, Sound, Level, Script, Hud, Folder, Unknown };
 
 	struct AssetEntry
 	{
@@ -60,6 +60,8 @@ namespace Apex::Editor
 		void Draw();
 
 		void PrepareThumbnails();
+
+		ThumbnailRenderer& GetThumbnails();
 
 		// Force a re-scan of the current folder (call after import / delete).
 		void Refresh();
@@ -107,6 +109,7 @@ namespace Apex::Editor
 		void BeginRename(const fs::path& path);
 		void CommitRename();
 		void CreateFolder();
+		void CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content);
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);

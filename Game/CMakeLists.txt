@@ -20,6 +20,14 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_FILES})
 # Add source files
 target_sources(${EXE_NAME} PRIVATE ${PROJECT_HEADERS} ${PROJECT_SOURCES})
 
+if (WIN32)
+    # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
+    set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
+else()
+    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+endif()
+
+target_link_options(${EXE_NAME} PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
 
 # ---- Include directories ----
 target_include_directories(${EXE_NAME}

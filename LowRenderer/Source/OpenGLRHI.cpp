@@ -1,5 +1,7 @@
 ﻿#include "OpenGLRHI.h"
 
+#include "Log.h"
+
 #include <fstream>
 #include <sstream>
 #include <cassert>
@@ -364,7 +366,7 @@ namespace Apex::Rendering
 		{
 			GLchar infoLog[512];
 			glGetProgramInfoLog(program, 512, nullptr, infoLog);
-			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			LOG_ERROR("Shader program linking failed : {}", infoLog);
 		}
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
@@ -391,7 +393,7 @@ namespace Apex::Rendering
 		{
 			GLchar infoLog[512];
 			glGetProgramInfoLog(program, 512, nullptr, infoLog);
-			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			LOG_ERROR("Shader program linking failed : {}", infoLog);
 		}
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
@@ -576,7 +578,7 @@ namespace Apex::Rendering
 		{
 			GLchar infoLog[512];
 			glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-			std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+			LOG_ERROR("Shader program compilation failed : {}", infoLog);
 		}
 		return shader;
 	}
@@ -586,7 +588,7 @@ namespace Apex::Rendering
 		std::ifstream file(path);
 		if (!file.is_open())
 		{
-			std::cerr << "ERROR::FILE::COULD_NOT_OPEN " << path << std::endl;
+			LOG_ERROR("couldnt open file : {}", path);
 			return "";
 		}
 		std::stringstream buffer;

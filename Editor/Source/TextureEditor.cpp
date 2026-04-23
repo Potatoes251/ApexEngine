@@ -161,9 +161,6 @@ namespace Apex::Editor
         DrawToolbarSave();
         m_gui.SameLine(0.f, 16.f);
         DrawToolbarEyeDropper();
-        // Only highlight if the current setting is different from the saved meta state
-        auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
-        bool needsApply = (m_compression != savedFormat) || m_metaDirty;
 
         m_gui.SameLine(0.f, 16.f);
         if (IsHDR())
@@ -181,6 +178,7 @@ namespace Apex::Editor
         }
         else
         {
+            // Only highlight if the current setting is different from the saved meta state
             auto savedFormat = static_cast<CompressionFormat>(m_meta.GetInt("compression", 0));
             bool needsApply = (m_compression != savedFormat) || m_metaDirty;
             if (needsApply)
@@ -509,7 +507,7 @@ namespace Apex::Editor
                 float localX = origin[0] + col * displayWidth - panelPos[0] + cursorStart[0];
                 float localY = origin[1] + row * displayHeight - panelPos[1] + cursorStart[1];
                 m_gui.SetCursorPos(LibMath::Vector2(localX, localY));
-                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, false);
+                m_gui.DrawImageTinted(m_textureID, LibMath::Vector2(displayWidth, displayHeight), tint, true);
             }
         }
     }
@@ -1296,13 +1294,13 @@ namespace Apex::Editor
 
         int pickedX = static_cast<int>((mouse[0] - imageOrigin[0]) / displayWidth * m_width);
         int pickedY = static_cast<int>((mouse[1] - imageOrigin[1]) / displayHeight * m_height);
+        pickedY = (m_height - 1) - pickedY;
         pickedX = std::max(0, std::min(m_width - 1, pickedX));
         pickedY = std::max(0, std::min(m_height - 1, pickedY));
 
         int idx = (pickedY * m_width + pickedX) * 4;
         if (!m_pixelsHDR.empty())
         {
-            std::cout << "hi" << std::endl;
             if (static_cast<size_t>(idx + 3) >= m_pixelsHDR.size()) return false;
             m_pickedColor = { m_pixelsHDR[idx],     m_pixelsHDR[idx + 1],
                               m_pixelsHDR[idx + 2], m_pixelsHDR[idx + 3] };

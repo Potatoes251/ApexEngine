@@ -4,9 +4,10 @@
 
 #include "CharacterController.h"
 
+using namespace Apex::Data;
+using namespace Apex::Vector3;
 using namespace Apex::Hierarchy;
 using namespace Apex::Controller;
-using namespace Apex::Vector3;
 
 void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
 {

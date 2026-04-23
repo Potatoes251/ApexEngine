@@ -1,9 +1,12 @@
+local Component = require("Component")
+
 local Camera = {}
+Camera.__index = Camera
+setmetatable(Camera, { __index = Component })
 
 -- Constructor
 function Camera:New(ptr)
-    local instance = { __object = ptr }  -- store the C++ pointer/reference
-    setmetatable(instance, { __index = self })
+    local instance = Component.New(self, ptr)
     return instance
 end
 

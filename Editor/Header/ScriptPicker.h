@@ -4,20 +4,21 @@
 #include "UI.h"
 #include "ScriptComponent.h"
 
-#include <filesystem>
+
+namespace Apex::Rendering { class Scene; }
 
 namespace Apex::Resources
 {
     class ScriptPicker
     {
     public:
-        ScriptPicker(Apex::UserInterface::IGUI& gui) : m_gui(gui) {}
+        ScriptPicker(UserInterface::IGUI& gui) : m_gui(gui) {}
 
-        void Open(Apex::Scripting::ScriptComponent* target);
+        void Open(Rendering::Scene* scene, Scripting::ScriptComponent* target);
 
         void Draw();
 
-        bool HasNewScript() { return m_newScript; }
+        bool HasNewScript() const { return m_newScript; }
         void ResetNewScript() { m_newScript = false; }
 
     private:
@@ -25,6 +26,7 @@ namespace Apex::Resources
         bool m_newScript = false;
         Apex::Scripting::ScriptComponent* m_target = nullptr;
         Apex::UserInterface::IGUI& m_gui;
+        Rendering::Scene* m_scene = nullptr;
     };
 }
 

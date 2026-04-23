@@ -1,12 +1,13 @@
 #include "CharacterController.h"
 
 #include "Object.h"
-#include "Rigidbody.h"
 #include "Physic.h"
+#include "Rigidbody.h"
 #include "CapsuleCollider.h"
 
-using namespace Apex::Controller;
+using namespace Apex::Data;
 using namespace Apex::Physic;
+using namespace Apex::Controller;
 
 void CharacterController::Move(LibMath::Vector3 movement)
 {
@@ -97,8 +98,8 @@ void CharacterController::Serialize(std::ostream& out) const
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
-	return { { "distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "speed", ExposedVar::Float, &m_speed } };
+	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
+			{ "Speed", ExposedVar::Float, &m_speed } };
 }
 
 bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, HitResult& closest_out) const
@@ -106,7 +107,9 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 	bool found = false;
 	for (HitResult const& hit : hits)
 	{
-		if (hit.m_body != m_body && (!found || hit.m_distance < closest_out.m_distance))
+		if (hit.m_body != m_body 
+			&& !hit.m_collider->IsTrigger()
+			&& (!found || hit.m_distance < closest_out.m_distance))
 		{
 			closest_out = hit;
 			found = true;

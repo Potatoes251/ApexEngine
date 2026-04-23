@@ -1,8 +1,6 @@
 #include "ThumbnailRenderer.h"
 #include "Mesh.h"
 
-#include <glad/glad.h>
-
 #include "LibMath/Angle.h"
 #include "LibMath/Arithmetic.h"
 #include "LibMath/Trigonometry.h"
@@ -65,7 +63,7 @@ namespace Apex::Editor
         Apex::Rendering::RHIFrameBufferHandle fbo = m_rhi.CreateFrameBuffer(SIZE, SIZE, colorTexture);
 
         m_rhi.BindFrameBuffer(fbo, SIZE, SIZE);
-        glClearColor(0.12f, 0.12f, 0.14f, 1.f);
+        m_rhi.SetClearColor(0.12f, 0.12f, 0.14f, 1.f);
         m_rhi.Clear();
 
         LibMath::Vector3 boundsMin = handle->GetBoundsMin();

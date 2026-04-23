@@ -1,37 +1,40 @@
 #include "Application.h"
 
-#include "LuaManager.h"
-#include "Behaviour.h"
-#include "LuaBehaviour.h"
-#include "ScriptComponent.h"
-#include "RenderPassInfo.h"
-#include "SceneGraph.h"
 #include "Object.h"
-
+#include "SceneGraph.h"
 #include "SceneLoader.h"
 
-#include "Window.h"
-#include "RHI.h"
-#include "Audio.h"
-#include "Camera.h"
+#include "LuaManager.h"
+#include "ScriptComponent.h"
 
-#include "ResourceManager.h"
+#include "Audio.h"
+
+#include "Window.h"
+
+#include "RHI.h"
 #include "Mesh.h"
-#include "Texture.h"
+#include "Camera.h"
 #include "Shader.h"
 #include "Cubemap.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
-#include "Rigidbody.h"
+#include "Texture.h"
+#include "RenderPassInfo.h"
+#include "ResourceManager.h"
 
+#include "Rigidbody.h"
+#include "BoxCollider.h"
+#include "MeshCollider.h"
 #include "DebugRenderer.h"
+#include "CapsuleCollider.h"
+
 #include "UI.h"
 #include "Hud.h"
 
+#include "Lighting/Lights.h"
 #include "Lighting/LightManager.h"
 #include "Lighting/ShadowManager.h"
-#include "Lighting/Lights.h"
+
+#include "FileLog.h"
+#include "LogSystem.h"
 
 #include <chrono>
 #include <iostream>
@@ -39,23 +42,25 @@
 #include <memory>
 #include <filesystem>
 
+using namespace Apex::Data;
+using namespace Apex::Audio;
+using namespace Apex::Input;
+using namespace Apex::Physic;
+using namespace Apex::Lighting;
 using namespace Apex::Windowing;
 using namespace Apex::Rendering;
 using namespace Apex::Scripting;
-using namespace Apex::Audio;
 using namespace Apex::Resources;
 using namespace Apex::UserInterface;
-using namespace Apex::Physic;
 using namespace Apex::Serialization;
-using namespace Apex::Lighting;
-using namespace Apex::Input;
 
 Apex::Application::Application() = default;
 Apex::Application::~Application() = default;
 
 bool Apex::Application::Init(IWindow* window)
 {
-    if (!InitWindow(window)
+    if (!InitLog()
+    || !InitWindow(window)
     || !InitResourceManager()  
     || !InitRHI()  
     || !InitLighting()
@@ -79,6 +84,19 @@ bool Apex::Application::InitResourceManager()
     return true;
 }
 
+bool Apex::Application::InitLog()
+{
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S.log");
+
+    m_fileLog = std::make_unique<FileLog>(oss.str());
+    LogSystem::AddSink(m_fileLog.get());
+
+    return true;
+}
+
 bool Apex::Application::InitWindow(IWindow* window)
 {
     m_window = window;
@@ -90,9 +108,6 @@ bool Apex::Application::InitWindow(IWindow* window)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
-
-            if (key == Key::P && down)
-                m_scene->Save("Assets/Scenes/scene.level");
         });
 
     return true;
@@ -133,12 +148,10 @@ bool Apex::Application::InitUI(IGUI* gui)
 {
     if (!m_window) return false;
 
-    m_uiManager = std::make_unique<UIManager>(gui);
+    m_uiManager = std::make_unique<UIManager>(gui, m_resourceManager.get(), m_rhi.get());
 
     if (!m_uiManager)
         return false;
-
-    m_uiManager->GetCanvas().AddElement(std::make_unique<UIText>("This is a test", Vector2(50.f, 50.f), 100.f, UIAnchor::Center, FontID::Default));
 
     return true;
 }
@@ -156,7 +169,12 @@ bool Apex::Application::InitLighting()
 bool Apex::Application::InitLua()
 {
     m_luaManager = std::make_unique<Scripting::LuaManager>();
-    return m_luaManager != nullptr;
+    if (!m_luaManager) return false;
+
+    if (m_uiManager)
+        m_luaManager->RegisterHudBindings(m_uiManager.get());
+
+    return true;
 }
 
 bool Apex::Application::InitScene()
@@ -168,10 +186,10 @@ bool Apex::Application::InitScene()
 void Apex::Application::LoadScene()
 {
     Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
-        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|\
-ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|\
-ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube.obj", true);
+        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
+        "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
+        "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube/cube.mesh", true);
     Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
@@ -232,7 +250,7 @@ void Apex::Application::Tick()
     m_deltaTime_s = m_window->GetDeltaTime();
     if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
-    m_window->UpdateDeltaTime();
+    m_scene->Update(m_deltaTime_s);
 
     m_accumulator_s += m_deltaTime_s;
 
@@ -242,23 +260,20 @@ void Apex::Application::Tick()
         m_accumulator_s -= fixedUpdateTime_s;
     }
 
-    m_resourceManager->ProcessGpuUploads();
-    m_resourceManager->CollectGarbage(m_deltaTime_s);
+    m_scene->LateUpdate(m_deltaTime_s);
 }
 
 void Apex::Application::UpdateAudioListener()
 {
-    if (!m_audio) return;
-
-    Camera* cam = m_scene->GetMainCamera();
-    if (!cam) return;
-
-    LibMath::Vector3 pos = cam->GetPosition();
-    LibMath::Vector3 front = cam->GetFront();
-    m_audio->SetListenerPosition(
-        { pos[0],   pos[1],   pos[2] },
-        { front[0], front[1], front[2] }
-    );
+    if (m_audio)
+    {
+        LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
+        LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
+        m_audio->SetListenerPosition(
+            { pos[0],   pos[1],   pos[2] },
+            { front[0], front[1], front[2] }
+        );
+    }
 }
 
 void Apex::Application::Render(RenderPassInfo pass)

@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include "Log.h"
+
 using namespace Apex::Resources;
 
 const std::unordered_set<std::string>& Apex::Resources::ResourceManager::GetLoadedAssets() const
@@ -20,9 +22,16 @@ void ResourceManager::ProcessGpuUploads()
 			m_gpuUploadQueue.pop();
 		}
 
-		if (resource.IsFailed()) continue;
+		if (resource.IsFailed())
+		{
+			LOG_ERROR_CAT("Resource", "failed 1: \"{}\"", resource->GetPath()); continue;
+		}
 		resource->UploadToGpu();
-		if (resource.IsFailed()) continue;
+		if (resource.IsFailed())
+		{
+			LOG_ERROR_CAT("Resource", "failed 2: \"{}\"", resource->GetPath());
+			continue;
+		}
 		resource->SetState(ResourceState::Uploaded);
 	}
 }

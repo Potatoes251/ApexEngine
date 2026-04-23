@@ -4,12 +4,18 @@
 #include "Scene.h"
 #include "Object.h"
 
+#include "Command/RemoveObjectCommand.h"
+#include "Command/AddObjectCommand.h"
+#include "CommandManager.h"
+
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
 using namespace Apex::Rendering;
 using namespace Apex::Data;
 using namespace Apex::Windowing;
+using namespace Apex::CtrlZ;
 
 Hierarchy::Hierarchy(IGUI& gui,
     Scene* scene, ComponentsViewer* compViewer, IWindow& window)
@@ -30,8 +36,17 @@ void Hierarchy::Draw()
     {
         if (m_gui.MenuItem("Empty"))
         {
-            Object* obj = m_scene->CreateObject();
-            SelectObject(obj);
+            CommandManager::Get().Execute(std::make_unique<AddObjectCommand>(
+                [this]()
+                {
+                    Object* obj = m_scene->CreateObject();
+                    SelectObject(obj);
+                    return obj;
+                },
+                [this](size_t objId)
+                {
+                    DestroyObject(objId);
+                }));
         }
         m_gui.EndPopup();
     }
@@ -45,12 +60,9 @@ void Hierarchy::Draw()
 
     HandlePending();
 
-    if (m_selected && m_gui.IsPanelFocused() && m_gui.IsKeyPressed(UIKey::F2))
+    if (m_selected && m_gui.IsPanelFocused() && (m_gui.IsKeyPressed(UIKey::F2) || m_gui.IsItemDoubleClicked()))
     {
-        m_renaming = m_selected;
-        m_renameFocusPending = true;
-        strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
-        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+        Rename();
     }
 
     Vector2 size = m_gui.GetAvailableSize();
@@ -84,6 +96,14 @@ void Hierarchy::Draw()
     ApplyPendingOp();
 }
 
+void Apex::Editor::Hierarchy::Rename()
+{
+    m_renaming = m_selected;
+    m_renameFocusPending = true;
+    strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
+    m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+}
+
 void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 {
     m_selected = selected;
@@ -95,6 +115,16 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 
     if (!selected)
         m_componentsViewer->SetSelectedObject(nullptr);
+}
+
+void Apex::Editor::Hierarchy::ClearSelection()
+{
+    SelectObject(nullptr);
+	m_pendingClone = nullptr;
+    m_pendingDelete = nullptr;
+    m_pendingParent = nullptr;
+    m_pendingReparent = nullptr;
+	m_pendingTarget = nullptr;
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -128,7 +158,15 @@ void Apex::Editor::Hierarchy::HandlePending()
 
     if (m_pendingDelete)
     {
-        DestroyObject(m_pendingDelete);
+        CommandManager::Get().Execute(std::make_unique<RemoveObjectCommand>(m_pendingDelete,
+            [this](std::unique_ptr<Object> obj)
+            {
+                m_scene->AddObject(std::move(obj));
+            },
+            [this](size_t objId)
+            {
+                DestroyObject(objId);
+            }));
         m_pendingDelete = nullptr;
     }
 
@@ -228,6 +266,9 @@ void Hierarchy::HandleContextMenu(SceneNode* node)
 
     if (m_gui.MenuItem("Create Child"))
         m_pendingParent = node;
+
+    if (m_gui.MenuItem("Rename"))
+        Rename();
 
     if (m_gui.MenuItem("Duplicate"))
         m_pendingClone = obj;
@@ -341,7 +382,7 @@ void Hierarchy::ApplyPendingOp()
     {
         if (m_pendingTarget)
             m_pendingReparent->SetParent(m_pendingTarget);
-        else
+        else if (m_pendingReparent && m_pendingReparent->GetParent())
             m_pendingReparent->SetParent(nullptr);
     }
 
@@ -372,38 +413,20 @@ Object* Hierarchy::DuplicateObject(Object* original)
 {
     if (!original) return nullptr;
 
-    Object* clone = m_scene->CreateObject();
-    clone->SetName(original->GetName() + "_Copy");
-    clone->SetLocalTransform(original->GetLocalTransform());
-    clone->SetGlobalTransform(original->GetGlobalTransform());
+    std::unique_ptr<Object> clone = original->Clone();
+    size_t id = clone->NewId();
+    m_scene->AddObject(std::move(clone));
 
-    for (auto* comp : original->GetComponents())
-    {
-        std::unique_ptr<Component> newComp = comp->Clone();
-        clone->AddComponentDirect(std::move(newComp));
-    }
-
-    SceneNode* originalNode = original->GetSceneNodeRaw();
-    SceneNode* cloneNode = clone->GetSceneNodeRaw();
-    for (auto& child : originalNode->GetChildren())
-    {
-        Object* childClone = DuplicateObject(child->GetObject());
-        if (childClone)
-            cloneNode->AddChild(childClone->GetSceneNode());
-    }
-
-    return clone;
+    return m_scene->GetObjectWithId(id);
 }
 
-void Hierarchy::DestroyObject(Object* obj)
+void Hierarchy::DestroyObject(size_t objId)
 {
-    std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
-
-    if (node->GetParent())
-        node->GetParent()->DestroyChild(node);
-
-    m_scene->DestroyObject(obj);
+    Data::Object* obj = m_scene->GetObjectWithId(objId);
 
     if (m_selected == obj)
         SelectObject(nullptr);
+    obj->Destroy();
+
+    m_scene->DestroyObject(objId);
 }

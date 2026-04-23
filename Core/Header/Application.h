@@ -47,6 +47,8 @@ namespace Apex::Lighting
 
 namespace Apex
 {        
+    class FileLog;
+
 	class Application
 	{
     public:
@@ -75,6 +77,7 @@ namespace Apex
         float                       GetDeltaTime() { return m_deltaTime_s; }
 
     private:
+        bool InitLog();
         bool InitWindow(Windowing::IWindow* window);
         bool InitResourceManager();
         bool InitRHI();
@@ -86,22 +89,19 @@ namespace Apex
         bool InitScene();
 
         void UpdateAudioListener();
-        void Update();
 
         bool m_running = true;
-        float m_totalTime = 0.0f;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
 
-        const char* m_argv0;
-
         std::unique_ptr<Rendering::IRHI> m_rhi;
 
-        std::unique_ptr<Scripting::LuaManager> m_luaManager;
-        std::unique_ptr<Lighting::LightManager> m_lightManager;
-        std::unique_ptr<Lighting::ShadowManager> m_shadowManager;
+        std::unique_ptr<Scripting::LuaManager>      m_luaManager;
+        std::unique_ptr<Lighting::LightManager>     m_lightManager;
+        std::unique_ptr<Lighting::ShadowManager>    m_shadowManager;
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
-        std::unique_ptr<UserInterface::UIManager> m_uiManager;
+        std::unique_ptr<UserInterface::UIManager>   m_uiManager;
+        std::unique_ptr<FileLog>					m_fileLog;
 
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
