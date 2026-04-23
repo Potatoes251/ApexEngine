@@ -32,7 +32,12 @@ namespace Apex::UserInterface
         Count           //Has to be at the end
     };
 
-    enum class MouseButton { Left, Right, Middle };
+    enum class MouseButton 
+    { 
+        Left, 
+        Right, 
+        Middle 
+    };
 
     // Tree node flags
     enum class TreeNodeFlags : uint32_t 

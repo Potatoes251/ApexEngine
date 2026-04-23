@@ -138,7 +138,7 @@ namespace Apex::UserInterface
         bool IsItemHovered() const override;
         bool IsItemActive() const override;
         bool IsAnyItemActive() const override;
-        LibMath::Vector2 GetItemRectSize() const override;
+        Vector2 GetItemRectSize() const override;
         bool IsItemClicked(MouseButton button) const override;
         bool IsItemDoubleClicked(MouseButton button) const override;
         bool IsMouseReleased(MouseButton button = MouseButton::Left) const override;
@@ -185,14 +185,14 @@ namespace Apex::UserInterface
         static int ToImGuiTreeFlags(TreeNodeFlags flags);
         static int ToImGuiCol(StyleColor target);
 
-		GLFWwindow* m_window = nullptr;
-		vector<ImFont*> m_fonts;
-        ImDrawListWrapper m_drawListWrapper;
+		GLFWwindow*         m_window = nullptr;
+		vector<ImFont*>     m_fonts;
+        ImDrawListWrapper   m_drawListWrapper;
 
 		static const std::vector<FontInitializer> m_fontDefinitions;
 
-        bool m_hasModal = false;
         std::string m_modalName;
+        bool        m_hasModal = false;
 	};
 }
 
