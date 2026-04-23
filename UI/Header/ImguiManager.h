@@ -15,10 +15,10 @@ namespace Apex::UserInterface
 {
 	namespace  FontSize
 	{
-		constexpr 	float	Small = 16.0f;
-		constexpr 	float	Default = 22.0f;
-		constexpr 	float	Large = 30.0f;
-		constexpr 	float	Title = 36.0f;
+		constexpr 	float	SMALL = 16.0f;
+		constexpr 	float	DEFAULT = 22.0f;
+		constexpr 	float	LARGE = 30.0f;
+		constexpr 	float	TITLE = 36.0f;
 	};
 
 	struct FontInitializer
