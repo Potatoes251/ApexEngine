@@ -43,9 +43,9 @@ namespace Apex::UserInterface
     {
         switch (target) 
         {
-        case StyleColor::Text:    return ImGuiCol_Text;
-        case StyleColor::Button:  return ImGuiCol_Button;
-        case StyleColor::ChildBackground: return ImGuiCol_ChildBg;
+        case StyleColor::Text:              return ImGuiCol_Text;
+        case StyleColor::Button:            return ImGuiCol_Button;
+        case StyleColor::ChildBackground:   return ImGuiCol_ChildBg;
         }
         return ImGuiCol_Text;
     }
