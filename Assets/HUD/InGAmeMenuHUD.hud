@@ -1,0 +1,73 @@
+{
+  "widgets": [
+    {
+      "type": "Panel",
+      "name": "Panel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.000000, 0.000000 ],
+      "size": [ 0.500000, 1.000000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 6.000000,
+      "colorBg": [ 0.392157, 0.392157, 0.392157, 0.800000 ],
+      "children": [
+        {
+          "type": "Button",
+          "name": "SaveButton",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.100000, 0.100000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+          "label": "Save",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "SettingButton",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.450000, 0.100000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.827451, 0.827451, 0.827451, 1.000000 ],
+          "label": "Setting",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "QuitButton",
+          "anchor": "BottomLeft",
+          "visible": true,
+          "position": [ 0.100000, -0.350000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 1.000000, 0.039216, 0.078431, 1.000000 ],
+          "label": "Quit",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "ContinueButton",
+          "anchor": "BottomLeft",
+          "visible": true,
+          "position": [ 0.450000, -0.350000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.000000, 1.000000, 0.235294, 1.000000 ],
+          "label": "Continue",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    }
+  ]
+}
