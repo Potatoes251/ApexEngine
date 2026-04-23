@@ -159,11 +159,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.Expect(',');
 
             parser.ParseString(); parser.Expect(':');
-            std::string texture = parser.ParseString();
-            parser.Expect(',');
-
-            parser.ParseString(); parser.Expect(':');
-            std::string shader = parser.ParseString();
+            std::string material = parser.ParseString();
             parser.Expect(',');
 
             parser.ParseString(); parser.Expect(':');
@@ -173,12 +169,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             comp.SetEnabled(enabled);
 
             auto a = GetMeshHandle(mesh);
-            auto b = GetTextureHandle(texture);
-            auto c = GetShaderHandle(shader);
+            auto b = GetMaterialHandle(material);
             
             comp.SetMesh(a);
-            comp.SetTexture(b);
-            comp.SetShader(c);
+            comp.SetMaterial(b);
             comp.SetCastShadow(shadow);
         }
         else if (compName == "RigidBody")
@@ -419,9 +413,15 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.Expect(':');
             float speed = parser.ParseFloat();
 
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float rotationSpeed = parser.ParseFloat();
+
             auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
             comp.SetEnabled(enabled);
             comp.SetSpeed(speed);
+            comp.SetRotationSpeed(speed);
             comp.SetGroundedDistance(groundedDistance);
         }
         else if (compName == "ThirdPersonCamera")
@@ -515,7 +515,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.ParseString(); parser.Expect(':');
             std::string meshPath = parser.ParseString();
 
-            obj->AddComponent<Rendering::Animator>(m_resourceManager, GetMeshHandle(meshPath));
+            obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
         }
 
         parser.Expect('}'); // component end
@@ -630,6 +630,11 @@ Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::stri
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
     return m_resourceManager.CreateAsync<Texture>(path);
+}
+
+Apex::Resources::ResourceHandle<Apex::Rendering::Material> Apex::Serialization::SceneLoader::GetMaterialHandle(const std::string& path)
+{
+    return m_resourceManager.CreateAsync<Rendering::Material>(path);
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)

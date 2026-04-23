@@ -15,7 +15,7 @@ namespace Apex
     struct ExposedVar
     {
         std::string name;
-        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Color3, Color4 } type;
+        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Material, Color3, Color4 } type;
         void* data = nullptr;
         std::variant<float, bool, std::string> value;
         std::vector<std::string> enumNames;

@@ -66,3 +66,14 @@ void Mesh::DrawLineLoop() const
 	m_rhi->BindVAO(m_VAO);
 	m_rhi->DrawLineLoop(m_vertexCount);
 }
+
+int Mesh::GetAnimationIdx(std::string const& name)
+{
+	for (int i = 0; i < m_animations.size(); i++)
+	{
+		Animation const& anim = m_animations[i];
+		if (anim.m_name == name)
+			return i;
+	}
+	return -1;
+}

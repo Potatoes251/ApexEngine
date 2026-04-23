@@ -123,9 +123,9 @@ namespace Apex::Editor
 
 		bool	m_isFocus = false;
 		bool	m_localGizmo = true;
-		bool	m_isTranslationSnapping = true;
-		bool	m_isRotationSnapping = true;
-		bool	m_isScaleSnapping = true;
+		bool	m_isTranslationSnapping = false;
+		bool	m_isRotationSnapping = false;
+		bool	m_isScaleSnapping = false;
 		bool	m_isFullScreen = false;
 		bool	m_isFirstFullScreen = false;
 		bool	m_showGrid = false;

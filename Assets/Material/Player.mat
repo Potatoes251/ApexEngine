@@ -1,0 +1,5 @@
+{
+	"shader": "ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl",
+	"textures": {		"Assets/Textures/container.jpg",
+}
+}

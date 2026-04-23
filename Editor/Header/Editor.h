@@ -19,6 +19,7 @@
 #include "HudEditor.h"
 #include "ComponentsViewer.h"
 #include "Console.h"
+#include "MaterialEditor.h"
 
 namespace Apex::Editor
 {
@@ -76,11 +77,16 @@ namespace Apex::Editor
 		void OpenMeshViewer(const std::filesystem::path& path);
 		void OpenSoundPlayer(const std::filesystem::path& path);
 		void OpenHudEditor(const std::filesystem::path& path);
+		void OpenMaterialEditor(const std::filesystem::path& path);
 
-		void CollectAssetPaths(const std::string& scenePath, std::unordered_set<std::string>& out);
+		void CollectAssetPaths(const std::string& scenePath,
+			std::unordered_set<std::string>& outAssets,
+			std::unordered_set<std::string> outMats);
 		void CollectLuaDependencies(const std::string& scriptPath,
 			std::unordered_set<std::string>& out,
 			std::unordered_set<std::string>& visited);
+		void CollectAssetsFromMats(const std::string& matPath,
+			std::unordered_set<std::string>& outAssets);
 
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;
@@ -93,6 +99,7 @@ namespace Apex::Editor
 		std::vector<std::unique_ptr<MeshViewer>>    m_meshViewers;
 		std::vector<std::unique_ptr<SoundPlayer>>   m_soundPlayers;
 		std::vector<std::unique_ptr<HudEditor>>     m_hudEditors;
+		std::unique_ptr<MaterialEditor>				m_materialEditor;
 		std::unique_ptr<Viewport>					m_viewport;
 		std::unique_ptr<Rendering::Scene>			m_editScene;
 		std::unique_ptr<ComponentsViewer>			m_componentsViewer;

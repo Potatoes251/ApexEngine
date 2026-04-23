@@ -1,5 +1,5 @@
-#ifndef LOG
-#define LOG
+#ifndef LOG_H
+#define LOG_H
 
 
 #include "../../Resources/Header/LogSystem.h"
@@ -17,5 +17,5 @@
 #define LOG_DEBUG_CAT(cat, msg, ...) LOG(Apex::LogLevel::Debug, cat, msg, ##__VA_ARGS__)
 
 
-#endif // !LOG
+#endif // !LOG_H
 

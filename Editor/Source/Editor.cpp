@@ -11,6 +11,7 @@
 #include "Rigidbody.h"
 #include "CommandManager.h"
 #include "LogSystem.h"
+#include "MaterialEditor.h"
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -184,6 +185,9 @@ namespace Apex::Editor
                 case AssetType::Hud:
                     OpenHudEditor(entry.m_path);
                     break;
+                case AssetType::Material:
+                    OpenMaterialEditor(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -244,7 +248,10 @@ namespace Apex::Editor
                 std::remove_if(m_hudEditors.begin(), m_hudEditors.end(),
                     [](const std::unique_ptr<HudEditor>& he) { return !he->IsOpen(); }),
                 m_hudEditors.end());
+
         }
+        if (m_materialEditor)
+            m_materialEditor->Draw();
 
         if (m_viewport)
             m_viewport->Draw();
@@ -279,17 +286,20 @@ namespace Apex::Editor
         m_window->UpdateDeltaTime();
         m_viewport->UpdateCamera(m_window.get());
 
+        if (EditorState::Play != m_editorState)
+            m_app->GetScene()->GetPhysic()->EditorSync();
+
         switch (m_editorState)
         {
-        case Apex::Editor::EditorState::Edit:
+        case EditorState::Edit:
             break;
-        case Apex::Editor::EditorState::Play:
+        case EditorState::Play:
             m_app->Tick();
             if (InputSystem::Get().IsKeyDown(Key::Escape)) SetEditorState(EditorState::Pause);
             break;
-        case Apex::Editor::EditorState::Pause:
+        case EditorState::Pause:
             break;
-        case Apex::Editor::EditorState::Step:
+        case EditorState::Step:
             m_app->Tick();
             m_editorState = EditorState::Pause;
             break;
@@ -406,6 +416,7 @@ namespace Apex::Editor
         case AssetType::Level:   return "Level";
         case AssetType::Script:  return "Script";
         case AssetType::Hud:     return "HUD";
+        case AssetType::Material:     return "Material";
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
@@ -491,7 +502,9 @@ namespace Apex::Editor
         m_hudEditors.push_back(std::move(hudEditor));
     }
 
-    void Editor::CollectAssetPaths(const std::string& scenePath, std::unordered_set<std::string>& out)
+    void Editor::CollectAssetPaths(const std::string& scenePath,
+        std::unordered_set<std::string>& outAssets,
+        std::unordered_set<std::string> outMats)
     {
         std::ifstream file(scenePath);
         if (!file.is_open())
@@ -524,7 +537,12 @@ namespace Apex::Editor
                     while (std::getline(ss, part, '|'))
                     {
                         if (part.starts_with("Assets/") || part.starts_with("ApexAssets/"))
-                            out.insert(part);
+                        {
+                            outAssets.insert(part);
+
+                            if (part.ends_with(".mat"))
+                                outMats.insert(part);
+                        }
                     }
                 }
                 else if (c == '{')
@@ -616,6 +634,104 @@ namespace Apex::Editor
                 out.insert(modulePath);
                 CollectLuaDependencies(modulePath, out, visited);
             }
+        }
+    }
+
+    void Editor::CollectAssetsFromMats(const std::string& matPath,
+        std::unordered_set<std::string>& outAssets)
+    {
+        std::ifstream file(matPath);
+        if (!file.is_open())
+        {
+            printf("Build warning: could not open material %s\n", matPath.c_str());
+            return;
+        }
+
+        std::string text((std::istreambuf_iterator<char>(file)),
+            std::istreambuf_iterator<char>());
+
+        Serialization::SerialParser parser(text);
+
+        std::function<void()> collectValues;
+        collectValues = [&]()
+            {
+                char c = parser.PeekChar();
+
+                if (c == '"')
+                {
+                    std::string val = parser.ParseString();
+
+                    // Split shaders "a.vert|b.frag"
+                    std::stringstream ss(val);
+                    std::string part;
+                    while (std::getline(ss, part, '|'))
+                    {
+                        if (part.starts_with("Assets/") || part.starts_with("ApexAssets/"))
+                            outAssets.insert(part);
+                    }
+                }
+                else if (c == '{')
+                {
+                    parser.Expect('{');
+                    if (parser.Peek('}')) { parser.Expect('}'); return; }
+
+                    while (true)
+                    {
+                        // ⚠️ dans les .mat, parfois il n’y a pas de key:value
+                        if (parser.PeekChar() == '"')
+                        {
+                            std::string possible = parser.ParseString();
+
+                            if (parser.Peek(':'))
+                            {
+                                parser.Expect(':');
+                                collectValues(); // value
+                            }
+                            else
+                            {
+                                // cas "textures": { "path" }
+                                if (possible.starts_with("Assets/") || possible.starts_with("ApexAssets/"))
+                                    outAssets.insert(possible);
+                            }
+                        }
+                        else
+                        {
+                            collectValues();
+                        }
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+
+                    parser.Expect('}');
+                }
+                else if (c == '[')
+                {
+                    parser.Expect('[');
+                    if (parser.Peek(']')) { parser.Expect(']'); return; }
+
+                    while (true)
+                    {
+                        collectValues();
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+
+                    parser.Expect(']');
+                }
+                else
+                {
+                    if (c == 't' || c == 'f') parser.ParseBool();
+                    else if (c == 'n')        parser.Match("null");
+                    else                      parser.ParseFloat();
+                }
+            };
+
+        try { collectValues(); }
+        catch (const std::exception& e)
+        {
+            printf("Build warning: failed to parse %s: %s\n", matPath.c_str(), e.what());
         }
     }
 
@@ -720,9 +836,13 @@ namespace Apex::Editor
         // by parsing their JSON directly — no dependency on what
         // the editor happened to load in this session.
         std::unordered_set<std::string> assetsToCopy;
+        std::unordered_set<std::string> matsToParse;
 
         for (const auto& scenePath : scenePaths)
-            CollectAssetPaths(scenePath, assetsToCopy);
+            CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        for (const auto& matPath : matsToParse)
+            assetsToCopy.insert(matPath);
 
         std::unordered_set<std::string> luaDeps;
         std::unordered_set<std::string> visited;
@@ -733,6 +853,16 @@ namespace Apex::Editor
         }
         assetsToCopy.merge(luaDeps);
 
+        std::unordered_set<std::string> matDeps;
+
+        for (const auto& assetPath : assetsToCopy)
+        {
+            if (assetPath.ends_with(".mat"))
+                CollectAssetsFromMats(assetPath, matDeps);
+        }
+
+        assetsToCopy.merge(matDeps);
+
         // Copy all collected assets
         for (const auto& assetPath : assetsToCopy)
         {
@@ -740,11 +870,30 @@ namespace Apex::Editor
             fs::path dst = outputDir / assetPath;
             fs::create_directories(dst.parent_path(), ec);
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+
+            if (src.extension() == ".mesh")
+            {
+                fs::path animSrc = src.parent_path() / "Animation";
+                if (fs::exists(animSrc) && fs::is_directory(animSrc))
+                {
+                    fs::path animDst = dst.parent_path() / "Animation";
+                    fs::copy(animSrc, animDst, copyOpts, ec);
+                    if (ec)
+                        printf("Build warning: could not copy Animation folder for %s: %s\n",
+                            assetPath.c_str(), ec.message().c_str());
+                }
+            }
         }
 
         if (ec)
             printf("Build warning: %s\n", ec.message().c_str());
         else
             printf("Build complete -> %s\n", outputDir.string().c_str());
+    }
+
+    void Editor::OpenMaterialEditor(const std::filesystem::path& path)
+    {
+        m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
+        m_materialEditor->Open(path.string());
     }
 }

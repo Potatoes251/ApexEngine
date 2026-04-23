@@ -8,8 +8,8 @@
 #include "LibMath/Quaternion.h"
 #include "LibMath/Matrix/Matrix4.h"
 
-#include "ResourceHandle.h"
-#include "Shader.h"
+#include "../../Resources/header/ResourceHandle.h"
+#include "../../Resources/header/Shader.h"
 #include "RHI.h"
 
 namespace Apex::Rendering

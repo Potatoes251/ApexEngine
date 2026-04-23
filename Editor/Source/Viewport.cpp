@@ -41,7 +41,7 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
 {
-	if (!m_isFocus) return;
+	if (!m_isFocus || m_editor->GetEditorState() == EditorState::Play) return;
 
 	InputSystem& input = InputSystem::Get();
 

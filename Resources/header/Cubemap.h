@@ -2,6 +2,7 @@
 #define CUBEMAP
 
 #include "IResource.h"
+#include "RHI.h"
 
 class Cubemap : public IResource
 {

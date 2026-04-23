@@ -7,6 +7,7 @@
 #include "LuaFunction/CameraLua.h"
 #include "LuaFunction/ObjectLua.h"
 #include "LuaFunction/Vector3Lua.h"
+#include "LuaFunction/AnimationLua.h"
 #include "LuaFunction/ComponentLua.h"
 #include "LuaFunction/TransformFunc.h"
 #include "LuaFunction/HierarchyFunc.h"
@@ -70,6 +71,7 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
+    Apex::Anim::RegisterLua(*this);
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);

@@ -15,6 +15,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "Material.h"
 
 namespace Apex::Rendering
 {
@@ -25,13 +26,11 @@ namespace Apex::Rendering
         MeshRenderer(Apex::Resources::ResourceManager& resourceManager);
 
         void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
-        void SetTexture(Apex::Resources::ResourceHandle<Texture>& shader);
-        void SetShader(Apex::Resources::ResourceHandle<Shader>& texture);
+        void SetMaterial(Apex::Resources::ResourceHandle<Material>& shader);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
         Apex::Resources::ResourceHandle<Mesh>& GetMesh();
-        Apex::Resources::ResourceHandle<Texture>& GetTexture();
-        Apex::Resources::ResourceHandle<Shader>& GetShader();
+        Apex::Resources::ResourceHandle<Material>& GetMaterial();
 
         const char* GetTypeName() const override { return "MeshRenderer"; };
         std::vector<ExposedVar> GetExposedVariables() override;
@@ -44,8 +43,7 @@ namespace Apex::Rendering
 
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
-        Apex::Resources::ResourceHandle<Shader> m_shader;
-        Apex::Resources::ResourceHandle<Texture> m_texture;
+        Apex::Resources::ResourceHandle<Material> m_material;
         bool m_castShadow = true;
     };
 }
