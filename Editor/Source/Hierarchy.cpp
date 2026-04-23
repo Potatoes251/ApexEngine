@@ -60,12 +60,9 @@ void Hierarchy::Draw()
 
     HandlePending();
 
-    if (m_selected && m_gui.IsPanelFocused() && m_gui.IsKeyPressed(UIKey::F2))
+    if (m_selected && m_gui.IsPanelFocused() && (m_gui.IsKeyPressed(UIKey::F2) || m_gui.IsItemDoubleClicked()))
     {
-        m_renaming = m_selected;
-        m_renameFocusPending = true;
-        strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
-        m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+        Rename();
     }
 
     Vector2 size = m_gui.GetAvailableSize();
@@ -99,6 +96,14 @@ void Hierarchy::Draw()
     ApplyPendingOp();
 }
 
+void Apex::Editor::Hierarchy::Rename()
+{
+    m_renaming = m_selected;
+    m_renameFocusPending = true;
+    strncpy(m_renameBuffer, m_selected->GetName().c_str(), sizeof(m_renameBuffer));
+    m_renameBuffer[sizeof(m_renameBuffer) - 1] = '\0';
+}
+
 void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 {
     m_selected = selected;
@@ -107,6 +112,16 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 
     if (m_componentsViewer)
         m_componentsViewer->SetSelectedObject(selected);
+}
+
+void Apex::Editor::Hierarchy::ClearSelection()
+{
+    SelectObject(nullptr);
+	m_pendingClone = nullptr;
+    m_pendingDelete = nullptr;
+    m_pendingParent = nullptr;
+    m_pendingReparent = nullptr;
+	m_pendingTarget = nullptr;
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -248,6 +263,9 @@ void Hierarchy::HandleContextMenu(SceneNode* node)
 
     if (m_gui.MenuItem("Create Child"))
         m_pendingParent = node;
+
+    if (m_gui.MenuItem("Rename"))
+        Rename();
 
     if (m_gui.MenuItem("Duplicate"))
         m_pendingClone = obj;
@@ -403,6 +421,9 @@ void Hierarchy::DestroyObject(size_t objId)
 {
     SelectObject(nullptr);
     Data::Object* obj = m_scene->GetObjectWithId(objId);
+
+    if (m_selected == obj)
+        SelectObject(nullptr);
     obj->Destroy();
 
     m_scene->DestroyObject(objId);

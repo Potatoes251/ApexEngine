@@ -13,7 +13,6 @@
 #include <functional>
 #include <filesystem>
 
-using LibMath::Vector2;
 using Apex::Resources::ResourceHandle;
 using Apex::Resources::ResourceManager;
 
@@ -44,15 +43,15 @@ namespace Apex::UserInterface
 	struct UIDrawContext
 	{
 		IDrawList*  m_drawList = nullptr;
-		Vector2     m_screenSize;
-        Vector2     m_origin = { 0.f, 0.f };
+		LibMath::Vector2     m_screenSize;
+        LibMath::Vector2     m_origin = { 0.f, 0.f };
         Apex::Rendering::IRHI* m_rhi = nullptr;
 		bool        m_isEditor = false;
 		bool        m_selected = false;
 
 	};
 
-	class UIElement
+	struct UIElement
 	{
 	public:
 		UIElement() = default;
@@ -61,19 +60,19 @@ namespace Apex::UserInterface
 		virtual UIWidgetType GetType() const = 0;
 		virtual void Draw(const UIDrawContext& context) const = 0;
 
-		static Vector2 ApplyAnchor(Vector2 pos, UIAnchor anchor, Vector2 screen);
-		Vector2 GetScreenPos(const UIDrawContext& context) const;
-		Vector2 GetScreenSize(const UIDrawContext& context) const;
+		static LibMath::Vector2 ApplyAnchor(LibMath::Vector2 pos, UIAnchor anchor, LibMath::Vector2 screen);
+		LibMath::Vector2 GetScreenPos(const UIDrawContext& context) const;
+		LibMath::Vector2 GetScreenSize(const UIDrawContext& context) const;
 
 		std::string m_name = "Widget";
-		Vector2     m_position = { 0.5f, 0.5f };
-		Vector2     m_size = { 0.2f, 0.05f };
+		LibMath::Vector2     m_position = { 0.5f, 0.5f };
+		LibMath::Vector2     m_size = { 0.2f, 0.05f };
 		UIAnchor    m_anchor = UIAnchor::TopLeft;
 		UIColor     m_color = { 1, 1, 1, 1 };
 		bool        m_visible = true;
 	};
 
-    class UIText : public UIElement
+    struct UIText : public UIElement
     {
     public:
         UIWidgetType GetType() const override { return UIWidgetType::Text; }
@@ -82,12 +81,12 @@ namespace Apex::UserInterface
         std::string m_text = "Text";
         FontID      m_font = FontID::Default;
         float       m_fontSize = 24.f;
-        TextHAlign   m_hAlign = TextHAlign::Left;
-        TextVAlign   m_vAlign = TextVAlign::Top;
-        UIColor      m_textColor = { 1.f, 1.f, 1.f, 1.f };
+        TextHAlign  m_hAlign = TextHAlign::Left;
+        TextVAlign  m_vAlign = TextVAlign::Top;
+        UIColor     m_textColor = { 1.f, 1.f, 1.f, 1.f };
     };
 
-    class UIImage : public UIElement
+    struct UIImage : public UIElement
     {
     public:
         UIWidgetType GetType() const override { return UIWidgetType::Image; }
@@ -99,22 +98,33 @@ namespace Apex::UserInterface
         mutable uint32_t                 m_glTexID = 0;
     };
 
-    class UIButton : public UIElement
+    struct UIButton : public UIElement
     {
     public:
+        UIButton()
+        {
+            m_labelText.m_position = { 0.f, 0.f };
+            m_labelText.m_size = { 1.f, 1.f };
+            m_labelText.m_anchor = UIAnchor::TopLeft;
+            m_labelText.m_hAlign = TextHAlign::Center;
+            m_labelText.m_vAlign = TextVAlign::Middle;
+            m_labelText.m_text = "Button";
+            m_labelText.m_fontSize = 20.f;
+            m_labelText.m_textColor = { 1.f, 1.f, 1.f, 1.f };
+            m_labelText.m_visible = true;
+        }
+
         UIWidgetType GetType() const override { return UIWidgetType::Button; }
         void Draw(const UIDrawContext& context) const override;
 
-        std::string m_label = "Button";
+        UIText      m_labelText;
         UIColor     m_colorHover = { 0.8f, 0.8f, 0.8f, 1.f };
         UIColor     m_colorPressed = { 0.6f, 0.6f, 0.6f, 1.f };
-        UIColor     m_colorText = { 1.f,  1.f,  1.f,  1.f };
-        float       m_fontSize = 20.f;
 
         std::function<void()> m_onClick;
     };
 
-    class UIProgressBar : public UIElement
+    struct UIProgressBar : public UIElement
     {
     public:
         UIWidgetType GetType() const override { return UIWidgetType::ProgressBar; }
@@ -126,7 +136,7 @@ namespace Apex::UserInterface
         float   m_rounding = 4.f;
     };
 
-    class UIPanel : public UIElement
+    struct UIPanel : public UIElement
     {
     public:
         UIWidgetType GetType() const override { return UIWidgetType::Panel; }
@@ -139,7 +149,7 @@ namespace Apex::UserInterface
         std::vector<std::unique_ptr<UIElement>> m_children;
     };
 
-    class UICanvas
+    struct UICanvas
     {
     public:
         UICanvas() = default;
@@ -185,16 +195,6 @@ namespace Apex::UserInterface
         UIManager(const UIManager&) = delete;
         UIManager& operator=(const UIManager&) = delete;
 
-        UICanvas& GetCanvas() { return m_legacyCanvas; }
-        void PrepareForRender() { m_legacyCanvas.PrepareForRender(m_rhi); }
-
-        bool IsVisible() const { return m_legacyVisible; }
-        void ShowHUD() { m_legacyVisible = true; }
-        void HideHUD() { m_legacyVisible = false; }
-
-        bool LoadHUD(const fs::path& path);
-        bool SaveHUD(const fs::path& path) const;
-
         // Multi-HUD API (used by Lua scripts)
         // Scan Assets/ for all .hud files and register their names.
         // Called once when entering Play.
@@ -215,22 +215,20 @@ namespace Apex::UserInterface
 
         // Prepare + Render all visible HUD instances.
         void RenderHUD(IDrawList* drawList,
-            Vector2 viewportPos = { 0.f, 0.f },
-            Vector2 viewportSize = { 0.f, 0.f });
+            LibMath::Vector2 viewportPos = { 0.f, 0.f },
+            LibMath::Vector2 viewportSize = { 0.f, 0.f });
 
         // Clears all instances (called on Stop).
         void ClearAll();
 
-    private:
         HUDInstance* GetInstance(int handle);
         const HUDInstance* GetInstance(int handle) const;
+        ResourceManager* GetResourceManager() const { return m_resourceManager; }
 
+    private:
         IGUI* m_gui = nullptr;
         ResourceManager* m_resourceManager = nullptr;
         Apex::Rendering::IRHI* m_rhi = nullptr;
-
-        UICanvas m_legacyCanvas;
-        bool m_legacyVisible = false;
 
         std::vector<std::unique_ptr<HUDInstance>> m_instances;
         std::unordered_map<std::string, fs::path>  m_registry;

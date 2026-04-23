@@ -68,7 +68,7 @@ namespace Apex::Editor
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             *m_gui,
-            *app.GetScene(),
+            app.GetScene(),
             *m_app->GetResourceManager(),
             *app.GetScene()->GetPhysic(),
             *m_app->GetLuaManager()
@@ -92,6 +92,9 @@ namespace Apex::Editor
         m_hierarchy->SetViewport(m_viewport.get());
 
         m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
+
+        if (m_componentsViewer && m_contentBrowser)
+            m_componentsViewer->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
 
         m_window->SetKeyCallback([&](Input::Key key, bool down)
             {
@@ -354,8 +357,8 @@ namespace Apex::Editor
 
         // Always clear selection before destroying old scene objects
         if (m_componentsViewer) m_componentsViewer->ClearSelection();
-        if (m_hierarchy)        m_hierarchy->SelectObject(nullptr);
-
+        if (m_hierarchy)        m_hierarchy->ClearSelection();
+        
         // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
@@ -371,14 +374,15 @@ namespace Apex::Editor
 
             m_app->GetScene()->Start();
 
-            m_hierarchy->SetScene(m_app->GetScene());
+            if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
+            if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
         }
         // stop
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
-            m_hierarchy->SetScene(m_app->GetScene());
-
+            if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
+            if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
             auto* ui = m_app->GetUI();
             if (ui)
                 ui->ClearAll();

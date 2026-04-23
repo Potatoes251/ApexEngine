@@ -9,6 +9,8 @@
 #include "AssetPicker.h"
 #include "ScriptPicker.h"
 #include "ScriptComponent.h"
+#include "ThumbnailRenderer.h"
+#include "EditorIcon.h"
 #include "Texture.h"
 #include "Mesh.h"
 #include "Material.h"
@@ -22,13 +24,15 @@ namespace Apex::Editor
 	{
 	public:
 		ComponentsViewer(Apex::UserInterface::IGUI& gui,
-			Apex::Rendering::Scene& scene, 
+			Apex::Rendering::Scene* scene,
 			Apex::Resources::ResourceManager& resourceManager,
 			Apex::Physic::PhysicSystem& phys,
 			Apex::Scripting::LuaManager& lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
+		void SetScene(Apex::Rendering::Scene* scene) { m_scene = scene; }
 		void ClearSelection();
+		void SetThumbnailRenderer(ThumbnailRenderer* t);
 
 		void Draw();
 
@@ -52,8 +56,12 @@ namespace Apex::Editor
 		void DrawComponentMat(ExposedVar var);
 		void DrawComponentTexture(ExposedVar var);
 
+		uint32_t ResolveTexturePreview(Apex::Resources::ResourceHandle<Texture>* handle) const;
+		uint32_t ResolveMeshPreview(const std::string& path) const;
+		void     DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size = 64.f);
+
 		Apex::UserInterface::IGUI& m_gui;
-		Apex::Rendering::Scene& m_scene;
+		Apex::Rendering::Scene* m_scene = nullptr;
 		Apex::Resources::ResourceManager& m_resourceManager;
 		Apex::Resources::AssetPicker<Mesh> m_meshPicker;
 		Apex::Resources::AssetPicker<Rendering::Material> m_materialPicker;
@@ -61,6 +69,7 @@ namespace Apex::Editor
 		Apex::Resources::ScriptPicker m_scriptPicker;
 		Apex::Physic::PhysicSystem& m_phys;
 		Apex::Scripting::LuaManager& m_luaManager;
+		ThumbnailRenderer* m_thumbnailRenderer = nullptr;
 
 		Apex::Data::Object* m_selectedObj = nullptr;
 		Apex::Component* m_selectedComp = nullptr;
@@ -71,6 +80,10 @@ namespace Apex::Editor
 
 		LibMath::Vector3 m_cachedEuler;
 		Apex::Data::Object* m_lastTransformObj = nullptr;
+
+		static constexpr float LABEL_WIDTH = 200.f;
+		static constexpr float ROW_PAD = 5.f;
+		static constexpr float PREVIEW_SIZE = 64.f;
 	};
 }
 

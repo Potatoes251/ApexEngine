@@ -61,6 +61,8 @@ namespace Apex::Editor
 
 		void PrepareThumbnails();
 
+		ThumbnailRenderer& GetThumbnails();
+
 		// Force a re-scan of the current folder (call after import / delete).
 		void Refresh();
 

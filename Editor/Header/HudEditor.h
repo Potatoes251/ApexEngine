@@ -88,7 +88,8 @@ namespace Apex::Editor
         void HandleDropOnElement(size_t index, UIPanel* parent, UIPanel* asPanel);
         void DrawInsertLine(float y);
         void DrawTexturePicker();
-		void DrawTextureTiles(UIImage* image);
+        std::string DrawTextureGrid(int cols);
+        void CommitTextureSelection(const std::string& key);
 
         void HandleCanvasInput();
 
