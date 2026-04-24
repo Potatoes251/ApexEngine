@@ -11,7 +11,7 @@ using namespace Apex::Rendering;
 
 Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager& resourceManager)
 {
-    m_mesh = resourceManager.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
+    m_mesh = resourceManager.CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
     m_material = resourceManager.CreateAsync<Material>("Assets/Textures/Default.mat");
 }
 

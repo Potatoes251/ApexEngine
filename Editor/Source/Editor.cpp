@@ -12,6 +12,7 @@
 #include "CommandManager.h"
 #include "LogSystem.h"
 #include "MaterialEditor.h"
+#include "Log.h"
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -504,12 +505,12 @@ namespace Apex::Editor
 
     void Editor::CollectAssetPaths(const std::string& scenePath,
         std::unordered_set<std::string>& outAssets,
-        std::unordered_set<std::string> outMats)
+        std::unordered_set<std::string>& outMats)
     {
         std::ifstream file(scenePath);
         if (!file.is_open())
         {
-            printf("Build warning: could not open scene %s\n", scenePath.c_str());
+            LOG_WARNING_CAT("Build", "Could not open scene {}", scenePath.c_str());
             return;
         }
 
@@ -588,7 +589,7 @@ namespace Apex::Editor
         try { collectValues(); }
         catch (const std::exception& e)
         {
-            printf("Build warning: failed to parse %s: %s\n", scenePath.c_str(), e.what());
+            LOG_WARNING_CAT("Build", "Failed to parse {}: {}", scenePath.c_str(), e.what());
         }
     }
 
@@ -602,7 +603,7 @@ namespace Apex::Editor
         std::ifstream file(fs::current_path() / scriptPath);
         if (!file.is_open())
         {
-            printf("Build warning: could not open script %s\n", scriptPath.c_str());
+            LOG_WARNING_CAT("Build", "Could not open script ", scriptPath.c_str());
             return;
         }
 
@@ -643,7 +644,7 @@ namespace Apex::Editor
         std::ifstream file(matPath);
         if (!file.is_open())
         {
-            printf("Build warning: could not open material %s\n", matPath.c_str());
+            LOG_WARNING_CAT("Build", "Could not open material ", matPath.c_str());
             return;
         }
 
@@ -673,11 +674,16 @@ namespace Apex::Editor
                 else if (c == '{')
                 {
                     parser.Expect('{');
-                    if (parser.Peek('}')) { parser.Expect('}'); return; }
+                    if (parser.Peek('}')) 
+                    { 
+                        parser.Expect('}'); 
+                        return; 
+                    }
 
                     while (true)
                     {
-                        // ⚠️ dans les .mat, parfois il n’y a pas de key:value
+                        if (parser.PeekChar() == '}') break; // handles trailing content before closing brace
+
                         if (parser.PeekChar() == '"')
                         {
                             std::string possible = parser.ParseString();
@@ -685,11 +691,11 @@ namespace Apex::Editor
                             if (parser.Peek(':'))
                             {
                                 parser.Expect(':');
-                                collectValues(); // value
+                                collectValues();
                             }
                             else
                             {
-                                // cas "textures": { "path" }
+                                // No colon, treat as a bare value (malformed object used as array)
                                 if (possible.starts_with("Assets/") || possible.starts_with("ApexAssets/"))
                                     outAssets.insert(possible);
                             }
@@ -699,7 +705,11 @@ namespace Apex::Editor
                             collectValues();
                         }
 
-                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        if (parser.Peek(',')) 
+                        { 
+                            parser.Expect(','); 
+                            continue; 
+                        }
                         break;
                     }
 
@@ -708,13 +718,21 @@ namespace Apex::Editor
                 else if (c == '[')
                 {
                     parser.Expect('[');
-                    if (parser.Peek(']')) { parser.Expect(']'); return; }
+                    if (parser.Peek(']')) 
+                    { 
+                        parser.Expect(']'); 
+                        return; 
+                    }
 
                     while (true)
                     {
                         collectValues();
 
-                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        if (parser.Peek(',')) 
+                        { 
+                            parser.Expect(','); 
+                            continue; 
+                        }
                         break;
                     }
 
@@ -731,7 +749,7 @@ namespace Apex::Editor
         try { collectValues(); }
         catch (const std::exception& e)
         {
-            printf("Build warning: failed to parse %s: %s\n", matPath.c_str(), e.what());
+            LOG_WARNING_CAT("Build", "Failed to parse {}: {}", matPath.c_str(), e.what());
         }
     }
 
@@ -751,7 +769,7 @@ namespace Apex::Editor
 
         if (ec)
         {
-            printf("Build error: could not clear previous build: %s\n", ec.message().c_str());
+            LOG_ERROR_CAT("Build", "Could not clear previous build: {}", ec.message().c_str());
             return;
         }
 
@@ -796,8 +814,8 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/py.png",
             "ApexAssets/Textures/Skybox/pz.png",
             "ApexAssets/Textures/Skybox/nz.png",
-            // Skybox mesh — lives in Assets/ but is engine-owned
-            "Assets/Meshes/cube.obj",
+            // Skybox mesh
+            "ApexAssets/Meshes/cube.mesh",
         };
 
         for (const char* assetPath : s_engineAssets)
@@ -879,16 +897,16 @@ namespace Apex::Editor
                     fs::path animDst = dst.parent_path() / "Animation";
                     fs::copy(animSrc, animDst, copyOpts, ec);
                     if (ec)
-                        printf("Build warning: could not copy Animation folder for %s: %s\n",
+                        LOG_ERROR_CAT("Build", "Could not copy Animation folder for {}: {}",
                             assetPath.c_str(), ec.message().c_str());
                 }
             }
         }
 
         if (ec)
-            printf("Build warning: %s\n", ec.message().c_str());
+            LOG_WARNING_CAT("Build", "{}", ec.message().c_str());
         else
-            printf("Build complete -> %s\n", outputDir.string().c_str());
+            LOG_INFO_CAT("Build", "Build complete -> {}", outputDir.string().c_str());
     }
 
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)

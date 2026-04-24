@@ -499,6 +499,26 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_gui->SetCursorPos({ startX + PAD, startY + PAD * 0.5f });
 		};
 
+	if (m_gui->Button("Build Game"))
+	{
+		// Scan for .level files once when the popup opens
+		m_buildScenes.clear();
+		namespace fs = std::filesystem;
+		std::error_code ec;
+		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
+		{
+			if (entry.path().extension() == ".level")
+			{
+				BuildSceneEntry e;
+				e.path = entry.path().generic_string();
+				e.selected = true;
+				m_buildScenes.push_back(std::move(e));
+			}
+		}
+		m_showBuildPopup = true;
+		m_gui->OpenPopup("BuildGame");
+	}
+
 	if (state == EditorState::Edit)
 	{
 		drawBar(1); // only Play
@@ -534,26 +554,6 @@ void Apex::Editor::Viewport::DrawPlayBar()
 				m_isFirstFullScreen = true; 
 			}
 		}
-	}
-
-	if (m_gui->Button("Build Game"))
-	{
-		// Scan for .level files once when the popup opens
-		m_buildScenes.clear();
-		namespace fs = std::filesystem;
-		std::error_code ec;
-		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
-		{
-			if (entry.path().extension() == ".level")
-			{
-				BuildSceneEntry e;
-				e.path = entry.path().generic_string();
-				e.selected = true;
-				m_buildScenes.push_back(std::move(e));
-			}
-		}
-		m_showBuildPopup = true;
-		m_gui->OpenPopup("BuildGame");
 	}
 }
 
@@ -740,7 +740,14 @@ void Viewport::DrawBuildPopup()
 	m_gui->Separator();
 
 	bool anySelected = false;
-	for (auto& e : m_buildScenes) if (e.selected) { anySelected = true; break; }
+	for (auto& e : m_buildScenes)
+	{
+		if (e.selected) 
+		{ 
+			anySelected = true; 
+			break; 
+		}
+	}
 
 	if (!anySelected) m_gui->BeginDisabled();
 	if (m_gui->Button("Build"))
