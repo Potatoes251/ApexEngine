@@ -43,9 +43,9 @@ namespace Apex::UserInterface
     {
         switch (target) 
         {
-        case StyleColor::Text:    return ImGuiCol_Text;
-        case StyleColor::Button:  return ImGuiCol_Button;
-        case StyleColor::ChildBackground: return ImGuiCol_ChildBg;
+        case StyleColor::Text:              return ImGuiCol_Text;
+        case StyleColor::Button:            return ImGuiCol_Button;
+        case StyleColor::ChildBackground:   return ImGuiCol_ChildBg;
         }
         return ImGuiCol_Text;
     }
@@ -658,6 +658,16 @@ namespace Apex::UserInterface
     {
         m_hasModal = false;
         m_modalName.clear();
+    }
+
+    void ImGUIManager::BeginDisabled(bool disabled)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+
+    void ImGUIManager::EndDisabled()
+    {
+        ImGui::EndDisabled();
     }
 
     void ImGUIManager::Dummy(LibMath::Vector2 size)

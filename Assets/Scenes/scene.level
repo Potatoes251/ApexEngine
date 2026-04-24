@@ -13,7 +13,7 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/cube/cube.mesh",
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
         "material": "Assets/Material/Ground.mat",
         "castShadow": true
       },

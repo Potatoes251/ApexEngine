@@ -32,7 +32,12 @@ namespace Apex::UserInterface
         Count           //Has to be at the end
     };
 
-    enum class MouseButton { Left, Right, Middle };
+    enum class MouseButton 
+    { 
+        Left, 
+        Right, 
+        Middle 
+    };
 
     // Tree node flags
     enum class TreeNodeFlags : uint32_t 
@@ -261,6 +266,9 @@ namespace Apex::UserInterface
 
         virtual void BeginModalBlock(const std::string& name) = 0;
         virtual void EndModalBlock() = 0;
+
+        virtual void BeginDisabled(bool disabled = true) = 0;
+        virtual void EndDisabled() = 0;
 
         virtual void Dummy(LibMath::Vector2 size) = 0;
 	private:

@@ -158,6 +158,13 @@ namespace Apex::Resources
             if (MatchesType(entry.path()))
                 m_cachedPaths.push_back(entry.path().generic_string());
         }
+
+        for (auto& entry : std::filesystem::recursive_directory_iterator("ApexAssets/"))
+        {
+            if (!entry.is_regular_file()) continue;
+            if (MatchesType(entry.path()))
+                m_cachedPaths.push_back(entry.path().generic_string());
+        }
     }
 
     template<typename T>

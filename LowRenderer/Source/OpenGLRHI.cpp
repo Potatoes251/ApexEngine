@@ -164,9 +164,10 @@ namespace Apex::Rendering
 		glViewport(0, 0, viewportWidth, viewportHeight);
 	}
 
-	void OpenGLRHI::UnBindFrameBuffer()
+	void OpenGLRHI::UnBindFrameBuffer(unsigned width, unsigned height)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
 	}
 
 	void OpenGLRHI::DeleteFrameBuffer(RHIFrameBufferHandle buffer)
