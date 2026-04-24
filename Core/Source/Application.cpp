@@ -54,13 +54,10 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
 
-namespace Apex
-{
-    Application::Application() = default;
-    Application::~Application() = default;
-}
+Apex::Application::Application() = default;
+Apex::Application::~Application() = default;
 
-bool Apex::Application::Init(IWindow* window, IGUI* gui)
+bool Apex::Application::Init(IWindow* window)
 {
     if (!InitLog()
     || !InitWindow(window)
@@ -68,13 +65,17 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
     || !InitRHI()  
     || !InitLighting()
     || !InitRendering()
-    || !InitUI(gui)
     || !InitAudio()
     || !InitLua()
     || !InitScene())
         return false;
 
     return true;
+}
+
+bool Apex::Application::InitGUI(UserInterface::IGUI* gui)
+{
+    return InitUI(gui);
 }
 
 bool Apex::Application::InitResourceManager()
@@ -188,7 +189,7 @@ void Apex::Application::LoadScene()
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
         "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/cube/cube.mesh", true);
+    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
     Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
@@ -285,6 +286,11 @@ void Apex::Application::Render(RenderPassInfo pass)
     if (pass.m_target != RHI_INVALID)
     {
         m_rhi->BindFrameBuffer(pass.m_target, pass.m_width, pass.m_height);
+        m_rhi->Clear();
+    }
+    else
+    {
+        m_rhi->UnBindFrameBuffer(m_window->GetWidth(), m_window->GetHeight());
         m_rhi->Clear();
     }
 

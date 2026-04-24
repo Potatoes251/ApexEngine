@@ -12,7 +12,17 @@
 #include "CommandManager.h"
 #include "LogSystem.h"
 #include "MaterialEditor.h"
+#include "Log.h"
 
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
+    #include <windows.h>
+    #undef CreateWindow
+#endif
+
+using namespace Apex::Windowing;
+using namespace Apex::UserInterface;
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
 using namespace Apex::Audio;
@@ -21,6 +31,9 @@ using namespace Apex::Physic;
 using namespace Apex::Rendering;
 using namespace Apex::Windowing;
 using namespace Apex::Serialization;
+using namespace Apex::Physic;
+using namespace Apex::Input;
+using namespace Apex::Scripting;
 using namespace Apex::UserInterface;
 
 namespace Apex::Editor 
@@ -488,6 +501,412 @@ namespace Apex::Editor
         auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager(), *m_app->GetRhi());
         hudEditor->Open(path, static_cast<int>(m_hudEditors.size()));
         m_hudEditors.push_back(std::move(hudEditor));
+    }
+
+    void Editor::CollectAssetPaths(const std::string& scenePath,
+        std::unordered_set<std::string>& outAssets,
+        std::unordered_set<std::string>& outMats)
+    {
+        std::ifstream file(scenePath);
+        if (!file.is_open())
+        {
+            LOG_WARNING_CAT("Build", "Could not open scene {}", scenePath.c_str());
+            return;
+        }
+
+        std::string text((std::istreambuf_iterator<char>(file)),
+            std::istreambuf_iterator<char>());
+
+        Serialization::SerialParser parser(text);
+
+        // Walk every key-value pair in the JSON.
+        // When a string value starts with "Assets/", collect it.
+        // Shader paths are pipe-separated ("a.vert|b.frag") so split those too.
+        // We don't need to understand the schema — just find all strings.
+        std::function<void()> collectValues;
+        collectValues = [&]()
+            {
+                char c = parser.PeekChar();
+
+                if (c == '"')
+                {
+                    std::string val = parser.ParseString();
+
+                    // Split on '|' for shader paths
+                    std::stringstream ss(val);
+                    std::string part;
+                    while (std::getline(ss, part, '|'))
+                    {
+                        if (part.starts_with("Assets/") || part.starts_with("ApexAssets/"))
+                        {
+                            outAssets.insert(part);
+
+                            if (part.ends_with(".mat"))
+                                outMats.insert(part);
+                        }
+                    }
+                }
+                else if (c == '{')
+                {
+                    parser.Expect('{');
+                    if (parser.Peek('}')) { parser.Expect('}'); return; }
+
+                    while (true)
+                    {
+                        parser.ParseString(); // key — discard
+                        parser.Expect(':');
+                        collectValues();      // value — recurse
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+                    parser.Expect('}');
+                }
+                else if (c == '[')
+                {
+                    parser.Expect('[');
+                    if (parser.Peek(']')) { parser.Expect(']'); return; }
+
+                    while (true)
+                    {
+                        collectValues();
+
+                        if (parser.Peek(',')) { parser.Expect(','); continue; }
+                        break;
+                    }
+                    parser.Expect(']');
+                }
+                else
+                {
+                    // number, bool, or null — consume until delimiter
+                    // ParseFloat handles numbers; Match handles true/false/null
+                    if (c == 't' || c == 'f') parser.ParseBool();
+                    else if (c == 'n')        parser.Match("null");
+                    else                      parser.ParseFloat();
+                }
+            };
+
+        try { collectValues(); }
+        catch (const std::exception& e)
+        {
+            LOG_WARNING_CAT("Build", "Failed to parse {}: {}", scenePath.c_str(), e.what());
+        }
+    }
+
+    void Editor::CollectLuaDependencies(const std::string& scriptPath,
+        std::unordered_set<std::string>& out,
+        std::unordered_set<std::string>& visited)
+    {
+        if (!visited.insert(scriptPath).second) // already visited
+            return;
+
+        std::ifstream file(fs::current_path() / scriptPath);
+        if (!file.is_open())
+        {
+            LOG_WARNING_CAT("Build", "Could not open script ", scriptPath.c_str());
+            return;
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            auto commentPos = line.find("--");
+            if (commentPos != std::string::npos)
+                line = line.substr(0, commentPos);
+
+            size_t pos = 0;
+            while ((pos = line.find("require", pos)) != std::string::npos)
+            {
+                pos += 7;
+                while (pos < line.size() && line[pos] == ' ') ++pos;
+                if (pos >= line.size() || line[pos] != '(') continue;
+                ++pos;
+                while (pos < line.size() && line[pos] == ' ') ++pos;
+                if (pos >= line.size() || (line[pos] != '"' && line[pos] != '\'')) continue;
+                char quote = line[pos++];
+                size_t nameStart = pos;
+                while (pos < line.size() && line[pos] != quote) ++pos;
+                if (pos >= line.size()) continue;
+
+                std::string moduleName = line.substr(nameStart, pos - nameStart);
+                if (moduleName.empty()) continue;
+
+                std::string modulePath = "Assets/Scripts/" + moduleName + ".lua";
+                out.insert(modulePath);
+                CollectLuaDependencies(modulePath, out, visited);
+            }
+        }
+    }
+
+    void Editor::CollectAssetsFromMats(const std::string& matPath,
+        std::unordered_set<std::string>& outAssets)
+    {
+        std::ifstream file(matPath);
+        if (!file.is_open())
+        {
+            LOG_WARNING_CAT("Build", "Could not open material ", matPath.c_str());
+            return;
+        }
+
+        std::string text((std::istreambuf_iterator<char>(file)),
+            std::istreambuf_iterator<char>());
+
+        Serialization::SerialParser parser(text);
+
+        std::function<void()> collectValues;
+        collectValues = [&]()
+            {
+                char c = parser.PeekChar();
+
+                if (c == '"')
+                {
+                    std::string val = parser.ParseString();
+
+                    // Split shaders "a.vert|b.frag"
+                    std::stringstream ss(val);
+                    std::string part;
+                    while (std::getline(ss, part, '|'))
+                    {
+                        if (part.starts_with("Assets/") || part.starts_with("ApexAssets/"))
+                            outAssets.insert(part);
+                    }
+                }
+                else if (c == '{')
+                {
+                    parser.Expect('{');
+                    if (parser.Peek('}')) 
+                    { 
+                        parser.Expect('}'); 
+                        return; 
+                    }
+
+                    while (true)
+                    {
+                        if (parser.PeekChar() == '}') break; // handles trailing content before closing brace
+
+                        if (parser.PeekChar() == '"')
+                        {
+                            std::string possible = parser.ParseString();
+
+                            if (parser.Peek(':'))
+                            {
+                                parser.Expect(':');
+                                collectValues();
+                            }
+                            else
+                            {
+                                // No colon, treat as a bare value (malformed object used as array)
+                                if (possible.starts_with("Assets/") || possible.starts_with("ApexAssets/"))
+                                    outAssets.insert(possible);
+                            }
+                        }
+                        else
+                        {
+                            collectValues();
+                        }
+
+                        if (parser.Peek(',')) 
+                        { 
+                            parser.Expect(','); 
+                            continue; 
+                        }
+                        break;
+                    }
+
+                    parser.Expect('}');
+                }
+                else if (c == '[')
+                {
+                    parser.Expect('[');
+                    if (parser.Peek(']')) 
+                    { 
+                        parser.Expect(']'); 
+                        return; 
+                    }
+
+                    while (true)
+                    {
+                        collectValues();
+
+                        if (parser.Peek(',')) 
+                        { 
+                            parser.Expect(','); 
+                            continue; 
+                        }
+                        break;
+                    }
+
+                    parser.Expect(']');
+                }
+                else
+                {
+                    if (c == 't' || c == 'f') parser.ParseBool();
+                    else if (c == 'n')        parser.Match("null");
+                    else                      parser.ParseFloat();
+                }
+            };
+
+        try { collectValues(); }
+        catch (const std::exception& e)
+        {
+            LOG_WARNING_CAT("Build", "Failed to parse {}: {}", matPath.c_str(), e.what());
+        }
+    }
+
+    void Editor::Build(const std::vector<std::string>& scenePaths)
+    {
+        namespace fs = std::filesystem;
+
+        fs::path gameExeDir = fs::path(GAME_EXE_DIR);
+        fs::path outputDir = fs::current_path() / "ApexBuild";
+
+        std::error_code ec;
+
+        // Wipe the previous build entirely so no stale files from
+        // old scenes or renamed assets can linger across builds.
+        if (fs::exists(outputDir))
+            fs::remove_all(outputDir, ec);
+
+        if (ec)
+        {
+            LOG_ERROR_CAT("Build", "Could not clear previous build: {}", ec.message().c_str());
+            return;
+        }
+
+        fs::create_directories(outputDir, ec);
+
+        constexpr auto copyOpts = fs::copy_options::overwrite_existing
+            | fs::copy_options::recursive;
+
+        // Game exe + DLLs
+        fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
+            fs::copy_options::overwrite_existing, ec);
+
+        for (auto& entry : fs::directory_iterator(gameExeDir, ec))
+        {
+            if (entry.path().extension() == ".dll")
+                fs::copy(entry.path(), outputDir / entry.path().filename(),
+                    fs::copy_options::overwrite_existing, ec);
+        }
+
+        fs::copy(fs::current_path() / "Assets" / "Fonts",
+            outputDir / "Assets" / "Fonts", copyOpts, ec);
+
+        // Engine-level ApexAssets always required by Application.cpp —
+        // these are never referenced in scene files so must be listed explicitly.
+        static const char* s_engineAssets[] =
+        {
+            // DebugRenderer (InitRendering)
+            "ApexAssets/Shaders/LineVert.glsl",
+            "ApexAssets/Shaders/LineFrag.glsl",
+            // Shadow system (InitLighting)
+            "ApexAssets/Shaders/DirShadowVert.glsl",
+            "ApexAssets/Shaders/DirShadowFrag.glsl",
+            "ApexAssets/Shaders/OmniShadowVert.glsl",
+            "ApexAssets/Shaders/OmniShadowFrag.glsl",
+            "ApexAssets/Shaders/OmniShadowGeo.glsl",
+            // Skybox (LoadScene)
+            "ApexAssets/Shaders/SkyboxVert.glsl",
+            "ApexAssets/Shaders/SkyboxFrag.glsl",
+            "ApexAssets/Textures/Skybox/px.png",
+            "ApexAssets/Textures/Skybox/nx.png",
+            "ApexAssets/Textures/Skybox/ny.png",
+            "ApexAssets/Textures/Skybox/py.png",
+            "ApexAssets/Textures/Skybox/pz.png",
+            "ApexAssets/Textures/Skybox/nz.png",
+            // Skybox mesh
+            "ApexAssets/Meshes/cube.mesh",
+        };
+
+        for (const char* assetPath : s_engineAssets)
+        {
+            fs::path src = fs::current_path() / assetPath;
+            fs::path dst = outputDir / assetPath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
+
+        // Selected scene files
+        for (const auto& scenePath : scenePaths)
+        {
+            fs::path src = fs::current_path() / scenePath;
+            fs::path dst = outputDir / scenePath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
+
+        // Scene order manifest
+        {
+            fs::path manifestPath = outputDir / "Assets" / "Scenes" / "build_scenes.json";
+            fs::create_directories(manifestPath.parent_path(), ec);
+            std::ofstream manifest(manifestPath);
+            manifest << "{\n  \"scenes\": [\n";
+            for (size_t i = 0; i < scenePaths.size(); ++i)
+            {
+                manifest << "    \"" << scenePaths[i] << "\"";
+                if (i + 1 < scenePaths.size()) manifest << ",";
+                manifest << "\n";
+            }
+            manifest << "  ]\n}\n";
+        }
+
+        // Collect all asset paths referenced by the selected scenes
+        // by parsing their JSON directly — no dependency on what
+        // the editor happened to load in this session.
+        std::unordered_set<std::string> assetsToCopy;
+        std::unordered_set<std::string> matsToParse;
+
+        for (const auto& scenePath : scenePaths)
+            CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        for (const auto& matPath : matsToParse)
+            assetsToCopy.insert(matPath);
+
+        std::unordered_set<std::string> luaDeps;
+        std::unordered_set<std::string> visited;
+        for (const auto& assetPath : assetsToCopy)
+        {
+            if (assetPath.ends_with(".lua"))
+                CollectLuaDependencies(assetPath, luaDeps, visited);
+        }
+        assetsToCopy.merge(luaDeps);
+
+        std::unordered_set<std::string> matDeps;
+
+        for (const auto& assetPath : assetsToCopy)
+        {
+            if (assetPath.ends_with(".mat"))
+                CollectAssetsFromMats(assetPath, matDeps);
+        }
+
+        assetsToCopy.merge(matDeps);
+
+        // Copy all collected assets
+        for (const auto& assetPath : assetsToCopy)
+        {
+            fs::path src = fs::current_path() / assetPath;
+            fs::path dst = outputDir / assetPath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+
+            if (src.extension() == ".mesh")
+            {
+                fs::path animSrc = src.parent_path() / "Animation";
+                if (fs::exists(animSrc) && fs::is_directory(animSrc))
+                {
+                    fs::path animDst = dst.parent_path() / "Animation";
+                    fs::copy(animSrc, animDst, copyOpts, ec);
+                    if (ec)
+                        LOG_ERROR_CAT("Build", "Could not copy Animation folder for {}: {}",
+                            assetPath.c_str(), ec.message().c_str());
+                }
+            }
+        }
+
+        if (ec)
+            LOG_WARNING_CAT("Build", "{}", ec.message().c_str());
+        else
+            LOG_INFO_CAT("Build", "Build complete -> {}", outputDir.string().c_str());
     }
 
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)

@@ -19,7 +19,7 @@ function M:New()
 end
 
 function M:Update(dt)
-print(self)
+    print(self)
     print(self.speed)
 end
 

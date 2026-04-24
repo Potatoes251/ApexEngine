@@ -58,7 +58,8 @@ namespace Apex
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
-        bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
+        bool Init(Windowing::IWindow* window);
+        bool InitGUI(UserInterface::IGUI* gui);
         void Tick();
         void LoadScene();
 
@@ -72,6 +73,8 @@ namespace Apex
         Audio::IAudioEngine*        GetAudio() { return m_audio.get(); }
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
+
+        float                       GetDeltaTime() { return m_deltaTime_s; }
 
     private:
         bool InitLog();

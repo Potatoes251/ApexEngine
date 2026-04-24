@@ -175,6 +175,9 @@ namespace Apex::UserInterface
         void BeginModalBlock(const std::string& name) override;
         void EndModalBlock() override;
 
+        void BeginDisabled(bool disabled = true) override;
+        void EndDisabled() override;
+
         void Dummy(LibMath::Vector2 size) override;
 
 	private:

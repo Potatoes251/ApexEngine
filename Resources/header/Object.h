@@ -12,8 +12,13 @@
 #include <vector>
 #include <memory>
 #include <utility>
-#include <functional>	
+#include <functional>
 #include <set>
+
+#ifdef _WIN32
+#undef min
+#undef max
+#endif
 
 namespace Apex::Data
 {
@@ -152,7 +157,7 @@ namespace Apex::Data
 		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys = nullptr);
 		void RemoveComponent(size_t compId, Apex::Physic::PhysicSystem* phys = nullptr);
 
-		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
+		std::shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 		void OnChanged();
 		void SetOnChangedCallback(std::function<void()> callback);
