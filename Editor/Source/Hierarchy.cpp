@@ -16,10 +16,11 @@ using namespace Apex::Rendering;
 using namespace Apex::Data;
 using namespace Apex::Windowing;
 using namespace Apex::CtrlZ;
+using namespace Apex::Resources;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene* scene, ComponentsViewer* compViewer, IWindow& window)
-    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_window(window)
+    Scene* scene, ComponentsViewer* compViewer, IWindow& window, ResourceManager* resourceManager)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_window(window), m_resourceManager(resourceManager)
 {
 }
 
@@ -47,6 +48,34 @@ void Hierarchy::Draw()
                 {
                     DestroyObject(objId);
                 }));
+        }
+
+        if (m_gui.MenuItem("Cube"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
+            comp.SetMesh(mesh);
+            auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
+            comp.SetMaterial(mat);
+            obj->SetName("Cube");
+
+            m_selected = obj;
+        }
+
+        if (m_gui.MenuItem("Sphere"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere/sphere.mesh");
+            comp.SetMesh(mesh);
+            auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
+            comp.SetMaterial(mat);
+            obj->SetName("Sphere");
+
+            m_selected = obj;
         }
         m_gui.EndPopup();
     }

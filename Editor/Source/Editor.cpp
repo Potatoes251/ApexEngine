@@ -91,7 +91,8 @@ namespace Apex::Editor
             *m_gui,
             app.GetScene(),
             m_componentsViewer.get(),
-            *m_window
+            *m_window,
+            app.GetResourceManager()
         );
 
         m_viewport = std::make_unique<Viewport>(
