@@ -2,15 +2,17 @@
 
 #include "EditorIcon.h"
 
-#include "Audio.h"
-#include "Scene.h"
 #include "Shader.h"
-#include "SceneLoader.h"
+#include "LogSystem.h"
 #include "ResourceHandle.h"
 #include "ResourceManager.h"
+
 #include "Rigidbody.h"
+
+#include "Audio.h"
+#include "Scene.h"
+#include "SceneLoader.h"
 #include "CommandManager.h"
-#include "LogSystem.h"
 #include "MaterialEditor.h"
 
 using namespace Apex::Data;
@@ -67,11 +69,11 @@ namespace Apex::Editor
 
         // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
-            *m_gui,
+            m_gui.get(),
             app.GetScene(),
-            *m_app->GetResourceManager(),
-            *app.GetScene()->GetPhysic(),
-            *m_app->GetLuaManager()
+            m_app->GetResourceManager(),
+            app.GetScene()->GetPhysic(),
+            m_app->GetLuaManager()
         );
 
         m_hierarchy = std::make_unique<Hierarchy>(
@@ -409,24 +411,8 @@ namespace Apex::Editor
         default:                 return "Unknown";
         }
     }
-    void Editor::OnExternalDrop(std::vector<std::filesystem::path> paths)
-    {
-        if (!m_contentBrowser) return;
 
-        LibMath::Vector2 pos = InputSystem::Get().GetMousePos();
-
-        fs::path dest = m_contentBrowser->GetExternalDropDest(pos[0], pos[1]);
-        if (!dest.empty())
-        {
-            m_contentBrowser->ImportFiles(std::move(paths), dest);
-            return;
-        }
-
-        if (m_contentBrowser->ContainsGridPoint(pos[0], pos[1]))
-            m_contentBrowser->ImportFiles(std::move(paths));
-    }
-
-    void Editor::OpenTextureEditor(const fs::path& path)
+    void Editor::OpenTextureEditor(const Fs::path& path)
     {
         // If this texture is already open, just focus that window
         for (auto& textureEditor : m_textureEditors)
@@ -443,7 +429,7 @@ namespace Apex::Editor
         m_textureEditors.push_back(std::move(textureEditor));
     }
 
-    void Editor::OpenMeshViewer(const fs::path& path)
+    void Editor::OpenMeshViewer(const Fs::path& path)
     {
         // If this mesh is already open, just focus that window
         for (auto& meshViewer : m_meshViewers)
@@ -455,12 +441,12 @@ namespace Apex::Editor
             }
         }
         // Otherwise open a new viewer for this mesh
-        auto meshViewer = std::make_unique<MeshViewer>(*m_gui, *m_window, *m_app->GetRhi(), *m_app->GetResourceManager());
+        auto meshViewer = std::make_unique<MeshViewer>(m_gui.get(), m_app->GetRhi(), m_app->GetResourceManager());
         meshViewer->Open(path, static_cast<int>(m_meshViewers.size()));
         m_meshViewers.push_back(std::move(meshViewer));
     }
 
-    void Editor::OpenSoundPlayer(const fs::path& path)
+    void Editor::OpenSoundPlayer(const Fs::path& path)
     {
         for (auto& soundPlayer : m_soundPlayers)
         {
@@ -470,12 +456,12 @@ namespace Apex::Editor
                 return;
             }
         }
-        auto soundPlayer = std::make_unique<SoundPlayer>(*m_gui, *m_window, *m_audio);
+        auto soundPlayer = std::make_unique<SoundPlayer>(m_gui.get(), m_audio);
         soundPlayer->Open(path, static_cast<int>(m_soundPlayers.size()));
         m_soundPlayers.push_back(std::move(soundPlayer));
     }
 
-    void Editor::OpenHudEditor(const fs::path& path)
+    void Editor::OpenHudEditor(const Fs::path& path)
     {
         for (auto& hudEditor : m_hudEditors)
         {
@@ -485,7 +471,7 @@ namespace Apex::Editor
                 return;
             }
         }
-        auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager(), *m_app->GetRhi());
+        auto hudEditor = std::make_unique<HudEditor>(m_gui.get(), m_app->GetResourceManager(), m_app->GetRhi());
         hudEditor->Open(path, static_cast<int>(m_hudEditors.size()));
         m_hudEditors.push_back(std::move(hudEditor));
     }

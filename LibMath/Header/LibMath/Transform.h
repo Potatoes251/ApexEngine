@@ -30,6 +30,8 @@ namespace LibMath
 		void	setPosition(Vector3 position) { m_position = position; }
 		void	setScale(Vector3 scale) { m_scale = scale; }
 
+		Transform inversed() const;
+
 		operator Matrix4() const;
 
 		// parent * child

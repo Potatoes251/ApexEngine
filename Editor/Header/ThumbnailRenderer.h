@@ -9,7 +9,7 @@
 #include <filesystem>
 
 class Mesh;
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 
 namespace Apex::Editor
 {
@@ -22,15 +22,15 @@ namespace Apex::Editor
         ThumbnailRenderer(const ThumbnailRenderer&) = delete;
         ThumbnailRenderer& operator=(const ThumbnailRenderer&) = delete;
 
-        uint32_t GetCached(const fs::path& meshPath) const;
-        uint32_t GetOrRender(const fs::path& meshPath);
+        uint32_t GetCached(const Fs::path& meshPath) const;
+        uint32_t GetOrRender(const Fs::path& meshPath);
 
         void Clear();
 
         static constexpr float SIZE = 128.f;
 
     private:
-        uint32_t Render(const fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle);
+        uint32_t Render(const Fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle);
         void BuildShaders();
         void DestroyShaders();
 

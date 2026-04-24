@@ -44,7 +44,7 @@ namespace Apex::Windowing
 		// Input
 		void	SetCursorCaptured(bool captured) override;
 		void	SetCrosshairCursor() override;
-		void	ResetCursor() override;
+		void	ResetCursorShape() override;
 
 
 		// Callbacks

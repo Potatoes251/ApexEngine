@@ -69,7 +69,6 @@ namespace Apex::Editor
 
 	private:
 		static const char* TypeToString(AssetType type);
-		void OnExternalDrop(std::vector<std::filesystem::path> paths);
 
 		void OpenTextureEditor(const std::filesystem::path& path);
 		void OpenMeshViewer(const std::filesystem::path& path);

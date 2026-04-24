@@ -7,14 +7,13 @@ using namespace Apex::UserInterface;
 namespace Apex::Editor
 {
 
-    HudEditor::HudEditor(IGUI& gui,
-        Apex::Windowing::IWindow& window,
-        Apex::Resources::ResourceManager& resourceManager, Apex::Rendering::IRHI& rhi)
-        : m_gui(gui), m_window(window), m_resourceManager(resourceManager), m_rhi(rhi)
+    HudEditor::HudEditor(IGUI* gui,
+        Apex::Resources::ResourceManager* resourceManager, Apex::Rendering::IRHI* rhi)
+        : m_gui(gui), m_resourceManager(resourceManager), m_rhi(rhi)
     {
     }
 
-    void HudEditor::Open(const fs::path& path, int instanceIndex)
+    void HudEditor::Open(const Fs::path& path, int instanceIndex)
     {
         m_path = path;
         m_instanceIndex = instanceIndex;
@@ -23,7 +22,7 @@ namespace Apex::Editor
         m_selection = {};
         m_canvas.Clear();
 
-        if (fs::exists(path)) m_canvas.Load(path, m_resourceManager);
+        if (Fs::exists(path)) m_canvas.Load(path, *m_resourceManager);
         ScanTextures();
     }
 
@@ -34,80 +33,80 @@ namespace Apex::Editor
     {
         if (!m_open) return;
 
-        m_gui.PushFont(FontID::Default);
+        m_gui->PushFont(FontID::Default);
 
         constexpr float CASCADE = 30.f;
         float offset = static_cast<float>(m_instanceIndex) * CASCADE;
-        LibMath::Vector2 screen = m_gui.GetScreenSize();
-        m_gui.SetNextWindowPos(LibMath::Vector2(offset, offset));
-        m_gui.SetNextWindowSize(LibMath::Vector2(screen[0] - offset, screen[1] - offset));
+        LibMath::Vector2 screen = m_gui->GetScreenSize();
+        m_gui->SetNextWindowPos(LibMath::Vector2(offset, offset));
+        m_gui->SetNextWindowSize(LibMath::Vector2(screen[0] - offset, screen[1] - offset));
 
         if (m_pendingFocus) 
         { 
-            m_gui.SetNextWindowFocus(); 
+            m_gui->SetNextWindowFocus(); 
             m_pendingFocus = false; 
         }
 
         std::string title = "HUD Editor - " + m_path.stem().string() + (m_dirty ? " *" : "");
 
-        m_gui.BeginPanel(title, &m_open, false, true);
+        m_gui->BeginPanel(title, &m_open, false, true);
 
         if (!m_open)
         {
             Close();
-            m_gui.EndPanel();
-            m_gui.PopFont();
+            m_gui->EndPanel();
+            m_gui->PopFont();
             return;
         }
 
         DrawToolbar();
-        m_gui.Separator();
+        m_gui->Separator();
 
-        float availableWidth = m_gui.GetAvailableSize()[0];
-        float availableHeight = m_gui.GetAvailableSize()[1];
+        float availableWidth = m_gui->GetAvailableSize()[0];
+        float availableHeight = m_gui->GetAvailableSize()[1];
 
         float spacing = 4.f;
         float canvasWidth = availableWidth - TREE_WIDTH - PROPS_WIDTH - spacing * 4.f - 8.f;
         if (canvasWidth < 100.f) canvasWidth = 100.f;
 
-        m_gui.BeginChildPanel("##he_tree", TREE_WIDTH, availableHeight, true);
+        m_gui->BeginChildPanel("##he_tree", TREE_WIDTH, availableHeight, true);
         DrawWidgetTree();
-        m_gui.EndChildPanel();
+        m_gui->EndChildPanel();
 
-        m_gui.SameLine(0.f, spacing);
+        m_gui->SameLine(0.f, spacing);
 
-        m_gui.BeginChildPanel("##he_canvas", canvasWidth, availableHeight, true);
+        m_gui->BeginChildPanel("##he_canvas", canvasWidth, availableHeight, true);
         DrawCanvas();
-        m_gui.EndChildPanel();
+        m_gui->EndChildPanel();
 
-        m_gui.SameLine(0.f, spacing);
+        m_gui->SameLine(0.f, spacing);
 
-        m_gui.BeginChildPanel("##he_props", PROPS_WIDTH, availableHeight, true);
+        m_gui->BeginChildPanel("##he_props", PROPS_WIDTH, availableHeight, true);
         DrawProperties();
-        m_gui.EndChildPanel();
+        m_gui->EndChildPanel();
 
         if (m_showTexturePicker) DrawTexturePicker();
 
         ApplyPendingTreeOp();
 
-        m_gui.EndPanel();
-        m_gui.PopFont();
+        m_gui->EndPanel();
+        m_gui->PopFont();
     }
 
     void HudEditor::DrawToolbar()
     {
-        m_gui.PushStyleVariable(StyleVariable::FramePadding, 6.f, 4.f);
+        m_gui->PushStyleVariable(StyleVariable::FramePadding, 6.f, 4.f);
 
         DrawToolbarSave();
-        m_gui.SameLine(0.f, 8.f);
+        m_gui->SameLine(0.f, 8.f);
         DrawToolbarLoad();
 
-        m_gui.SameLine(0.f, 16.f);
-        m_gui.VerticalSeparator();
-        m_gui.SameLine(0.f, 16.f);
+        m_gui->SameLine(0.f, 16.f);
+        m_gui->VerticalSeparator();
+        m_gui->SameLine(0.f, 16.f);
 
-        m_gui.Text("Add:");
-        m_gui.SameLine(0.f, 12.f);
+        m_gui->Text("Add:");
+        m_gui->SameLine(0.f, 12.f);
 
         struct WType 
         { 
@@ -123,13 +122,13 @@ namespace Apex::Editor
         };
         for (auto& t : types)
         {
-            if (m_gui.Button(t.label)) AddWidget(t.type);
-            m_gui.SameLine(0.f, 8.f);
+            if (m_gui->Button(t.label)) AddWidget(t.type);
+            m_gui->SameLine(0.f, 8.f);
         }
 
-        if (m_selection.IsValid() && m_gui.IsKeyPressed(UIKey::Delete)) DeleteSelected();
+        if (m_selection.IsValid() && m_gui->IsKeyPressed(UIKey::Delete)) DeleteSelected();
 
-        m_gui.PopStyleVariable();
+        m_gui->PopStyleVariable();
     }
 
     void HudEditor::DrawToolbarSave()
@@ -137,7 +136,7 @@ namespace Apex::Editor
         uint32_t saveIcon = EditorIcon::Get("ApexAssets/Icons/save.png");
         if (saveIcon != 0)
         {
-            if (m_gui.ImageButton("##save", saveIcon, LibMath::Vector2(22.f, 22.f)))
+            if (m_gui->ImageButton("##save", saveIcon, LibMath::Vector2(22.f, 22.f)))
             {
                 if (m_canvas.Save(m_path))
                     m_dirty = false;
@@ -145,17 +144,17 @@ namespace Apex::Editor
         }
         else
         {
-            if (m_gui.Button("Save"))
+            if (m_gui->Button("Save"))
             {
                 if (m_canvas.Save(m_path))
                     m_dirty = false;
             }
         }
-        if (m_gui.IsItemHovered())
+        if (m_gui->IsItemHovered())
         {
-            m_gui.BeginTooltip();
-            m_gui.Text("Save Canvas...");
-            m_gui.EndTooltip();
+            m_gui->BeginTooltip();
+            m_gui->Text("Save Canvas...");
+            m_gui->EndTooltip();
         }
     }
 
@@ -164,34 +163,34 @@ namespace Apex::Editor
         uint32_t loadIcon = EditorIcon::Get("ApexAssets/Icons/load.png");
         if (loadIcon != 0)
         {
-            if (m_gui.ImageButton("##load", loadIcon, LibMath::Vector2(22.f, 22.f)))
+            if (m_gui->ImageButton("##load", loadIcon, LibMath::Vector2(22.f, 22.f)))
             {
-                m_canvas.Load(m_path, m_resourceManager);
+                m_canvas.Load(m_path, *m_resourceManager);
                 m_selection = {};
                 m_dirty = false;
             }
         }
         else
         {
-            if (m_gui.Button("Load"))
+            if (m_gui->Button("Load"))
             {
-                m_canvas.Load(m_path, m_resourceManager);
+                m_canvas.Load(m_path, *m_resourceManager);
                 m_selection = {};
                 m_dirty = false;
             }
         }
-        if (m_gui.IsItemHovered())
+        if (m_gui->IsItemHovered())
         {
-            m_gui.BeginTooltip();
-            m_gui.Text("Load Canvas...");
-            m_gui.EndTooltip();
+            m_gui->BeginTooltip();
+            m_gui->Text("Load Canvas...");
+            m_gui->EndTooltip();
         }
     }
 
     void HudEditor::DrawCanvas()
     {
-        LibMath::Vector2 panelPos = m_gui.GetPanelPos();
-        LibMath::Vector2 panelSize = m_gui.GetAvailableSize();
+        LibMath::Vector2 panelPos = m_gui->GetPanelPos();
+        LibMath::Vector2 panelSize = m_gui->GetAvailableSize();
 
         float canvasWidth = panelSize[0];
         float canvasHeight = canvasWidth / CANVAS_ASPECT;
@@ -207,10 +206,10 @@ namespace Apex::Editor
         float offY = panelPos[1] + (panelSize[1] - canvasHeight) * 0.5f;
         m_canvasMin = { offX, offY };
 
-        m_gui.SetCursorPos(panelPos);
-        m_gui.InvisibleButton("##canvas", panelSize);
+        m_gui->SetCursorPos(panelPos);
+        m_gui->InvisibleButton("##canvas", panelSize);
 
-        IDrawList* drawList = m_gui.GetDrawList();
+        IDrawList* drawList = m_gui->GetDrawList();
 
         LibMath::Vector2 drawMin = m_canvasMin;
         LibMath::Vector2 drawMax = 
@@ -219,7 +218,7 @@ namespace Apex::Editor
         };
 
         drawList->DrawRectFilled(drawMin, drawMax, 0xFF1A1A1A);
-        m_canvas.PrepareForRender(&m_rhi);
+        m_canvas.PrepareForRender(m_rhi);
 
         size_t count = m_canvas.GetElementCount();
         for (size_t i = 0; i < count; ++i)
@@ -251,10 +250,10 @@ namespace Apex::Editor
 
     void HudEditor::HandleCanvasInput()
     {
-        bool active = m_gui.IsItemActive();
-        bool clicked = m_gui.IsItemClicked();
+        bool active = m_gui->IsItemActive();
+        bool clicked = m_gui->IsItemClicked();
 
-        LibMath::Vector2 mouse = m_gui.GetMousePos();
+        LibMath::Vector2 mouse = m_gui->GetMousePos();
 
         if (clicked)
         {
@@ -323,29 +322,29 @@ namespace Apex::Editor
 
     void HudEditor::DrawWidgetTree()
     {
-        m_gui.PushFont(FontID::Large);
-        m_gui.Text("Hierarchy");
-        m_gui.PopFont();
-        m_gui.Separator();
+        m_gui->PushFont(FontID::Large);
+        m_gui->Text("Hierarchy");
+        m_gui->PopFont();
+        m_gui->Separator();
 
         m_showInsertLine = false;
 
         for (size_t i = 0; i < m_canvas.GetElementCount(); ++i)
             DrawTreeElement(m_canvas.GetElement(i), static_cast<int>(i), nullptr);
 
-        LibMath::Vector2 availableSize = m_gui.GetAvailableSize();
+        LibMath::Vector2 availableSize = m_gui->GetAvailableSize();
         float dummyHeight = (availableSize[1] > 40.f) ? availableSize[1] : 40.f;
-        m_gui.Dummy({ availableSize[0], dummyHeight });
+        m_gui->Dummy({ availableSize[0], dummyHeight });
 
-        if (m_gui.BeginDropTarget())
+        if (m_gui->BeginDropTarget())
         {
-            if (m_gui.AcceptDragPayload("WIDGET_TREE"))
+            if (m_gui->AcceptDragPayload("WIDGET_TREE"))
             {
                 m_pendingOp.kind = PendingTreeOp::Kind::Reparent;
                 m_pendingOp.dstParent = nullptr;
                 m_pendingOp.dstIndex = -1;
             }
-            m_gui.EndDropTarget();
+            m_gui->EndDropTarget();
         }
 
         if (m_showInsertLine)
@@ -364,7 +363,7 @@ namespace Apex::Editor
         TreeNodeFlags flags = GetTreeNodeFlags(element, thisSelection);
         std::string label = ShortenName(element->m_name) + "##" + std::to_string(reinterpret_cast<uintptr_t>(element));
 
-        bool nodeOpen = m_gui.BeginTreeNode(label, flags);
+        bool nodeOpen = m_gui->BeginTreeNode(label, flags);
 
         HandleTreeInteraction(element, index, parent, asPanel, thisSelection);
 
@@ -375,7 +374,7 @@ namespace Apex::Editor
                 for (int ci = 0; ci < static_cast<int>(asPanel->m_children.size()); ++ci)
                     DrawTreeElement(asPanel->m_children[ci].get(), ci, asPanel);
             }
-            m_gui.EndTreeNode();
+            m_gui->EndTreeNode();
         }
     }
 
@@ -393,14 +392,14 @@ namespace Apex::Editor
 
     void HudEditor::HandleTreeInteraction(UIElement* element, size_t index, UIPanel* parent, UIPanel* asPanel, const WidgetSelection& selection)
     {
-        if (m_gui.IsItemClicked() && !m_gui.IsDragDropActive())
+        if (m_gui->IsItemClicked() && !m_gui->IsDragDropActive())
             m_selection = selection;
 
-        if (m_gui.IsDragDropActive() && m_gui.IsItemHovered())
+        if (m_gui->IsDragDropActive() && m_gui->IsItemHovered())
         {
-            LibMath::Vector2 minRect = m_gui.GetItemRectMin();
-            LibMath::Vector2 maxRect = m_gui.GetItemRectMax();
-            float mouseY = m_gui.GetMousePos()[1];
+            LibMath::Vector2 minRect = m_gui->GetItemRectMin();
+            LibMath::Vector2 maxRect = m_gui->GetItemRectMax();
+            float mouseY = m_gui->GetMousePos()[1];
             float height = maxRect[1] - minRect[1];
 
             if (mouseY < minRect[1] + height * 0.25f)
@@ -416,30 +415,30 @@ namespace Apex::Editor
         }
 
         // Drag Logic
-        if (m_gui.BeginDragSource())
+        if (m_gui->BeginDragSource())
         {
             m_pendingOp.srcParent = parent;
             m_pendingOp.srcIndex = index;
-            m_gui.SetDragPayload("WIDGET_TREE", &index, sizeof(int));
-            m_gui.Text(element->m_name.c_str());
-            m_gui.EndDragSource();
+            m_gui->SetDragPayload("WIDGET_TREE", &index, sizeof(int));
+            m_gui->Text(element->m_name.c_str());
+            m_gui->EndDragSource();
         }
 
         // Drop Logic
-        if (m_gui.BeginDropTarget())
+        if (m_gui->BeginDropTarget())
         {
             HandleDropOnElement(index, parent, asPanel);
-            m_gui.EndDropTarget();
+            m_gui->EndDropTarget();
         }
     }
 
     void HudEditor::HandleDropOnElement(size_t index, UIPanel* parent, UIPanel* asPanel)
     {
-        if (!m_gui.AcceptDragPayload("WIDGET_TREE")) return;
+        if (!m_gui->AcceptDragPayload("WIDGET_TREE")) return;
 
-        LibMath::Vector2 minRect = m_gui.GetItemRectMin();
-        LibMath::Vector2 maxRect = m_gui.GetItemRectMax();
-        float mouseY = m_gui.GetMousePos()[1];
+        LibMath::Vector2 minRect = m_gui->GetItemRectMin();
+        LibMath::Vector2 maxRect = m_gui->GetItemRectMax();
+        float mouseY = m_gui->GetMousePos()[1];
         float height = maxRect[1] - minRect[1];
 
         if (mouseY < minRect[1] + height * 0.25f)
@@ -464,9 +463,9 @@ namespace Apex::Editor
 
     void HudEditor::DrawInsertLine(float y)
     {
-        IDrawList* drawList = m_gui.GetDrawList();
-        LibMath::Vector2 panelPos = m_gui.GetPanelPos();
-        LibMath::Vector2 panelSize = m_gui.GetPanelSize();
+        IDrawList* drawList = m_gui->GetDrawList();
+        LibMath::Vector2 panelPos = m_gui->GetPanelPos();
+        LibMath::Vector2 panelSize = m_gui->GetPanelSize();
         drawList->AddLine({ panelPos[0], y }, { panelPos[0] + panelSize[0], y }, 0xFF50A0FF, 2.f);
     }
 
@@ -474,23 +473,23 @@ namespace Apex::Editor
     {
         if (!m_texPickerOpened)
         {
-            m_gui.OpenPopup("Pick Texture");
+            m_gui->OpenPopup("Pick Texture");
             m_texPickerOpened = true;
         }
 
-        if (!m_gui.BeginPopupModal("Pick Texture", { 540.f, 420.f }))
+        if (!m_gui->BeginPopupModal("Pick Texture", { 540.f, 420.f }))
             return;
 
-        m_gui.Text("Click a texture to select:");
-        m_gui.Separator();
+        m_gui->Text("Click a texture to select:");
+        m_gui->Separator();
 
         if (m_textureFiles.empty())
         {
-            m_gui.TextDisabled("No textures found in Assets/");
+            m_gui->TextDisabled("No textures found in Assets/");
         }
         else
         {
-            int cols = Apex::Resources::PickerColumnCount(m_gui.GetAvailableSize()[0]);
+            int cols = Apex::Resources::PickerColumnCount(m_gui->GetAvailableSize()[0]);
 
             std::string picked = DrawTextureGrid(cols);
             if (!picked.empty())
@@ -498,25 +497,25 @@ namespace Apex::Editor
                 CommitTextureSelection(picked);
                 m_showTexturePicker = false;
                 m_texPickerOpened = false;
-                m_gui.CloseCurrentPopup();
-                m_gui.EndPopup();
+                m_gui->CloseCurrentPopup();
+                m_gui->EndPopup();
                 return;
             }
         }
 
-        m_gui.Separator();
-        if (m_gui.Button("Cancel##tpcancel"))
+        m_gui->Separator();
+        if (m_gui->Button("Cancel##tpcancel"))
         {
             m_showTexturePicker = false;
             m_texPickerOpened = false;
-            m_gui.CloseCurrentPopup();
+            m_gui->CloseCurrentPopup();
         }
-        m_gui.EndPopup();
+        m_gui->EndPopup();
     }
 
     std::string HudEditor::DrawTextureGrid(int cols)
     {
-        m_gui.BeginChildPanel("##tp_grid", 0.f, -50.f, false);
+        m_gui->BeginChildPanel("##tp_grid", 0.f, -50.f, false);
 
         int col = 0;
         for (const auto& path : m_textureFiles)
@@ -524,22 +523,22 @@ namespace Apex::Editor
             std::string key = path.generic_string();
 
             if (col > 0 && col % cols != 0)
-                m_gui.SameLine(0.f, Apex::Resources::PICKER_SPACING);
+                m_gui->SameLine(0.f, Apex::Resources::PICKER_SPACING);
 
-            m_gui.PushID(key);
+            m_gui->PushID(key);
             uint32_t tid = EditorIcon::Get(key);
             bool picked = Apex::Resources::DrawPickerCell(m_gui, key, tid);
-            m_gui.PopID();
+            m_gui->PopID();
 
             if (picked)
             {
-                m_gui.EndChildPanel();
+                m_gui->EndChildPanel();
                 return key;
             }
             col++;
         }
 
-        m_gui.EndChildPanel();
+        m_gui->EndChildPanel();
         return {};
     }
 
@@ -551,46 +550,46 @@ namespace Apex::Editor
 
         img->m_texturePath = key;
         img->m_glTexID = 0;
-        img->LoadTexture(m_resourceManager);
+        img->LoadTexture(*m_resourceManager);
         m_dirty = true;
     }
 
     void HudEditor::DrawProperties()
     {
-        m_gui.PushFont(FontID::Large);
-        m_gui.Text("Properties");
-        m_gui.PopFont();
-        m_gui.Separator();
+        m_gui->PushFont(FontID::Large);
+        m_gui->Text("Properties");
+        m_gui->PopFont();
+        m_gui->Separator();
 
         UIElement* element = ResolveSelected();
         if (!element) 
         { 
-            m_gui.TextDisabled("No widget selected"); 
+            m_gui->TextDisabled("No widget selected"); 
             return; 
         }
 
-        m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 4.f, 6.f);
+        m_gui->PushStyleVariable(StyleVariable::ItemSpacing, 4.f, 6.f);
        
         DrawBaseProperties(element);
-        m_gui.Separator();
+        m_gui->Separator();
         DrawTypeSpecificProperties(element);
 
-        m_gui.PopStyleVariable();
+        m_gui->PopStyleVariable();
     }
 
     void HudEditor::DrawRow(const char* label)
     {
-        m_gui.AlignTextToFramePadding();
-        m_gui.Text(label);
-        m_gui.SameLine(LABEL_WIDTH);
-        m_gui.SetNextItemWidth(-1.f);
+        m_gui->AlignTextToFramePadding();
+        m_gui->Text(label);
+        m_gui->SameLine(LABEL_WIDTH);
+        m_gui->SetNextItemWidth(-1.f);
     }
 
     void HudEditor::DrawColorRow(const char* label, const char* id, UIColor& color)
     {
         DrawRow(label);
         float col[4] = { color.m_r, color.m_g, color.m_b, color.m_a };
-        if (m_gui.ColorEdit4(id, col))
+        if (m_gui->ColorEdit4(id, col))
         {
             color.m_r = col[0];
             color.m_g = col[1];
@@ -604,16 +603,16 @@ namespace Apex::Editor
     {
         DrawRow("Name:");
         char buf[128]; std::strncpy(buf, element->m_name.c_str(), 127); buf[127] = '\0';
-        if (m_gui.InputText("##name", buf, 128)) 
+        if (m_gui->InputText("##name", buf, 128)) 
         { 
             element->m_name = buf; 
             m_dirty = true; 
         }
 
         DrawRow("Visible:");
-        if (m_gui.Checkbox("##vis", &element->m_visible)) m_dirty = true;
+        if (m_gui->Checkbox("##vis", &element->m_visible)) m_dirty = true;
 
-        m_gui.Separator();
+        m_gui->Separator();
 
         DrawRow("Anchor:");
         static const char* items =
@@ -621,20 +620,20 @@ namespace Apex::Editor
             "MiddleLeft\0Center\0MiddleRight\0"
             "BottomLeft\0BottomCenter\0BottomRight\0";
         int cur = static_cast<int>(element->m_anchor);
-        if (m_gui.Combo("##anch", &cur, items))
+        if (m_gui->Combo("##anch", &cur, items))
         {
             element->m_anchor = static_cast<UIAnchor>(cur);
             m_dirty = true;
         }
 
         DrawRow("Pos X:");
-        if (m_gui.InputFloat("##px", &element->m_position[0])) m_dirty = true;
+        if (m_gui->InputFloat("##px", &element->m_position[0])) m_dirty = true;
         DrawRow("Pos Y:");
-        if (m_gui.InputFloat("##py", &element->m_position[1])) m_dirty = true;
+        if (m_gui->InputFloat("##py", &element->m_position[1])) m_dirty = true;
         DrawRow("Width:");
-        if (m_gui.InputFloat("##sw", &element->m_size[0])) m_dirty = true;
+        if (m_gui->InputFloat("##sw", &element->m_size[0])) m_dirty = true;
         DrawRow("Height:");
-        if (m_gui.InputFloat("##sh", &element->m_size[1])) m_dirty = true;
+        if (m_gui->InputFloat("##sh", &element->m_size[1])) m_dirty = true;
     }
 
     void HudEditor::DrawTypeSpecificProperties(UIElement* element)
@@ -648,27 +647,27 @@ namespace Apex::Editor
 
     void HudEditor::DrawTextProperties(UIText* text)
     {
-        m_gui.Text("Text");
-        m_gui.Separator();
+        m_gui->Text("Text");
+        m_gui->Separator();
         DrawRow("Content:");
         
         char buffer[256];
         std::strncpy(buffer, text->m_text.c_str(), 255);
         buffer[255] = '\0';
-        if (m_gui.InputText("##txt", buffer, 256))
+        if (m_gui->InputText("##txt", buffer, 256))
         {
             text->m_text = buffer;
             m_dirty = true;
         }
 
         DrawRow("FontSize:");
-        if (m_gui.InputFloat("##fs", &text->m_fontSize)) m_dirty = true;
+        if (m_gui->InputFloat("##fs", &text->m_fontSize)) m_dirty = true;
         DrawColorRow("Color:", "##tc", text->m_textColor);
         DrawRow("H-Align:");
         {
             static const char* hAlign = "Left\0Center\0Right\0";
             int current = static_cast<int>(text->m_hAlign);
-            if (m_gui.Combo("##ha", &current, hAlign))
+            if (m_gui->Combo("##ha", &current, hAlign))
             {
                 text->m_hAlign = static_cast<TextHAlign>(current);
                 m_dirty = true;
@@ -678,7 +677,7 @@ namespace Apex::Editor
         {
             static const char* vAlign = "Top\0Middle\0Bottom\0";
             int current = static_cast<int>(text->m_vAlign);
-            if (m_gui.Combo("##va", &current, vAlign))
+            if (m_gui->Combo("##va", &current, vAlign))
             {
                 text->m_vAlign = static_cast<TextVAlign>(current);
                 m_dirty = true;
@@ -688,14 +687,14 @@ namespace Apex::Editor
 
     void HudEditor::DrawImageProperties(UIImage* image)
     {
-        m_gui.Text("Image");
-        m_gui.Separator();
+        m_gui->Text("Image");
+        m_gui->Separator();
         DrawColorRow("Tint:", "##imgcol", image->m_color);
-        m_gui.AlignTextToFramePadding();
-        m_gui.Text("Texture:");
-        m_gui.SameLine(LABEL_WIDTH);
-        m_gui.SetNextItemWidth(-1.f);
-        if (m_gui.Button("Browse...##texbrowse"))
+        m_gui->AlignTextToFramePadding();
+        m_gui->Text("Texture:");
+        m_gui->SameLine(LABEL_WIDTH);
+        m_gui->SetNextItemWidth(-1.f);
+        if (m_gui->Button("Browse...##texbrowse"))
         {
             m_showTexturePicker = true;
             m_texPickerOpened = false;
@@ -705,53 +704,53 @@ namespace Apex::Editor
         if (!image->m_texturePath.empty())
         {
             DrawRow("File:");
-            m_gui.TextDisabled(fs::path(image->m_texturePath).filename().string());
+            m_gui->TextDisabled(Fs::path(image->m_texturePath).filename().string());
 
-            m_gui.AlignTextToFramePadding();
-            m_gui.Text("Preview:");
-            m_gui.SameLine(LABEL_WIDTH);
+            m_gui->AlignTextToFramePadding();
+            m_gui->Text("Preview:");
+            m_gui->SameLine(LABEL_WIDTH);
 
             if (image->m_glTexID == 0 && image->m_texture.IsReady())
             {
                 auto handle = image->m_texture->GetId();
-                if (handle != 0) image->m_glTexID = m_rhi.GetTexture(handle);
+                if (handle != 0) image->m_glTexID = m_rhi->GetTexture(handle);
             }
 
             if (image->m_glTexID != 0)
-                m_gui.DrawImageTinted(image->m_glTexID, { 80.f,80.f }, { 1,1,1,1 }, true);
+                m_gui->DrawImageTinted(image->m_glTexID, { 80.f,80.f }, { 1,1,1,1 }, true);
             else if (image->m_texture.IsFailed())
-                m_gui.TextDisabled("(load failed)");
+                m_gui->TextDisabled("(load failed)");
             else
-                m_gui.TextDisabled("(loading...)");
+                m_gui->TextDisabled("(loading...)");
         }
     }
 
     void HudEditor::DrawPanelProperties(UIPanel* panel)
     {
-        m_gui.Text("Panel");
-        m_gui.Separator();
+        m_gui->Text("Panel");
+        m_gui->Separator();
         DrawRow("Rounding:");
-        if (m_gui.InputFloat("##pr", &panel->m_rounding)) m_dirty = true;
+        if (m_gui->InputFloat("##pr", &panel->m_rounding)) m_dirty = true;
         DrawColorRow("Background:", "##pbc", panel->m_colorBg);
     }
 
     void HudEditor::DrawButtonProperties(UIButton* button)
     {
-        m_gui.Text("Button");
-        m_gui.Separator();
+        m_gui->Text("Button");
+        m_gui->Separator();
         DrawColorRow("Background:", "##bgc", button->m_color);
-        m_gui.Separator();
+        m_gui->Separator();
         DrawRow("Label:");
 
         char buf[128]; std::strncpy(buf, button->m_labelText.m_text.c_str(), 127); buf[127] = '\0';
-        if (m_gui.InputText("##bl", buf, 128)) 
+        if (m_gui->InputText("##bl", buf, 128)) 
         { 
             button->m_labelText.m_text = buf;
             m_dirty = true; 
         }
 
         DrawRow("FontSize:");
-        if (m_gui.InputFloat("##bfs", &button->m_labelText.m_fontSize)) m_dirty = true;
+        if (m_gui->InputFloat("##bfs", &button->m_labelText.m_fontSize)) m_dirty = true;
         DrawColorRow("Text:", "##btc", button->m_labelText.m_textColor);
         DrawColorRow("Hover:", "##bhc", button->m_colorHover);
         DrawColorRow("Press:", "##bpc", button->m_colorPressed);
@@ -759,12 +758,12 @@ namespace Apex::Editor
 
     void HudEditor::DrawProgressBarProperties(UIProgressBar* progressBar)
     {
-        m_gui.Text("ProgressBar");
-        m_gui.Separator();
+        m_gui->Text("ProgressBar");
+        m_gui->Separator();
         DrawRow("Value:");
-        if (m_gui.SliderFloat("##pbv", &progressBar->m_value, 0.f, 1.f)) m_dirty = true;
+        if (m_gui->SliderFloat("##pbv", &progressBar->m_value, 0.f, 1.f)) m_dirty = true;
         DrawRow("Rounding:");
-        if (m_gui.InputFloat("##pbr", &progressBar->m_rounding)) m_dirty = true;
+        if (m_gui->InputFloat("##pbr", &progressBar->m_rounding)) m_dirty = true;
         DrawColorRow("Fill:", "##pbf", progressBar->m_colorFill);
         DrawColorRow("Background:", "##pbb", progressBar->m_colorBg);
     }
@@ -1033,7 +1032,7 @@ namespace Apex::Editor
         m_textureFiles.clear();
         static const std::vector<std::string> exts = { ".png",".jpg",".jpeg",".tga",".hdr" };
         std::error_code error;
-        for (const auto& e : fs::recursive_directory_iterator("Assets/", error))
+        for (const auto& e : Fs::recursive_directory_iterator("Assets/", error))
         {
             if (!e.is_regular_file()) continue;
             std::string ext = e.path().extension().string();

@@ -35,16 +35,16 @@ namespace Apex::Editor
 		Gizmos& operator=(Gizmos const&) = delete;
 		~Gizmos() = default;
 
-		void DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local);
+		void DrawGizmos(const Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local);
 	private:
 
-		void DrawTranslation(Data::Object* object, bool picking, bool local);
+		void DrawTranslation(const Data::Object* object, bool picking, bool local);
 		void DrawTranslationPlanes(LibMath::Matrix4 transMatrix, bool picking);
 		void DrawTranslationCenter(LibMath::Matrix4 transMatrix, bool picking);
 		void DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking);
 
-		void DrawRotation(Data::Object* object, bool picking, bool local);
-		void DrawScale(Data::Object* object, bool picking);
+		void DrawRotation(const Data::Object* object, bool picking, bool local);
+		void DrawScale(const Data::Object* object, bool picking);
 
 		LibMath::Vector3 GetColor(Axis axis, bool picking = false);
 
@@ -65,9 +65,11 @@ namespace Apex::Editor
 	};
 
 	LibMath::Vector2	GetScreenPos(
-		LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
+		LibMath::Vector3 const& worldPos, LibMath::Matrix4 const& viewProj, 
+		LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize);
 	LibMath::Line3D		ScreenToWorldRay(
-		LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize);
+		LibMath::Vector2 const& mousePosOnScreen, LibMath::Matrix4 const& viewProj, 
+		LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize);
 }
 
 

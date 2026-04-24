@@ -408,8 +408,6 @@ void Hierarchy::DrawInsertLine(float y)
 
 Object* Hierarchy::DuplicateObject(Object* original)
 {
-    if (!original) return nullptr;
-
     std::unique_ptr<Object> clone = original->Clone();
     size_t id = clone->NewId();
     m_scene->AddObject(std::move(clone));

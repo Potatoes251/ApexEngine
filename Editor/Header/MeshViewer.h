@@ -33,7 +33,7 @@
 
 class Mesh;
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 using namespace Apex::UserInterface;
 
 namespace Apex::Editor
@@ -43,19 +43,18 @@ namespace Apex::Editor
     class MeshViewer
     {
     public:
-        explicit MeshViewer(IGUI& gui,
-            Apex::Windowing::IWindow& window,
-            Apex::Rendering::IRHI& rhi,
-            Apex::Resources::ResourceManager& resourceManager);
+        explicit MeshViewer(IGUI* gui,
+            Apex::Rendering::IRHI* rhi,
+            Apex::Resources::ResourceManager* resourceManager);
         ~MeshViewer();
         MeshViewer(const MeshViewer&) = delete;
         MeshViewer& operator=(const MeshViewer&) = delete;
 
-        void Open(const fs::path& path, int instanceIndex = 0);
+        void Open(const Fs::path& path, int instanceIndex = 0);
         void Close();
         void Focus();
         bool IsOpen() const { return m_open; }
-        const fs::path& GetPath() const { return m_path; }
+        const Fs::path& GetPath() const { return m_path; }
 
         void Draw();
 
@@ -89,7 +88,7 @@ namespace Apex::Editor
         void ResetCamera();
 
         // Setup / teardown
-        void LoadMesh(const fs::path& path);
+        void LoadMesh(const Fs::path& path);
         void UnloadMesh();
         void FinalizeMeshLoad();
         void BuildShaders();
@@ -103,17 +102,16 @@ namespace Apex::Editor
         LibMath::Vector3 GetCameraPosition() const;
         std::string      FileSizeString() const;
 
-        // Core references
-        IGUI& m_gui;
-        Apex::Windowing::IWindow& m_window;
-        Apex::Rendering::IRHI& m_rhi;
-        Apex::Resources::ResourceManager& m_resourceManager;
+        // Core pointer
+        IGUI* m_gui;
+        Apex::Rendering::IRHI* m_rhi;
+        Apex::Resources::ResourceManager* m_resourceManager;
 
         // Window state
         bool        m_open = false;
         bool        m_pendingFocus = false;
         int         m_instanceIndex = 0;
-        fs::path    m_path;
+        Fs::path    m_path;
         std::string m_filename;
         uintmax_t   m_fileBytes = 0;
 

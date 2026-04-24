@@ -11,7 +11,7 @@
 #include <filesystem>
 #include <string>
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 
 using namespace Apex::UserInterface;
 
@@ -48,20 +48,19 @@ namespace Apex::Editor
     class HudEditor
     {
     public:
-        explicit HudEditor(Apex::UserInterface::IGUI& gui,
-            Apex::Windowing::IWindow& window,
-            Apex::Resources::ResourceManager& resourceManager,
-            Apex::Rendering::IRHI& rhi);
+        explicit HudEditor(Apex::UserInterface::IGUI* gui,
+            Apex::Resources::ResourceManager* resourceManager,
+            Apex::Rendering::IRHI* rhi);
         ~HudEditor() = default;
         HudEditor(const HudEditor&) = delete;
         HudEditor& operator=(const HudEditor&) = delete;
 
-        void Open(const fs::path& path, int instanceIndex = 0);
+        void Open(const Fs::path& path, int instanceIndex = 0);
         void Close();
         void Focus();
 
         bool IsOpen()             const { return m_open; }
-        const fs::path& GetPath() const { return m_path; }
+        const Fs::path& GetPath() const { return m_path; }
 
         void Draw();
 
@@ -111,17 +110,16 @@ namespace Apex::Editor
         void ScanTextures();
         std::string ShortenName(const std::string& name, size_t maxLen = 14);
 
-        IGUI& m_gui;
-        Apex::Windowing::IWindow& m_window;
-        Apex::Resources::ResourceManager& m_resourceManager;
-        Apex::Rendering::IRHI& m_rhi;
+        IGUI* m_gui;
+        Apex::Resources::ResourceManager* m_resourceManager;
+        Apex::Rendering::IRHI* m_rhi;
 
         UICanvas m_canvas;
 
         bool        m_open = false;
         bool        m_pendingFocus = false;
         int         m_instanceIndex = 0;
-        fs::path    m_path;
+        Fs::path    m_path;
         bool        m_dirty = false;
 
         // Canvas viewport state
@@ -142,7 +140,7 @@ namespace Apex::Editor
         // Texture picker
         bool m_showTexturePicker = false;
         bool m_texPickerOpened = false;
-        std::vector<fs::path> m_textureFiles;
+        std::vector<Fs::path> m_textureFiles;
 
         static constexpr float CANVAS_ASPECT = 16.f / 9.f;
         static constexpr float PROPS_WIDTH = 500.f;

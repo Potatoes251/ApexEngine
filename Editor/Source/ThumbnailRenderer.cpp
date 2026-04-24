@@ -21,7 +21,7 @@ namespace Apex::Editor
         DestroyShaders();
     }
 
-    uint32_t ThumbnailRenderer::GetOrRender(const fs::path& meshPath)
+    uint32_t ThumbnailRenderer::GetOrRender(const Fs::path& meshPath)
     {
         std::string key = meshPath.generic_string();
 
@@ -49,13 +49,13 @@ namespace Apex::Editor
         return 0;
     }
 
-    uint32_t ThumbnailRenderer::GetCached(const fs::path& meshPath) const
+    uint32_t ThumbnailRenderer::GetCached(const Fs::path& meshPath) const
     {
         auto it = m_cache.find(meshPath.generic_string());
         return (it != m_cache.end()) ? it->second : 0;
     }
 
-    uint32_t ThumbnailRenderer::Render(const fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle)
+    uint32_t ThumbnailRenderer::Render(const Fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle)
     {
         if (m_shader == 0 || !handle.IsReady()) return 0;
 
