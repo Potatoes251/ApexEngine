@@ -171,11 +171,22 @@ void Object::SetLocalScale(const LibMath::Vector3& scale)
 }
 
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
-{
-	m_globalTransform = transform;
-	m_owner->MarkDirty();
+{	
+	Object* parent = GetParent();
+	
+	if (!parent)
+	{
+		m_localTransform = transform;
+	}
+	else
+	{
+		m_localTransform = parent->GetGlobalTransform().inversed() * transform;
+	}
 
+	m_owner->MarkDirty();
 	OnChanged();
+
+	UpdateGlobalTransform();
 }
 
 void Apex::Data::Object::SetName(std::string name)
@@ -189,14 +200,14 @@ const Transform& Object::GetLocalTransform() const
 	return m_localTransform;
 }
 
-const Transform& Object::GetGlobalTransform()
+const Transform& Object::GetGlobalTransform() const
 {
 	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
 
 	return m_globalTransform;
 }
 
-void Object::UpdateGlobalTransform()
+void Object::UpdateGlobalTransform() const
 {
 	if (!m_owner || !m_owner->IsDirty()) return;
 
@@ -213,11 +224,19 @@ void Object::UpdateGlobalTransform()
 	m_owner->CleanDirty();
 }
 
+Object* Object::GetParent() const
+{
+	auto& parentNode = m_owner->GetParent();
+
+	if (!parentNode) return nullptr;
+
+	return parentNode->GetObject();
+}
+
 void Object::Start()
 {
 	for (auto& comp : m_components)
-		if (comp->IsEnabled())
-			comp->OnStart();
+		comp->OnStart();
 }
 
 void Object::FixedUpdate(float deltaTime_s)
@@ -305,7 +324,15 @@ size_t Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	return m_components.back()->GetId();
 }
 
-Apex::Component* Apex::Data::Object::GetComponent(size_t id)
+std::vector<Apex::Component*> Object::GetComponents() const
+{
+	std::vector<Component*> comps;
+	for (auto& c : m_components)
+		comps.push_back(c.get());
+	return comps;
+}
+
+Apex::Component* Object::GetComponent(size_t id)
 {
 	for (auto& comp : m_components)
 	{

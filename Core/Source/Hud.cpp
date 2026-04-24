@@ -505,7 +505,7 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
 }
 
 
-bool UICanvas::Save(const fs::path& path) const
+bool UICanvas::Save(const Fs::path& path) const
 {
     std::ofstream file(path);
     if (!file) return false;
@@ -525,7 +525,7 @@ bool UICanvas::Save(const fs::path& path) const
     return true;
 }
 
-bool UICanvas::Load(const fs::path& path, ResourceManager& rm)
+bool UICanvas::Load(const Fs::path& path, ResourceManager& rm)
 {
     std::ifstream file(path);
     if (!file) return false;
@@ -559,10 +559,10 @@ UIManager::UIManager(IGUI* gui, ResourceManager* resourceManager, Apex::Renderin
 {
 }
 
-void UIManager::ScanHUDs(const fs::path& assetsRoot)
+void UIManager::ScanHUDs(const Fs::path& assetsRoot)
 {
     m_registry.clear();
-    for (const auto& element : fs::recursive_directory_iterator(assetsRoot))
+    for (const auto& e : Fs::recursive_directory_iterator(assetsRoot))
     {
         if (element.is_regular_file() && element.path().extension() == ".hud")
         {
@@ -586,8 +586,8 @@ int UIManager::CreateHUD(const std::string& name)
     if (it == m_registry.end())
     {
         // Try loading directly as a path relative to Assets/
-        fs::path direct = fs::path("Assets") / (name + ".hud");
-        if (!fs::exists(direct))
+        Fs::path direct = Fs::path("Assets") / (name + ".hud");
+        if (!Fs::exists(direct))
         {
             LOG_ERROR_CAT("HUD", "CreateHUD: '{}' not found", name);
             return 0;

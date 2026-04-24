@@ -101,7 +101,7 @@ shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
 
 void SceneNode::Destroy()
 {
-	m_children.clear();	//all descandantes are also Destroyed
+	m_children.clear();	//all descendantes are also Destroyed
 }
 
 void SceneNode::SetParent(std::shared_ptr<SceneNode> const& newParent)

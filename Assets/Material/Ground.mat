@@ -1,5 +1,6 @@
 {
 	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-	"textures": {		"Assets/Textures/Potatoes.jpg",
-}
+	"textures": [
+		"Assets/Textures/Potatoes.jpg"
+	]
 }

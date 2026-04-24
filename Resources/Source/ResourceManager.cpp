@@ -1,6 +1,13 @@
 #include "ResourceManager.h"
 
+#include "Log.h"
+
 using namespace Apex::Resources;
+
+const std::unordered_set<std::string>& Apex::Resources::ResourceManager::GetLoadedAssets() const
+{
+	return m_loadedAssets;
+}
 
 void ResourceManager::ProcessGpuUploads()
 {
@@ -15,10 +22,46 @@ void ResourceManager::ProcessGpuUploads()
 			m_gpuUploadQueue.pop();
 		}
 
-		if (resource.IsFailed()) continue;
+		if (resource.IsFailed())
+		{
+			LOG_ERROR_CAT("Resource", "failed 1: \"{}\"", resource->GetPath()); continue;
+		}
 		resource->UploadToGpu();
-		if (resource.IsFailed()) continue;
+		if (resource.IsFailed())
+		{
+			LOG_ERROR_CAT("Resource", "failed 2: \"{}\"", resource->GetPath());
+			continue;
+		}
 		resource->SetState(ResourceState::Uploaded);
+	}
+}
+
+void Apex::Resources::ResourceManager::CollectGarbage(float deltaTime)
+{
+	std::unique_lock lock(m_mapMutex);
+
+	for (auto it = m_resources.begin(); it != m_resources.end(); )
+	{
+		auto& [id, entry] = *it;
+
+		if (entry->m_refCount.load() == 0 && !entry->m_persistent)
+		{
+			entry->m_timeSinceUnused += deltaTime;
+
+			if (entry->m_timeSinceUnused > 5.0f)
+			{
+				printf("Releasing resource %s\n", id.c_str());
+				entry->m_resource.reset();
+				it = m_resources.erase(it);
+				continue;
+			}
+		}
+		else
+		{
+			entry->m_timeSinceUnused = 0.f;
+		}
+
+		++it;
 	}
 }
 

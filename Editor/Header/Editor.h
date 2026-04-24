@@ -60,6 +60,8 @@ namespace Apex::Editor
 		// Destroy panels and ImGui before the GL context tears down.
 		void Shutdown();
 
+		void Build(const std::vector<std::string>& scenePaths);
+
 		// main.cpp uses this to drive the outer loop.
 		Apex::Windowing::IWindow*	GetWindow() { return m_window.get(); }
 		Apex::Application*			GetApp() { return m_app; }
@@ -69,13 +71,21 @@ namespace Apex::Editor
 
 	private:
 		static const char* TypeToString(AssetType type);
-		void OnExternalDrop(std::vector<std::filesystem::path> paths);
 
 		void OpenTextureEditor(const std::filesystem::path& path);
 		void OpenMeshViewer(const std::filesystem::path& path);
 		void OpenSoundPlayer(const std::filesystem::path& path);
 		void OpenHudEditor(const std::filesystem::path& path);
 		void OpenMaterialEditor(const std::filesystem::path& path);
+
+		void CollectAssetPaths(const std::string& scenePath,
+			std::unordered_set<std::string>& outAssets,
+			std::unordered_set<std::string>& outMats);
+		void CollectLuaDependencies(const std::string& scriptPath,
+			std::unordered_set<std::string>& out,
+			std::unordered_set<std::string>& visited);
+		void CollectAssetsFromMats(const std::string& matPath,
+			std::unordered_set<std::string>& outAssets);
 
 		Apex::Application* m_app = nullptr;
 		Apex::Audio::IAudioEngine* m_audio;

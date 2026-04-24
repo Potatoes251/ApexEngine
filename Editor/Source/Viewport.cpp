@@ -207,7 +207,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 				m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
 			}
 
-			m_rhi->UnBindFrameBuffer();
+			m_rhi->UnBindFrameBuffer(m_width, m_height);
 			return;
 		}
 	}
@@ -228,7 +228,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
-	m_rhi->UnBindFrameBuffer();
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
 }
 
 LibMath::Vector3 Viewport::GetAxis()
@@ -236,13 +236,13 @@ LibMath::Vector3 Viewport::GetAxis()
 	LibMath::Vector3 axis;
 	switch (m_selectedAxis)
 	{
-	case Axis::X:		
+	case Axis::X:
 		axis = { 1, 0, 0 };	
 		break;
-	case Axis::Y:		
+	case Axis::Y:
 		axis = { 0, 1, 0 };	
 		break;
-	case Axis::Z:		
+	case Axis::Z:
 		axis = { 0, 0, 1 };	
 		break;
 	case Axis::None:	return { 0, 0, 0 };
@@ -420,6 +420,8 @@ void Viewport::Draw()
 		LibMath::Matrix4 proj = m_camera.GetProjection();
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
+
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];
 	LibMath::Vector2 drawSize;
@@ -450,6 +452,8 @@ void Viewport::Draw()
 	}
 
 	DrawUI();
+
+	DrawBuildPopup();
 
 	m_gui->EndPanel();
 }
@@ -494,6 +498,26 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			DrawPillGroup({ startX - 2.f, startY - 2.f }, { groupWidth, BUTTON + PAD * 4.8f }, ROUND);
 			m_gui->SetCursorPos({ startX + PAD, startY + PAD * 0.5f });
 		};
+
+	if (m_gui->Button("Build Game"))
+	{
+		// Scan for .level files once when the popup opens
+		m_buildScenes.clear();
+		namespace fs = std::filesystem;
+		std::error_code ec;
+		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
+		{
+			if (entry.path().extension() == ".level")
+			{
+				BuildSceneEntry e;
+				e.path = entry.path().generic_string();
+				e.selected = true;
+				m_buildScenes.push_back(std::move(e));
+			}
+		}
+		m_showBuildPopup = true;
+		m_gui->OpenPopup("BuildGame");
+	}
 
 	if (state == EditorState::Edit)
 	{
@@ -674,4 +698,77 @@ bool Apex::Editor::Viewport::IconButton(const char* iconPath, const char* fallba
 		m_gui->PopColor();
 
 	return clicked;
+}
+
+void Viewport::DrawBuildPopup()
+{
+	if (!m_showBuildPopup) return;
+
+	if (!m_gui->BeginPopupModal("BuildGame", { 500.f, 0.f }))
+		return;
+
+	m_gui->Text("Select scenes to include in the build.");
+	m_gui->Text("The first checked scene will be loaded on startup.");
+	m_gui->Separator();
+
+	for (int i = 0; i < (int)m_buildScenes.size(); ++i)
+	{
+		auto& entry = m_buildScenes[i];
+
+		// Checkbox
+		m_gui->Checkbox(("##sel" + std::to_string(i)).c_str(), &entry.selected);
+		m_gui->SameLine();
+
+		// Path label (just the filename for readability, full path as tooltip)
+		std::string filename = std::filesystem::path(entry.path).filename().string();
+		m_gui->Text(filename + "  (" + entry.path + ")");
+
+		// Reorder buttons
+		m_gui->SameLine();
+		m_gui->PushID(i);
+		if (i > 0 && m_gui->Button("^"))
+			std::swap(m_buildScenes[i], m_buildScenes[i - 1]);
+		m_gui->SameLine();
+		if (i < (int)m_buildScenes.size() - 1 && m_gui->Button("v"))
+			std::swap(m_buildScenes[i], m_buildScenes[i + 1]);
+		m_gui->PopID();
+	}
+
+	if (m_buildScenes.empty())
+		m_gui->Text("(No .level files found under Assets/)");
+
+	m_gui->Separator();
+
+	bool anySelected = false;
+	for (auto& e : m_buildScenes)
+	{
+		if (e.selected) 
+		{ 
+			anySelected = true; 
+			break; 
+		}
+	}
+
+	if (!anySelected) m_gui->BeginDisabled();
+	if (m_gui->Button("Build"))
+	{
+		std::vector<std::string> selected;
+		for (auto& e : m_buildScenes)
+			if (e.selected) selected.push_back(e.path);
+
+		m_editor->Build(selected);
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+	if (!anySelected) m_gui->EndDisabled();
+
+	m_gui->SameLine();
+
+	if (m_gui->Button("Cancel"))
+	{
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+
+	m_gui->EndPopup();
 }

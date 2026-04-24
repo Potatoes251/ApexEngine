@@ -660,6 +660,16 @@ namespace Apex::UserInterface
         m_modalName.clear();
     }
 
+    void ImGUIManager::BeginDisabled(bool disabled)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+
+    void ImGUIManager::EndDisabled()
+    {
+        ImGui::EndDisabled();
+    }
+
     void ImGUIManager::Dummy(LibMath::Vector2 size)
     {
 		ImGui::Dummy(ImVec2(size[0], size[1]));

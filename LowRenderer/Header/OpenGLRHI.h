@@ -34,7 +34,7 @@ namespace Apex::Rendering
 		RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) override;
 		RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) override;
 		void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) override;
-		void					UnBindFrameBuffer() override;
+		void					UnBindFrameBuffer(unsigned width = 1280, unsigned height = 720) override;
 		void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) override;
 		int						GetPixelData(int x, int y) override;
 
@@ -57,12 +57,12 @@ namespace Apex::Rendering
 		void				BindShader(RHIShaderHandle shader) override;
 		void				DeleteShader(RHIShaderHandle shader) override;
 
-		void SetUniformInt(RHIShaderHandle shader, const std::string& name, int value) override;
-		void SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value) override;
-		void SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec) override;
-		void SetUniformVec4(RHIShaderHandle shader, const std::string& name, const LibMath::Vector4& vec) override;
-		void SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix) override;
-		void SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix, int count) override;
+		void SetUniformInt(RHIShaderHandle shader, const std::string_view& name, int value) override;
+		void SetUniformFloat(RHIShaderHandle shader, const std::string_view& name, float value) override;
+		void SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec) override;
+		void SetUniformVec4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector4& vec) override;
+		void SetUniformMat4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix) override;
+		void SetUniformMat4Array(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix, int count) override;
 
 		void SetupVertexLayout() override;
 		void SetupVector3Layout() override;
@@ -70,7 +70,6 @@ namespace Apex::Rendering
 		void DrawIndexed(uint32_t indexCount) override;
 		void DrawArrays(uint32_t vertexCount) override;
 		void DrawLineArrays(uint32_t vertexCount) override;
-		void DrawLineLoop(uint32_t vertexCount) override;
 		void SetDepthTest(bool enabled) override;
 		void SetDepthTestWrite(bool enabled) override;
 

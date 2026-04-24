@@ -16,7 +16,7 @@ LightManager::LightManager(Rendering::IRHI* rhi)
 {
 	m_rhi = rhi;
 
-	assert(m_rhi != nullptr && "Lights cannot work withput the rhi");
+	assert(m_rhi != nullptr && "Lights cannot work without the rhi");
 
 	m_pointLightBuffer = rhi->CreateUniformBuffer(0, sizeof(GPUPointLightBuffer));
 	m_directionalLightBuffer = rhi->CreateUniformBuffer(1, sizeof(GPUDirectionalLightBuffer));

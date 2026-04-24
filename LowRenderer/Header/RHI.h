@@ -40,9 +40,9 @@ namespace Apex::Rendering
 
 	struct ShaderSource 
 	{
-		std::string vertexPath;
-		std::string fragmentPath;
-		std::string geometryPath;
+		std::string m_vertexPath;
+		std::string m_fragmentPath;
+		std::string m_geometryPath;
 	};
 	// ── RHI abstract interface ────────────────────────────────────
 	class IRHI
@@ -69,7 +69,7 @@ namespace Apex::Rendering
 		virtual RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) = 0;
 		virtual RHIFrameBufferHandle	CreateEmptyFrameBuffer(RHITextureHandle texture, unsigned width, unsigned height) = 0;
 		virtual void					BindFrameBuffer(RHIFrameBufferHandle buffer, unsigned viewportWidth, unsigned viewportHeight) = 0;
-		virtual void					UnBindFrameBuffer() = 0;
+		virtual void					UnBindFrameBuffer(unsigned width = 1280, unsigned height = 720) = 0;
 		virtual void					DeleteFrameBuffer(RHIFrameBufferHandle buffer) = 0;
 		virtual int						GetPixelData(int x, int y) = 0;
 
@@ -95,12 +95,12 @@ namespace Apex::Rendering
 		virtual void				DeleteShader(RHIShaderHandle shader) = 0;
 
 		// Uniforms (bound shader must be active)
-		virtual void SetUniformInt(RHIShaderHandle program, const std::string& name, int value) = 0;
-		virtual void SetUniformFloat(RHIShaderHandle program, const std::string& name, float value) = 0;
-		virtual void SetUniformVec3(RHIShaderHandle program, const std::string& name, const LibMath::Vector3& vec) = 0;
-		virtual void SetUniformVec4(RHIShaderHandle program, const std::string& name, const LibMath::Vector4& vec) = 0;
-		virtual void SetUniformMat4(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix) = 0;
-		virtual void SetUniformMat4Array(RHIShaderHandle program, const std::string& name, const LibMath::Matrix4& matrix, int count) = 0;
+		virtual void SetUniformInt(RHIShaderHandle program, const std::string_view& name, int value) = 0;
+		virtual void SetUniformFloat(RHIShaderHandle program, const std::string_view& name, float value) = 0;
+		virtual void SetUniformVec3(RHIShaderHandle program, const std::string_view& name, const LibMath::Vector3& vec) = 0;
+		virtual void SetUniformVec4(RHIShaderHandle program, const std::string_view& name, const LibMath::Vector4& vec) = 0;
+		virtual void SetUniformMat4(RHIShaderHandle program, const std::string_view& name, const LibMath::Matrix4& matrix) = 0;
+		virtual void SetUniformMat4Array(RHIShaderHandle program, const std::string_view& name, const LibMath::Matrix4& matrix, int count) = 0;
 
 		// Draw
 		virtual void SetupVertexLayout() = 0;
@@ -109,7 +109,6 @@ namespace Apex::Rendering
 		virtual void DrawIndexed(uint32_t indexCount) = 0;
 		virtual void DrawArrays(uint32_t vertexCount) = 0;
 		virtual void DrawLineArrays(uint32_t vertexCount) = 0;
-		virtual void DrawLineLoop(uint32_t vertexCount) = 0;
 		virtual void SetDepthTest(bool enabled) = 0;
 		virtual void SetDepthTestWrite(bool enabled) = 0;
 
