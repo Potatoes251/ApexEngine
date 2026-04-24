@@ -21,6 +21,12 @@ ThreadPool::~ThreadPool()
 	}
 }
 
+ThreadPool& ThreadPool::Get()
+{
+	static ThreadPool instance;
+	return instance;
+}
+
 void ThreadPool::WorkerLoop()
 {
 	while (!m_stop)

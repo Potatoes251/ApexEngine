@@ -1,7 +1,7 @@
 #ifndef SERIALIZATION_PARSER
 #define SERIALIZATION_PARSER
 
-#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Vector.h"
 #include "LibMath/Quaternion.h"
 
 #include <optional>
@@ -28,6 +28,7 @@ namespace Apex::Serialization
         bool ParseBool();
 
         LibMath::Vector3 ParseVector3();
+        LibMath::Vector4 ParseVector4();
         LibMath::Quaternion ParseQuaternion();
         char PeekChar();
 

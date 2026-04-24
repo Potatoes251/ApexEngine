@@ -13,6 +13,7 @@
 #include "EditorIcon.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "Material.h"
 #include "ResourceManager.h"
 #include "Physic.h"
 #include "LuaManager.h"
@@ -52,6 +53,7 @@ namespace Apex::Editor
 		bool DrawComponentColor3(ExposedVar var);
 		bool DrawComponentColor4(ExposedVar var);
 		void DrawComponentMesh(ExposedVar var);
+		void DrawComponentMat(ExposedVar var);
 		void DrawComponentTexture(ExposedVar var);
 
 		uint32_t ResolveTexturePreview(Apex::Resources::ResourceHandle<Texture>* handle) const;
@@ -62,6 +64,7 @@ namespace Apex::Editor
 		Apex::Rendering::Scene* m_scene = nullptr;
 		Apex::Resources::ResourceManager& m_resourceManager;
 		Apex::Resources::AssetPicker<Mesh> m_meshPicker;
+		Apex::Resources::AssetPicker<Rendering::Material> m_materialPicker;
 		Apex::Resources::AssetPicker<Texture> m_texturePicker;
 		Apex::Resources::ScriptPicker m_scriptPicker;
 		Apex::Physic::PhysicSystem& m_phys;

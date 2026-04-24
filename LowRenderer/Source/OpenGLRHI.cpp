@@ -446,8 +446,13 @@ namespace Apex::Rendering
 	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec)
 	{
 		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
-		const LibMath::Vector3& vector = vec;
-		glUniform3f(location, vector[0], vector[1], vector[2]);
+		glUniform3f(location, vec[0], vec[1], vec[2]);
+	}
+
+	void OpenGLRHI::SetUniformVec4(RHIShaderHandle shader, const std::string& name, const LibMath::Vector4& vec)
+	{
+		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		glUniform4f(location, vec[0], vec[1], vec[2], vec[3]);
 	}
 
 	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix)

@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "Material.h"
 #include "Physic.h"
 #include "LuaManager.h"
 
@@ -44,6 +45,7 @@ namespace Apex::Serialization
 
         Apex::Resources::ResourceHandle<Mesh> GetMeshHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Texture> GetTextureHandle(const std::string& path);
+        Apex::Resources::ResourceHandle<Rendering::Material> GetMaterialHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);
 
         Apex::Resources::ResourceManager& m_resourceManager;

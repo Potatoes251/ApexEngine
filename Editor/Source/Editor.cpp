@@ -11,6 +11,7 @@
 #include "Rigidbody.h"
 #include "CommandManager.h"
 #include "LogSystem.h"
+#include "MaterialEditor.h"
 
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
@@ -172,6 +173,9 @@ namespace Apex::Editor
                 case AssetType::Hud:
                     OpenHudEditor(entry.m_path);
                     break;
+                case AssetType::Material:
+                    OpenMaterialEditor(entry.m_path);
+                    break;
                 default:
                     break;
                 }
@@ -232,7 +236,10 @@ namespace Apex::Editor
                 std::remove_if(m_hudEditors.begin(), m_hudEditors.end(),
                     [](const std::unique_ptr<HudEditor>& he) { return !he->IsOpen(); }),
                 m_hudEditors.end());
+
         }
+        if (m_materialEditor)
+            m_materialEditor->Draw();
 
         if (m_viewport)
             m_viewport->Draw();
@@ -267,17 +274,20 @@ namespace Apex::Editor
         m_window->UpdateDeltaTime();
         m_viewport->UpdateCamera(m_window.get());
 
+        if (EditorState::Play != m_editorState)
+            m_app->GetScene()->GetPhysic()->EditorSync();
+
         switch (m_editorState)
         {
-        case Apex::Editor::EditorState::Edit:
+        case EditorState::Edit:
             break;
-        case Apex::Editor::EditorState::Play:
+        case EditorState::Play:
             m_app->Tick();
             if (InputSystem::Get().IsKeyDown(Key::Escape)) SetEditorState(EditorState::Pause);
             break;
-        case Apex::Editor::EditorState::Pause:
+        case EditorState::Pause:
             break;
-        case Apex::Editor::EditorState::Step:
+        case EditorState::Step:
             m_app->Tick();
             m_editorState = EditorState::Pause;
             break;
@@ -394,6 +404,7 @@ namespace Apex::Editor
         case AssetType::Level:   return "Level";
         case AssetType::Script:  return "Script";
         case AssetType::Hud:     return "HUD";
+        case AssetType::Material:     return "Material";
         case AssetType::Folder:  return "Folder";
         default:                 return "Unknown";
         }
@@ -477,5 +488,11 @@ namespace Apex::Editor
         auto hudEditor = std::make_unique<HudEditor>(*m_gui, *m_window, *m_app->GetResourceManager(), *m_app->GetRhi());
         hudEditor->Open(path, static_cast<int>(m_hudEditors.size()));
         m_hudEditors.push_back(std::move(hudEditor));
+    }
+
+    void Editor::OpenMaterialEditor(const std::filesystem::path& path)
+    {
+        m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
+        m_materialEditor->Open(path.string());
     }
 }

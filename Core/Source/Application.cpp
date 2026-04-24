@@ -79,14 +79,12 @@ bool Apex::Application::Init(IWindow* window, IGUI* gui)
 
 bool Apex::Application::InitResourceManager()
 {
-    m_resourceManager = std::make_unique<ResourceManager>(m_threadPool);
+    m_resourceManager = std::make_unique<ResourceManager>();
     return true;
 }
 
 bool Apex::Application::InitLog()
 {
-
-
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
     std::ostringstream oss;
@@ -215,10 +213,7 @@ void Apex::Application::LoadScene()
                 if (!renderer->GetMesh().IsReady())
                     ready = false;
 
-                if (!renderer->GetTexture().IsReady())
-                    ready = false;
-
-                if (!renderer->GetShader().IsReady())
+                if (!renderer->GetMaterial().IsReady())
                     ready = false;
             }
 
@@ -284,8 +279,8 @@ void Apex::Application::Render(RenderPassInfo pass)
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
-    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    m_shadowManager->BindShadowMaps();
+    //m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    //m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {
@@ -295,6 +290,6 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     m_scene->Render(pass);
 
-    if (pass.m_flags & ShowCollider)
+    //if (pass.m_flags & ShowCollider)
         DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }

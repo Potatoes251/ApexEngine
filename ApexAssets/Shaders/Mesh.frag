@@ -13,7 +13,9 @@ uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
 
+// 5-14 regular shadow maps
 layout(binding = 5) uniform sampler2D		shadowMap[10];
+// 15-19 cube shadow map
 layout(binding = 15) uniform samplerCube	cubeShadowMap[5];
 
 const int MAX_POINT_LIGHTS = 10;

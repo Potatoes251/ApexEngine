@@ -110,11 +110,8 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
     if (send && m_viewport)
         m_viewport->SelectObject(selected, false);
 
-    if (selected && m_componentsViewer)
+    if (m_componentsViewer)
         m_componentsViewer->SetSelectedObject(selected);
-
-    if (!selected)
-        m_componentsViewer->SetSelectedObject(nullptr);
 }
 
 void Apex::Editor::Hierarchy::ClearSelection()
@@ -422,6 +419,7 @@ Object* Hierarchy::DuplicateObject(Object* original)
 
 void Hierarchy::DestroyObject(size_t objId)
 {
+    SelectObject(nullptr);
     Data::Object* obj = m_scene->GetObjectWithId(objId);
 
     if (m_selected == obj)

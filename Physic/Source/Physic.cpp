@@ -614,6 +614,20 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 	m_rigidBodies.push_back(actor);
 }
 
+void PhysicSystem::EditorSync()
+{
+	for (PhysicActor& actor : m_rigidBodies)
+	{
+		if (!actor.m_actor) continue;
+
+		physx::PxTransform pose(
+			ToPxVec(actor.m_owner->GetPosition()),
+			ToPxQuat(actor.m_owner->GetRotation()));
+
+		actor.m_actor->setGlobalPose(pose, true);
+	}
+}
+
 void PhysicSystem::SyncToPhysx()
 {
 	for (PhysicActor& actor : m_rigidBodies)
