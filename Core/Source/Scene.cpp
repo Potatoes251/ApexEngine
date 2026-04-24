@@ -138,7 +138,7 @@ namespace Apex::Rendering
 		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
 		if (node && node->GetParent())
-			node->GetParent()->DestroyChild(node);
+			node->Destroy();
 
 		auto it = std::find_if(
 			m_objects.begin(),

@@ -10,14 +10,18 @@ SceneNode::SceneNode() :
 SceneNode::SceneNode(Object* object) :
 	m_object(object) {}
 
-std::shared_ptr<SceneNode> const& SceneNode::GetParent() const
+shared_ptr<SceneNode> const& SceneNode::GetParent() const
 {
-	return m_parent;
+	return m_parent.lock();
 }
 
 Object* SceneNode::GetParentObj() const
 {
-	return m_parent ? m_parent->m_object : nullptr;
+	if (auto parent = m_parent.lock())
+	{
+		return parent->m_object;
+	}
+	return nullptr;
 }
 
 const vector<shared_ptr<SceneNode>>& SceneNode::GetChildren() const
@@ -25,34 +29,34 @@ const vector<shared_ptr<SceneNode>>& SceneNode::GetChildren() const
 	return m_children;
 }
 
-Object* Apex::SceneGraph::SceneNode::GetObject() const
+Object* SceneNode::GetObject() const
 {
 	return m_object;
 }
 
-bool SceneNode::IsDescendantOf(std::shared_ptr<SceneNode> const& otherNode) const
+bool SceneNode::IsDescendantOf(shared_ptr<SceneNode> const& otherNode) const
 {
-	std::shared_ptr<SceneNode> current = m_parent;
+	shared_ptr<SceneNode> current = m_parent.lock();
 
-	while (current.get() != nullptr)
+	while (current)
 	{
 		if (current == otherNode) return true;
 
-		current = current->m_parent;
+		current = current->m_parent.lock();
 	}
 
 	return false;
 }
 
-bool Apex::SceneGraph::SceneNode::IsDescendantOf(SceneNode* otherNode) const
+bool SceneNode::IsDescendantOf(SceneNode* otherNode) const
 {
-	std::shared_ptr<SceneNode> current = m_parent;
+	shared_ptr<SceneNode> current = m_parent.lock();
 
 	while (current.get() != nullptr)
 	{
 		if (current.get() == otherNode) return true;
 
-		current = current->m_parent;
+		current = current->m_parent.lock();
 	}
 
 	return false;
@@ -60,30 +64,24 @@ bool Apex::SceneGraph::SceneNode::IsDescendantOf(SceneNode* otherNode) const
 
 void SceneNode::AddChild(shared_ptr<SceneNode> child)
 {
-	if (!child || child->m_parent.get() == this) return;
-	// Detach from previous parent if it is different from this
-	if (child->m_parent)
-		child->m_parent->DetachChild(child.get());
+	if (!child) return;
+
+	auto currentParent = child->m_parent.lock();
+
+	if (currentParent && currentParent.get() == this)
+	{
+		return;
+	}
+
+	if (currentParent)
+	{
+		currentParent->DetachChild(child.get());
+	}
 
 	child->m_parent = shared_from_this();
 	m_children.push_back(child);
+
 	MarkDirty();
-}
-
-void SceneNode::DestroyChild(std::shared_ptr<SceneNode> const& child)
-{
-	//search the child in all the children
-	auto iterator = std::find_if(m_children.begin(), m_children.end(),
-		[child](const shared_ptr<SceneNode>& ptr)
-		{
-			return ptr == child;
-		});
-
-	if (iterator != m_children.end())
-	{
-		//'erase' deletes the entire subtree
-		m_children.erase(iterator); 
-	}
 }
 
 shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
@@ -94,54 +92,76 @@ shared_ptr<SceneNode> SceneNode::DetachChild(SceneNode* child)
 	if (it == m_children.end()) return nullptr;
 
 	shared_ptr<SceneNode> ptr = *it;
-	ptr->m_parent = nullptr;
+	ptr->m_parent.reset();
 	m_children.erase(it);
 	return ptr;
 }
 
 void SceneNode::Destroy()
 {
-	m_children.clear();	//all descandantes are also Destroyed
+	for (auto& child : m_children)
+	{
+		child->Destroy();
+	}
+
+	m_children.clear();
+	m_object = nullptr;
+
+
+	if (auto parent = m_parent.lock())
+	{
+		parent->DetachChild(this);
+	}
 }
 
-void SceneNode::SetParent(std::shared_ptr<SceneNode> const& newParent)
+void SceneNode::SetParent(shared_ptr<SceneNode> const& newParent)
 {
+	shared_ptr<SceneNode> parent = m_parent.lock();
+
 	if (!newParent)
 	{
-		m_parent->DetachChild(this);
-		m_parent = nullptr;
+		parent->DetachChild(this);
+		parent = nullptr;
 		return;
 	}
 
-	if (m_parent == newParent ||	//No move to origine place
+	if (parent == newParent ||	//No move to origine place
 		newParent.get() == this ||	//No move to itself
 		IsDescendantOf(newParent))	//No loop descendance
 	{
 		return;
 	}
 
-	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
+	shared_ptr<SceneNode> self = parent ? parent->DetachChild(this) : shared_from_this();
 	newParent->AddChild(self);
 	MarkDirty();
 }
 
-void Apex::SceneGraph::SceneNode::SetParent(SceneNode* newParent)
+void SceneNode::SetParent(SceneNode* newParent)
 {
-	if (!newParent && !m_parent)
+	auto currentParent = m_parent.lock();
+
+	if (!newParent)
 	{
-		m_parent->DetachChild(this);
-		m_parent = nullptr;
+		if (currentParent)
+		{
+			currentParent->DetachChild(this);
+		}
+		m_parent.reset();
 		return;
 	}
 
-	if (m_parent.get() == newParent ||	//No move to origine place
-		newParent == this ||	//No move to itself
-		IsDescendantOf(newParent))	//No loop descendance
+	if ((currentParent && currentParent.get() == newParent) || // fix
+		newParent == this ||
+		IsDescendantOf(newParent))
 	{
 		return;
 	}
 
-	shared_ptr<SceneNode> self = m_parent ? m_parent->DetachChild(this) : shared_from_this();
+	shared_ptr<SceneNode> self =
+		currentParent ? currentParent->DetachChild(this)
+		: shared_from_this();
+
 	newParent->AddChild(self);
 	MarkDirty();
 }
@@ -155,19 +175,21 @@ void SceneNode::MarkDirty()
 	}
 }
 
-void SceneNode::InsertBefore(std::shared_ptr<SceneNode> const& other)
+void SceneNode::InsertBefore(shared_ptr<SceneNode> const& other)
 {
 	if (!other || other.get() == this || IsDescendantOf(other))
 		return;
 
-	std::shared_ptr<SceneNode> const& parent = other->m_parent;
-
-	if (!parent)
-		return;
+	shared_ptr<SceneNode> const& parent = other->m_parent.lock();
+	if (!parent) return;
 
 	// detach self
-	shared_ptr<SceneNode> self =
-		m_parent ? m_parent->DetachChild(this) : shared_from_this();
+	shared_ptr<SceneNode> currentParent = m_parent.lock();
+	shared_ptr<SceneNode> self = shared_from_this();
+	if (currentParent)
+	{
+		self = currentParent->DetachChild(self.get());
+	}
 
 	auto& siblings = parent->m_children;
 
@@ -188,18 +210,20 @@ void SceneNode::InsertBefore(std::shared_ptr<SceneNode> const& other)
 	MarkDirty();
 }
 
-void SceneNode::InsertAfter(std::shared_ptr<SceneNode> const& other)
+void SceneNode::InsertAfter(shared_ptr<SceneNode> const& other)
 {
 	if (!other || other.get() == this || IsDescendantOf(other))
 		return;
 
-	std::shared_ptr<SceneNode> const& parent = other->m_parent;
+	shared_ptr<SceneNode> const& parent = other->m_parent.lock();
+	if (!parent) return;
 
-	if (!parent)
-		return;
-
-	shared_ptr<SceneNode> self =
-		m_parent ? m_parent->DetachChild(this) : shared_from_this();
+	shared_ptr<SceneNode> currentParent = m_parent.lock();
+	shared_ptr<SceneNode> self = shared_from_this();
+	if (currentParent)
+	{
+		self = currentParent->DetachChild(self.get());
+	}
 
 	auto& siblings = parent->m_children;
 

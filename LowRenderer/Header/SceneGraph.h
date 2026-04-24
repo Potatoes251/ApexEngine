@@ -8,6 +8,8 @@ namespace Apex::Data { class Object; }
 
 using std::vector;
 using std::shared_ptr;
+using std::weak_ptr;
+using Apex::Data::Object;
 
 namespace Apex::SceneGraph
 {
@@ -15,7 +17,7 @@ namespace Apex::SceneGraph
 	{
 	public:
 		SceneNode();
-		SceneNode(Apex::Data::Object* object = nullptr);
+		SceneNode(Object* object = nullptr);
 		SceneNode(SceneNode& other) = delete;
 		~SceneNode() = default;
 
@@ -23,32 +25,31 @@ namespace Apex::SceneGraph
 
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
 		std::shared_ptr<SceneNode> const& GetParent() const;
-		Apex::Data::Object*		GetParentObj() const;
-		Apex::Data::Object*		GetObject() const;
+		Object*		GetParentObj() const;
+		Object*		GetObject() const;
 
 		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a shared pointer, to use children use ' .get() ' on each children
 		void		AddChild(shared_ptr<SceneNode> child);
-		void		DestroyChild(std::shared_ptr<SceneNode> const& child);
 
 		void		Destroy();
-		void		SetParent(std::shared_ptr<SceneNode> const& newParent);
+		void		SetParent(shared_ptr<SceneNode> const& newParent);
 		void		SetParent(SceneNode* newParent);
 		void		MarkDirty();
 		bool		IsDirty() const;
 		void		CleanDirty();
 		
-		bool		IsDescendantOf(std::shared_ptr<SceneNode> const& otherNode) const;
+		bool		IsDescendantOf(shared_ptr<SceneNode> const& otherNode) const;
 		bool		IsDescendantOf(SceneNode* otherNode) const;
 
-		void		InsertBefore(std::shared_ptr<SceneNode> const& other);
-		void		InsertAfter(std::shared_ptr<SceneNode> const& other);
+		void		InsertBefore(shared_ptr<SceneNode> const& other);
+		void		InsertAfter(shared_ptr<SceneNode> const& other);
 	private:
 
 		bool							m_dirty = true;
 
-		Apex::Data::Object*				m_object;
+		Object*							m_object;
 
-		std::shared_ptr<SceneNode>		m_parent;
+		weak_ptr<SceneNode>				m_parent;
 		vector<shared_ptr<SceneNode>>	m_children;
 	};
 }
