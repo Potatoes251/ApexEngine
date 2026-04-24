@@ -1,3 +1,4 @@
+#include "ComputeShader.h"
 #include "Material.h"
 
 #include "Log.h"
@@ -34,6 +35,30 @@ void Material::Bind()
 	}
 }
 
+void Material::BindCompute()
+{
+	if (!m_computeShader.IsValid())
+		return;
+
+	m_computeShader->Use();
+
+	for (auto& [name, value] : m_uniforms)
+	{
+		std::visit([&](auto&& v)
+			{
+				m_computeShader->SetUniform(name, v);
+			}, value);
+	}
+
+	for (int i = 0; i < m_textures.size(); i++)
+	{
+		if (m_textures[i].IsValid())
+			m_textures[i]->Bind(i);
+	}
+
+	m_computeShader
+}
+
 void Material::Save()
 {
 	std::ofstream file(m_path);
@@ -44,6 +69,7 @@ void Material::Save()
 	}
 
 	const bool hasShader = m_shader.IsValid();
+	const bool hasComputeShader = m_computeShader.IsValid();
 	const bool hasUniforms = m_uniforms.size() > 0;
 	const bool hasTextures = m_textures.size() > 0;
 
@@ -54,6 +80,12 @@ void Material::Save()
 	if (hasShader)
 	{
 		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
+		needsComma = true;
+	}
+
+	if (hasComputeShader)
+	{
+		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
 		needsComma = true;
 	}
 
@@ -155,6 +187,10 @@ void Material::LoadFromFile()
 		if (category == "shader")
 		{
 			m_shader = m_rm->CreateAsync<Shader>(parser.ParseString());
+		}
+		if (category == "computeShader")
+		{
+			m_computeShader = m_rm->CreateAsync<ComputeShader>(parser.ParseString());
 		}
 		else if (category == "properties")
 		{

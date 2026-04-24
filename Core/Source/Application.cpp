@@ -57,7 +57,7 @@ using namespace Apex::Serialization;
 Apex::Application::Application() = default;
 Apex::Application::~Application() = default;
 
-bool Apex::Application::Init(IWindow* window)
+bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
     if (!InitLog()
     || !InitWindow(window)
@@ -66,16 +66,12 @@ bool Apex::Application::Init(IWindow* window)
     || !InitLighting()
     || !InitRendering()
     || !InitAudio()
+    || !InitUI(gui)
     || !InitLua()
     || !InitScene())
         return false;
 
     return true;
-}
-
-bool Apex::Application::InitGUI(UserInterface::IGUI* gui)
-{
-    return InitUI(gui);
 }
 
 bool Apex::Application::InitResourceManager()

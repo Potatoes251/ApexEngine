@@ -217,9 +217,9 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
 
             constexpr size_t totalU32 = sizeof(Matrix4) / 4;
 
-            for (size_t i = 0; i < totalU32; i++)
+            for (size_t j = 0; j < totalU32; j++)
             {
-                data[i] = _byteswap_ulong(data[i]);
+                data[j] = _byteswap_ulong(data[j]);
             }
         }
 
@@ -239,9 +239,9 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
         {
             uint32_t* data = reinterpret_cast<uint32_t*>(bones[i].m_children.data());
 
-            for (size_t i = 0; i < bones[i].m_children.size(); i++)
+            for (size_t j = 0; j < bones[j].m_children.size(); j++)
             {
-                data[i] = _byteswap_ulong(data[i]);
+                data[j] = _byteswap_ulong(data[j]);
             }
         }
     }

@@ -81,6 +81,22 @@ namespace Apex::Rendering
 		return buffer;
 	}
 
+	RHIBufferHandle OpenGLRHI::CreateSSBO(size_t sizeBytes)
+	{
+		GLuint glBuffer;
+		glGenBuffers(1, &glBuffer);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, glBuffer);
+
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeBytes, nullptr, GL_DYNAMIC_COPY);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		RHIBufferHandle buffer = NewHandle();
+		m_buffers[buffer] = glBuffer;
+		return buffer;
+	}
+
 	void OpenGLRHI::UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) 
 	{
 		GLuint glBuffer = GetBuffer(buffer);
@@ -91,6 +107,11 @@ namespace Apex::Rendering
 	void OpenGLRHI::BindBuffer(RHIBufferHandle buffer, BufferType type) 
 	{
 		glBindBuffer(GetGLBufferType(type), GetBuffer(buffer));
+	}
+
+	void OpenGLRHI::BindStorageBuffer(uint32_t binding, RHIBufferHandle buffer)
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, GetBuffer(buffer));
 	}
 
 	void OpenGLRHI::DeleteBuffer(RHIBufferHandle buffer) 
@@ -420,15 +441,44 @@ namespace Apex::Rendering
 		return shader;
 	}
 
+	RHIShaderHandle OpenGLRHI::CreateComputeShader(const std::string& source)
+	{
+		std::string file = ReadFile(source);
+		char const* content = file.c_str();
+
+		GLuint compute = glCreateShader(GL_COMPUTE_SHADER);
+		glShaderSource(compute, 1, &content, NULL);
+		glCompileShader(compute);
+
+		GLuint program = glCreateProgram();
+		glAttachShader(program, compute);
+		glLinkProgram(program);
+
+		RHIShaderHandle shader = NewHandle();
+		m_shaders[shader] = program;
+		return shader;
+	}
+
 	void OpenGLRHI::BindShader(RHIShaderHandle shader)
 	{
 		glUseProgram(GetShader(shader));
 	}
 
+
 	void OpenGLRHI::DeleteShader(RHIShaderHandle shader)
 	{
 		glDeleteProgram(GetShader(shader));
 		m_shaders.erase(shader);
+	}
+
+	void OpenGLRHI::Barrier()
+	{
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	}
+
+	void OpenGLRHI::DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ)
+	{
+		glDispatchCompute(groupX, groupY, groupZ);
 	}
 
 	// ── Uniforms ─────────────────────────────────────────────────

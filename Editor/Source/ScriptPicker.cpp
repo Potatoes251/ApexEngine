@@ -20,8 +20,6 @@ void ScriptPicker::Open(Rendering::Scene* scene, Apex::Scripting::ScriptComponen
 
 static std::string DrawScriptGrid(IGUI* gui, int cols)
 {
-    constexpr float THUMB = Apex::Resources::PICKER_THUMB;
-
     uint32_t scriptIcon = Apex::Editor::EditorIcon::Get("ApexAssets/Icons/script.png");
 
     gui->BeginChildPanel("##sp_grid", 0.f, -30.f, false);

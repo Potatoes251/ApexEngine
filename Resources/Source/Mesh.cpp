@@ -16,6 +16,12 @@ void Mesh::LoadFromFile()
 	MeshLoader loader;
 	loader.Load(m_path, *this);
 
+	if (m_vertices.empty())
+	{
+		SetState(ResourceState::Failed);
+		return;
+	}
+
 	for (const auto& v : m_vertices)
 	{
 		for (int c = 0; c < 3; ++c)
@@ -24,18 +30,15 @@ void Mesh::LoadFromFile()
 			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
 		}
 	}
+
+	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
+	m_indexCount = static_cast<uint32_t>(m_indices.size());
 }
 
 void Mesh::UploadToGpu()
 {
-	if (m_vertices.empty())
-	{
-		SetState(ResourceState::Failed);
-		return;
-	}
-
-	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
-	m_indexCount = static_cast<uint32_t>(m_indices.size());
+	m_inputVertices = Ssbo(m_rhi, m_vertexCount * sizeof(Vertex), 0);
+	m_outputVertices = Ssbo(m_rhi, m_vertexCount * sizeof(Vertex), 0);
 
 	m_VAO = m_rhi->CreateVAO();
 	m_rhi->BindVAO(m_VAO);
@@ -52,6 +55,12 @@ void Mesh::ClearVertices()
 	m_vertices.shrink_to_fit();
 	m_indices.clear();
 	m_indices.shrink_to_fit();
+}
+
+void Mesh::BindForCompute()
+{
+	m_inputVertices.Bind();
+	m_outputVertices.Bind();
 }
 
 void Mesh::Draw() const

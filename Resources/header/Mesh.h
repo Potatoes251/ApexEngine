@@ -2,7 +2,9 @@
 #define MESH
 
 #include "IResource.h"
+
 #include "RHI.h"
+#include "SSBO.h"
 
 #include "LibMath/Vector.h"
 #include "LibMath/Matrix/Matrix4.h"
@@ -64,6 +66,8 @@ public:
 
 	void ClearVertices();
 
+	void BindForCompute();
+
 	void Draw() const;
 	void DrawLine() const;
 
@@ -94,6 +98,9 @@ private:
 	uint32_t	m_indexCount = 0;
 	uint32_t	m_vertexCount = 0;
 	std::string m_name;
+
+	Apex::Rendering::Ssbo m_inputVertices;
+	Apex::Rendering::Ssbo m_outputVertices;
 
 	LibMath::Vector3 m_boundsMin = { 1e9f,  1e9f,  1e9f };
 	LibMath::Vector3 m_boundsMax = { -1e9f, -1e9f, -1e9f };
