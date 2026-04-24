@@ -167,12 +167,9 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             auto& comp = obj->AddComponent<Apex::Rendering::MeshRenderer>();
             comp.SetEnabled(enabled);
-
-            auto a = GetMeshHandle(mesh);
-            auto b = GetMaterialHandle(material);
             
-            comp.SetMesh(a);
-            comp.SetMaterial(b);
+            comp.SetMesh(GetMeshHandle(mesh));
+            comp.SetMaterial(GetMaterialHandle(material));
             comp.SetCastShadow(shadow);
         }
         else if (compName == "RigidBody")
@@ -587,7 +584,7 @@ void SceneLoader::ParseMaterials(SerialParser& parser)
 
         parser.Expect('}');
 
-        auto material = m_physics.CreateMaterial(
+        auto material = m_physics->CreateMaterial(
             std::to_string(id),
             staticFriction,
             dynamicFriction,
@@ -624,20 +621,20 @@ Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::
 
 Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::string& path)
 {
-    return m_resourceManager.CreateAsync<Mesh>(path);
+    return m_resourceManager->CreateAsync<Mesh>(path);
 }
 
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)
 {
-    return m_resourceManager.CreateAsync<Texture>(path);
+    return m_resourceManager->CreateAsync<Texture>(path);
 }
 
 Apex::Resources::ResourceHandle<Apex::Rendering::Material> Apex::Serialization::SceneLoader::GetMaterialHandle(const std::string& path)
 {
-    return m_resourceManager.CreateAsync<Rendering::Material>(path);
+    return m_resourceManager->CreateAsync<Rendering::Material>(path);
 }
 
 Apex::Resources::ResourceHandle<Shader> Apex::Serialization::SceneLoader::GetShaderHandle(const std::string& path)
 {
-    return m_resourceManager.CreateAsync<Shader>(path);
+    return m_resourceManager->CreateAsync<Shader>(path);
 }

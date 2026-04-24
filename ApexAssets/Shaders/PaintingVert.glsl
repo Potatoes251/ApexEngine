@@ -16,7 +16,7 @@ void main()
     vec4 worldPos  = uModel * vec4(aPosition, 1.0);
     vFragPos       = worldPos.xyz;
     // Normal matrix: transpose of inverse of upper-left 3x3 of model
-    vNormal        = mat3(transpose(inverse(uModel))) * aNormal;
+    // vNormal        = mat3(transpose(inverse(uModel))) * aNormal;
     vTexCoord      = aTexCoord;
     gl_Position    = uViewProj * worldPos;
 }

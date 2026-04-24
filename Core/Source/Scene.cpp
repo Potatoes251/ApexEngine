@@ -44,7 +44,7 @@ namespace Apex::Rendering
 
 				if (mat.IsValid())
 					collider->SetMaterial(copy->m_physics.CreateMaterial(
-						mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
+						mat->GetPath(), mat->MutStaticFriction(), mat->MutDynamicFriction(), mat->MutBounciness()));
 				
 				copy->m_physics.CreateActor(*collider, *body);
 			}
@@ -197,8 +197,6 @@ namespace Apex::Rendering
 			if (character) 
 			{
 				character->SetPhysic(&m_physics);
-				character->SetPhysic(&m_physics);
-				character->SetPhysic(&m_physics);
 			}
 
 			if (m_mainCamera) continue;
@@ -275,18 +273,16 @@ namespace Apex::Rendering
 		if (!dragged || !target || dragged == target)
 			return;
 
-		auto& objs = m_objects;
-
-		auto itDragged = std::find_if(objs.begin(), objs.end(),
+		auto itDragged = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == dragged; });
 
-		auto itTarget = std::find_if(objs.begin(), objs.end(),
+		auto itTarget = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == target; });
 
 		if (std::next(itDragged) == itTarget)
 			return;
 
-		if (itDragged == objs.end() || itTarget == objs.end())
+		if (itDragged == m_objects.end() || itTarget == m_objects.end())
 			return;
 
 		if (itDragged < itTarget)
@@ -302,18 +298,16 @@ namespace Apex::Rendering
 		if (!dragged || !target || dragged == target)
 			return;
 
-		auto& objs = m_objects;
-
-		auto itDragged = std::find_if(objs.begin(), objs.end(),
+		auto itDragged = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == dragged; });
 
-		auto itTarget = std::find_if(objs.begin(), objs.end(),
+		auto itTarget = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == target; });
 
 		if (std::next(itTarget) == itDragged)
 			return;
 
-		if (itDragged == objs.end() || itTarget == objs.end())
+		if (itDragged == m_objects.end() || itTarget == m_objects.end())
 			return;
 
 		if (itDragged < itTarget)
@@ -359,9 +353,9 @@ namespace Apex::Rendering
 			file <<
 				"  {\n"
 				"    \"id\": " << material->GetId() << ",\n"
-				"    \"static friction\": " << material->GetStaticFriction() << ",\n"
-				"    \"dynamic friction\": " << material->GetDynamicFriction() << ",\n"
-				"    \"bounciness\": " << material->GetBounciness() << "\n"
+				"    \"static friction\": " << material->MutStaticFriction() << ",\n"
+				"    \"dynamic friction\": " << material->MutDynamicFriction() << ",\n"
+				"    \"bounciness\": " << material->MutBounciness() << "\n"
 				"  }";
 		}
 

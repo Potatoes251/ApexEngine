@@ -1,8 +1,10 @@
 #include "ContentBrowser.h"
+
 #include "EditorIcon.h"
 
 #include "ThreadPool.h"
 #include "MeshLoader.h"
+
 #include "Log.h"
 
 #include <iostream>
@@ -62,7 +64,7 @@ namespace Apex::Editor
         }
     }
 
-    AssetEntry ContentBrowser::ClassifyEntry(const fs::directory_entry& entry)
+    AssetEntry ContentBrowser::ClassifyEntry(const Fs::directory_entry& entry)
     {
         AssetEntry assetEntry;
         assetEntry.m_path = entry.path();
@@ -116,13 +118,13 @@ namespace Apex::Editor
 
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui,
                                    Apex::Windowing::IWindow& window,
-                                   const fs::path& rootPath,
+                                   const Fs::path& rootPath,
                                    Apex::Rendering::IRHI& rhi,
                                    Apex::Resources::ResourceManager& resourceManager)
         : m_gui(gui),
         m_window(window),
-        m_rootPath(fs::weakly_canonical(rootPath)),
-        m_currentPath(fs::weakly_canonical(rootPath)),
+        m_rootPath(Fs::weakly_canonical(rootPath)),
+        m_currentPath(Fs::weakly_canonical(rootPath)),
         m_resourceManager(resourceManager),
         m_thumbnails(rhi, resourceManager)
     {
@@ -134,10 +136,10 @@ namespace Apex::Editor
         ScanCurrentDirectory(); 
     }
 
-    void ContentBrowser::NavigateTo(const fs::path& dir)
+    void ContentBrowser::NavigateTo(const Fs::path& dir)
     {
         m_thumbnails.Clear();
-        m_currentPath = fs::weakly_canonical(dir);
+        m_currentPath = Fs::weakly_canonical(dir);
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();
     }
@@ -145,12 +147,12 @@ namespace Apex::Editor
     void ContentBrowser::ScanCurrentDirectory()
     {
         m_entries.clear();
-        if (!fs::exists(m_currentPath) || !fs::is_directory(m_currentPath))
+        if (!Fs::exists(m_currentPath) || !Fs::is_directory(m_currentPath))
             return;
 
         std::vector<AssetEntry> folders, files;
 
-        for (const auto& entry : fs::directory_iterator(m_currentPath))
+        for (const auto& entry : Fs::directory_iterator(m_currentPath))
         {
             if (!entry.is_directory() && (entry.path().extension() == ".meta" || entry.path().extension() == ".obj"
                 || entry.path().extension() == ".fbx" || entry.path().extension() == ".FBX" || entry.path().extension() == ".mtl"))
@@ -180,9 +182,9 @@ namespace Apex::Editor
     {
         m_searchEntries.clear();
 
-        const fs::path& searchRoot = (m_currentPath == m_rootPath) ? m_rootPath : m_currentPath;
+        const Fs::path& searchRoot = (m_currentPath == m_rootPath) ? m_rootPath : m_currentPath;
 
-        for (const auto& entry : fs::recursive_directory_iterator(searchRoot))
+        for (const auto& entry : Fs::recursive_directory_iterator(searchRoot))
         {
             if (entry.is_directory()) continue;
             if (entry.path().extension() == ".meta" || entry.path().extension() == ".obj"
@@ -190,9 +192,8 @@ namespace Apex::Editor
                 || entry.path().extension() == ".mtl") continue;
 
             std::string name = entry.path().filename().string();
-            std::string low = name;
-            std::transform(low.begin(), low.end(), low.begin(), ::tolower);
-            if (low.find(filter) == std::string::npos) continue;
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+            if (name.find(filter) == std::string::npos) continue;
 
             AssetEntry assetEntry = ClassifyEntry(entry);
             m_searchEntries.push_back(assetEntry);
@@ -206,14 +207,14 @@ namespace Apex::Editor
             entry.m_thumbnailTextureID = m_thumbnails.GetCached(entry.m_path);
     }
 
-    void ContentBrowser::MoveEntry(const fs::path& from, const fs::path& toDirectory)
+    void ContentBrowser::MoveEntry(const Fs::path& from, const Fs::path& toDirectory)
     {
         if (from == toDirectory || from.parent_path() == toDirectory) return;
 
-        fs::path destination = toDirectory / from.filename();
+        Fs::path destination = toDirectory / from.filename();
         
         std::error_code error;
-        fs::rename(from, destination, error);
+        Fs::rename(from, destination, error);
         if (!error)
         {
             m_selectedPath.clear();
@@ -230,19 +231,18 @@ namespace Apex::Editor
     {
         if (m_selectedPath.empty()) return;
 
-        std::error_code error;
-        if (fs::is_directory(m_selectedPath))
-            fs::remove_all(m_selectedPath, error);
+        if (Fs::is_directory(m_selectedPath))
+            Fs::remove_all(m_selectedPath);
         else
-            fs::remove(m_selectedPath, error);
+            Fs::remove(m_selectedPath);
 
         // If we just deleted the current directory or one of its ancestors,
         // navigate up to the closest existing parent.
         if (m_currentPath == m_selectedPath ||
             m_currentPath.string().rfind(m_selectedPath.string(), 0) == 0)
         {
-            fs::path parent = m_selectedPath.parent_path();
-            if (!fs::exists(parent) || parent == m_selectedPath)
+            Fs::path parent = m_selectedPath.parent_path();
+            if (!Fs::exists(parent) || parent == m_selectedPath)
                 parent = m_rootPath;
             NavigateTo(parent);
         }
@@ -253,26 +253,25 @@ namespace Apex::Editor
 
     void ContentBrowser::DuplicateEntry(const AssetEntry& entry)
     {
-        fs::path src = entry.m_path;
-        fs::path stem = src.stem().string();
-        fs::path ext = src.extension();
-        fs::path dest = src.parent_path() / (stem.string() + "_copy" + ext.string());
+        Fs::path src = entry.m_path;
+        Fs::path stem = src.stem().string();
+        Fs::path ext = src.extension();
+        Fs::path dest = src.parent_path() / (stem.string() + "_copy" + ext.string());
 
         int n = 2;
-        while (fs::exists(dest))
+        while (Fs::exists(dest))
             dest = src.parent_path() / (stem.string() + "_copy" + std::to_string(n++) + ext.string());
 
-        std::error_code error;
-        fs::copy_file(src, dest, fs::copy_options::skip_existing, error);
+        Fs::copy_file(src, dest, Fs::copy_options::skip_existing);
         Refresh();
     }
 
-    void ContentBrowser::RevealInExplorer(const fs::path& path)
+    void ContentBrowser::RevealInExplorer(const Fs::path& path)
     {
         std::system(("explorer /select,\"" + path.string() + "\"").c_str());
     }
 
-    void ContentBrowser::BeginRename(const fs::path& path)
+    void ContentBrowser::BeginRename(const Fs::path& path)
     {
         m_renamingPath = path;
         m_renameFocusPending = true;
@@ -301,9 +300,8 @@ namespace Apex::Editor
         if (newStem != m_renamingPath.stem().string())
         {
             // Re-attach the original extension so the user can never change it
-            fs::path dest = m_renamingPath.parent_path() / (newStem + m_renamingPath.extension().string());
-            std::error_code error;
-            fs::rename(m_renamingPath, dest, error);
+            Fs::path dest = m_renamingPath.parent_path() / (newStem + m_renamingPath.extension().string());
+            Fs::rename(m_renamingPath, dest);
 
             if (m_selectedPath == m_renamingPath)
                 m_selectedPath = dest;
@@ -317,26 +315,24 @@ namespace Apex::Editor
     void ContentBrowser::CreateFolder()
     {
         // Find a unique name
-        fs::path base = m_currentPath / "New Folder";
-        fs::path target = base;
+        Fs::path target = m_currentPath / "New Folder";
         int n = 2;
-        while (fs::exists(target))
+        while (Fs::exists(target))
             target = m_currentPath / ("New Folder " + std::to_string(n++));
 
-        std::error_code error;
-        fs::create_directory(target, error);
+        Fs::create_directory(target);
         Refresh();
 
         // Immediately enter rename mode on the new folder
         BeginRename(target);
     }
 
-    bool ContentBrowser::IsPathInsideProject(const fs::path& projectRoot, const fs::path& path)
+    bool ContentBrowser::IsPathInsideProject(const Fs::path& projectRoot, const Fs::path& path)
     {
         std::error_code ec;
 
-        fs::path root = fs::weakly_canonical(projectRoot, ec);
-        fs::path target = fs::weakly_canonical(path, ec);
+        Fs::path root = Fs::weakly_canonical(projectRoot, ec);
+        Fs::path target = Fs::weakly_canonical(path, ec);
 
         if (ec) return false;
 
@@ -345,11 +341,11 @@ namespace Apex::Editor
         return !relative.empty() && relative.native()[0] != '.';
     }
 
-    void ContentBrowser::CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content)
+    void ContentBrowser::CreateAssetFile(const Fs::path& dir, const std::string& name, const std::string& ext, const std::string& content)
     {
-        fs::path path = dir / (name + ext);
+        Fs::path path = dir / (name + ext);
         int n = 1;
-        while (fs::exists(path))
+        while (Fs::exists(path))
             path = dir / (name + std::to_string(n++) + ext);
 
         std::ofstream file(path);
@@ -358,9 +354,9 @@ namespace Apex::Editor
         BeginRename(path);
     }
 
-    void ContentBrowser::ImportFiles(std::vector<fs::path> sources, const fs::path& destDir)
+    void ContentBrowser::ImportFiles(std::vector<Fs::path> const& sources, const Fs::path& destDir)
     {
-        const fs::path& destination = destDir.empty() ? m_currentPath : destDir;
+        const Fs::path& destination = destDir.empty() ? m_currentPath : destDir;
         bool anyChange = false;
 
         for (const auto& src : sources)
@@ -378,15 +374,12 @@ namespace Apex::Editor
             }
 
             std::error_code error;
-            fs::path target = destination / src.filename();
+            Fs::path target = destination / src.filename();
 
-            if (fs::is_directory(src))
-                fs::copy(src, target,
-                    fs::copy_options::recursive |
-                    fs::copy_options::skip_existing, error);
+            if (Fs::is_directory(src))
+                Fs::copy(src, target, Fs::copy_options::recursive, error);
             else
-                fs::copy_file(src, target,
-                    fs::copy_options::skip_existing, error);
+                Fs::copy_file(src, target, Fs::copy_options::none, error);
 
             if (error)
                 std::cerr << "[ContentBrowser] Import failed for "
@@ -440,8 +433,10 @@ namespace Apex::Editor
         // Capture grid bounds for external drop hit-test
         LibMath::Vector2 gridPos = m_gui.GetPanelPos();
         LibMath::Vector2 gridSize = m_gui.GetPanelSize();
-        m_gridX = gridPos[0];  m_gridY = gridPos[1];
-        m_gridWidth = gridSize[0]; m_gridHeight = gridSize[1];
+        m_gridX = gridPos[0];  
+        m_gridY = gridPos[1];
+        m_gridWidth = gridSize[0]; 
+        m_gridHeight = gridSize[1];
         DrawAssetGrid();
         m_gui.EndChildPanel();
 
@@ -477,7 +472,7 @@ namespace Apex::Editor
         return m_thumbnails;
     }
 
-    fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
+    Fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
         for (const auto& rect : m_breadcrumbRects)
             if (mouseX >= rect.m_x && mouseX <= rect.m_x + rect.m_width && 
@@ -542,11 +537,11 @@ namespace Apex::Editor
 
     void ContentBrowser::DrawBreadcrumb()
     {
-        fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty())
+        Fs::path displayPath = (m_searchBuffer[0] != '\0' && !m_selectedPath.empty())
             ? m_selectedPath.parent_path() : m_currentPath;
 
-        fs::path relative = fs::relative(displayPath, m_rootPath.parent_path());
-        fs::path accumulated = m_rootPath.parent_path();
+        Fs::path relative = Fs::relative(displayPath, m_rootPath.parent_path());
+        Fs::path accumulated = m_rootPath.parent_path();
 
         m_breadcrumbRects.clear();
 
@@ -573,16 +568,16 @@ namespace Apex::Editor
         m_gui.PopFont();
     }
 
-    void ContentBrowser::DrawFolderTree(const fs::path& dir)
+    void ContentBrowser::DrawFolderTree(const Fs::path& dir)
     {
-        if (!fs::exists(dir)) return;
+        if (!Fs::exists(dir)) return;
 
         m_gui.PushStyleVariable(StyleVariable::FramePadding, 4.f, 5.f);
         m_gui.PushStyleVariable(StyleVariable::ItemSpacing, 6.f, 6.f);
         m_gui.PushStyleVariable(StyleVariable::IndentSpacing, 18.f);
         m_gui.PushFont(FontID::Default);
 
-        for (const auto& entry : fs::directory_iterator(dir))
+        for (const auto& entry : Fs::directory_iterator(dir))
             if (entry.is_directory()) DrawFolderTreeEntry(entry);
 
         m_gui.PopFont();
@@ -591,9 +586,9 @@ namespace Apex::Editor
         m_gui.PopStyleVariable(); // FramePadding
     }
 
-    void ContentBrowser::DrawFolderTreeEntry(const fs::directory_entry& entry)
+    void ContentBrowser::DrawFolderTreeEntry(const Fs::directory_entry& entry)
     {
-        const fs::path& path = entry.path();
+        const Fs::path& path = entry.path();
         bool isRenaming = (m_renamingPath == path);
 
         bool open = DrawTreeNode(path, isRenaming);
@@ -605,7 +600,7 @@ namespace Apex::Editor
         if (open) { DrawFolderTree(path); m_gui.EndTreeNode(); }
     }
 
-    bool ContentBrowser::DrawTreeNode(const fs::path& path, bool isRenaming)
+    bool ContentBrowser::DrawTreeNode(const Fs::path& path, bool isRenaming)
     {
         auto flags = BuildTreeNodeFlags(path);
         std::string label = isRenaming ? "##renaming_" + path.string() : path.filename().string();
@@ -616,7 +611,7 @@ namespace Apex::Editor
         return open;
     }
 
-    void ContentBrowser::HandleTreeNodeInput(const fs::path& path, bool isRenaming)
+    void ContentBrowser::HandleTreeNodeInput(const Fs::path& path, bool isRenaming)
     {
         if (isRenaming) { DrawTreeNodeRename(); return; }
 
@@ -635,17 +630,17 @@ namespace Apex::Editor
         {
             const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
             if (data)
-                MoveEntry(fs::path(static_cast<const char*>(data)), path);
+                MoveEntry(Fs::path(static_cast<const char*>(data)), path);
             m_hoveredDestThisFrame = path;
             m_gui.EndDropTarget();
         }
     }
 
-    Apex::UserInterface::TreeNodeFlags ContentBrowser::BuildTreeNodeFlags(const fs::path& path) const
+    Apex::UserInterface::TreeNodeFlags ContentBrowser::BuildTreeNodeFlags(const Fs::path& path) const
     {
         using Apex::UserInterface::TreeNodeFlags;
         bool hasSubDirs = false;
-        for (const auto& sub : fs::directory_iterator(path))
+        for (const auto& sub : Fs::directory_iterator(path))
         {
             if (sub.is_directory())
             {
@@ -724,7 +719,7 @@ namespace Apex::Editor
         {
             auto paths = m_window.OpenFileDialog(true);
             if (!paths.empty())
-                ImportFiles(std::move(paths));
+                ImportFiles(paths);
         }
 
         if (m_gui.MenuItem("Import Folder..."))
@@ -889,7 +884,7 @@ namespace Apex::Editor
         {
             const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
             if (data)
-                MoveEntry(fs::path(static_cast<const char*>(data)), entry.m_path);
+                MoveEntry(Fs::path(static_cast<const char*>(data)), entry.m_path);
             m_hoveredDestThisFrame = entry.m_path;
             m_gui.EndDropTarget();
         }
@@ -918,7 +913,7 @@ namespace Apex::Editor
         if (!entry.m_isFolder)
         {
             std::error_code error;
-            auto bytes = fs::file_size(entry.m_path, error);
+            auto bytes = Fs::file_size(entry.m_path, error);
             if (!error)
                 m_gui.TextDisabled(std::to_string(bytes / 1024) + " KB");
         }
@@ -1012,7 +1007,7 @@ namespace Apex::Editor
         {
             auto paths = m_window.OpenFileDialog(true);
             if (!paths.empty())
-                ImportFiles(std::move(paths));
+                ImportFiles(paths);
         }
 
         if (m_gui.MenuItem("Import Folder..."))
@@ -1086,7 +1081,7 @@ namespace Apex::Editor
             m_renamingPath.clear();
     }
 
-    void ContentBrowser::DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx)
+    void ContentBrowser::DrawBreadcrumbPart(const Fs::path& accumulated, const std::string& label, int idx)
     {
         Apex::UserInterface::IDrawList* drawList = m_gui.GetDrawList();
         constexpr uint32_t COL_NORMAL = 0xFFCCCCCC;
@@ -1100,7 +1095,7 @@ namespace Apex::Editor
 
         LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
 
-        if (fs::is_directory(accumulated))
+        if (Fs::is_directory(accumulated))
             m_breadcrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
 
         m_gui.PushID(idx);
@@ -1111,7 +1106,7 @@ namespace Apex::Editor
         drawList->DrawText(LibMath::Vector2(buttonPos[0] + PAD_X, buttonPos[1]),
             hovered ? COL_HOVERED : COL_NORMAL, label);
 
-        if (!fs::is_directory(accumulated)) return;
+        if (!Fs::is_directory(accumulated)) return;
 
         if (clicked) NavigateTo(accumulated);
         if (hovered) m_hoveredDestThisFrame = accumulated;
@@ -1120,7 +1115,7 @@ namespace Apex::Editor
         {
             const void* data = m_gui.AcceptDragPayload("ASSET_PATH");
             if (data)
-                MoveEntry(fs::path(static_cast<const char*>(data)), accumulated);
+                MoveEntry(Fs::path(static_cast<const char*>(data)), accumulated);
             m_hoveredDestThisFrame = accumulated;
             m_gui.EndDropTarget();
         }

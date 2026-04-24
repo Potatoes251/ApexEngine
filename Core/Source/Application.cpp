@@ -1,23 +1,23 @@
 #include "Application.h"
 
-#include "Object.h"
-#include "SceneGraph.h"
-#include "SceneLoader.h"
 
 #include "LuaManager.h"
+#include "SceneLoader.h"
 #include "ScriptComponent.h"
 
 #include "Audio.h"
-
 #include "Window.h"
 
 #include "RHI.h"
-#include "Mesh.h"
 #include "Camera.h"
+#include "SceneGraph.h"
+#include "RenderPassInfo.h"
+
+#include "Mesh.h"
+#include "Object.h"
 #include "Shader.h"
 #include "Cubemap.h"
 #include "Texture.h"
-#include "RenderPassInfo.h"
 #include "ResourceManager.h"
 
 #include "Rigidbody.h"
@@ -196,7 +196,7 @@ void Apex::Application::LoadScene()
 
     m_scene->SetSkybox(sk);
     
-    SceneLoader loader(*m_resourceManager.get(), *m_scene->GetPhysic(), *m_luaManager);
+    SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
     loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
 
     bool ready = false;
@@ -228,10 +228,8 @@ void Apex::Application::LoadScene()
         m_resourceManager->ProcessGpuUploads();
     }
 
-    for (auto& objPtr : m_scene->GetObjects())
+    for (auto& obj : m_scene->GetObjects())
     {
-        Object* obj = objPtr.get();
-
         auto* body = obj->GetComponent<RigidBodyComponent>();
         auto* collider = obj->GetComponent<Collider>();
 

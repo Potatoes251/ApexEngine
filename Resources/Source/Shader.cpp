@@ -5,17 +5,9 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <cassert>
 
 using namespace Apex::Rendering;
-
-Shader::~Shader()
-{
-	if (m_shader != Apex::Rendering::RHI_INVALID)
-	{
-		if (m_rhi) m_rhi->DeleteShader(m_shader);
-		m_shader = Apex::Rendering::RHI_INVALID;
-	}
-}
 
 void Shader::UploadToGpu()
 {
@@ -43,40 +35,34 @@ void Shader::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
-
-	if (m_shader == RHI_INVALID)
-	{
-		SetState(ResourceState::Failed);
-	}
 }
 
 void Shader::Use() const
-{
-	if (m_rhi)
-		m_rhi->BindShader(m_shader);
+{	
+	m_rhi->BindShader(m_shader);
 }
 
-void Shader::SetUniform(std::string const& name, int value)
+void Shader::SetUniform(std::string_view const& name, int value)
 {
 	m_rhi->SetUniformInt(m_shader, name, value);
 }
 
-void Shader::SetUniform(std::string const& name, float value)
+void Shader::SetUniform(std::string_view const& name, float value)
 {
 	m_rhi->SetUniformFloat(m_shader, name, value);
 }
 
-void Shader::SetUniform(std::string const& name, LibMath::Vector3 const& value)
+void Shader::SetUniform(std::string_view const& name, LibMath::Vector3 const& value)
 {
 	m_rhi->SetUniformVec3(m_shader, name, value);
 }
 
-void Shader::SetUniform(std::string const& name, LibMath::Matrix4 const& value)
+void Shader::SetUniform(std::string_view const& name, LibMath::Matrix4 const& value)
 {
 	m_rhi->SetUniformMat4(m_shader, name, value);
 }
 
-void Shader::SetUniform(std::string const& name, LibMath::Matrix4 const& value, int count)
+void Shader::SetUniform(std::string_view const& name, LibMath::Matrix4 const& value, int count)
 {
 	m_rhi->SetUniformMat4Array(m_shader, name, value, count);
 }

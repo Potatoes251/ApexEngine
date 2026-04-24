@@ -65,12 +65,12 @@ public:
 	void ClearVertices();
 
 	void Draw() const;
-	void DrawLineLoop() const;
+	void DrawLine() const;
 
 	uint32_t GetIndexCount()  const { return m_indexCount; }
 	uint32_t GetVertexCount()  const { return m_vertexCount; }
 
-	// Axis-aligned bounding box — populated during UploadToGpu(), valid after IsReady()
+	// Axis-aligned bounding box - populated during UploadToGpu(), valid after IsReady()
 	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
 
@@ -80,11 +80,14 @@ public:
 	std::vector<uint32_t>					m_indices;
 
 	std::vector<BoneInfo>					m_bones;		//with m_offsetMatrix = inverse bind pose
- 	unordered_map<std::string, int>			m_boneMap;
-	std::vector<std::string> m_boneNames;
 	std::vector<Animation>					m_animations;
-
 private:
+	friend class MeshImporter;
+	friend class BinLoader;
+
+ 	unordered_map<std::string, int>	m_boneMap;
+	std::vector<std::string>		m_boneNames;
+
 	uint32_t	m_VAO = 0;
 	uint32_t	m_VBO = 0;
 	uint32_t	m_EBO = 0;

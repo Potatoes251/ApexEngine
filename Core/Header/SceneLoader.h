@@ -1,15 +1,17 @@
 #ifndef SCENE_LOADER
 #define SCENE_LOADER
 
-#include "SerializationParser.h"
 #include "Rigidbody.h"
 #include "MeshCollider.h"
+#include "Physic.h"
+
+#include "SerializationParser.h"
+#include "Material.h"
+#include "LuaManager.h"
+
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
-#include "Material.h"
-#include "Physic.h"
-#include "LuaManager.h"
 
 #include <string>
 #include <vector>
@@ -25,9 +27,9 @@ namespace Apex::Serialization
     class SceneLoader
     {
     public:
-        SceneLoader(Resources::ResourceManager& resMgr, 
-            Apex::Physic::PhysicSystem& physics, 
-            Apex::Scripting::LuaManager& luaManager) 
+        SceneLoader(Resources::ResourceManager* resMgr, 
+            Apex::Physic::PhysicSystem* physics, 
+            Apex::Scripting::LuaManager* luaManager) 
             : m_resourceManager(resMgr), m_physics(physics), 
             m_luaManager(luaManager) {}
 
@@ -48,10 +50,10 @@ namespace Apex::Serialization
         Apex::Resources::ResourceHandle<Rendering::Material> GetMaterialHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);
 
-        Apex::Resources::ResourceManager& m_resourceManager;
-        Apex::Physic::PhysicSystem& m_physics;
+        Apex::Resources::ResourceManager* m_resourceManager;
+        Apex::Physic::PhysicSystem* m_physics;
         std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
-        Apex::Scripting::LuaManager& m_luaManager;
+        Apex::Scripting::LuaManager* m_luaManager;
 
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;
         std::vector<std::pair<size_t, size_t>> parentLinks;
