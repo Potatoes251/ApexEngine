@@ -338,8 +338,6 @@ void MeshViewer::DrawDetailsMeshSection()
     row("Size:", FileSizeString());
     row("Vertices:", std::to_string(m_vertexCount));
     row("Triangles:", std::to_string(m_triangleCount));
-    row("Has UVs:", m_hasUVs ? "Yes" : "No");
-    row("Has Normals:", m_hasNormals ? "Yes" : "No");
 }
 
 void MeshViewer::DrawDetailsBoundsSection()
@@ -690,8 +688,6 @@ void MeshViewer::FinalizeMeshLoad()
 {
     m_vertexCount = m_mesh->GetVertexCount();
     m_triangleCount = m_mesh->GetIndexCount() / 3;
-    m_hasNormals = true;
-    m_hasUVs = true;
     m_statsValid = true;
     ComputeBounds();
     ResetCamera();
@@ -699,8 +695,6 @@ void MeshViewer::FinalizeMeshLoad()
 
 void MeshViewer::ComputeBounds()
 {
-    if (!m_mesh.IsValid() || !m_mesh.IsReady()) return;
-
     m_boundsMin = m_mesh->GetBoundsMin();
     m_boundsMax = m_mesh->GetBoundsMax();
 }
@@ -806,8 +800,8 @@ LibMath::Matrix4 MeshViewer::GetViewProj()
 // Misc
 std::string MeshViewer::FileSizeString() const
 {
-    if (m_fileBytes >= 1024 * 1024)
-        return std::to_string(m_fileBytes / (1024 * 1024)) + " MB";
+    if (m_fileBytes >= 1'048'576) // 1'048'576 = 1024 * 1024
+        return std::to_string(m_fileBytes / (1'048'576)) + " MB";
     if (m_fileBytes >= 1024)
         return std::to_string(m_fileBytes / 1024) + " KB";
     return std::to_string(m_fileBytes) + " B";

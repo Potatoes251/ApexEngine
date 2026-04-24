@@ -587,7 +587,7 @@ namespace Apex::Editor
         if (!visited.insert(scriptPath).second) // already visited
             return;
 
-        std::ifstream file(fs::current_path() / scriptPath);
+        std::ifstream file(Fs::current_path() / scriptPath);
         if (!file.is_open())
         {
             LOG_WARNING_CAT("Build", "Could not open script ", scriptPath.c_str());

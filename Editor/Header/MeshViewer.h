@@ -154,8 +154,6 @@ namespace Apex::Editor
         // Mesh stats 
         uint32_t m_vertexCount = 0;
         uint32_t m_triangleCount = 0;
-        bool     m_hasUVs = false;
-        bool     m_hasNormals = false;
         bool     m_statsValid = false;
 
         // Bounding box 
