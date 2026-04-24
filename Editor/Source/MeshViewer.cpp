@@ -30,6 +30,8 @@ MeshViewer::~MeshViewer()
 {
     UnloadMesh();
     DestroyShaders();
+
+    m_rhi->DeleteFrameBuffer(m_fbo);
 }
 
 // Public API
@@ -702,6 +704,8 @@ void MeshViewer::ComputeBounds()
 void MeshViewer::RebuildFBO(float width, float height)
 {
     if (width < 1.f || height < 1.f) return;
+
+    m_rhi->DeleteFrameBuffer(m_fbo);
 
     m_fboWidth = width;
     m_fboHeight = height;
