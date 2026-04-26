@@ -107,8 +107,8 @@ void SceneNode::Destroy()
 	m_children.clear();
 	m_object = nullptr;
 
-
-	if (auto parent = m_parent.lock())
+	shared_ptr<SceneNode> parent = m_parent.lock();
+	if (parent)
 	{
 		parent->DetachChild(this);
 	}
