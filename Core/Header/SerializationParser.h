@@ -16,9 +16,6 @@ namespace Apex::Serialization
 
         SerialParser(const std::string& text);
 
-        const std::string& GetText() const;
-        const size_t Getindex() const;
-
         void SkipWhitespace();
         void Expect(char c);
 
@@ -36,7 +33,6 @@ namespace Apex::Serialization
         bool Peek(char c);
 
     private:
-
         const std::string& m_text;
         size_t m_index;
     };

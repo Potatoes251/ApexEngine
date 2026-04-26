@@ -1,7 +1,6 @@
 #include "MeshRenderer.h"
 
 #include "Animator.h"
-
 #include "Camera.h"
 
 using namespace LibMath;
@@ -9,18 +8,18 @@ using namespace Apex;
 using namespace Apex::Resources;
 using namespace Apex::Rendering;
 
-Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager& resourceManager)
+Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager* resourceManager)
 {
-    m_mesh = resourceManager.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    m_material = resourceManager.CreateAsync<Material>("Assets/Textures/Default.mat");
+    m_mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
+    m_material = resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
 }
 
-void MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
+void MeshRenderer::SetMesh(ResourceHandle<Mesh> mesh)
 {
     m_mesh = mesh;
 }
 
-void MeshRenderer::SetMaterial(ResourceHandle<Material>& material)
+void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
 {
     m_material = material;
 }

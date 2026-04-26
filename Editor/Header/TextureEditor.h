@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <string>
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 using namespace Apex::UserInterface;
 
 namespace Apex::Editor
@@ -31,16 +31,17 @@ namespace Apex::Editor
 	{
 	public:
 		explicit TextureEditor(IGUI& gui, Apex::Windowing::IWindow& window);
-		~TextureEditor();
+		~TextureEditor() { UnloadTexture(); }
 		TextureEditor(const TextureEditor&) = delete;
 		TextureEditor& operator=(const TextureEditor&) = delete;
 
 		// Open/close
-		void Open(const fs::path& path, int instanceIndex = 0);
+		void Open(const Fs::path& path, int instanceIndex = 0);
 		void Close();
-		void Focus();  // bring this window to front
+		// bring this window to front
+		void Focus() { m_pendingFocus = true; }
 		bool IsOpen() const { return m_open; }
-		const fs::path& GetPath() const { return m_path; }
+		const Fs::path& GetPath() const { return m_path; }
 
 		// Call once per frame inside an active ImGui frame
 		void Draw();
@@ -120,7 +121,7 @@ namespace Apex::Editor
 		int         m_mipCount = 0;
 		uintmax_t   m_fileBytes = 0;
 		std::string m_filename;
-		fs::path    m_path;
+		Fs::path    m_path;
 
 		// CPU-side pixels kept alive for color picker
 		std::vector<unsigned char> m_pixels;  // RGBA, row-major

@@ -20,6 +20,8 @@ namespace Apex::Data
 
 #include "Window.h"
 
+#include "ResourceManager.h"
+
 namespace Apex::Editor
 {
 	class Viewport;
@@ -36,7 +38,8 @@ namespace Apex::Editor
 	{
 	public:
 		Hierarchy(Apex::UserInterface::IGUI& gui, Apex::Rendering::Scene* scene, 
-			ComponentsViewer* compViewer, Apex::Windowing::IWindow& window);
+			ComponentsViewer* compViewer, Apex::Windowing::IWindow& window,
+			Apex::Resources::ResourceManager* resourceManager);
 
 		void Draw();
 		void Rename();
@@ -74,6 +77,7 @@ namespace Apex::Editor
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene* m_scene;
 		ComponentsViewer* m_componentsViewer;
+		Apex::Resources::ResourceManager* m_resourceManager;
 
 		Apex::Windowing::IWindow& m_window;
 

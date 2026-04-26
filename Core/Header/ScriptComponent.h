@@ -13,7 +13,7 @@ namespace Apex::Scripting
     class ScriptComponent : public Component
     {
     public:
-        ScriptComponent(LuaManager& lua) : m_lua(lua) {};
+        ScriptComponent(LuaManager* lua) : m_lua(lua) {};
         ~ScriptComponent() = default;
 
         std::unique_ptr<Component> Clone() override;
@@ -42,7 +42,7 @@ namespace Apex::Scripting
     private:
         int m_instanceRef = LUA_REFNIL;
         int m_scriptRef = LUA_REFNIL;
-        Apex::Scripting::LuaManager& m_lua;
+        Apex::Scripting::LuaManager* m_lua;
         std::string m_scriptPath;
     };
 }

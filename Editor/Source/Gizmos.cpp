@@ -35,7 +35,7 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_thorus.ClearVertices();
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
+void Gizmos::DrawGizmos(const Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
 {
     if (!object || !m_shader.IsReady()) return;
 
@@ -63,7 +63,7 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	}
 }
 
-void Gizmos::DrawTranslation(Data::Object* object, bool picking, bool local)
+void Gizmos::DrawTranslation(const Data::Object* object, bool picking, bool local)
 {
     LibMath::Transform trans = object->GetGlobalTransform();
     trans.setScale(LibMath::Vector3(1.f));
@@ -197,7 +197,7 @@ void Gizmos::DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking)
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
+void Gizmos::DrawRotation(const Data::Object* object, bool picking, bool local)
 {
     LibMath::Transform trans = object->GetGlobalTransform();
     trans.setScale(LibMath::Vector3(1.f));
@@ -243,7 +243,7 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
     }
 }
 
-void Gizmos::DrawScale(Data::Object* object, bool picking)
+void Gizmos::DrawScale(const Data::Object* object, bool picking)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
@@ -557,7 +557,8 @@ void Gizmos::CreateThorus()
 
 
 LibMath::Vector2 Apex::Editor::GetScreenPos(
-    LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+    LibMath::Vector3 const& worldPos, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize)
 {
     LibMath::Vector4 clip = viewProj * LibMath::Vector4(worldPos, 1.0f);
 
@@ -577,7 +578,8 @@ LibMath::Vector2 Apex::Editor::GetScreenPos(
 }
 
 LibMath::Line3D Apex::Editor::ScreenToWorldRay(
-    LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+    LibMath::Vector2 const& mousePosOnScreen, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize)
 {
     // 1. Adjust mouse for viewport
     float mx = mousePosOnScreen[0] - panelOffset[0];

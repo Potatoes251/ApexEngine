@@ -130,7 +130,7 @@ namespace Apex::Windowing
             glfwSetCursor(m_window, m_crosshairCursor);
     }
 
-    void GLFWWindow::ResetCursor()
+    void GLFWWindow::ResetCursorShape()
     {
         glfwSetCursor(m_window, nullptr);  // nullptr restores the default arrow
     }

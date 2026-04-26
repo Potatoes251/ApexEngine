@@ -7,19 +7,19 @@ namespace Apex::Editor
 {
     // Static helpers
 
-    fs::path MetaFile::SidecarPath(const fs::path& assetPath)
+    Fs::path MetaFile::SidecarPath(const Fs::path& assetPath)
     {
-        return fs::path(assetPath.string() + ".meta");
+        return Fs::path(assetPath.string() + ".meta");
     }
 
-    bool MetaFile::Exists(const fs::path& assetPath)
+    bool MetaFile::Exists(const Fs::path& assetPath)
     {
-        return fs::exists(SidecarPath(assetPath));
+        return Fs::exists(SidecarPath(assetPath));
     }
 
     // Load 
 
-    bool MetaFile::Load(const fs::path& assetPath)
+    bool MetaFile::Load(const Fs::path& assetPath)
     {
         m_entries.clear();
         m_dirty = false;
@@ -53,7 +53,7 @@ namespace Apex::Editor
 
     // Save
 
-    bool MetaFile::Save(const fs::path& assetPath) const
+    bool MetaFile::Save(const Fs::path& assetPath) const
     {
         std::ofstream file(SidecarPath(assetPath));
         if (!file.is_open())
@@ -92,7 +92,7 @@ namespace Apex::Editor
     {
         auto it = m_entries.find(key);
         if (it == m_entries.end()) return defaultVal;
-        return it->second == "true" || it->second == "1";
+        return it->second == "true";
     }
 
     // Setters 
