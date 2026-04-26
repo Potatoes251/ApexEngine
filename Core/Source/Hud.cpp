@@ -562,14 +562,14 @@ UIManager::UIManager(IGUI* gui, ResourceManager* resourceManager, Apex::Renderin
 void UIManager::ScanHUDs(const Fs::path& assetsRoot)
 {
     m_registry.clear();
-    for (const auto& e : Fs::recursive_directory_iterator(assetsRoot))
+    for (const auto& element : Fs::recursive_directory_iterator(assetsRoot))
     {
         if (element.is_regular_file() && element.path().extension() == ".hud")
         {
             std::string name = element.path().stem().string();
             m_registry[name] = element.path();
 
-            LOG_INFO_CAT("HUD", "Registered HUD: {} -> {}", name, e.path().string());
+            LOG_INFO_CAT("HUD", "Registered HUD: {} -> {}", name, element.path().string());
         }
     }
 }

@@ -8,7 +8,6 @@
 #include "Command/AddObjectCommand.h"
 #include "CommandManager.h"
 
-
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;

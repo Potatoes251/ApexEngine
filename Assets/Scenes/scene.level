@@ -115,22 +115,6 @@
     }
   },
   {
-    "id": 6,
-    "parent": null,
-    "name": "Object6",
-    "position": [3.011898,1.203338,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [0.010000,0.010000,0.010000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Default.mat",
-        "castShadow": true
-      }
-    }
-  },
-  {
     "id": 4,
     "parent": null,
     "name": "Painting",
@@ -153,6 +137,34 @@
         "enabled": true,
         "halfExtents": [2.000000, 0.100000, 2.000000],
         "isTrigger": true,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 8,
+    "parent": null,
+    "name": "Bridge",
+    "position": [14.747446,0.448022,6.376845],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,5.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/garden_bridge_01/garden_bridge_01.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/garden_bridge_01/garden_bridge_01.mesh",
+        "type": "Triangle",
+        "isTrigger": false,
         "material": null
       }
     }
