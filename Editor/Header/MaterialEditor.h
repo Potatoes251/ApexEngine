@@ -12,7 +12,7 @@ namespace Apex::Editor
 	{
 	public:
 		MaterialEditor(UserInterface::IGUI* gui, Resources::ResourceManager* resourceManager)
-			: m_gui(gui), m_resourceManager(resourceManager), m_texturePicker(*gui, *resourceManager) {}
+			: m_gui(gui), m_resourceManager(resourceManager), m_texturePicker(gui, resourceManager) {}
 
 		void Open(std::string path);
 		void Close();

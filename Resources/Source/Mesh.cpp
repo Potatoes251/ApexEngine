@@ -6,7 +6,6 @@ using namespace Apex::Rendering;
 
 Mesh::~Mesh()
 {
-	if (!m_rhi) return;
 	if (m_VAO) m_rhi->DeleteVAO(m_VAO);
 	if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
 	if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
@@ -61,10 +60,10 @@ void Mesh::Draw() const
 	m_rhi->DrawIndexed(m_indexCount);
 }
 
-void Mesh::DrawLineLoop() const
+void Mesh::DrawLine() const
 {
 	m_rhi->BindVAO(m_VAO);
-	m_rhi->DrawLineLoop(m_vertexCount);
+	m_rhi->DrawLineArrays(m_vertexCount);
 }
 
 int Mesh::GetAnimationIdx(std::string const& name)

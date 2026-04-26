@@ -19,7 +19,7 @@
 #include <filesystem>
 #include <unordered_map>
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 
 namespace Apex::Editor
 {
@@ -28,18 +28,18 @@ namespace Apex::Editor
     public:
         // Derive the sidecar path from an asset path.
         // e.g. "Assets/Textures/foo.png" - "Assets/Textures/foo.png.meta"
-        static fs::path SidecarPath(const fs::path& assetPath);
+        static Fs::path SidecarPath(const Fs::path& assetPath);
 
         // Returns true if a meta file exists for the given asset.
-        static bool Exists(const fs::path& assetPath);
+        static bool Exists(const Fs::path& assetPath);
 
         // Load from the sidecar path of assetPath.
         // Returns false if the file doesn't exist (empty MetaFile, no error).
-        bool Load(const fs::path& assetPath);
+        bool Load(const Fs::path& assetPath);
 
         // Save to the sidecar path of assetPath.
         // Creates the file if it doesn't exist.
-        bool Save(const fs::path& assetPath) const;
+        bool Save(const Fs::path& assetPath) const;
 
         // Key access
         bool        Has(const std::string& key) const;
@@ -53,9 +53,10 @@ namespace Apex::Editor
         void Remove(const std::string& key);
 
         bool IsDirty() const { return m_dirty; }
-        void ClearDirty() { m_dirty = false; }
 
     private:
+        void ClearDirty() { m_dirty = false; }
+
         std::unordered_map<std::string, std::string> m_entries;
         bool m_dirty = false;
 	};

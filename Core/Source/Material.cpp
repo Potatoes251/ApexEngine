@@ -43,34 +43,49 @@ void Material::Save()
 		return;
 	}
 
+	const bool hasShader = m_shader.IsValid();
+	const bool hasUniforms = m_uniforms.size() > 0;
+	const bool hasTextures = m_textures.size() > 0;
+
 	file << "{\n";
 
-	if (m_shader.IsValid())
+	bool needsComma = false;
+
+	if (hasShader)
 	{
-		file << "\t\"shader\": \"" << m_shader->GetPath() << "\",\n";
+		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
+		needsComma = true;
 	}
-	if (m_uniforms.size() > 0)
+
+	if (hasUniforms)
 	{
+		if (needsComma) file << ",\n";
 		file << "\t\"properties\": {";
-
 		WriteProperties(file);
-
-		file << "},\n";
+		file << "\n\t}";
+		needsComma = true;
 	}
-	if (m_textures.size() > 0)
-	{
-		file << "\t\"textures\": {";
 
+	if (hasTextures)
+	{
+		if (needsComma) file << ",\n";
+		file << "\t\"textures\": [";
+
+		bool firstTex = true;
 		for (ResourceHandle<Texture>& tex : m_textures)
 		{
 			if (tex.IsValid())
-				file << "\t\t\"" << tex->GetPath() << "\",\n";
+			{
+				if (!firstTex) file << ",";
+				file << "\n\t\t\"" << tex->GetPath() << "\"";
+				firstTex = false;
+			}
 		}
 
-		file << "}\n";
+		file << "\n\t]";
 	}
 
-	file << "}\n";
+	file << "\n}\n";
 
 	LOG_INFO_CAT("Resource", "\"{}\" saved successfully", m_path);
 }
@@ -193,17 +208,21 @@ void Material::ParseProperties(Serialization::SerialParser& parser)
 		if (parser.Peek(','))
 			parser.Expect(',');
 	}
+
+	parser.Expect('}');
 }
 
 void Material::ParseTextures(Serialization::SerialParser& parser)
 {
-	parser.Expect('{');
+	parser.Expect('[');
 
-	while (!parser.Peek('}'))
+	while (!parser.Peek(']'))
 	{
 		m_textures.push_back(m_rm->CreateAsync<Texture>(parser.ParseString()));
 
 		if (parser.Peek(','))
 			parser.Expect(',');
 	}
+
+	parser.Expect(']');
 }

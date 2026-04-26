@@ -12,6 +12,8 @@ enum class ResourceState
 
 #include "RHI.h"
 
+#include <atomic>
+
 //namespace Apex::Rendering { class IRHI; }
 namespace Apex::Resources { class ResourceManager; }
 
@@ -38,7 +40,7 @@ protected:
     Apex::Rendering::IRHI* m_rhi = nullptr;
     Apex::Resources::ResourceManager* m_rm = nullptr;
 private:
-    ResourceState   m_state = ResourceState::Unloaded;
+    std::atomic<ResourceState>   m_state = ResourceState::Unloaded;
 };
 
 #endif // !IRESOURCE

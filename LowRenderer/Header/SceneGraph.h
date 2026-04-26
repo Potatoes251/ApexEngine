@@ -28,7 +28,7 @@ namespace Apex::SceneGraph
 		Object*		GetParentObj() const;
 		Object*		GetObject() const;
 
-		shared_ptr<SceneNode>	DetachChild(SceneNode* child); //return a shared pointer, to use children use ' .get() ' on each children
+		shared_ptr<SceneNode>	DetachChild(SceneNode* child);
 		void		AddChild(shared_ptr<SceneNode> child);
 
 		void		Destroy();
@@ -45,7 +45,7 @@ namespace Apex::SceneGraph
 		void		InsertAfter(shared_ptr<SceneNode> const& other);
 	private:
 
-		bool							m_dirty = true;
+		mutable bool					m_dirty = true;
 
 		Object*							m_object;
 

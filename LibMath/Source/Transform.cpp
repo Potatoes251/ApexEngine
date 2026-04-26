@@ -49,3 +49,16 @@ void LibMath::Transform::setEulerRotation(Vector3 euler)
 		Radian(euler[2])
 	);
 }
+
+LibMath::Transform LibMath::Transform::inversed() const
+{
+	Transform result;
+
+	result.m_scale = { 1.f / m_scale[0], 1.f / m_scale[1], 1.f / m_scale[2]};
+
+	result.m_rotation = m_rotation.conjugated();
+
+	result.m_position = -(result.m_rotation.rotate(result.m_scale * m_position));
+
+	return result;
+}
