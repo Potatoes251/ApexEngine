@@ -45,33 +45,6 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
             }
         }
     }
-
-    return true;
-}
-
-bool BinLoader::Load(std::string path, Animation& animation)
-{
-    std::ifstream file(path, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        LOG_ERROR("Failed to open file '{}' for reading", path);
-        return false;
-    }
-
-    animation.m_name = path;
-
-    uint32_t count;
-
-    if (!Read32Bits(file, count)) return false;
-
-    animation.m_boneAnimations.resize(count);
-
-    for (size_t j = 0; j < count; j++)
-    {
-        if (!ReadSingleBoneAnimation(animation.m_boneAnimations[j], file)) return false;
-    }
-
     return true;
 }
 
@@ -81,11 +54,14 @@ bool BinLoader::Export(std::string path, Mesh const& mesh)
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::filesystem::path folderPath = binaryPath.parent_path();
-    folderPath /= binaryPath.stem();
 
-    if (!std::filesystem::exists(folderPath))
+    if (folderPath.filename() != binaryPath.stem())
     {
-        std::filesystem::create_directory(folderPath);
+        folderPath /= binaryPath.stem();
+        if (!std::filesystem::exists(folderPath))
+        {
+            std::filesystem::create_directory(folderPath);
+        }
     }
 
     std::ofstream file(folderPath / binaryPath.filename(), std::ios::binary);

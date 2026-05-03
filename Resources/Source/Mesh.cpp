@@ -7,7 +7,6 @@ using namespace Apex::Rendering;
 Mesh::~Mesh()
 {
 	if (m_VAO) m_rhi->DeleteVAO(m_VAO);
-	if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
 	if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
 }
 
@@ -37,15 +36,19 @@ void Mesh::LoadFromFile()
 
 void Mesh::UploadToGpu()
 {
-	m_inputVertices = Ssbo(m_rhi, m_vertexCount * sizeof(Vertex), 0);
-	m_outputVertices = Ssbo(m_rhi, m_vertexCount * sizeof(Vertex), 0);
+	m_inputVertices = Ssbo(m_rhi, m_vertices.data(), m_vertexCount * sizeof(Vertex), 0);
+	m_outputVertices = Ssbo(m_rhi, nullptr, m_vertexCount * sizeof(Vertex), 1);
 
 	m_VAO = m_rhi->CreateVAO();
 	m_rhi->BindVAO(m_VAO);
-
 	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertexCount * sizeof(Vertex));
-	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indexCount * sizeof(int));
+	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indexCount * sizeof(uint32_t));
+	m_rhi->SetupVertexLayout();
 
+	m_VAOSkinned = m_rhi->CreateVAO();
+	m_rhi->BindVAO(m_VAOSkinned);
+	m_rhi->BindBuffer(m_outputVertices.GetId(), BufferType::Vertex);
+	m_rhi->BindBuffer(m_EBO, BufferType::Index);
 	m_rhi->SetupVertexLayout();
 }
 
@@ -63,9 +66,9 @@ void Mesh::BindForCompute()
 	m_outputVertices.Bind();
 }
 
-void Mesh::Draw() const
+void Mesh::Draw(bool skinned) const
 {
-	m_rhi->BindVAO(m_VAO);
+	m_rhi->BindVAO(skinned ? m_VAOSkinned : m_VAO);
 	m_rhi->DrawIndexed(m_indexCount);
 }
 

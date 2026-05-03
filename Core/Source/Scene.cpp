@@ -236,12 +236,18 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
-		for (auto& obj : m_objects)
+		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
+
+		for (MeshRenderer* renderer : renderers)
 		{
-			passInfo.m_id++;
-			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
-			if (!renderer)
-				continue;
+			renderer->ComputePass();
+		}
+
+		passInfo.m_rhi->Barrier();
+
+		for (MeshRenderer* renderer : renderers)
+		{
+			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)

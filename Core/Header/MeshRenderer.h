@@ -37,6 +37,7 @@ namespace Apex::Rendering
 
         std::unique_ptr<Apex::Component> Clone() override;
 
+        void ComputePass();
         void Render(RenderPassInfo passInfo);
 
         void Serialize(std::ostream& out) const override;
@@ -45,6 +46,7 @@ namespace Apex::Rendering
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Material> m_material;
         bool m_castShadow = true;
+        bool m_useSkinnedVAO = false;
     };
 }
 

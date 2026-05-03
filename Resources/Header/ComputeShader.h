@@ -15,8 +15,6 @@ public:
 	void Use();
 
 	void Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ);
-	// wait for the gpu to finish its job
-	void Barrier();
 
 	void SetUniform(std::string_view const& name, int value);
 	void SetUniform(std::string_view const& name, float value);

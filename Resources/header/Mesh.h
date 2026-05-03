@@ -68,7 +68,7 @@ public:
 
 	void BindForCompute();
 
-	void Draw() const;
+	void Draw(bool skinned = false) const;
 	void DrawLine() const;
 
 	uint32_t GetIndexCount()  const { return m_indexCount; }
@@ -93,6 +93,8 @@ private:
 	std::vector<std::string>		m_boneNames;
 
 	uint32_t	m_VAO = 0;
+	// VAO used with a compute shader
+	uint32_t	m_VAOSkinned = 0;
 	uint32_t	m_VBO = 0;
 	uint32_t	m_EBO = 0;
 	uint32_t	m_indexCount = 0;

@@ -14,6 +14,8 @@ using namespace Apex::Resources;
 
 void Material::Bind()
 {
+	if (!m_shader.IsReady()) return;
+
 	m_shader->Use();
 
 	for (auto& [name, value] : m_uniforms)
@@ -37,7 +39,7 @@ void Material::Bind()
 
 void Material::BindCompute()
 {
-	if (!m_computeShader.IsValid())
+	if (!m_computeShader.IsReady())
 		return;
 
 	m_computeShader->Use();
@@ -49,14 +51,16 @@ void Material::BindCompute()
 				m_computeShader->SetUniform(name, v);
 			}, value);
 	}
+}
 
-	for (int i = 0; i < m_textures.size(); i++)
-	{
-		if (m_textures[i].IsValid())
-			m_textures[i]->Bind(i);
-	}
+void Material::StartCompute(uint32_t vertexCount)
+{
+	if (!m_computeShader.IsReady() || vertexCount == 0)
+		return;
 
-	m_computeShader
+	constexpr int localSize = 64; // must match local_size_x in the shader
+	int groups = (vertexCount + localSize - 1) / localSize;
+	m_computeShader->Dispatch(groups, 1, 1);
 }
 
 void Material::Save()
@@ -85,6 +89,7 @@ void Material::Save()
 
 	if (hasComputeShader)
 	{
+		if (needsComma) file << ",\n";
 		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
 		needsComma = true;
 	}
@@ -188,7 +193,7 @@ void Material::LoadFromFile()
 		{
 			m_shader = m_rm->CreateAsync<Shader>(parser.ParseString());
 		}
-		if (category == "computeShader")
+		else if (category == "computeShader")
 		{
 			m_computeShader = m_rm->CreateAsync<ComputeShader>(parser.ParseString());
 		}

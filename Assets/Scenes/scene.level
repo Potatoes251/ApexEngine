@@ -58,7 +58,7 @@
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
         "intensity": 0.883000,
-        "shadowDistance": 25.000000,
+        "shadowDistance": 100.000000,
         "shadowExtent": 10.000000
       }
     }

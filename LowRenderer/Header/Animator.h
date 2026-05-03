@@ -4,7 +4,7 @@
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Quaternion.h"
 
-#include "../../Resources/header/Shader.h"
+#include "../../Resources/header/ComputeShader.h"
 #include "../../Resources/header/Mesh.h"
 #include "../../Resources/header/ResourceManager.h"
 #include "../../Resources/header/Component.h"
@@ -63,7 +63,7 @@ namespace Apex::Rendering
 		void DeactivateIKInstace(int index);
 
 		//gpu
-		void SendSkeletonMatrixToGPU(const ResourceHandle<Shader>& shader);
+		void SendSkeletonMatrixToGPU(const ResourceHandle<ComputeShader>& shader);
 	private:
 		enum AnimatorState
 		{

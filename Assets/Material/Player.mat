@@ -1,5 +1,6 @@
 {
-	"shader": "ApexAssets/Shaders/SkinningVert.glsl|ApexAssets/Shaders/SkinningFrag.glsl",
+	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+	"computeShader": "ApexAssets/Shaders/SkinningComp.glsl",
 	"textures": [
 		"Assets/Textures/container.jpg"
 	]

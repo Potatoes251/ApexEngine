@@ -16,7 +16,6 @@ public:
 	// regular loading use custom files
 
 	static void Load(std::string path, Mesh& mesh);
-	static void Load(std::string path, Animation& animation);
 	// force skip custom file and overwrite them
 	
 	static void Import(std::string path);

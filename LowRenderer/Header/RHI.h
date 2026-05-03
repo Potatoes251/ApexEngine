@@ -62,7 +62,7 @@ namespace Apex::Rendering
 
 		// Buffers
 		virtual RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) = 0;
-		virtual RHIBufferHandle		CreateSSBO(size_t sizeBytes) = 0;
+		virtual RHIBufferHandle		CreateSSBO(Vertex* data, size_t sizeBytes) = 0;
 		virtual void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) = 0;
 		virtual void				BindBuffer(RHIBufferHandle buffer, BufferType type) = 0;
 		virtual void				BindStorageBuffer(uint32_t binding, RHIBufferHandle buffer) = 0;
@@ -96,9 +96,11 @@ namespace Apex::Rendering
 		virtual RHIShaderHandle		CreateComputeShader(const std::string& source) = 0;
 		virtual void				BindShader(RHIShaderHandle shader) = 0;
 		virtual void				DeleteShader(RHIShaderHandle shader) = 0;
+		// waits for the gpu to finish its job in the compute shaders
 		virtual void				Barrier() = 0;
 
 		virtual void DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) = 0;
+
 		// Uniforms (bound shader must be active)
 		virtual void SetUniformInt(RHIShaderHandle program, const std::string_view& name, int value) = 0;
 		virtual void SetUniformFloat(RHIShaderHandle program, const std::string_view& name, float value) = 0;

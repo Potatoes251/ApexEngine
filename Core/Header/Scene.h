@@ -50,6 +50,9 @@ namespace Apex::Rendering
 		void FixedUpdate(float deltaTime_s);
 		void Render(RenderPassInfo passInfo);
 		
+		template<typename T>
+		std::vector<T*> GetComponents();
+
 		Data::Object* GetObjectWithId(size_t id);
 		Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
@@ -76,6 +79,22 @@ namespace Apex::Rendering
 		std::function<void()> m_onMarkedDirty;
 		bool m_isDirty = false;
 	};
+
+	template<typename T>
+	std::vector<T*> Scene::GetComponents()
+	{
+		std::vector<T*> comps;
+
+		for (auto& obj : m_objects)
+		{
+			auto objComp = obj->GetComponentsByType<T>();
+			if (objComp.empty())
+				continue;
+			comps.insert(comps.end(), objComp.begin(), objComp.end());
+		}
+
+		return comps;
+	}
 }
 
 #endif

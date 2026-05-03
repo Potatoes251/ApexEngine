@@ -58,6 +58,7 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	pass.m_flags |= IgnoreModelShader;
 	pass.m_flags &= ~RenderSkybox;
 	pass.m_shader = m_dirShader;
+	pass.m_rhi = m_rhi;
 	m_dirShader->Use();
 
 	int shadowCount = 0;

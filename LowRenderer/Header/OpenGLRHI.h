@@ -27,7 +27,7 @@ namespace Apex::Rendering
 		void			DeleteVAO(RHIVAOHandle vao) override;
 
 		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) override;
-		RHIBufferHandle		CreateSSBO(size_t sizeBytes) override;
+		RHIBufferHandle		CreateSSBO(Vertex* data, size_t sizeBytes) override;
 		void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) override;
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
 		void				BindStorageBuffer(uint32_t binding, RHIBufferHandle buffer) override;

@@ -141,12 +141,12 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
 
             Apex::Rendering::Vertex vertex{};
 
-            vertex.m_position = { static_cast<float>(position[0]), static_cast<float>(position[1]),static_cast<float>(position[2]) };
+            vertex.m_position = { static_cast<float>(position[0]), static_cast<float>(position[1]),static_cast<float>(position[2]), 0 };
 
             FbxVector4 normal;
             fbxMesh->GetPolygonVertexNormal(i, j, normal);
 
-            vertex.m_normal = { static_cast<float>(normal[0]), static_cast<float>(normal[1]), static_cast<float>(normal[2]) };
+            vertex.m_normal = { static_cast<float>(normal[0]), static_cast<float>(normal[1]), static_cast<float>(normal[2]), 0 };
 
             FbxStringList uvSetNames;
             fbxMesh->GetUVSetNames(uvSetNames);
@@ -158,7 +158,8 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
 
                 fbxMesh->GetPolygonVertexUV(i, j, uvSetNames[0], uv, unmapped);
 
-                vertex.m_uv = { static_cast<float>(uv[0]), static_cast<float>(uv[1]) };
+                vertex.m_position[3] = static_cast<float>(uv[0]);
+                vertex.m_normal[3] = static_cast<float>(uv[1]);
             }
 
             int vertexIndex = static_cast<int>(mesh.m_vertices.size());

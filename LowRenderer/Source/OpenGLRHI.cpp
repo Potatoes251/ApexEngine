@@ -81,14 +81,14 @@ namespace Apex::Rendering
 		return buffer;
 	}
 
-	RHIBufferHandle OpenGLRHI::CreateSSBO(size_t sizeBytes)
+	RHIBufferHandle OpenGLRHI::CreateSSBO(Vertex* data, size_t sizeBytes)
 	{
 		GLuint glBuffer;
 		glGenBuffers(1, &glBuffer);
 
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, glBuffer);
 
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeBytes, nullptr, GL_DYNAMIC_COPY);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeBytes, data, GL_DYNAMIC_COPY);
 
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -522,16 +522,14 @@ namespace Apex::Rendering
 	{
 		//mesh datas
 		glEnableVertexAttribArray(0); // Position
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
 		glEnableVertexAttribArray(1); // Normal
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
-		glEnableVertexAttribArray(2); // UV
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
 
 		//animation datas
-		glEnableVertexAttribArray(3); //bone IDs
+		glEnableVertexAttribArray(2); //bone IDs
 		glVertexAttribIPointer(3, 4, GL_INT,  sizeof(Vertex), (void*)offsetof(Vertex, m_boneIDs));
-		glEnableVertexAttribArray(4); //bone weights
+		glEnableVertexAttribArray(3); //bone weights
 		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_weights));
 	}
 

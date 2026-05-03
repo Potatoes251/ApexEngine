@@ -31,6 +31,7 @@ namespace Apex::Rendering
 
 		void Bind();
 		void BindCompute();
+		void StartCompute(uint32_t vertexCount);
 
 		void LoadFromFile() override;
 		void Save();
@@ -41,6 +42,7 @@ namespace Apex::Rendering
 		void AddEmptyTexture();
 
 		Resources::ResourceHandle<Shader> GetShader() const { return m_shader; }
+		Resources::ResourceHandle<ComputeShader> GetComputeShader() const { return m_computeShader; }
 		std::vector<Resources::ResourceHandle<Texture>>& GetTextures() { return m_textures; }
 
 	private:
@@ -56,7 +58,7 @@ namespace Apex::Rendering
 		std::vector<Resources::ResourceHandle<Texture>> m_textures;
 
 		Resources::ResourceHandle<Shader> m_shader;
-		Resources::ResourceHandle<ComputeShader> m_computeShader;
+		Resources::ResourceHandle<ComputeShader> m_computeShader = nullptr;
 	};
 }
 

@@ -271,11 +271,13 @@ void Apex::Application::Render(RenderPassInfo pass)
 {
     m_rhi->Clear();
 
+    pass.m_rhi = m_rhi.get();
+
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
-    //m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    //m_shadowManager->BindShadowMaps();
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {
@@ -290,6 +292,5 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     m_scene->Render(pass);
 
-    //if (pass.m_flags & ShowCollider)
-        DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
+    DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 }
