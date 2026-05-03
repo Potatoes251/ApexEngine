@@ -29,13 +29,13 @@ void Mesh::LoadFromFile()
 			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
 		}
 	}
-
-	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
-	m_indexCount = static_cast<uint32_t>(m_indices.size());
 }
 
 void Mesh::UploadToGpu()
 {
+	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
+	m_indexCount = static_cast<uint32_t>(m_indices.size());
+
 	m_inputVertices = Ssbo(m_rhi, m_vertices.data(), m_vertexCount * sizeof(Vertex), 0);
 	m_outputVertices = Ssbo(m_rhi, nullptr, m_vertexCount * sizeof(Vertex), 1);
 
