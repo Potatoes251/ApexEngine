@@ -383,6 +383,8 @@ void Viewport::Draw()
 
 	if (m_editor->GetEditorState() == EditorState::Play)
 		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	else
+		pass.m_flags &= ~PerformCompute;
 	if (!pass.m_camera)
 		pass.m_camera = &m_camera;
 

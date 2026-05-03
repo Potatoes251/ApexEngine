@@ -42,6 +42,7 @@ namespace Apex::Rendering
 
         void Serialize(std::ostream& out) const override;
 
+        void SetSkinned(bool enabled) { m_useSkinnedVAO = enabled; }
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Material> m_material;

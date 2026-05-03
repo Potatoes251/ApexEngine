@@ -238,12 +238,22 @@ namespace Apex::Rendering
 	{
 		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
 
-		for (MeshRenderer* renderer : renderers)
+		if (passInfo.m_flags & PerformCompute)
 		{
-			renderer->ComputePass();
-		}
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->ComputePass();
+			}
 
-		passInfo.m_rhi->Barrier();
+			passInfo.m_rhi->Barrier();
+		}
+		else
+		{
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->SetSkinned(false);
+			}
+		}
 
 		for (MeshRenderer* renderer : renderers)
 		{
