@@ -72,7 +72,6 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
     converter.Triangulate(scene, true);
 
     FbxAxisSystem::OpenGL.ConvertScene(scene);
-    FbxSystemUnit::m.ConvertScene(scene);
 
     FbxNode* root = scene->GetRootNode();
     if (!root)
@@ -141,7 +140,7 @@ void MeshImporter::ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh)
 
             Apex::Rendering::Vertex vertex{};
 
-            vertex.m_position = { static_cast<float>(position[0]), static_cast<float>(position[1]),static_cast<float>(position[2]), 0 };
+            vertex.m_position = { static_cast<float>(position[0]), static_cast<float>(position[1]), static_cast<float>(position[2]), 0 };
 
             FbxVector4 normal;
             fbxMesh->GetPolygonVertexNormal(i, j, normal);
@@ -188,13 +187,13 @@ void MeshImporter::NormalizeVertexWeights(Apex::Rendering::Vertex& vertex)
 
 void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
 {
-    // ── Build a full scene node map ───────────────────────────────────────────
+    // Build a full scene node map
     std::unordered_map<std::string, FbxNode*> nodeMap;
     BuildNodeMap(scene->GetRootNode(), nodeMap);
 
     const int boneCount = static_cast<int>(mesh.m_bones.size());
 
-    // ── Second pass: resolve every bone's parent now that all are registered ──
+    // Second pass: resolve every bone's parent now that all are registered
     for (auto& bone : mesh.m_bones)
     {
         bone.m_parentIndex = -1;
@@ -217,8 +216,7 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
         mesh.m_bones[parentIdx].m_children.push_back(i);
     }
 
-    // ── Topological sort so every parent precedes its children ────────────────
-    // Kahn's algorithm: seed with roots (parentIndex == -1)
+    // Topological sort so every parent precedes its children
     std::vector<int> inDegree(boneCount, 0);
     for (int i = 0; i < boneCount; ++i)
         if (mesh.m_bones[i].m_parentIndex != -1)
@@ -242,12 +240,12 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
                 queue.push(child);
     }
 
-    // ── Build old→new index remap ─────────────────────────────────────────────
+    // Build old new index remap
     std::vector<int> remap(boneCount);
     for (int newIdx = 0; newIdx < boneCount; ++newIdx)
         remap[sortedOrder[newIdx]] = newIdx;
 
-    // ── Reorder bones and names arrays ────────────────────────────────────────
+    // Reorder bones and names arrays
     std::vector<BoneInfo>    sortedBones(boneCount);
     std::vector<std::string> sortedNames(boneCount);
 
@@ -258,7 +256,6 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
         sortedNames[newIdx] = mesh.m_boneNames[oldIdx];
     }
 
-    // ── Fix stored indices inside each BoneInfo ───────────────────────────────
     for (auto& bone : sortedBones)
     {
         if (bone.m_parentIndex != -1)
@@ -271,12 +268,12 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
     mesh.m_bones = std::move(sortedBones);
     mesh.m_boneNames = std::move(sortedNames);
 
-    // ── Rebuild boneMap to reflect new indices ────────────────────────────────
+    // Rebuild boneMap to reflect new indices
     mesh.m_boneMap.clear();
     for (int i = 0; i < boneCount; ++i)
         mesh.m_boneMap[mesh.m_boneNames[i]] = i;
 
-    // ── Remap bone IDs in every vertex ────────────────────────────────────────
+    // Remap bone IDs in every vertex
     for (auto& vertex : mesh.m_vertices)
         for (int i = 0; i < 4; ++i)
             if (vertex.m_weights[i] > 0.0f)
