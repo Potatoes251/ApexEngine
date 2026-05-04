@@ -154,6 +154,12 @@
         "halfExtents": [2.000000, 0.100000, 2.000000],
         "isTrigger": true,
         "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Painting.lua",
+        "vars": {
+        }
       }
     }
   }
