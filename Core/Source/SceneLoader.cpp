@@ -4,6 +4,7 @@
 #include "Object.h"
 #include "Rigidbody.h"
 #include "BoxCollider.h"
+#include "WaterVolume.h"
 #include "MeshRenderer.h"
 #include "MeshCollider.h"
 #include "CapsuleCollider.h"
@@ -495,7 +496,6 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
                 parser.Expect('}');
             }
         }
-
         else if (compName == "Animator")
         {
             parser.ParseString();
@@ -512,7 +512,47 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.ParseString(); parser.Expect(':');
             std::string meshPath = parser.ParseString();
 
-            obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
+            Rendering::Animator& anim = obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
+            anim.SetFPS(fps);
+        }
+        else if (compName == "WaterVolume")
+        {
+            parser.ParseString();
+            parser.Expect(':');
+            bool enabled = parser.ParseBool();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            float density = parser.ParseFloat();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            float drag = parser.ParseFloat();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            float buoyencyMult = parser.ParseFloat();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            LibMath::Vector3 flowDir = parser.ParseVector3();
+            parser.Expect(',');
+            
+            parser.ParseString(); 
+            parser.Expect(':');
+
+            float flowSpeed = parser.ParseFloat();
+
+
+            obj->AddComponent<Physic::WaterVolume>(density, drag, buoyencyMult, flowDir, flowSpeed);
         }
 
         parser.Expect('}'); // component end

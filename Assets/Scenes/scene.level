@@ -58,7 +58,7 @@
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
         "intensity": 0.883000,
-        "shadowDistance": 100.000000,
+        "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
       }
     }
@@ -160,6 +160,24 @@
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
         }
+      }
+    }
+  },
+  {
+    "id": 7,
+    "parent": null,
+    "name": "Water",
+    "position": [2.326032,1.503879,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "WaterVolume": {
+        "enabled": true,
+        "Density": 0.000000,
+        "Drag": 0.000000,
+        "Buoyancy Multiplier": 0.000000,
+        "Flow Direction": [0.000000,0.000000,0.000000],
+        "Flow Speed": 0.000000
       }
     }
   }

@@ -28,7 +28,6 @@ function GameHUD:Update(dt)
     if self.paused then return end
     if self.hud == 0 then return end
  
-    self.hp = self.hp - dt * 0.05
     if self.hp < 0 then self.hp = 0 end
  
     HUD_SetProgress(self.hud, "HpBar", self.hp)
