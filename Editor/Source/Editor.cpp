@@ -192,6 +192,22 @@ namespace Apex::Editor
                 case AssetType::Material:
                     OpenMaterialEditor(entry.m_path);
                     break;
+                case AssetType::Level:
+                {
+                    if (m_editorState == EditorState::Play)
+                        SetEditorState(EditorState::Edit);
+
+                    m_app->LoadScene(entry.m_path.string());
+
+                    // Sync panels
+                    if (m_hierarchy)        m_hierarchy->SetScene(m_app->GetScene());
+                    if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
+
+                    m_editScene = m_app->GetScene()->Clone();
+                    m_app->GetScene()->ClearDirty();
+
+                    break;
+                }
                 default:
                     break;
                 }

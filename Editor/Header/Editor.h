@@ -77,6 +77,7 @@ namespace Apex::Editor
 		void OpenSoundPlayer(const std::filesystem::path& path);
 		void OpenHudEditor(const std::filesystem::path& path);
 		void OpenMaterialEditor(const std::filesystem::path& path);
+		void OpenSceneFile(const std::filesystem::path& path);
 
 		void CollectAssetPaths(const std::string& scenePath,
 			std::unordered_set<std::string>& outAssets,

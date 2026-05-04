@@ -65,6 +65,8 @@ namespace Apex
         void Tick();
         void LoadScene();
 
+        void LoadScene(const std::string& path);
+
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 

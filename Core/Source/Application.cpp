@@ -235,6 +235,66 @@ void Apex::Application::LoadScene()
     }
 }
 
+void Apex::Application::LoadScene(const std::string& path)
+{
+    // Reset scene
+    m_scene = std::make_unique<Scene>();
+
+    // Skybox (engine-level stuff stays here 👍)
+    auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
+        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
+        "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
+        "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
+
+    auto cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
+    auto shader = m_resourceManager->CreateAsync<Shader>(
+        "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
+
+    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
+
+    m_scene->SetSkybox(sk);
+
+    // Load scene file
+    SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
+    loader.LoadScene(*m_scene, path);
+
+    // (optional) async wait — same as your code
+    bool ready = false;
+    while (!ready)
+    {
+        ready = true;
+        for (auto& objPtr : m_scene->GetObjects())
+        {
+            Object* obj = objPtr.get();
+
+            if (auto* renderer = obj->GetComponent<MeshRenderer>())
+            {
+                if (!renderer->GetMesh().IsReady() ||
+                    !renderer->GetMaterial().IsReady())
+                    ready = false;
+            }
+
+            if (auto* collider = obj->GetComponent<MeshCollider>())
+            {
+                if (!collider->GetMesh().IsReady())
+                    ready = false;
+            }
+        }
+
+        m_resourceManager->ProcessGpuUploads();
+    }
+
+    // Rebuild physics
+    for (auto& obj : m_scene->GetObjects())
+    {
+        auto* body = obj->GetComponent<RigidBodyComponent>();
+        auto* collider = obj->GetComponent<Collider>();
+
+        if (body && collider)
+            m_scene->GetPhysic()->CreateActor(*collider, *body);
+    }
+}
+
 void Apex::Application::Tick()
 {
     constexpr float fixedUpdateTime_s = 1.f / 60.f;
