@@ -48,6 +48,7 @@ namespace Apex::Rendering
 		void Update(float deltaTime_s);
 		void LateUpdate(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
+		void ComputePass(RenderPassInfo passInfo);
 		void Render(RenderPassInfo passInfo);
 		
 		template<typename T>

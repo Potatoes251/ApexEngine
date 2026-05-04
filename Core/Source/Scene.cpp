@@ -234,7 +234,7 @@ namespace Apex::Rendering
 			obj->FixedUpdate(deltaTime_s);
 	}
 
-	void Scene::Render(RenderPassInfo passInfo)
+	void Scene::ComputePass(RenderPassInfo passInfo)
 	{
 		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
 
@@ -244,7 +244,6 @@ namespace Apex::Rendering
 			{
 				renderer->ComputePass();
 			}
-
 			passInfo.m_rhi->Barrier();
 		}
 		else
@@ -254,6 +253,11 @@ namespace Apex::Rendering
 				renderer->SetSkinned(false);
 			}
 		}
+	}
+
+	void Scene::Render(RenderPassInfo passInfo)
+	{
+		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
 
 		for (MeshRenderer* renderer : renderers)
 		{

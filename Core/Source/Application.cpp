@@ -273,6 +273,8 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     pass.m_rhi = m_rhi.get();
 
+    m_scene->ComputePass(pass);
+
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
