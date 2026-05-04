@@ -12,19 +12,12 @@ struct Vertex {
     vec4 weights;
 };
 
-struct SkinnedVertex {
-    vec4 position;
-    vec4 normal;
-    ivec4 boneIDs;
-    vec4 weights;
-};
-
 layout(std430, binding = 0) readonly buffer InVertices {
     Vertex vertices[];
 };
 
 layout(std430, binding = 1) writeonly buffer OutVertices {
-    SkinnedVertex skinned[];
+    Vertex skinned[];
 };
 
 uniform mat4 u_Bones[MAX_BONES];

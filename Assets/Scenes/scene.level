@@ -135,12 +135,12 @@
     "parent": null,
     "name": "Painting",
     "position": [-0.859334,3.197713,-2.798263],
-    "rotation": [0.000000,0.707107,0.707107,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [2.213460,2.213460,2.213460],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/floor/floor.mesh",
+        "mesh": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
         "material": "Assets/Material/Painting.mat",
         "castShadow": true
       },
