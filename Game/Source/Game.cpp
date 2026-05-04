@@ -3,8 +3,6 @@
 
 #include "HUD.h"
 
-#include "Log.h"
-
 using namespace Apex::Game;
 using namespace Apex::UserInterface;
 
