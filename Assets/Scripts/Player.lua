@@ -4,7 +4,6 @@ local Collider = require("Collider")
 local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
-local Mesh = require("Mesh")
 
 local Player = Object:New()
 
@@ -14,7 +13,6 @@ function Player:New()
     cc = nil, 
     cam = nil, 
     anim = nil,
-    mesh = nil,
     -- variables
     coinCount = 0;
     wasGrounded = true, 
@@ -27,16 +25,12 @@ end
 function Player:Start()
     self.cc = CharacterController.Get(self)
     self.anim = Animator.Get(self)
-    self.mesh = Mesh.Get(self)
     self.cam = Camera.Get(self)
     self:AddTag("Player")
     self.anim:StartBlend("Idle", "Walking", 0, true)
 end
 
 function Player:Update(dt)
-    self.accumulatedTime = self.accumulatedTime + dt
-    self.mesh:SetUniform("uTime", self.accumulatedTime)
-
     local x = Input.GetAxis("Horizontal")
     local z = Input.GetAxis("Vertical")
 

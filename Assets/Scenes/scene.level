@@ -151,7 +151,7 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.000000, 0.100000, 2.000000],
+        "halfExtents": [2.000000, 2.000000, 0.100000],
         "isTrigger": true,
         "material": null
       },
