@@ -35,6 +35,7 @@
 
 #include "FileLog.h"
 #include "LogSystem.h"
+#include "Log.h"
 
 #include <chrono>
 #include <iostream>
@@ -267,7 +268,7 @@ void Apex::Application::UpdateAudioListener()
     }
 }
 
-void Apex::Application::Render(RenderPassInfo pass)
+void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
 
@@ -295,4 +296,6 @@ void Apex::Application::Render(RenderPassInfo pass)
     m_scene->Render(pass);
 
     DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
+
+    m_uiManager->RenderHUD(gui->GetBackgroundDrawList(), { 0, 0 }, { (float)m_window->GetWidth(), (float)m_window->GetHeight() });
 }

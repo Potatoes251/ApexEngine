@@ -36,8 +36,6 @@ namespace Apex::UserInterface
 		explicit ImGUIManager(GLFWwindow* nativeWindow);
 		~ImGUIManager() override;
 
-        void Initialize() override;
-        void Shutdown()   override;
         void LoadFonts()  override;
         void BeginFrame() override;
         void EndFrame()   override;
@@ -181,6 +179,10 @@ namespace Apex::UserInterface
         void Dummy(LibMath::Vector2 size) override;
 
 	private:
+
+        void Initialize() override;
+        void Shutdown()   override;
+
         static int ToImGuiMouseButton(MouseButton button);
         static int ToImGuiTreeFlags(TreeNodeFlags flags);
         static int ToImGuiCol(StyleColor target);

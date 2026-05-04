@@ -65,7 +65,8 @@ namespace Apex
         void Tick();
         void LoadScene();
 
-        void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
+        void Render(UserInterface::IGUI* gui, 
+            Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }

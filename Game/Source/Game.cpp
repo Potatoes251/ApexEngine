@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "Camera.h"
 
+#include "HUD.h"
+
 using namespace Apex::Game;
 using namespace Apex::UserInterface;
 
@@ -9,7 +11,6 @@ bool Game::Init()
     if (InitWindow() == false) return false;
 
     m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
-
     if (!m_gui) return false;
 
     m_app = std::make_unique<Apex::Application>();
@@ -17,6 +18,17 @@ bool Game::Init()
         return false;
 
     m_app->LoadScene();
+
+    m_uiManager = m_app->GetUI();
+
+    if (m_uiManager)
+    {
+        m_uiManager->ClearAll();
+        m_uiManager->ScanHUDs("Assets/");
+        int handle = m_uiManager->CreateHUD("GameHUD");
+        m_uiManager->ShowHUD(handle);
+    }
+
     m_app->GetScene()->Start();
 
     m_window->SetMouseMoveCallback([this](double x, double y)
@@ -30,7 +42,7 @@ bool Game::Init()
 
 bool Game::InitWindow()
 {
-    m_window = std::unique_ptr<Apex::Windowing::IWindow>(Apex::Windowing::CreateWindow("Apex Editor", 1280, 720));
+    m_window = std::unique_ptr<Apex::Windowing::IWindow>(Apex::Windowing::CreateWindow("Apex Game", 1280, 720));
 
     if (!m_window) return false;
 
@@ -47,23 +59,28 @@ void Game::Update()
     Apex::Windowing::PollAllEvents();
     m_app->Tick();
 
+    Render();
+}
+
+void Game::Render()
+{
+    m_gui->BeginFrame();
+
     int width = m_window->GetWidth();
     int height = m_window->GetHeight();
-
     m_window->Clear();
 
+    auto* cam = m_app->GetScene()->GetMainCamera();
+
     Apex::Rendering::RenderPassInfo pass;
-    pass.m_camera = m_app->GetScene()->GetMainCamera();
+    pass.m_camera = cam;
     pass.m_flags = Apex::Rendering::RenderSkybox;
     pass.m_width = width;
     pass.m_height = height;
 
-    Render(pass);
-}
+    m_app->Render(m_gui.get(), pass);
 
-void Game::Render(const Apex::Rendering::RenderPassInfo& pass)
-{
-    m_app->Render(pass);
+    m_gui->EndFrame();
 
     m_window->SwapBuffers();
 }
