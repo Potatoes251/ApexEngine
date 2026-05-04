@@ -28,7 +28,6 @@ public:
 	~BinLoader() = default;
 
 	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
-	bool Load(std::string path, Animation& animation_out);
 	bool Export(std::string path, Mesh const& mesh);
 
 private:

@@ -361,23 +361,23 @@ void Gizmos::CreateCube()
     m_cube.m_vertices =
     {
         // Front (+Z)
-        {{-0.5f,-0.5f, 0.5f},{0,0,1},{0,0}},{{0.5f,-0.5f, 0.5f},{0,0,1},{1,0}},
-        {{ 0.5f, 0.5f, 0.5f},{0,0,1},{1,1}},{{-0.5f, 0.5f, 0.5f},{0,0,1},{0,1}},
-        // Back (-Z)
-        {{ 0.5f,-0.5f,-0.5f},{0,0,-1},{0,0}},{{-0.5f,-0.5f,-0.5f},{0,0,-1},{1,0}},
-        {{-0.5f, 0.5f,-0.5f},{0,0,-1},{1,1}},{{ 0.5f, 0.5f,-0.5f},{0,0,-1},{0,1}},
+        {{-0.5f,-0.5f, 0.5f, 0}},{{0.5f,-0.5f, 0.5f,0}},
+        {{ 0.5f, 0.5f, 0.5f, 0}},{{-0.5f, 0.5f, 0.5f,0}},
+        // Back (-Z)    
+        {{ 0.5f,-0.5f,-0.5f, 0}},{{-0.5f,-0.5f,-0.5f,0}},
+        {{-0.5f, 0.5f,-0.5f, 0}},{{ 0.5f, 0.5f,-0.5f,0}},
         // Left (-X)
-        {{-0.5f,-0.5f,-0.5f},{-1,0,0},{0,0}},{{-0.5f,-0.5f, 0.5f},{-1,0,0},{1,0}},
-        {{-0.5f, 0.5f, 0.5f},{-1,0,0},{1,1}},{{-0.5f, 0.5f,-0.5f},{-1,0,0},{0,1}},
-        // Right (+X)
-        {{ 0.5f,-0.5f, 0.5f},{1,0,0},{0,0}},{{ 0.5f,-0.5f,-0.5f},{1,0,0},{1,0}},
-        {{ 0.5f, 0.5f,-0.5f},{1,0,0},{1,1}},{{ 0.5f, 0.5f, 0.5f},{1,0,0},{0,1}},
-        // Top (+Y)
-        {{-0.5f, 0.5f, 0.5f},{0,1,0},{0,0}},{{ 0.5f, 0.5f, 0.5f},{0,1,0},{1,0}},
-        {{ 0.5f, 0.5f,-0.5f},{0,1,0},{1,1}},{{-0.5f, 0.5f,-0.5f},{0,1,0},{0,1}},
+        {{-0.5f,-0.5f,-0.5f, 0}},{{-0.5f,-0.5f, 0.5f,0}},
+        {{-0.5f, 0.5f, 0.5f, 0}},{{-0.5f, 0.5f,-0.5f,0}},
+        // Right (+X)    
+        {{ 0.5f,-0.5f, 0.5f, 0}},{{ 0.5f,-0.5f,-0.5f,0}},
+        {{ 0.5f, 0.5f,-0.5f, 0}},{{ 0.5f, 0.5f, 0.5f,0}},
+        // Top (+Y)  
+        {{-0.5f, 0.5f, 0.5f, 0}},{{ 0.5f, 0.5f, 0.5f,0}},
+        {{ 0.5f, 0.5f,-0.5f, 0}},{{-0.5f, 0.5f,-0.5f,0}},
         // Bottom (-Y)
-        {{-0.5f,-0.5f,-0.5f},{0,-1,0},{0,0}},{{ 0.5f,-0.5f,-0.5f},{0,-1,0},{1,0}},
-        {{ 0.5f,-0.5f, 0.5f},{0,-1,0},{1,1}},{{-0.5f,-0.5f, 0.5f},{0,-1,0},{0,1}},
+        {{-0.5f,-0.5f,-0.5f, 0}},{{ 0.5f,-0.5f,-0.5f,0}},
+        {{ 0.5f,-0.5f, 0.5f, 0}},{{-0.5f,-0.5f, 0.5f,0}},
     };
 
     m_cube.m_indices =
@@ -398,11 +398,11 @@ void Gizmos::CreateCone()
     constexpr float height = 1.0f;
 
     // Tip vertex
-    m_cone.m_vertices.push_back({ {0, height * 0.5f, 0}, {0,0,0}, {0,0} });
+    m_cone.m_vertices.push_back({ {0, height * 0.5f, 0, 0}, {0,0,0, 0} });
     unsigned int tipIndex = 0;
 
     // Base center
-    m_cone.m_vertices.push_back({ {0, -height * 0.5f, 0}, {0,0,0}, {0,0} });
+    m_cone.m_vertices.push_back({ {0, -height * 0.5f, 0, 0}, {0,0,0,0} });
     unsigned int baseCenterIndex = 1;
 
     // Base ring vertices
@@ -413,7 +413,7 @@ void Gizmos::CreateCone()
         float x = cos(angle) * radius;
         float z = sin(angle) * radius;
 
-        m_cone.m_vertices.push_back({ {x, -height * 0.5f, z}, {0,0,0}, {0,0} });
+        m_cone.m_vertices.push_back({ {x, -height * 0.5f, z, 0}, {0,0,0,0} });
     }
 
     // Side triangles
@@ -448,8 +448,8 @@ void Gizmos::CreateCylinder()
     // Top and bottom center vertices
     constexpr unsigned int topCenter = 0;
     constexpr unsigned int bottomCenter = 1;
-    m_cylinder.m_vertices.push_back({ {0,  halfHeight, 0}, {0,0,0}, {0,0} });
-    m_cylinder.m_vertices.push_back({ {0, -halfHeight, 0}, {0,0,0}, {0,0} });
+    m_cylinder.m_vertices.push_back({ {0,  halfHeight, 0, 0}, {0,0,0, 0}});
+    m_cylinder.m_vertices.push_back({ {0, -halfHeight, 0, 0}, {0,0,0, 0}});
 
     // Rings
     for (int i = 0; i < segments; i++)
@@ -460,9 +460,9 @@ void Gizmos::CreateCylinder()
         float z = sin(angle) * radius;
 
         // top vertex
-        m_cylinder.m_vertices.push_back({ {x,  halfHeight, z}, {0,0,0}, {0,0} });
+        m_cylinder.m_vertices.push_back({ {x,  halfHeight, z,0}, {0,0,0,0} });
         // bottom vertex
-        m_cylinder.m_vertices.push_back({ {x, -halfHeight, z}, {0,0,0}, {0,0} });
+        m_cylinder.m_vertices.push_back({ {x, -halfHeight, z,0}, {0,0,0,0} });
     }
 
     // Side triangles
@@ -529,7 +529,7 @@ void Gizmos::CreateThorus()
             float y = thickness * sinV;
             float z = (circleRadius + thickness * cosV) * sinU;
 
-            LibMath::Vector3 pos(x, y, z);
+            LibMath::Vector4 pos(x, y, z, 0);
 
             m_thorus.m_vertices.push_back({ pos });
         }

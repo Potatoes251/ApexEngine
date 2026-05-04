@@ -2,16 +2,7 @@
 
 #include "Log.h"
 
-#include "LuaFunction/HudFunc.h"
-#include "LuaFunction/InputLua.h"
-#include "LuaFunction/CameraLua.h"
-#include "LuaFunction/ObjectLua.h"
-#include "LuaFunction/Vector3Lua.h"
-#include "LuaFunction/AnimationLua.h"
-#include "LuaFunction/ComponentLua.h"
-#include "LuaFunction/TransformFunc.h"
-#include "LuaFunction/HierarchyFunc.h"
-#include "LuaFunction/CharacterControllerLua.h"
+#include "LuaFunction/LuaFunctions.h"
 
 #include <iostream>
 
@@ -74,6 +65,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Anim::RegisterLua(*this);
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);
+    Apex::Mezh::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);
     Apex::Vector3::RegisterLua(*this);
