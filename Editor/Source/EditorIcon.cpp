@@ -2,16 +2,14 @@
 
 #include <glad/glad.h>
 
-#ifndef STB_IMAGE_STATIC
 extern "C"
 {
-    extern unsigned char* stbi_load(const char* filename,
+    unsigned char* stbi_load(const char* filename,
         int* x, int* y,
         int* channels_in_file,
         int  desired_channels);
-    extern void stbi_image_free(void* ptr);
+    void stbi_image_free(void* ptr);
 }
-#endif
 
 namespace Apex::Editor
 {

@@ -12,7 +12,7 @@ namespace Apex::Resources
     class ScriptPicker
     {
     public:
-        ScriptPicker(UserInterface::IGUI& gui) : m_gui(gui) {}
+        ScriptPicker(UserInterface::IGUI* gui) : m_gui(gui) {}
 
         void Open(Rendering::Scene* scene, Scripting::ScriptComponent* target);
 
@@ -25,7 +25,7 @@ namespace Apex::Resources
         bool m_isOpen = false;
         bool m_newScript = false;
         Apex::Scripting::ScriptComponent* m_target = nullptr;
-        Apex::UserInterface::IGUI& m_gui;
+        Apex::UserInterface::IGUI* m_gui;
         Rendering::Scene* m_scene = nullptr;
     };
 }

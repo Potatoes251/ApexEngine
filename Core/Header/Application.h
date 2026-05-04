@@ -2,8 +2,11 @@
 #define APPLICATION
 
 #include "ThreadPool.h"
+
 #include "Physic.h"
+
 #include "Scene.h"
+
 #include "RenderPassInfo.h"
 
 namespace Apex::Rendering

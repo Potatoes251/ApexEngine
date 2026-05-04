@@ -23,10 +23,10 @@ namespace Apex::Rendering
     {
     public:
         MeshRenderer() = default;
-        MeshRenderer(Apex::Resources::ResourceManager& resourceManager);
+        MeshRenderer(Apex::Resources::ResourceManager* resourceManager);
 
-        void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
-        void SetMaterial(Apex::Resources::ResourceHandle<Material>& shader);
+        void SetMesh(Apex::Resources::ResourceHandle<Mesh> mesh);
+        void SetMaterial(Apex::Resources::ResourceHandle<Material> shader);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
         Apex::Resources::ResourceHandle<Mesh>& GetMesh();
