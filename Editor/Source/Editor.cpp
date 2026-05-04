@@ -790,8 +790,34 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        fs::copy(fs::current_path() / "Assets" / "Fonts",
-            outputDir / "Assets" / "Fonts", copyOpts, ec);
+        fs::path src = fs::current_path() / "Assets" / "Fonts";
+        fs::path dst = outputDir / "Assets" / "Fonts";
+
+        fs::create_directories(dst, ec);
+
+        for (auto& entry : fs::recursive_directory_iterator(src))
+        {
+            const auto& path = entry.path();
+
+            auto relative = fs::relative(path, src);
+            auto target = dst / relative;
+
+            if (entry.is_directory())
+            {
+                fs::create_directories(target, ec);
+            }
+            else
+            {
+                fs::create_directories(target.parent_path(), ec);
+                fs::copy_file(path, target, fs::copy_options::overwrite_existing, ec);
+            }
+
+            if (ec)
+            {
+                LOG_ERROR_CAT("Build", "Copy error: {}", ec.message().c_str());
+                ec.clear();
+            }
+        }
 
         // Engine-level ApexAssets always required by Application.cpp —
         // these are never referenced in scene files so must be listed explicitly.
@@ -817,6 +843,7 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/nz.png",
             // Skybox mesh
             "ApexAssets/Meshes/cube.mesh",
+            "Assets/HUD/GameHUD.hud",
         };
 
         for (const char* assetPath : s_engineAssets)

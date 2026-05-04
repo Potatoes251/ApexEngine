@@ -4,6 +4,8 @@ in vec3 vFragPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 
+out vec4 FragColor;
+
 layout(binding = 0) uniform sampler2D uTexture;
 
 uniform float time;
@@ -19,5 +21,5 @@ void main()
     uv.x += sin(uv.y * frequency + time * speed) * strength;
     uv.y += sin(uv.x * frequency + time * speed) * strength;
 
-    gl_FragColor = texture2D(uTexture, uv);
+    FragColor = texture2D(uTexture, uv);
 }

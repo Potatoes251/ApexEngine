@@ -569,8 +569,6 @@ void UIManager::ScanHUDs(const fs::path& assetsRoot)
         {
             std::string name = e.path().stem().string();
             m_registry[name] = e.path();
-
-            LOG_INFO_CAT("HUD", "Registered HUD: {} -> {}", name, e.path().string());
         }
     }
 }
@@ -609,7 +607,6 @@ int UIManager::CreateHUD(const std::string& name)
 
     m_instances.push_back(std::move(inst));
     int handle = static_cast<int>(m_instances.size());
-    LOG_INFO_CAT("HUD", "CreateHUD: '{}' -> handle ", name, handle);
     return handle;
 }
 
@@ -652,7 +649,7 @@ HUDInstance* UIManager::GetInstance(int handle)
 const HUDInstance* UIManager::GetInstance(int handle) const
 {
     if (handle < 1 || handle > static_cast<int>(m_instances.size())) return nullptr;
-    return m_instances[static_cast<size_t>(handle) - 1].get();
+    return m_instances[static_cast<size_t>(handle) - 1].get();  
 }
 
 void UIManager::RenderHUD(IDrawList* drawList, LibMath::Vector2 viewportPos, LibMath::Vector2 viewportSize)
