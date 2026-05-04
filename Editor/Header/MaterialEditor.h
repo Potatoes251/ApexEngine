@@ -29,11 +29,13 @@ namespace Apex::Editor
 		UserInterface::IGUI* m_gui;
 		Resources::ResourceManager* m_resourceManager;
 
+		std::string m_computeShader;
 		std::string m_vertexShader;
 		std::string m_fragmentShader;
 
 		bool m_vertShadPickOpen = false;
 		bool m_fragShadPickOpen = false;
+		bool m_compShadPickOpen = false;
 		bool m_open = false;
 		bool m_wasReady = false;
 	};

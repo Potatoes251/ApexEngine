@@ -222,11 +222,12 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
+	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
 
-	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
+	SelectObject(m_editor->GetApp()->GetScene()->GetObjectWithId(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
 }
@@ -382,6 +383,8 @@ void Viewport::Draw()
 
 	if (m_editor->GetEditorState() == EditorState::Play)
 		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	else
+		pass.m_flags &= ~PerformCompute;
 	if (!pass.m_camera)
 		pass.m_camera = &m_camera;
 

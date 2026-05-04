@@ -28,16 +28,6 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     }
 }
 
-void MeshLoader::Load(std::string path, Animation& animation)
-{
-    std::filesystem::path filePath(path);
-    std::string extension = filePath.extension().string();
-
-    BinLoader binLoader;
-    std::string sourcePath;
-    if (IsBinFile(extension) && binLoader.Load(path, animation)) return;
-}
-
 void MeshLoader::Import(std::string path)
 {
     Mesh mesh;

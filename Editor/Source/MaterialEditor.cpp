@@ -34,7 +34,7 @@ void MaterialEditor::Draw()
         return;
     }
     // first frame ready
-    if (!m_wasReady && m_currentMat->GetShader().IsValid())
+    if (!m_wasReady && m_currentMat->GetShader().IsReady())
     {
         std::string const& shaders = m_currentMat->GetShader()->GetPath();
 
@@ -44,6 +44,11 @@ void MaterialEditor::Draw()
 
             std::getline(ss, m_vertexShader, '|');
             std::getline(ss, m_fragmentShader, '|');
+        }
+
+        if (m_currentMat->GetComputeShader().IsValid())
+        {
+            m_computeShader = m_currentMat->GetComputeShader()->GetPath();
         }
     }
 
@@ -64,6 +69,7 @@ void MaterialEditor::Draw()
     {
         std::string shaders = m_vertexShader + '|' + m_fragmentShader;
         m_currentMat->SetShader(m_resourceManager->CreateAsync<Shader>(shaders));
+        m_currentMat->SetComputeShader(m_resourceManager->CreateAsync<ComputeShader>(m_computeShader));
 
         while (!m_currentMat->GetShader().IsReady() && !m_currentMat->GetShader().IsFailed())
             m_resourceManager->ProcessGpuUploads();
@@ -77,6 +83,7 @@ void MaterialEditor::Draw()
         DrawTexture(&textures[i], i);
     }
 
+    DrawShaderPicker(m_computeShader, m_compShadPickOpen, "Compute");
     DrawShaderPicker(m_vertexShader, m_vertShadPickOpen, "Vertex");
     DrawShaderPicker(m_fragmentShader, m_fragShadPickOpen, "Fragment");
     m_texturePicker.Draw();

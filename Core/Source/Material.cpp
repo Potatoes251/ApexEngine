@@ -1,3 +1,4 @@
+#include "ComputeShader.h"
 #include "Material.h"
 
 #include "Log.h"
@@ -13,6 +14,8 @@ using namespace Apex::Resources;
 
 void Material::Bind()
 {
+	if (!m_shader.IsReady()) return;
+
 	m_shader->Use();
 
 	for (auto& [name, value] : m_uniforms)
@@ -34,6 +37,32 @@ void Material::Bind()
 	}
 }
 
+void Material::BindCompute()
+{
+	if (!m_computeShader.IsReady())
+		return;
+
+	m_computeShader->Use();
+
+	for (auto& [name, value] : m_uniforms)
+	{
+		std::visit([&](auto&& v)
+			{
+				m_computeShader->SetUniform(name, v);
+			}, value);
+	}
+}
+
+void Material::StartCompute(uint32_t vertexCount)
+{
+	if (!m_computeShader.IsReady() || vertexCount == 0)
+		return;
+
+	constexpr int localSize = 64; // must match local_size_x in the shader
+	int groups = (vertexCount + localSize - 1) / localSize;
+	m_computeShader->Dispatch(groups, 1, 1);
+}
+
 void Material::Save()
 {
 	std::ofstream file(m_path);
@@ -44,6 +73,7 @@ void Material::Save()
 	}
 
 	const bool hasShader = m_shader.IsValid();
+	const bool hasComputeShader = m_computeShader.IsValid();
 	const bool hasUniforms = m_uniforms.size() > 0;
 	const bool hasTextures = m_textures.size() > 0;
 
@@ -54,6 +84,13 @@ void Material::Save()
 	if (hasShader)
 	{
 		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
+		needsComma = true;
+	}
+
+	if (hasComputeShader)
+	{
+		if (needsComma) file << ",\n";
+		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
 		needsComma = true;
 	}
 
@@ -155,6 +192,10 @@ void Material::LoadFromFile()
 		if (category == "shader")
 		{
 			m_shader = m_rm->CreateAsync<Shader>(parser.ParseString());
+		}
+		else if (category == "computeShader")
+		{
+			m_computeShader = m_rm->CreateAsync<ComputeShader>(parser.ParseString());
 		}
 		else if (category == "properties")
 		{

@@ -13,8 +13,10 @@ function Player:New()
     cc = nil, 
     cam = nil, 
     anim = nil,
+    -- variables
     coinCount = 0;
     wasGrounded = true, 
+    accumulatedTime = 0,
     }
     setmetatable(instance, { __index = self })
     return instance

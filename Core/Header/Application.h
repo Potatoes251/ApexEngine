@@ -62,7 +62,6 @@ namespace Apex
         Application& operator=(const Application&) = delete;
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
-        bool InitGUI(UserInterface::IGUI* gui);
         void Tick();
         void LoadScene();
 
