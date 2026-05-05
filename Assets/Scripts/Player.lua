@@ -33,6 +33,33 @@ function Player:Start()
 end
 
 function Player:Update(dt)
+    self:ProcessInput(dt)
+
+    self.anim:SetBlendRatio(self.smoothBlend)
+
+    isGrounded = self.cc:IsGrounded()
+    isInWater = self.cc:IsInWater()
+
+    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
+        if (blend > 0.5) then
+            self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
+        else
+            self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
+        end
+        self.cc:Jump()
+    end
+
+    if (not self.wasGrounded and isGrounded and not isInWater) or (self.wasInWater and not isInWater) then 
+        self.anim:StartBlend("Idle", "Walking", 0, true)
+    elseif not self.wasInWater and isInWater then
+        self.anim:StartBlend("Idle", "Swimming", 0, true)
+    end
+
+    self.wasInWater = isInWater
+    self.wasGrounded = isGrounded
+end
+
+function Player:ProcessInput(dt)
     local x = Input.GetAxis("Horizontal")
     local z = Input.GetAxis("Vertical")
 
@@ -54,31 +81,6 @@ function Player:Update(dt)
     local targetBlend = math.min(speed / walkSpeed, 1)
     
     self.smoothBlend = self.smoothBlend + (targetBlend - self.smoothBlend) * math.min(5.0 * dt, 1)
-
-    self.anim:SetBlendRatio(self.smoothBlend)
-
-    isGrounded = self.cc:IsGrounded()
-    isInWater = self.cc:IsInWater()
-
-    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
-        if (blend > 0.5) then
-            self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
-        else
-            self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
-        end
-        self.cc:Jump()
-    end
-
-    if not self.wasGrounded and isGrounded and not isInWater then 
-        self.anim:StartBlend("Idle", "Walking", 0, true)
-    elseif not self.wasInWater and isInWater then
-        self.anim:StartBlend("Idle", "Swimming", 0, true)
-    elseif self.wasInWater and not isInWater then
-        self.anim:StartBlend("Idle", "Walking", 0, true)
-    end
-
-    self.wasInWater = isInWater
-    self.wasGrounded = isGrounded
 end
 
 function Player:OnTriggerEnter(col)
