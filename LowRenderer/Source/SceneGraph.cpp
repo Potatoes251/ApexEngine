@@ -10,7 +10,7 @@ SceneNode::SceneNode() :
 SceneNode::SceneNode(Object* object) :
 	m_object(object) {}
 
-shared_ptr<SceneNode> const& SceneNode::GetParent() const
+shared_ptr<SceneNode> SceneNode::GetParent() const
 {
 	return m_parent.lock();
 }

@@ -24,7 +24,7 @@ namespace Apex::SceneGraph
 		SceneNode&						operator=(const SceneNode& other) = delete;
 
 		const	vector<shared_ptr<SceneNode>>&	GetChildren() const;
-		std::shared_ptr<SceneNode> const& GetParent() const;
+		std::shared_ptr<SceneNode> GetParent() const;
 		Object*		GetParentObj() const;
 		Object*		GetObject() const;
 
