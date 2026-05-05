@@ -3,9 +3,14 @@
 #include "Object.h"
 #include "Physic.h"
 #include "Rigidbody.h"
+#include "WaterVolume.h"
 #include "CapsuleCollider.h"
 
+#include "Application.h"
+
 #include "LibMath/Trigonometry.h"
+
+#include "Log.h"
 
 using namespace Apex::Data;
 using namespace Apex::Physic;
@@ -44,18 +49,49 @@ void CharacterController::OnStart()
 
 void CharacterController::OnFixedUpdate(float deltatime_s)
 {
-	UpdateGrounded();
+	std::vector<WaterVolume*> waterVolumes = GetWaterVolumes();
+	WaterVolume* currentVolume = waterVolumes.empty() ? nullptr : waterVolumes[0]; // already filtered
 
+	UpdateGrounded();
 	if (!m_collider) return;
 
 	m_previousPos = m_targetPos;
 
-	m_verticalVelocity += GRAVITY[1] * deltatime_s;
+	float effectiveGravity = GRAVITY[1];
+
+	if (currentVolume)
+	{
+		// Buoyancy counteracts gravity based on density ratio
+		// Assumes the character has a m_density member (e.g. 900 for a human)
+		float buoyancy = (currentVolume->GetDensity() / m_density)
+			* -GRAVITY[1]                         // flip to get positive force
+			* currentVolume->GetBuoyancyMult();
+		effectiveGravity += buoyancy; // net vertical acceleration
+		// clamp so character doesn't rocket upward infinitely if buoyancy > gravity
+		effectiveGravity = std::min(effectiveGravity, 2.f);
+	}
+
+	m_verticalVelocity += effectiveGravity * deltatime_s;
+
 	if (m_grounded && m_verticalVelocity < 0.f)
 		m_verticalVelocity = 0.f;
 
+	// --- Build velocity ---
 	LibMath::Vector3 velocity = m_moveInput * m_speed;
+
+	if (currentVolume)
+	{
+		// Add water current to horizontal movement
+		velocity += currentVolume->GetFlowDir() * currentVolume->GetFlowSpeed();
+
+		// Apply drag to all axes (exponential decay feels more physical)
+		float dragFactor = std::pow(1.f - currentVolume->GetDrag(), deltatime_s);
+		velocity *= dragFactor;
+		m_verticalVelocity *= dragFactor;
+	}
+
 	velocity[1] = m_verticalVelocity;
+
 	LibMath::Vector3 displacement = velocity * deltatime_s;
 
 	if (displacement.magnitudeSquared() == 0.f) 
@@ -126,7 +162,8 @@ void CharacterController::Serialize(std::ostream& out) const
 	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"groundedDistance\": " << m_groundedDistance << ",\n";
 	out << "        \"speed\": " << m_speed << ",\n";
-	out << "        \"rotationSpeed\": " << m_rotationSpeed << "\n";
+	out << "        \"rotationSpeed\": " << m_rotationSpeed << ",\n";
+	out << "        \"density\": " << m_density << "\n";
 
 	out << "      }";
 }
@@ -136,6 +173,7 @@ std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
 			{ "Speed", ExposedVar::Float, &m_speed },
 			{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
+			{ "Density", ExposedVar::Float, &m_density },
 	};
 }
 
@@ -167,4 +205,19 @@ void CharacterController::UpdateGrounded()
 
 	m_grounded = m_physic->Raycast(hits, rayStart, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight())
 				&& FindClosestHit(hits, hit);
+}
+
+std::vector<WaterVolume*> CharacterController::GetWaterVolumes()
+{
+	std::vector<WaterVolume*> res;
+
+	for (WaterVolume* vol : Application::GetCurrentScene()->GetComponents<WaterVolume>())
+	{
+		if (vol->IsInside(m_targetPos))
+		{
+			res.push_back(vol);
+		}
+	}
+
+	return res;
 }

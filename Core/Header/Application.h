@@ -67,6 +67,8 @@ namespace Apex
 
         void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
+        static Rendering::Scene*    GetCurrentScene() { return m_scene.get(); }
+
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
@@ -76,7 +78,7 @@ namespace Apex
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
-        float                       GetDeltaTime() { return m_deltaTime_s; }
+        float                       GetDeltaTime() const { return m_deltaTime_s; }
 
     private:
         bool InitLog();
@@ -108,7 +110,7 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        std::unique_ptr<Rendering::Scene> m_scene = nullptr;
+        static inline std::unique_ptr<Rendering::Scene> m_scene = nullptr;
 	};
 }
 

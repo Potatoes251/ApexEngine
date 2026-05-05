@@ -3,11 +3,9 @@
 #include "Scene.h"
 #include "Object.h"
 #include "Rigidbody.h"
-#include "BoxCollider.h"
+#include "Colliders.h"
 #include "WaterVolume.h"
 #include "MeshRenderer.h"
-#include "MeshCollider.h"
-#include "CapsuleCollider.h"
 #include "Lighting/Lights.h"
 #include "ScriptComponent.h"
 #include "ThirdPersonCamera.h"
@@ -416,11 +414,17 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.Expect(':');
             float rotationSpeed = parser.ParseFloat();
 
+            parser.Expect(',');
+            parser.ParseString();
+            parser.Expect(':');
+            float density = parser.ParseFloat();
+
             auto& comp = obj->AddComponent<Apex::Controller::CharacterController>();
             comp.SetEnabled(enabled);
             comp.SetSpeed(speed);
             comp.SetRotationSpeed(rotationSpeed);
             comp.SetGroundedDistance(groundedDistance);
+            comp.SetDensity(density);
         }
         else if (compName == "ThirdPersonCamera")
         {
@@ -525,6 +529,12 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             parser.ParseString(); 
             parser.Expect(':');
 
+            LibMath::Vector3 halfExtents = parser.ParseVector3();
+            parser.Expect(',');
+
+            parser.ParseString();
+            parser.Expect(':');
+
             float density = parser.ParseFloat();
             parser.Expect(',');
             
@@ -551,8 +561,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
 
             float flowSpeed = parser.ParseFloat();
 
-
-            obj->AddComponent<Physic::WaterVolume>(density, drag, buoyencyMult, flowDir, flowSpeed);
+            obj->AddComponent<Physic::WaterVolume>(halfExtents, density, drag, buoyencyMult, flowDir, flowSpeed);
         }
 
         parser.Expect('}'); // component end

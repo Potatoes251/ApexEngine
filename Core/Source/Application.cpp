@@ -21,10 +21,8 @@
 #include "ResourceManager.h"
 
 #include "Rigidbody.h"
-#include "BoxCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "DebugRenderer.h"
-#include "CapsuleCollider.h"
 
 #include "UI.h"
 #include "Hud.h"

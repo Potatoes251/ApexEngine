@@ -10,6 +10,7 @@ namespace Apex::Physic
 { 
 	class RigidBodyComponent; 
 	class CapsuleCollider;
+	class WaterVolume;
 }
 
 namespace Apex::Controller
@@ -26,6 +27,7 @@ namespace Apex::Controller
 		void SetSpeed(float speed) { m_speed = speed; }
 		void SetRotationSpeed(float speed) { m_rotationSpeed = speed; }
 		void SetGroundedDistance(float groundedDistance) { m_groundedDistance = groundedDistance; }
+		void SetDensity(float density) { m_density = density; }
 
 		float GetHorizontalVelocity() const;
 		bool IsGrounded() const { return m_grounded; }
@@ -49,6 +51,8 @@ namespace Apex::Controller
 
 		void UpdateGrounded();
 
+		std::vector<Physic::WaterVolume*> GetWaterVolumes();
+
 		Physic::PhysicSystem*		m_physic = nullptr;
 		Physic::RigidBodyComponent* m_body = nullptr;
 		Physic::CapsuleCollider*	m_collider = nullptr;
@@ -65,6 +69,8 @@ namespace Apex::Controller
 		float m_rotationSpeed = 5.f;
 		// distance to be considered grounded
 		float m_groundedDistance = 0.5f;
+
+		float m_density = 980.f;
 
 		bool m_grounded = false;
 	};

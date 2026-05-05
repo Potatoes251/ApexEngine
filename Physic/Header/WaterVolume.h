@@ -11,9 +11,7 @@ namespace Apex::Physic
 	{
 	public:
 		WaterVolume() = default;
-		WaterVolume(float density, float drag, float buoyancyMultiplier, LibMath::Vector3 flowDir, float flowSpeed)
-			: m_density(density), m_drag(drag), m_buoyancyMultiplier(buoyancyMultiplier), 
-			m_flowDirection(flowDir), m_flowSpeed(flowSpeed) {}
+		WaterVolume(LibMath::Vector3 halfExtents, float density, float drag, float buoyancyMultiplier, LibMath::Vector3 flowDir, float flowSpeed);
 
 		void Serialize(std::ostream& out) const override;
 
@@ -21,6 +19,16 @@ namespace Apex::Physic
 
 		const char* GetTypeName() const override { return "WaterVolume"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
+
+		bool IsInside(LibMath::Vector3 pos);
+
+		LibMath::Vector3 const& GetHalfExtents() const { return m_halfExtents; }
+
+		float GetDensity() const { return m_density; }
+		float GetDrag() const { return m_drag; }
+		float GetBuoyancyMult() const { return m_buoyancyMultiplier; }
+		LibMath::Vector3 GetFlowDir() const { return m_flowDirection; }
+		float GetFlowSpeed() const { return m_flowSpeed; }
 
 	private:
 		LibMath::Vector3 m_halfExtents;
