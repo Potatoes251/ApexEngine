@@ -180,13 +180,24 @@ bool Apex::Application::InitScene()
     return true;
 }
 
-void Apex::Application::LoadScene(bool startScene = true)
+void Apex::Application::LoadScene(bool isBuild, bool startScene)
 {
-    std::string scenePath = LoadLastScene();
-    if (scenePath.empty())
-        scenePath = "Assets/Scenes/scene.level";
+    std::string scenePath;
 
-    EnsureDefaultScene(scenePath);
+    if (isBuild)
+    {
+        scenePath = LoadBuildStartScene();          // build_scenes.json - first entry
+        if (scenePath.empty())
+            scenePath = "Assets/Scenes/scene.level"; // fallback
+    }
+    else
+    {
+        scenePath = LoadLastScene();               // Editor/prefs.ini
+        if (scenePath.empty())
+            scenePath = "Assets/Scenes/scene.level";
+
+        EnsureDefaultScene(scenePath);
+    }
 
     LoadScene(scenePath, startScene);
 }
@@ -213,7 +224,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
     // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
     loader.LoadScene(*m_scene, path);
-
+    
     // (optional) async wait — same as your code
     bool ready = false;
     while (!ready)
@@ -239,7 +250,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
 
         m_resourceManager->ProcessGpuUploads();
     }
-
+    
     // Rebuild physics
     for (auto& obj : m_scene->GetObjects())
     {
@@ -251,9 +262,10 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
     }
 
     if (startScene)
+        m_scene->Start();
+
+    else
         SaveLastScene(path);
-    
-    m_scene->Start();
 }
 
 void Apex::Application::Tick()
@@ -367,4 +379,30 @@ std::string Apex::Application::LoadLastScene() const
             return line.substr(std::strlen(k_lastSceneKey));
     }
     return "";
+}
+
+std::string Apex::Application::LoadBuildStartScene() const
+{
+    std::ifstream file(k_buildScenesPath);
+    if (!file.is_open()) return "";
+
+    std::string content((std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>());
+
+    // Find "scenes" key
+    size_t scenesPos = content.find("\"scenes\"");
+    if (scenesPos == std::string::npos) return "";
+
+    // Find the opening bracket of the array
+    size_t arrayStart = content.find('[', scenesPos);
+    if (arrayStart == std::string::npos) return "";
+
+    // Find the first quoted string inside the array
+    size_t firstQuote = content.find('"', arrayStart + 1);
+    if (firstQuote == std::string::npos) return "";
+
+    size_t secondQuote = content.find('"', firstQuote + 1);
+    if (secondQuote == std::string::npos) return "";
+
+    return content.substr(firstQuote + 1, secondQuote - firstQuote - 1);
 }

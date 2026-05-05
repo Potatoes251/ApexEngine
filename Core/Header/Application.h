@@ -63,7 +63,7 @@ namespace Apex
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
-        void LoadScene(bool startScene = true);
+        void LoadScene(bool isBuild, bool startScene = true);
         void LoadScene(const std::string& path, bool startScene = true);
 
         void Render(UserInterface::IGUI* gui, 
@@ -97,6 +97,7 @@ namespace Apex
         static void EnsureDefaultScene(const std::string& path);
         void SaveLastScene(const std::string& path);
         std::string LoadLastScene() const;
+        std::string LoadBuildStartScene() const;
 
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
@@ -116,6 +117,7 @@ namespace Apex
 
         std::unique_ptr<Rendering::Scene> m_scene = nullptr;
 
+        static constexpr const char* k_buildScenesPath = "Assets/Scenes/build_scenes.json";
         static constexpr const char* k_prefsPath = "Editor/prefs.ini";
         static constexpr const char* k_lastSceneKey = "LastScene=";
 	};

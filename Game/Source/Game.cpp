@@ -17,7 +17,6 @@ bool Game::Init()
     if (!m_app->Init(m_window.get(), m_gui.get()))
         return false;
 
-    m_app->LoadScene();
 
     m_uiManager = m_app->GetUI();
 
@@ -29,7 +28,7 @@ bool Game::Init()
         m_uiManager->ShowHUD(handle);
     }
 
-    m_app->GetScene()->Start();
+    m_app->LoadScene(true);
 
     m_window->SetMouseMoveCallback([this](double x, double y)
         {
