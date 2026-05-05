@@ -15,8 +15,10 @@ function Player:New()
     anim = nil,
     -- variables
     coinCount = 0;
-    wasGrounded = true, 
+    wasGrounded = false, 
+    wasInWater = false, 
     accumulatedTime = 0,
+    smoothBlend = 0,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -47,17 +49,18 @@ function Player:Update(dt)
         self.cc:Move(moveDir)
     end
 
-    local speed = self.cc:GetVelocity()
-    local walkSpeed = 2.0 -- step/second
-    local blend = speed / walkSpeed
+    local speed     = self.cc:GetVelocity()
+    local walkSpeed = 2.0
+    local targetBlend = math.min(speed / walkSpeed, 1)
+    
+    self.smoothBlend = self.smoothBlend + (targetBlend - self.smoothBlend) * math.min(5.0 * dt, 1)
 
-    if blend > 1 then blend = 1 end
-
-    self.anim:SetBlendRatio(blend)
+    self.anim:SetBlendRatio(self.smoothBlend)
 
     isGrounded = self.cc:IsGrounded()
+    isInWater = self.cc:IsInWater()
 
-    if (Input.IsKeyDown("Space") and isGrounded) then
+    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
         if (blend > 0.5) then
             self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
         else
@@ -66,11 +69,16 @@ function Player:Update(dt)
         self.cc:Jump()
     end
 
-    if (not wasGrounded and isGrounded) then 
+    if not self.wasGrounded and isGrounded and not isInWater then 
+        self.anim:StartBlend("Idle", "Walking", 0, true)
+    elseif not self.wasInWater and isInWater then
+        self.anim:StartBlend("Idle", "Swimming", 0, true)
+    elseif self.wasInWater and not isInWater then
         self.anim:StartBlend("Idle", "Walking", 0, true)
     end
 
-    wasGrounded = isGrounded
+    self.wasInWater = isInWater
+    self.wasGrounded = isGrounded
 end
 
 function Player:OnTriggerEnter(col)

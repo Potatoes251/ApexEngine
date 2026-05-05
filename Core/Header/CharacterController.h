@@ -31,6 +31,7 @@ namespace Apex::Controller
 
 		float GetHorizontalVelocity() const;
 		bool IsGrounded() const { return m_grounded; }
+		bool IsInWater() const { return m_inWater; }
 
 		void Move(LibMath::Vector3 movement);
 		void Jump();
@@ -50,6 +51,9 @@ namespace Apex::Controller
 		bool FindClosestHit(std::vector<Physic::HitResult> const& hits, Physic::HitResult& closest_out) const;
 
 		void UpdateGrounded();
+
+		void Focus(float deltatime_s);
+		LibMath::Vector3 CalculateDisplacement(float deltatime_s);
 
 		std::vector<Physic::WaterVolume*> GetWaterVolumes();
 
@@ -73,6 +77,7 @@ namespace Apex::Controller
 		float m_density = 980.f;
 
 		bool m_grounded = false;
+		bool m_inWater = false;
 	};
 }
 
