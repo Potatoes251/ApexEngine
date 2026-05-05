@@ -358,6 +358,7 @@ namespace Apex::Editor
         m_meshViewers.clear();
         m_soundPlayers.clear();
         m_hudEditors.clear();
+        m_materialEditor.reset();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -926,6 +927,7 @@ namespace Apex::Editor
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)
     {
         m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
+        m_materialEditor->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
         m_materialEditor->Open(path.string());
     }
 }

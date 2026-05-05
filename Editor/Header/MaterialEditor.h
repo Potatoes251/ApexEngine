@@ -19,15 +19,25 @@ namespace Apex::Editor
 
 		void Draw();
 
+		bool IsOpen() const { return m_open; }
+
+		void SetThumbnailRenderer(ThumbnailRenderer* t);
+
 	private:
-		void DrawTexture(Resources::ResourceHandle<Texture>* texture, int id);
-		void DrawShaderPicker(std::string& shaderPath, bool& open, std::string shaderType);
+        void DrawPreviewAndHeader();
+        void DrawTint();
+        void DrawTextureList();
+        void DrawShaderSection();
+        void SaveMaterial();
+        void DrawTexture(Apex::Resources::ResourceHandle<Texture>* texture, int id);
+        void DrawShaderPicker(std::string& shaderPath, bool& open, std::string shaderType);
 
-		Resources::AssetPicker<Texture> m_texturePicker;
+        Apex::UserInterface::IGUI* m_gui = nullptr;
+        Apex::Resources::ResourceManager* m_resourceManager = nullptr;
+        ThumbnailRenderer* m_thumbnails = nullptr;
 
-		Resources::ResourceHandle<Rendering::Material> m_currentMat;
-		UserInterface::IGUI* m_gui;
-		Resources::ResourceManager* m_resourceManager;
+        Apex::Resources::ResourceHandle<Apex::Rendering::Material> m_currentMat;
+        Apex::Resources::AssetPicker<Texture> m_texturePicker;
 
 		std::string m_computeShader;
 		std::string m_vertexShader;

@@ -1,5 +1,6 @@
 #include "ThumbnailRenderer.h"
 #include "Mesh.h"
+#include "Texture.h"
 
 #include "LibMath/Angle.h"
 #include "LibMath/Arithmetic.h"
@@ -13,6 +14,7 @@ namespace Apex::Editor
         : m_rhi(rhi), m_resourceManager(resourceManager)
     {
         BuildShaders();
+        m_sphereMesh = m_resourceManager.CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -120,6 +122,86 @@ namespace Apex::Editor
         return m_rhi.GetTexture(colorTexture);
     }
 
+    uint32_t ThumbnailRenderer::RenderMaterialPreview(Apex::Resources::ResourceHandle<Apex::Rendering::Material> mat)
+    {
+        if (m_matShader == 0 || !m_sphereMesh.IsReady()) return 0;
+        if (!mat.IsValid()) return 0;
+
+        Apex::Rendering::RHITextureHandle colorTexture = 0;
+        Apex::Rendering::RHIFrameBufferHandle fbo = m_rhi.CreateFrameBuffer(static_cast<int>(SIZE), static_cast<int>(SIZE), colorTexture);
+
+        m_rhi.BindFrameBuffer(fbo, static_cast<int>(SIZE), static_cast<int>(SIZE));
+        m_rhi.SetClearColor(0.12f, 0.12f, 0.14f, 1.f);
+        m_rhi.Clear();
+
+        LibMath::Vector3 eye = { 1.8f, 1.2f, 2.2f };
+        LibMath::Vector3 center = { 0.f, 0.f, 0.f };
+        LibMath::Vector3 up = { 0.f, 1.f, 0.f };
+        LibMath::Matrix4 view = LibMath::Matrix4::lookAt(eye, center, up);
+        LibMath::Matrix4 proj = LibMath::Matrix4::perspective(LibMath::Degree{ 45.f }, 1.f, 0.01f, 100.f);
+        LibMath::Matrix4 mvp = proj * view;
+        LibMath::Matrix4 model = LibMath::Matrix4::identity();
+
+        LibMath::Vector3 lightDir = { 0.577f, 0.577f, 0.577f };
+
+        m_rhi.BindShader(m_matShader);
+        m_rhi.SetUniformMat4(m_matShader, "uMVP", mvp);
+        m_rhi.SetUniformMat4(m_matShader, "uModel", model);
+        m_rhi.SetUniformVec3(m_matShader, "uLightDir", lightDir);
+        m_rhi.SetUniformVec3(m_matShader, "uCamPos", eye);
+        m_rhi.SetUniformFloat(m_matShader, "uExposure", 1.f);
+
+        auto& textures = mat->GetTextures();
+        bool hasTexture = !textures.empty() && textures[0].IsReady();
+        if (hasTexture)
+        {
+            textures[0]->Bind(0);
+            m_rhi.SetUniformInt(m_matShader, "uAlbedoTex", 0);
+            m_rhi.SetUniformInt(m_matShader, "uUseTexture", 1);
+        }
+        else
+        {
+            m_rhi.SetUniformVec3(m_matShader, "uBaseColor", { 0.7f, 0.7f, 0.7f });
+            m_rhi.SetUniformInt(m_matShader, "uUseTexture", 0);
+        }
+        // Apply tint (RGB only — alpha handled by blending)
+        LibMath::Vector3 tint = mat->GetTint();
+        m_rhi.SetUniformVec3(m_matShader, "uTint", tint);
+
+        m_sphereMesh->Draw();
+        m_rhi.UnBindFrameBuffer();
+
+        return m_rhi.GetTexture(colorTexture);
+    }
+
+    uint32_t ThumbnailRenderer::GetOrRenderMaterial(const Fs::path& matPath)
+    {
+        std::string key = matPath.generic_string();
+
+        auto it = m_cache.find(key);
+        if (it != m_cache.end()) return it->second;
+
+        auto loadIt = m_matLoadingHandles.find(key);
+        if (loadIt == m_matLoadingHandles.end())
+        {
+            m_matLoadingHandles[key] = m_resourceManager.CreateAsync<Apex::Rendering::Material>(key);
+            return 0;
+        }
+
+        auto& handle = loadIt->second;
+        if (!handle.IsReady()) return 0;
+
+        if (!m_sphereMesh.IsReady()) return 0;
+
+        uint32_t id = RenderMaterialPreview(handle);
+        if (id != 0)
+        {
+            m_cache[key] = id;
+            m_matLoadingHandles.erase(key);
+        }
+        return id;
+    }
+
     void ThumbnailRenderer::Clear()
     {
         m_loadingHandles.clear();
@@ -132,6 +214,7 @@ namespace Apex::Editor
             "ApexAssets/Shaders/MeshViewerLitVert.glsl",
             "ApexAssets/Shaders/MeshViewerLitFrag.glsl"
             });
+        m_matShader = m_shader;
     }
 
     void ThumbnailRenderer::DestroyShaders()
@@ -140,6 +223,11 @@ namespace Apex::Editor
         { 
             m_rhi.DeleteShader(m_shader); 
             m_shader = 0; 
+        }
+        if (m_matShader)
+        {
+            m_rhi.DeleteShader(m_matShader); 
+            m_matShader = 0;
         }
     }
 

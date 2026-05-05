@@ -54,7 +54,7 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             auto& comp = obj->AddComponent<MeshRenderer>();
 
-            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Cube/Cube.mesh");
             comp.SetMesh(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
             comp.SetMaterial(mat);
@@ -68,7 +68,7 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             auto& comp = obj->AddComponent<MeshRenderer>();
 
-            auto mesh = m_resourceManager->CreateAsync<Mesh>("Assets/Meshes/sphere/sphere.mesh");
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
             comp.SetMesh(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
             comp.SetMaterial(mat);

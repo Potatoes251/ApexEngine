@@ -699,43 +699,48 @@ bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
 	return false;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Mesh>* handle)
+void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Mesh>* mesh)
 {
-	uint32_t thumb = handle->IsValid() ? ResolveMeshPreview((*handle)->GetPath()) : 0;
+	uint32_t thumb = mesh->IsValid() ? ResolveMeshPreview((*mesh)->GetPath()) : 0;
 	DrawAssetPreview(thumb, "Mesh", PREVIEW_SIZE);
 	m_gui->SameLine(0.f, 6.f);
 
 	m_gui->BeginChildPanel(std::string("##meshcol") + name, 0.f, PREVIEW_SIZE, false);
-	m_gui->TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	m_gui->TextDisabled(mesh->IsValid() ? std::filesystem::path((*mesh)->GetPath()).filename().string() : "None");
+
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
-		m_meshPicker.Open(handle);
+		m_meshPicker.Open(mesh);
 	m_gui->EndChildPanel();
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Material>* material)
 {
-	m_gui->AlignTextToFramePadding();
-	m_gui->Text("Material:");
-	m_gui->SameLine(LABEL_WIDTH);
-	m_gui->TextDisabled(material->IsValid() ? (*material)->GetPath() : "None");
+	uint32_t thumb = material->IsValid() ? ResolveMaterialPreview((*material)->GetPath()) : 0;
+	DrawAssetPreview(thumb, "Material", PREVIEW_SIZE);
+	m_gui->SameLine(0.f, 6.f);
+
+	m_gui->BeginChildPanel(std::string("##matcol") + name, 0.f, PREVIEW_SIZE, false);
+	m_gui->TextDisabled(material->IsValid() ? std::filesystem::path((*material)->GetPath()).filename().string() : "None");
 
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
 		m_materialPicker.Open(material);
+	m_gui->EndChildPanel();
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Texture>* handle)
+void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Texture>* texture)
 {
-	uint32_t thumb = handle->IsValid() ? ResolveTexturePreview(handle) : 0;
+	uint32_t thumb = texture->IsValid() ? ResolveTexturePreview(texture) : 0;
 	DrawAssetPreview(thumb, "Tex", PREVIEW_SIZE);
 	m_gui->SameLine(0.f, 6.f);
 
 	m_gui->BeginChildPanel(std::string("##texcol") + name, 0.f, PREVIEW_SIZE, false);
-	m_gui->TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	m_gui->TextDisabled(texture->IsValid() ? std::filesystem::path((*texture)->GetPath()).filename().string() : "None");
+
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
-		m_texturePicker.Open(handle);
+		m_texturePicker.Open(texture);
 	m_gui->EndChildPanel();
 }
 
@@ -749,6 +754,12 @@ uint32_t Apex::Editor::ComponentsViewer::ResolveMeshPreview(const std::string& p
 {
 	if (path.empty() || !m_thumbnailRenderer) return 0;
 	return m_thumbnailRenderer->GetOrRender(path);
+}
+
+uint32_t Apex::Editor::ComponentsViewer::ResolveMaterialPreview(const std::string& path) const
+{
+	if (path.empty() || !m_thumbnailRenderer) return 0;
+	return m_thumbnailRenderer->GetOrRenderMaterial(path);
 }
 
 void Apex::Editor::ComponentsViewer::DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size)

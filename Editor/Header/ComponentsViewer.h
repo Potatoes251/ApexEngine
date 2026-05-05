@@ -59,6 +59,7 @@ namespace Apex::Editor
 
 		uint32_t ResolveTexturePreview(Resources::ResourceHandle<Texture>* handle) const;
 		uint32_t ResolveMeshPreview(const std::string& path) const;
+		uint32_t ResolveMaterialPreview(const std::string& path) const;
 		void     DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size = 64.f);
 
 		UserInterface::IGUI* m_gui;

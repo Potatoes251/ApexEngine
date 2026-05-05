@@ -44,6 +44,7 @@ namespace Apex::Editor
         case AssetType::Script:  return "Lua";
         case AssetType::Hud:     return "HUD";
         case AssetType::Folder:  return "Folder";
+		case AssetType::Material:return "Material";
         default:                 return "[ ]";
         }
     }
@@ -54,6 +55,7 @@ namespace Apex::Editor
         switch (type)
         {
         case AssetType::Mesh:    return PackColor(100, 180, 255);  // blue
+        case AssetType::Material:return PackColor(10, 140, 20);    // dark green
         case AssetType::Texture: return PackColor(120, 230, 120);  // green
         case AssetType::Sound:   return PackColor(220, 120, 255);  // purple
         case AssetType::Level:   return PackColor(255, 100, 100);  // red
@@ -113,6 +115,12 @@ namespace Apex::Editor
                 if (id != 0)
                     entry.m_thumbnailTextureID = id;
             }
+            else if (entry.m_type == AssetType::Material)
+            {
+                uint32_t id = thumbnails.GetOrRenderMaterial(entry.m_path);
+                if (id != 0)
+                    entry.m_thumbnailTextureID = id;
+            }
         }
     }
 
@@ -138,7 +146,7 @@ namespace Apex::Editor
 
     void ContentBrowser::NavigateTo(const Fs::path& dir)
     {
-        m_thumbnails.Clear();
+        //m_thumbnails.Clear();
         m_currentPath = Fs::weakly_canonical(dir);
         std::memset(m_searchBuffer, 0, sizeof(m_searchBuffer));
         ScanCurrentDirectory();

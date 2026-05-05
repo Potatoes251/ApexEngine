@@ -35,6 +35,7 @@ void Material::Bind()
 	{
 		m_shader->SetUniform("uUseTexture", 1);
 	}
+	m_shader->SetUniform("uTint", m_tint);
 }
 
 void Material::BindCompute()
@@ -86,13 +87,15 @@ void Material::Save()
 		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
 		needsComma = true;
 	}
-
 	if (hasComputeShader)
 	{
 		if (needsComma) file << ",\n";
 		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
 		needsComma = true;
 	}
+
+	if (needsComma) file << ",\n";
+	file << "\t\"tint\": [" << m_tint[0] << ", " << m_tint[1] << ", " << m_tint[2] << "]";
 
 	if (hasUniforms)
 	{
@@ -125,6 +128,7 @@ void Material::Save()
 	file << "\n}\n";
 
 	LOG_INFO_CAT("Resource", "\"{}\" saved successfully", m_path);
+
 }
 
 void Material::AddEmptyTexture()
@@ -196,6 +200,10 @@ void Material::LoadFromFile()
 		else if (category == "computeShader")
 		{
 			m_computeShader = m_rm->CreateAsync<ComputeShader>(parser.ParseString());
+		}
+		else if (category == "tint")
+		{
+			m_tint = parser.ParseVector3();
 		}
 		else if (category == "properties")
 		{
