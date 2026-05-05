@@ -6,6 +6,7 @@
 #include "ResourceHandle.h"
 #include "ResourceManager.h"
 #include "Texture.h"
+#include "lua.h"
 
 #include <string>
 #include <vector>
@@ -120,6 +121,10 @@ namespace Apex::UserInterface
         UIText      m_labelText;
         UIColor     m_colorHover = { 0.8f, 0.8f, 0.8f, 1.f };
         UIColor     m_colorPressed = { 0.6f, 0.6f, 0.6f, 1.f };
+
+        //LUA
+        lua_State*  m_luaState;
+        int         m_luaFuncRef = LUA_NOREF;
 
         std::function<void()> m_onClick;
     };

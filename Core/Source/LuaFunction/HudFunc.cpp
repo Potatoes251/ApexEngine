@@ -46,6 +46,9 @@ namespace Apex::HudBindings
         lua_register(L, "HUD_SetButtonPressColor", Lua_HUD_SetButtonPressColor);
 
         lua_register(L, "HUD_SetPanelColor", Lua_HUD_SetPanelColor);
+
+        lua_register(L, "HUD_SetButtonCallBack", Lua_HUD_SetButtonCallBack);
+        lua_register(L, "HUD_PressButton", Lua_HUD_PressButton);
     }
 
     static UIManager* GetUI(lua_State* L)
@@ -463,6 +466,58 @@ namespace Apex::HudBindings
         UIElement* element = FindWidget(*canvas, name);
         if (auto* panel = dynamic_cast<UIPanel*>(element))
             panel->m_colorBg = color;
+        return 0;
+    }
+
+    int Lua_HUD_SetButtonCallBack(lua_State* L)
+    {
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
+        const char* name = luaL_checkstring(L, 2);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
+        if (!canvas) return 0;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+        {
+            button->m_luaState = L;
+
+            //func ref
+            lua_pushvalue(L, 3);
+            button->m_luaFuncRef = luaL_ref(L, LUA_REGISTRYINDEX);
+
+            // wrap into std::function
+            button->m_onClick = [button]()
+                {
+                    lua_State* L = button->m_luaState;
+
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, button->m_luaFuncRef);
+
+                    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+                    {
+                        const char* err = lua_tostring(L, -1);
+                        printf("Lua error: %s\n", err);
+                        lua_pop(L, 1);
+                    }
+                };
+        }
+    }
+
+    int Lua_HUD_PressButton(lua_State* L)
+    {
+        int handle = static_cast<int>(luaL_checkinteger(L, 1));
+        const char* name = luaL_checkstring(L, 2);
+
+        auto* canvas = GetCanvas(GetUI(L), handle);
+        if (!canvas) return 0;
+
+        UIElement* element = FindWidget(*canvas, name);
+        if (auto* button = dynamic_cast<UIButton*>(element))
+        {
+            if (button->m_onClick)
+                button->m_onClick();
+        }
+
         return 0;
     }
 
