@@ -95,6 +95,10 @@ namespace Apex
 
         void UpdateAudioListener();
 
+        static void EnsureDefaultScene(const std::string& path);
+        void SaveLastScene(const std::string& path);
+        std::string LoadLastScene() const;
+
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
@@ -112,6 +116,9 @@ namespace Apex
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         std::unique_ptr<Rendering::Scene> m_scene = nullptr;
+
+        static constexpr const char* k_prefsPath = "Editor/prefs.ini";
+        static constexpr const char* k_lastSceneKey = "LastScene=";
 	};
 }
 

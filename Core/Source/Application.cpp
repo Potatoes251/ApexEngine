@@ -193,8 +193,14 @@ void Apex::Application::LoadScene()
 
     m_scene->SetSkybox(sk);
     
+    std::string scenePath = LoadLastScene();
+    if (scenePath.empty())
+        scenePath = "Assets/Scenes/scene.level";
+
+    EnsureDefaultScene(scenePath);
+
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
-    loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
+    loader.LoadScene(*m_scene, scenePath);
 
     bool ready = false;
 
@@ -294,6 +300,7 @@ void Apex::Application::LoadScene(const std::string& path)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
 
+    SaveLastScene(path);
     m_scene->Start();
 }
 
@@ -360,4 +367,52 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
     DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 
     m_uiManager->RenderHUD(gui->GetBackgroundDrawList(), { 0, 0 }, { (float)m_window->GetWidth(), (float)m_window->GetHeight() });
+}
+
+void Apex::Application::EnsureDefaultScene(const std::string& path)
+{
+    if (std::filesystem::exists(path))
+        return;
+
+    // Create parent directories if needed
+    std::filesystem::path p(path);
+    if (p.has_parent_path())
+        std::filesystem::create_directories(p.parent_path());
+
+    std::ofstream file(path);
+    if (!file.is_open())
+    {
+        LOG_ERROR("Failed to create default scene at: {}", path);
+        return;
+    }
+
+    // Minimal valid .level file — adjust to match your actual format
+    file << "{\n";
+    file << "\"materials\": [\n";
+    file << "],\n";
+    file << "\"objects\": [\n";
+    file << "]\n";
+    file << "}";
+
+    LOG_INFO("Created default scene at: {}", path);
+}
+
+void Apex::Application::SaveLastScene(const std::string& path)
+{
+    std::filesystem::create_directories("Editor");
+    std::ofstream file(k_prefsPath);
+    if (file.is_open())
+        file << k_lastSceneKey << path << "\n";
+}
+
+std::string Apex::Application::LoadLastScene() const
+{
+    std::ifstream file(k_prefsPath);
+    std::string line;
+    while (std::getline(file, line))
+    {
+        if (line.rfind(k_lastSceneKey, 0) == 0)
+            return line.substr(std::strlen(k_lastSceneKey));
+    }
+    return "";
 }
