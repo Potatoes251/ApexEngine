@@ -182,63 +182,13 @@ bool Apex::Application::InitScene()
 
 void Apex::Application::LoadScene()
 {
-    Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
-        "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
-        "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
-        "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
-    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
-
-    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
-
-    m_scene->SetSkybox(sk);
-    
     std::string scenePath = LoadLastScene();
     if (scenePath.empty())
         scenePath = "Assets/Scenes/scene.level";
 
     EnsureDefaultScene(scenePath);
 
-    SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
-    loader.LoadScene(*m_scene, scenePath);
-
-    bool ready = false;
-
-    while (!ready)
-    {
-        ready = true;
-
-        for (auto& objPtr : m_scene->GetObjects())
-        {
-            Object* obj = objPtr.get();
-
-            if (auto* renderer = obj->GetComponent<MeshRenderer>())
-            {
-                if (!renderer->GetMesh().IsReady())
-                    ready = false;
-
-                if (!renderer->GetMaterial().IsReady())
-                    ready = false;
-            }
-
-            if (auto* collider = obj->GetComponent<MeshCollider>())
-            {
-                if (!collider->GetMesh().IsReady())
-                    ready = false;
-            }
-        }
-
-        m_resourceManager->ProcessGpuUploads();
-    }
-
-    for (auto& obj : m_scene->GetObjects())
-    {
-        auto* body = obj->GetComponent<RigidBodyComponent>();
-        auto* collider = obj->GetComponent<Collider>();
-
-        if (body && collider)
-            m_scene->GetPhysic()->CreateActor(*collider, *body);
-    }
+    LoadScene(scenePath);
 }
 
 void Apex::Application::LoadScene(const std::string& path)
