@@ -507,12 +507,12 @@ void	LibMath::Vector3::scale(Vector3 const& factor)
 
 std::string		LibMath::Vector3::string() const
 {
-	return "{" + std::to_string(m_x) + "," + std::to_string(m_y) + "," + std::to_string(m_z) + "}";
+	return "[" + std::to_string(m_x) + "," + std::to_string(m_y) + "," + std::to_string(m_z) + "]";
 }
 
 std::string		LibMath::Vector3::stringLong() const
 {
-	return "Vector3{ x:" + std::to_string(m_x) + ", y:" + std::to_string(m_y) + ", z:" + std::to_string(m_z) + " }";
+	return "Vector3[ x:" + std::to_string(m_x) + ", y:" + std::to_string(m_y) + ", z:" + std::to_string(m_z) + " ]";
 }
 
 

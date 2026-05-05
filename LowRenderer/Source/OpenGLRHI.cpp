@@ -454,6 +454,24 @@ namespace Apex::Rendering
 		glAttachShader(program, compute);
 		glLinkProgram(program);
 
+		GLint success;
+		glGetShaderiv(compute, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			GLchar infoLog[512];
+			glGetShaderInfoLog(compute, 512, nullptr, infoLog);
+			LOG_ERROR("Shader program compilation failed : {}", infoLog);
+		}
+
+		success = 0;
+		glGetProgramiv(program, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			GLchar infoLog[512];
+			glGetProgramInfoLog(program, 512, nullptr, infoLog);
+			LOG_ERROR("Shader program linking failed : {}", infoLog);
+		}
+
 		RHIShaderHandle shader = NewHandle();
 		m_shaders[shader] = program;
 		return shader;

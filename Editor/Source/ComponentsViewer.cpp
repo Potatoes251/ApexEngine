@@ -6,6 +6,7 @@
 #include "BoxCollider.h"
 #include "CapsuleCollider.h"
 #include "Rigidbody.h"
+#include "WaterVolume.h"
 
 #include "ScriptComponent.h"
 
@@ -63,6 +64,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Script") != std::string::npos) return COL_SCRIPT;
 	if (type.find("Camera") != std::string::npos) return COL_CAMERA;
 	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
+	if (type.find("WaterVolume") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
 	return COL_DEFAULT;
 }
@@ -188,6 +190,16 @@ void ComponentsViewer::Draw()
 						return comp.GetId();
 					}));
 			}
+		}
+
+		if (m_gui->MenuItem("WaterVolume"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+				[this](Object* obj)
+				{
+					WaterVolume& comp = obj->AddComponent<WaterVolume>();
+					return comp.GetId();
+				}));
 		}
 
 		m_gui->Separator();

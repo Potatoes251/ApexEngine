@@ -9,6 +9,8 @@
 
 #include "Rigidbody.h"
 #include "BoxCollider.h"
+#include "WaterVolume.h"
+#include "DebugRenderer.h"
 
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
@@ -273,7 +275,14 @@ namespace Apex::Rendering
 			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
 		}
 		if (passInfo.m_flags & ShowCollider)
+		{
+			DebugRenderer& dr = DebugRenderer::Get();
+			for (WaterVolume* vol : GetComponents<WaterVolume>())
+			{
+				dr.AddBox(vol->GetOwner()->GetGlobalPosition(), {}, vol->GetHalfExtents());
+			}
 			m_physics.DrawColliders();
+		}
 	}
 
 	Object* Scene::GetObjectWithId(size_t id)

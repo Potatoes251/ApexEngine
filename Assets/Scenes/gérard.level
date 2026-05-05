@@ -58,7 +58,7 @@
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
         "intensity": 0.883000,
-        "shadowDistance": 100.000000,
+        "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
       }
     }
@@ -99,7 +99,8 @@
         "enabled": true,
         "groundedDistance": 1.000000,
         "speed": 1.000000,
-        "rotationSpeed": 1.000000
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
       },
       "ThirdPersonCamera": {
         "enabled": true,
@@ -160,6 +161,56 @@
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
         }
+      }
+    }
+  },
+  {
+    "id": 7,
+    "parent": null,
+    "name": "Water",
+    "position": [-5.528850,2.636424,-1.838250],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.000000,20.000000,2.000000],
+    "components": {
+      "WaterVolume": {
+        "enabled": true,
+        "halfExtents": [1.000000,10.000000,1.000000],
+        "density": 1000.000000,
+        "drag": 0.500000,
+        "buoyancy Multiplier": 1.000000,
+        "flow Direction": [0.000000,1.000000,0.000000],
+        "flow Speed": 1.000000
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": false 
+      }
+    }
+  },
+  {
+    "id": 8,
+    "parent": null,
+    "name": "WaterCurrent",
+    "position": [15.311808,1.417259,-2.053998],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [20.000000,2.000000,20.000000],
+    "components": {
+      "WaterVolume": {
+        "enabled": true,
+        "halfExtents": [10.000000,1.000000,10.000000],
+        "density": 1000.000000,
+        "drag": 0.500000,
+        "buoyancy Multiplier": 1.000000,
+        "flow Direction": [1.000000,0.000000,0.000000],
+        "flow Speed": 10.000000
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": false 
       }
     }
   }

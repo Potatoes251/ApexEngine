@@ -21,10 +21,8 @@
 #include "ResourceManager.h"
 
 #include "Rigidbody.h"
-#include "BoxCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "DebugRenderer.h"
-#include "CapsuleCollider.h"
 
 #include "UI.h"
 #include "Hud.h"
@@ -364,26 +362,26 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
 void Apex::Application::SaveLastScene(const std::string& path)
 {
     std::filesystem::create_directories("Editor");
-    std::ofstream file(k_prefsPath);
+    std::ofstream file(m_prefsPath);
     if (file.is_open())
-        file << k_lastSceneKey << path << "\n";
+        file << m_lastSceneKey << path << "\n";
 }
 
 std::string Apex::Application::LoadLastScene() const
 {
-    std::ifstream file(k_prefsPath);
+    std::ifstream file(m_prefsPath);
     std::string line;
     while (std::getline(file, line))
     {
-        if (line.rfind(k_lastSceneKey, 0) == 0)
-            return line.substr(std::strlen(k_lastSceneKey));
+        if (line.rfind(m_lastSceneKey, 0) == 0)
+            return line.substr(std::strlen(m_lastSceneKey));
     }
     return "";
 }
 
 std::string Apex::Application::LoadBuildStartScene() const
 {
-    std::ifstream file(k_buildScenesPath);
+    std::ifstream file(m_buildScenesPath);
     if (!file.is_open()) return "";
 
     std::string content((std::istreambuf_iterator<char>(file)),
