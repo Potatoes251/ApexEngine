@@ -413,7 +413,7 @@ void Viewport::Draw()
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_editor->GetApp()->Render(pass);
+	m_editor->GetApp()->Render(m_gui, pass);
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
 		if (m_showGrid) DrawGrid();
@@ -424,7 +424,6 @@ void Viewport::Draw()
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
-
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];
 	LibMath::Vector2 drawSize;
@@ -451,7 +450,6 @@ void Viewport::Draw()
 		auto* uiManager = m_editor->GetApp()->GetUI();
 		if (uiManager)
 			uiManager->RenderHUD(m_gui->GetDrawList(), m_panelPos + offset, drawSize);
-			
 	}
 
 	DrawUI();
