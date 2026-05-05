@@ -49,7 +49,7 @@ int main(int /*argc*/, char* argv[])
     if (!app->Init(editor.GetWindow(), editor.GetGUI()))
         return 1;
 
-	app->LoadScene();
+	app->LoadScene(false);
 
     if (!editor.InitPanels(*app))
         return 1;

@@ -197,7 +197,7 @@ namespace Apex::Editor
                     if (m_editorState == EditorState::Play)
                         SetEditorState(EditorState::Edit);
 
-                    m_app->LoadScene(entry.m_path.string());
+                    m_app->LoadScene(entry.m_path.string(), false);
 
                     // Sync panels
                     if (m_hierarchy)        m_hierarchy->SetScene(m_app->GetScene());

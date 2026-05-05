@@ -63,9 +63,8 @@ namespace Apex
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
-        void LoadScene();
-
-        void LoadScene(const std::string& path);
+        void LoadScene(bool startScene = true);
+        void LoadScene(const std::string& path, bool startScene = true);
 
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());

@@ -180,7 +180,7 @@ bool Apex::Application::InitScene()
     return true;
 }
 
-void Apex::Application::LoadScene()
+void Apex::Application::LoadScene(bool startScene = true)
 {
     std::string scenePath = LoadLastScene();
     if (scenePath.empty())
@@ -188,10 +188,10 @@ void Apex::Application::LoadScene()
 
     EnsureDefaultScene(scenePath);
 
-    LoadScene(scenePath);
+    LoadScene(scenePath, startScene);
 }
 
-void Apex::Application::LoadScene(const std::string& path)
+void Apex::Application::LoadScene(const std::string& path, bool startScene)
 {
     // Reset scene
     m_scene = std::make_unique<Scene>();
@@ -250,7 +250,9 @@ void Apex::Application::LoadScene(const std::string& path)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
 
-    SaveLastScene(path);
+    if (startScene)
+        SaveLastScene(path);
+    
     m_scene->Start();
 }
 
