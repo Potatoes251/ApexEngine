@@ -35,6 +35,7 @@
 
 #include "FileLog.h"
 #include "LogSystem.h"
+#include "Log.h"
 
 #include <chrono>
 #include <iostream>
@@ -57,7 +58,7 @@ using namespace Apex::Serialization;
 Apex::Application::Application() = default;
 Apex::Application::~Application() = default;
 
-bool Apex::Application::Init(IWindow* window)
+bool Apex::Application::Init(IWindow* window, IGUI* gui)
 {
     if (!InitLog()
     || !InitWindow(window)
@@ -66,16 +67,12 @@ bool Apex::Application::Init(IWindow* window)
     || !InitLighting()
     || !InitRendering()
     || !InitAudio()
+    || !InitUI(gui)
     || !InitLua()
     || !InitScene())
         return false;
 
     return true;
-}
-
-bool Apex::Application::InitGUI(UserInterface::IGUI* gui)
-{
-    return InitUI(gui);
 }
 
 bool Apex::Application::InitResourceManager()
@@ -271,15 +268,19 @@ void Apex::Application::UpdateAudioListener()
     }
 }
 
-void Apex::Application::Render(RenderPassInfo pass)
+void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
+
+    pass.m_rhi = m_rhi.get();
+
+    m_scene->ComputePass(pass);
 
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
     m_lightManager->UploadToGpu(visibleLights);
-    //m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    //m_shadowManager->BindShadowMaps();
+    m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
+    m_shadowManager->BindShadowMaps();
 
     if (pass.m_target != RHI_INVALID)
     {
@@ -294,6 +295,7 @@ void Apex::Application::Render(RenderPassInfo pass)
 
     m_scene->Render(pass);
 
-    //if (pass.m_flags & ShowCollider)
-        DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
+    DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
+
+    m_uiManager->RenderHUD(gui->GetBackgroundDrawList(), { 0, 0 }, { (float)m_window->GetWidth(), (float)m_window->GetHeight() });
 }

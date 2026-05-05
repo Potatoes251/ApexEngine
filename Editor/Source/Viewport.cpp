@@ -222,11 +222,12 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
+	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
 
-	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
+	SelectObject(m_editor->GetApp()->GetScene()->GetObjectWithId(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
 }
@@ -382,6 +383,8 @@ void Viewport::Draw()
 
 	if (m_editor->GetEditorState() == EditorState::Play)
 		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	else
+		pass.m_flags &= ~PerformCompute;
 	if (!pass.m_camera)
 		pass.m_camera = &m_camera;
 
@@ -410,7 +413,7 @@ void Viewport::Draw()
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_editor->GetApp()->Render(pass);
+	m_editor->GetApp()->Render(m_gui, pass);
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
 		if (m_showGrid) DrawGrid();
@@ -421,7 +424,6 @@ void Viewport::Draw()
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
-
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];
 	LibMath::Vector2 drawSize;
@@ -448,7 +450,6 @@ void Viewport::Draw()
 		auto* uiManager = m_editor->GetApp()->GetUI();
 		if (uiManager)
 			uiManager->RenderHUD(m_gui->GetDrawList(), m_panelPos + offset, drawSize);
-			
 	}
 
 	DrawUI();

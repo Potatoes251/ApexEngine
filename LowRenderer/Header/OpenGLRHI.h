@@ -27,8 +27,10 @@ namespace Apex::Rendering
 		void			DeleteVAO(RHIVAOHandle vao) override;
 
 		RHIBufferHandle		CreateBuffer(BufferType type, const void* data, size_t sizeBytes, bool isStatic = true) override;
+		RHIBufferHandle		CreateSSBO(Vertex* data, size_t sizeBytes) override;
 		void				UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) override;
 		void				BindBuffer(RHIBufferHandle buffer, BufferType type) override;
+		void				BindStorageBuffer(uint32_t binding, RHIBufferHandle buffer) override;
 		void				DeleteBuffer(RHIBufferHandle buffer) override;
 		
 		RHIFrameBufferHandle	CreateFrameBuffer(unsigned width, unsigned height, RHITextureHandle& texture_out) override;
@@ -54,9 +56,12 @@ namespace Apex::Rendering
 
 		RHIShaderHandle		CreateShader(const ShaderSource& source) override;
 		RHIShaderHandle		CreateShaderGeo(const ShaderSource& source) override;
+		RHIShaderHandle		CreateComputeShader(const std::string& source) override;
 		void				BindShader(RHIShaderHandle shader) override;
 		void				DeleteShader(RHIShaderHandle shader) override;
+		void				Barrier() override;
 
+		void DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) override;
 		void SetUniformInt(RHIShaderHandle shader, const std::string_view& name, int value) override;
 		void SetUniformFloat(RHIShaderHandle shader, const std::string_view& name, float value) override;
 		void SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec) override;

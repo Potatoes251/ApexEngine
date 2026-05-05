@@ -234,14 +234,34 @@ namespace Apex::Rendering
 			obj->FixedUpdate(deltaTime_s);
 	}
 
+	void Scene::ComputePass(RenderPassInfo passInfo)
+	{
+		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
+
+		if (passInfo.m_flags & PerformCompute)
+		{
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->ComputePass();
+			}
+			passInfo.m_rhi->Barrier();
+		}
+		else
+		{
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->SetSkinned(false);
+			}
+		}
+	}
+
 	void Scene::Render(RenderPassInfo passInfo)
 	{
-		for (auto& obj : m_objects)
+		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
+
+		for (MeshRenderer* renderer : renderers)
 		{
-			passInfo.m_id++;
-			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
-			if (!renderer)
-				continue;
+			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)

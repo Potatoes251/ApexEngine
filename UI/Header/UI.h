@@ -95,8 +95,6 @@ namespace Apex::UserInterface
 		virtual	~IGUI() = default;
 
         // Lifecycle
-        virtual void Initialize() = 0;
-        virtual void Shutdown() = 0;
         virtual void LoadFonts() = 0;
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
@@ -272,6 +270,10 @@ namespace Apex::UserInterface
 
         virtual void Dummy(LibMath::Vector2 size) = 0;
 	private:
+
+        // Lifecycle
+        virtual void Initialize() = 0;
+        virtual void Shutdown() = 0;
 	};
 
     IGUI* CreateGUI(void* nativeWindow);

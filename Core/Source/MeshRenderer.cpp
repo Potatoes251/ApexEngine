@@ -55,6 +55,36 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
     return clone;
 }
 
+void MeshRenderer::ComputePass()
+{
+    if (!m_mesh.IsReady() ||
+        !m_material.IsReady())
+        return;
+
+    ResourceHandle<ComputeShader> computeShader = m_material->GetComputeShader();
+
+    if (!computeShader.IsReady()) 
+    {
+        m_useSkinnedVAO = false;
+        return;
+    }
+    m_useSkinnedVAO = true;
+
+    m_material->BindCompute();
+
+    m_mesh->BindForCompute();
+
+    Data::Object* owner = GetOwner();
+    if (owner)
+    {
+        Animator* animator = owner->GetComponent<Animator>();
+
+        if (animator) animator->SendSkeletonMatrixToGPU(computeShader);
+    }
+
+    m_material->StartCompute(m_mesh->GetVertexCount());
+}
+
 void MeshRenderer::Render(RenderPassInfo passInfo)
 {
     if (!m_mesh.IsReady() ||
@@ -75,14 +105,6 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         m_material->Bind();
     }
 
-    Data::Object* owner = GetOwner();
-    if (owner)
-    {
-        Animator* animator = owner->GetComponent<Animator>();
-
-        if (animator) animator->SendSkeletonMatrixToGPU(currentShader);
-    }
-
     Matrix4 model = GetOwner()->GetGlobalTransform();
 
     currentShader->SetUniform("uModel", model);
@@ -92,7 +114,7 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
     }
 
-    if (passInfo.m_flags & UseIdAsColor) 
+    if (passInfo.m_flags & UseIdAsColor)
     {
         LibMath::Vector3 color;
         color[0] = (passInfo.m_id >> 16) & 0xFF; // highest byte
@@ -101,7 +123,7 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         currentShader->SetUniform("uColor", color / 255.f);
     }
 
-    m_mesh->Draw();
+    m_mesh->Draw(m_useSkinnedVAO);
 }
 
 void MeshRenderer::Serialize(std::ostream& out) const
