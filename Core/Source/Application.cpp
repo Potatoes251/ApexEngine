@@ -240,7 +240,7 @@ void Apex::Application::LoadScene(const std::string& path)
     // Reset scene
     m_scene = std::make_unique<Scene>();
 
-    // Skybox (engine-level stuff stays here 👍)
+    // Skybox (engine-level stuff stays here)
     auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
@@ -293,6 +293,8 @@ void Apex::Application::LoadScene(const std::string& path)
         if (body && collider)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
+
+    m_scene->Start();
 }
 
 void Apex::Application::Tick()
