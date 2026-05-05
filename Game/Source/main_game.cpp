@@ -20,19 +20,6 @@ static std::filesystem::path GetExeDir()
     return std::filesystem::path(buf).parent_path();
 }
 
-static std::filesystem::path FindProjectRoot(std::filesystem::path dir)
-{
-    while (dir.has_parent_path())
-    {
-        if (std::filesystem::exists(dir / ".git"))
-            return dir;
-        std::filesystem::path parent = dir.parent_path();
-        if (parent == dir) break;
-        dir = parent;
-    }
-    return dir;
-}
-
 int main(int argc, char* argv[])
 {
     std::filesystem::current_path(GetExeDir());
