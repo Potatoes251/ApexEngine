@@ -9,8 +9,11 @@
 #include "Application.h"
 
 #include "LibMath/Trigonometry.h"
+#include "LibMath/Arithmetic.h"
 
 #include "Log.h"
+
+#include "InputSystem.h"
 
 using namespace Apex::Data;
 using namespace Apex::Physic;
@@ -202,6 +205,19 @@ LibMath::Vector3 CharacterController::CalculateDisplacement(float deltatime_s)
 
 	// Build velocity
 	LibMath::Vector3 velocity = m_moveInput * m_speed;
+
+	m_verticalVelocity += velocity[1];
+
+	if (currentVolume)
+	{
+		constexpr float MAX_SWIM_VERTICAL = 5.f;
+		m_verticalVelocity = LibMath::clamp(m_verticalVelocity, -MAX_SWIM_VERTICAL, MAX_SWIM_VERTICAL);
+	}
+	else
+	{
+		constexpr float MAX_FALL_SPEED = -50.f;
+		m_verticalVelocity = LibMath::clamp(m_verticalVelocity, MAX_FALL_SPEED, -MAX_FALL_SPEED);
+	}
 
 	if (currentVolume)
 	{

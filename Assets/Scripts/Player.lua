@@ -4,6 +4,7 @@ local Collider = require("Collider")
 local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
+local Vector3 = require("Vector3")
 
 local Player = Object:New()
 
@@ -41,7 +42,7 @@ function Player:Update(dt)
     isInWater = self.cc:IsInWater()
 
     if Input.IsKeyDown("Space") and isGrounded and not isInWater then
-        if (blend > 0.5) then
+        if self.smoothBlend > 0.5 then
             self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
         else
             self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
@@ -63,7 +64,17 @@ function Player:ProcessInput(dt)
     local x = Input.GetAxis("Horizontal")
     local z = Input.GetAxis("Vertical")
 
-    if x ~= 0 or z ~= 0 then
+    local y = 0
+    if Input.IsKeyDown("Space") then
+        y = 1
+    end
+    if Input.IsKeyDown("Ctrl") then
+        y = y - 1
+    end
+
+    local inWater = self.cc:IsInWater()
+
+    if x ~= 0 or z ~= 0 or (y ~= 0 and inWater) then
         local forward = self.cam:GetFront()
         local right   = self.cam:GetRight()
         forward.y = 0
@@ -72,6 +83,10 @@ function Player:ProcessInput(dt)
         forward = forward:Normalized()
         right   = right:Normalized()
         local moveDir = (right * x) + (forward * z)
+
+        if inWater then
+            moveDir = moveDir + Vector3.New(0, y, 0)
+        end
 
         self.cc:Move(moveDir)
     end
