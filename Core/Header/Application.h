@@ -63,7 +63,8 @@ namespace Apex
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
-        void LoadScene();
+        void LoadScene(bool isBuild, bool startScene = true);
+        void LoadScene(const std::string& path, bool startScene = true);
 
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
@@ -93,6 +94,11 @@ namespace Apex
 
         void UpdateAudioListener();
 
+        static void EnsureDefaultScene(const std::string& path);
+        void SaveLastScene(const std::string& path);
+        std::string LoadLastScene() const;
+        std::string LoadBuildStartScene() const;
+
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
@@ -110,6 +116,10 @@ namespace Apex
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         std::unique_ptr<Rendering::Scene> m_scene = nullptr;
+
+        static constexpr const char* k_buildScenesPath = "Assets/Scenes/build_scenes.json";
+        static constexpr const char* k_prefsPath = "Editor/prefs.ini";
+        static constexpr const char* k_lastSceneKey = "LastScene=";
 	};
 }
 
