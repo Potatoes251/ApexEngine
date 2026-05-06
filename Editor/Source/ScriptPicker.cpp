@@ -68,8 +68,7 @@ static void CommitScriptSelection(
     if (scene)
     {
         Apex::CtrlZ::CommandManager::Get().Execute(
-            std::make_unique<Apex::CtrlZ::SetScriptPathCommand>(
-                scene, target, target->GetScriptPath(), newPath));
+            std::make_unique<Apex::CtrlZ::SetScriptPathCommand>(target, target->GetScriptPath(), newPath));
     }
     else
     {

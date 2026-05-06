@@ -115,7 +115,7 @@ void ComponentsViewer::Draw()
 
 	if (m_pendingDelete)
 	{
-		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_scene, m_selectedObj, m_pendingDelete, m_phys));
+		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete));
 		m_pendingDelete = nullptr;
 	}
 
@@ -133,7 +133,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr &&
 			m_gui->MenuItem("Mesh Renderer"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, 
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
@@ -144,7 +144,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
 			m_gui->MenuItem("Rigidbody"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
@@ -158,7 +158,7 @@ void ComponentsViewer::Draw()
 			auto* mr = m_selectedObj->GetComponent<MeshRenderer>();
 			if (mr && m_gui->MenuItem("Mesh Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<MeshCollider>(
@@ -171,7 +171,7 @@ void ComponentsViewer::Draw()
 			}
 			else if (m_gui->MenuItem("Box Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
@@ -182,7 +182,7 @@ void ComponentsViewer::Draw()
 			}
 			else if (m_gui->MenuItem("Capsule Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
@@ -194,7 +194,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("WaterVolume"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					WaterVolume& comp = obj->AddComponent<WaterVolume>();
@@ -205,7 +205,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Lua Script"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
@@ -216,7 +216,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Directional Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
@@ -226,7 +226,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Point Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<PointLightComponent>();
@@ -236,7 +236,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Spot Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<SpotLightComponent>();
@@ -247,7 +247,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("First Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<FirstPersonCamera>();
@@ -257,7 +257,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Third Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
@@ -268,7 +268,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Character Controller"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Controller::CharacterController>();
@@ -278,7 +278,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Animator"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
@@ -328,7 +328,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.f));
 		transform.setScale(scale);
 		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_scene, obj, transform, false));
+			std::make_unique<TransformCommand>(obj, transform, false));
 	}
 }
 

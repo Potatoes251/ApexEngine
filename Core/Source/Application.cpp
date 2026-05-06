@@ -55,6 +55,9 @@ using namespace Apex::Serialization;
 
 Apex::Application::Application(IWindow* window, IGUI* gui)
 {
+    assert(m_instance == nullptr && "Only one Application instance allowed");
+    m_instance = this;
+
     InitLog();
     InitWindow(window);
     InitResourceManager();

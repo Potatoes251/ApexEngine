@@ -103,8 +103,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
 		newTransform.setPosition(m_initialTransform.getPosition() + movementVec);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Rotation:
@@ -122,8 +121,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
 		newTransform.setRotation(deltaAngle * m_initialTransform.getRotation());
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Scale:
@@ -139,8 +137,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
 
 		newTransform.setScale(newScale);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	default:

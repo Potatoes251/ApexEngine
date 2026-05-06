@@ -58,14 +58,14 @@ namespace Apex
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
+        static Application* Get() { return m_instance; }
+
         void Tick();
         void LoadScene(bool isBuild, bool startScene = true);
         void LoadScene(const std::string& path, bool startScene = true);
 
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
-
-        static Rendering::Scene*    GetCurrentScene() { return m_scene.get(); }
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -112,7 +112,9 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        static inline std::unique_ptr<Rendering::Scene> m_scene;
+        std::unique_ptr<Rendering::Scene> m_scene;
+
+        static inline Application* m_instance = nullptr;
 
         static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";
