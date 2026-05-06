@@ -44,10 +44,7 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitWindow())
         return 1;
 
-    auto app = std::make_unique<Apex::Application>();
-    // dont create window for the scene while in editor
-    if (!app->Init(editor.GetWindow(), editor.GetGUI()))
-        return 1;
+    auto app = std::make_unique<Apex::Application>(editor.GetWindow(), editor.GetGUI());
 
 	app->LoadScene(false, false);
 

@@ -41,6 +41,8 @@ namespace Apex::Resources
 
 		void SetRHI(Rendering::IRHI* rhi) { m_rhi = rhi; }
 
+		void WaitForAll();
+
 	private:
 		void AddToGpuQueue(ResourceHandle<IResource>);
 		template<typename ResourceType>
@@ -55,6 +57,10 @@ namespace Apex::Resources
 		std::unordered_map<std::string, std::unique_ptr<ResourceEntry>> m_resources;
 
 		std::unordered_set<std::string> m_loadedAssets;
+
+		std::atomic<int>        m_pendingLoads{ 0 };
+		std::mutex              m_allLoadedMutex;   // dedicated mutex for the CV
+		std::condition_variable m_allLoadedCV;
 	};
 
 
@@ -77,6 +83,8 @@ namespace Apex::Resources
 		entry->m_resource->SetState(ResourceState::Loading);
 		entry->m_resource->SetRhi(m_rhi);
 		entry->m_resource->SetResourceManager(this);
+
+		m_pendingLoads.fetch_add(1, std::memory_order_relaxed);
 
 		Core::ThreadPool::Get().Enqueue(&ResourceManager::Create<ResourceType>, this, id);
 		
@@ -113,6 +121,13 @@ namespace Apex::Resources
 	template <typename ResourceType>
 	void ResourceManager::Create(std::string const& id)
 	{
+		auto guard = [this](void*)
+			{
+				if (m_pendingLoads.fetch_sub(1, std::memory_order_acq_rel) == 1)
+					m_allLoadedCV.notify_all(); // last one out flips the light
+			};
+		std::unique_ptr<void, decltype(guard)> _(this, guard);
+
 		ResourceHandle resource = Get<IResource>(id);
 
 		if (!resource.IsValid()) return;

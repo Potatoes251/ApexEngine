@@ -222,7 +222,6 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
-	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);

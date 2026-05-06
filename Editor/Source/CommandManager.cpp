@@ -37,7 +37,6 @@ void CommandManager::StartBatch()
 {
 	if (m_batching)
 	{
-		LOG_WARNING("StartBatch called twice without EndBatch");
 		return;
 	}
 
@@ -49,7 +48,6 @@ void CommandManager::EndBatch()
 {
 	if (!m_batching)
 	{
-		LOG_WARNING("EndBatch called without StartBatch");
 		return;
 	}
 

@@ -22,15 +22,19 @@ function Painting:Start()
 end
 
 function Painting:Update(dt)
-    if (self.startEffect) then
+    if self.startEffect then
         self.accumulatedTime = self.accumulatedTime + dt
+        if self.accumulatedTime > 1.0 then
+
+        end
+
         self.mesh:SetUniform("uTime", self.accumulatedTime)
     end
 end
 
 function Painting:OnTriggerEnter(col)
     local obj = col:GetOwner()
-    if (not self.startEffect and obj:HasTag("Player")) then
+    if not self.startEffect and obj:HasTag("Player") then
         self.startEffect = true
     end
 end

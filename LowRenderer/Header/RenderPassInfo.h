@@ -2,13 +2,11 @@
 #define RENDER_PASS_INFO
 
 #include "ResourceHandle.h"
-#include "RHI.h"
 
 class Shader;
 namespace Apex::Rendering
 {
 	class Camera;
-	class IRHI;
 
 	enum Flags : uint8_t
 	{
@@ -24,7 +22,6 @@ namespace Apex::Rendering
 	{
 		Resources::ResourceHandle<Shader> m_shader = Resources::ResourceHandle<Shader>(nullptr);
 		Camera* m_camera = nullptr;
-		IRHI* m_rhi = nullptr;
 		float m_aspectRatio = 16.f / 9.f;
 		RHIFrameBufferHandle m_target = RHI_INVALID;
 		unsigned m_width = 1280;

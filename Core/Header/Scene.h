@@ -31,7 +31,7 @@ namespace Apex::Rendering
 
 		std::unique_ptr<Scene> Clone();
 
-		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
+		void SetSkybox(std::unique_ptr<Skybox> skybox) { m_skybox = std::move(skybox); }
 
 		Lighting::VisibleLights GetVisibleLights();
 

@@ -8,31 +8,27 @@ using namespace Apex::UserInterface;
 
 bool Game::Init()
 {
-    if (InitWindow() == false) return false;
+    if (!InitWindow()) return false;
 
     m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
     if (!m_gui) return false;
 
-    m_app = std::make_unique<Apex::Application>();
-    if (!m_app->Init(m_window.get(), m_gui.get()))
-        return false;
+    m_app = std::make_unique<Apex::Application>(m_window.get(), m_gui.get());
 
+    UIManager* uiManager = m_app->GetUI();
 
-    m_uiManager = m_app->GetUI();
-
-    if (m_uiManager)
+    if (uiManager)
     {
-        m_uiManager->ClearAll();
-        m_uiManager->ScanHUDs("Assets/");
-        int handle = m_uiManager->CreateHUD("GameHUD");
-        m_uiManager->ShowHUD(handle);
+        uiManager->ScanHUDs("Assets/");
+        int handle = uiManager->CreateHUD("GameHUD");
+        uiManager->ShowHUD(handle);
     }
 
     m_app->LoadScene(true);
 
     m_window->SetMouseMoveCallback([this](double x, double y)
         {
-            auto cam = m_app->GetScene()->GetMainCamera();
+            Rendering::Camera* cam = m_app->GetScene()->GetMainCamera();
             if (cam) cam->ProcessMouse(x, y);
         });
 
@@ -42,8 +38,6 @@ bool Game::Init()
 bool Game::InitWindow()
 {
     m_window = std::unique_ptr<Apex::Windowing::IWindow>(Apex::Windowing::CreateWindow("Apex Game", 1280, 720));
-
-    if (!m_window) return false;
 
     m_window->Maximize();
 
@@ -72,8 +66,8 @@ void Game::Render()
     auto* cam = m_app->GetScene()->GetMainCamera();
 
     Apex::Rendering::RenderPassInfo pass;
+    pass.m_aspectRatio = m_window->GetAspectRatio();
     pass.m_camera = cam;
-    pass.m_flags = Apex::Rendering::RenderSkybox;
     pass.m_width = width;
     pass.m_height = height;
 
