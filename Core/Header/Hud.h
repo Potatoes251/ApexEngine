@@ -124,7 +124,7 @@ namespace Apex::UserInterface
 
         //LUA
         lua_State*  m_luaState;
-        int         m_luaFuncRef = LUA_NOREF;
+        int         m_luaFuncRef = -2; // = to LUA_NOREF
 
         std::function<void()> m_onClick;
     };
