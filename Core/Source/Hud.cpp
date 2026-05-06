@@ -1,5 +1,6 @@
 #include "Hud.h"
 #include "SerializationParser.h"
+#include "InputSystem.h"
 
 #include "Log.h"
 
@@ -7,6 +8,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+
+using Apex::Input::InputSystem;
 
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
@@ -141,6 +144,19 @@ void UIButton::Draw(const UIDrawContext& context) const
 
     if (context.m_isEditor && context.m_selected)
         context.m_drawList->DrawRect(pos, max, 0xFF44AAFF, 4.f, 1.5f);
+
+    InputSystem&    input = InputSystem::Get();
+    Vector2         inputPos = input.GetMousePos();
+
+    if (input.IsMouseButtonDown(Input::MouseButton::Left) &&
+        inputPos[0] >= pos[0] &&
+        inputPos[0] <= max[0] &&
+        inputPos[1] >= pos[1] &&
+        inputPos[1] <= max[1] &&
+        m_onClick)
+    {
+        m_onClick();
+    }
 }
 
 void UIProgressBar::Draw(const UIDrawContext& context) const
