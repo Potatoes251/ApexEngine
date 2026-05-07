@@ -114,12 +114,6 @@ namespace Apex::Editor
 
         m_window->SetKeyCallback([&](Input::Key key, bool down)
             {
-                if (key == Input::Key::P && down)
-                {
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
-                    m_window->SetWindowTitle("Apex Editor");
-                }
-
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
 
@@ -127,13 +121,17 @@ namespace Apex::Editor
                 {
                     CommandManager::Get().Undo();
                 }
+
                 if (key == Input::Key::Y && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
                     CommandManager::Get().Redo();
                 }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                {
+                    m_app->GetScene()->Save(m_app->GetScenePath());
+                    m_window->SetWindowTitle("Apex Editor");
+                }
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -344,7 +342,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_app->GetScene()->Save(m_app->GetScenePath());
                 m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
