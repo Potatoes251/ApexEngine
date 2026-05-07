@@ -28,6 +28,12 @@ namespace Apex::Audio
         bool  m_startPaused = false;
     };
 
+    enum class AudioChannel
+    {
+        SFX,
+        Music,
+    };
+
     // ── IAudioEngine ─────────────────────────────────────────────
     class IAudioEngine
     {

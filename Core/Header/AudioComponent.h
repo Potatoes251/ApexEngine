@@ -1,0 +1,45 @@
+#ifndef AUDIO_COMPONENT
+#define AUDIO_COMPONENT
+
+#include "Component.h"
+
+#include "Audio.h"
+
+namespace Apex::Audio
+{
+	class AudioComponent : public Component
+	{
+	public:
+		AudioComponent(IAudioEngine* audioEngine) : m_engine(audioEngine) {}
+		AudioComponent(IAudioEngine* audioEngine, std::string name, int channel) : 
+			m_engine(audioEngine), m_sound(name), m_channel(channel) {}
+
+		void Play();
+		void PlayAt();
+		void PlayAt(LibMath::Vector3 pos);
+		void Stop();
+
+		void Serialize(std::ostream& out) const override;
+
+		std::unique_ptr<Component> Clone() override { return std::make_unique<AudioComponent>(*this); }
+
+		const char* GetTypeName() const override { return "AudioComponent"; }
+		std::vector<ExposedVar> GetExposedVariables() override;
+
+	private:
+		std::string m_sound = "";
+
+		IAudioEngine* m_engine = nullptr;
+
+		SoundHandle m_soundHandle = INVALID_SOUND;
+
+		int m_channel = 0;
+		float m_volume = 1.0f;
+
+		bool m_loop = false;
+
+	};
+}
+
+#endif // !AUDIO_COMPONENT
+

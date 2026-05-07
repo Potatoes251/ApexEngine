@@ -1,0 +1,47 @@
+#include "AudioComponent.h"
+
+#include "Object.h"
+
+using namespace Apex::Audio;
+
+void AudioComponent::Play()
+{
+	m_soundHandle = m_engine->Play2D(m_sound, { m_loop, m_volume });
+}
+
+void AudioComponent::PlayAt()
+{
+	m_soundHandle = m_engine->Play3D(m_sound, GetOwner()->GetGlobalPosition(), { m_loop, m_volume });
+}
+
+void AudioComponent::PlayAt(LibMath::Vector3 pos)
+{
+	m_soundHandle = m_engine->Play3D(m_sound, pos, { m_loop, m_volume });
+}
+
+void AudioComponent::Stop()
+{
+	m_engine->StopSound(m_soundHandle);
+}
+
+void AudioComponent::Serialize(std::ostream& out) const
+{
+	out << "      \"AudioComponent\": {\n";
+	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
+	out << "        \"sound\"\": " << m_sound << "\",\n";
+	out << "        \"volume\": " << m_volume << ",\n";
+	out << "        \"channel\": " << m_channel << ",\n";
+	out << "        \"loop\": " << m_loop << "\n";
+
+	out << "      }";
+}
+
+std::vector<Apex::ExposedVar> AudioComponent::GetExposedVariables()
+{
+	return { 
+		{ "Sound", ExposedVar::String, &m_sound }, 
+		{ "Volume", ExposedVar::Float, &m_volume }, 
+		{ "Channel", ExposedVar::Enum, &m_channel, { "SFX", "Music" } },
+		{ "Loop", ExposedVar::Bool, &m_loop },
+	};
+}

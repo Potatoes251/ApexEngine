@@ -11,11 +11,7 @@ namespace Apex::Audio
     IAudioEngine* CreateAudioEngine()
     {
         IAudioEngine* engine = new IrrKlangAudio();
-        if (!engine->Initialize())
-        {
-            delete engine;
-            return nullptr;
-        }
+        engine->Initialize();
         return engine;
     }
 
@@ -224,8 +220,7 @@ namespace Apex::Audio
     {
         if (m_engine)
         {
-			const std::string path = "Assets/Sounds/" + filePath;
-            m_engine->addSoundSourceFromFile(path.c_str());
+            m_engine->addSoundSourceFromFile(filePath.c_str());
         }
             
     }

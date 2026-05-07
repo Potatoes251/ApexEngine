@@ -33,7 +33,7 @@ function Painting:Update(dt)
     if self.startEffect then
         self.accumulatedTime = self.accumulatedTime + dt
         self.mesh:SetUniform("uTime", self.accumulatedTime)
-        if self.accumulatedTime > loadTime then
+        if self.accumulatedTime > self.loadTime then
             LoadScene(self.targetScene)
         end
 

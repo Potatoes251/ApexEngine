@@ -223,6 +223,8 @@ void Apex::Application::Tick()
     }
 
     m_scene->LateUpdate(m_deltaTime_s);
+    // listener is the camera so it updates after the camera
+    UpdateAudioListener();
 }
 
 void Apex::Application::UpdateAudioListener()

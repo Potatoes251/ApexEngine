@@ -9,6 +9,7 @@
 #include "WaterVolume.h"
 
 #include "ScriptComponent.h"
+#include "AudioComponent.h"
 
 #include "Lighting/Lights.h"
 #include "Animator.h"
@@ -41,6 +42,7 @@ static constexpr uint32_t COL_PHYSICS = 0xFFFF69B4; // pink
 static constexpr uint32_t COL_SCRIPT = 0xFFFFA500; // orange
 static constexpr uint32_t COL_LIGHT = 0xFFFFEE58; // yellow
 static constexpr uint32_t COL_CAMERA = 0xFF80DEEA; // cyan
+static constexpr uint32_t COL_AUDIO = 0xFFCE93D8; // purple
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
@@ -66,6 +68,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
 	if (type.find("WaterVolume") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
+	if (type.find("Audio") != std::string::npos) return COL_AUDIO;
 	return COL_DEFAULT;
 }
 
@@ -283,6 +286,16 @@ void ComponentsViewer::Draw()
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("Sound"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Audio::AudioComponent>(nullptr);
 					return comp->GetId();
 				}));
 		}
@@ -525,7 +538,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data));
 			}
 			break;
 		}
@@ -540,7 +553,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
 			}
 			break;
 		}
@@ -554,7 +567,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data));
 			}
 			break;
 		}
@@ -565,11 +578,15 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
 			std::string oldVal = *(std::string*)var.data;
-			if (m_gui->InputText(wid, (char*)var.data, 256))
+			char buf[256];
+			strncpy(buf, oldVal.c_str(), sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0'; // ensure null termination
+
+			if (m_gui->InputText(wid, buf, sizeof(buf)))
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, buf));
 			}
 			break;
 		}
@@ -579,7 +596,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentEnum(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
 			}
 			break;
 		}
@@ -589,7 +606,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponent(var.name, *(LibMath::Vector3*)var.data))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
 			}
 			break;
 		}
@@ -599,7 +616,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponent((PhysicMaterial*)var.data))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data));
 			}
 			break;
 		}
@@ -618,7 +635,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentColor3(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
 			}
 			break;
 		}
@@ -629,7 +646,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentColor4(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data));
 			}
 			break;
 		}

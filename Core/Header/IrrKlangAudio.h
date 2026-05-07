@@ -59,16 +59,16 @@ namespace Apex::Audio
         void Preload(const std::string& filePath) override;
 
     private:
+        SoundHandle             RegisterSound(irrklang::ISound* sound);
+        irrklang::ISound*       GetSound(SoundHandle handle) const;
+        void                    PruneFinished();  // remove stopped sounds from the map
+
         irrklang::ISoundEngine* m_engine = nullptr;
         SoundHandle             m_nextHandle = 1;
 
         // Maps engine-side handles to live irrKlang ISound* instances.
         // Entries are pruned on StopSound and lazily on IsPlaying queries.
         std::unordered_map<SoundHandle, irrklang::ISound*> m_sounds;
-
-        SoundHandle             RegisterSound(irrklang::ISound* sound);
-        irrklang::ISound*       GetSound(SoundHandle handle) const;
-        void                    PruneFinished();  // remove stopped sounds from the map
     };
 
 } // namespace Apex::Audio
