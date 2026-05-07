@@ -38,7 +38,7 @@ std::vector<Apex::ExposedVar> WaterVolume::GetExposedVariables()
     };
 }
 
-bool WaterVolume::IsInside(LibMath::Vector3 pos)
+bool WaterVolume::IsInside(LibMath::Vector3 const& pos) const
 {
     LibMath::Vector3 volPos = GetOwner()->GetGlobalPosition();
 

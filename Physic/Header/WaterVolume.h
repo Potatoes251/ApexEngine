@@ -20,7 +20,7 @@ namespace Apex::Physic
 		const char* GetTypeName() const override { return "WaterVolume"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 
-		bool IsInside(LibMath::Vector3 pos);
+		bool IsInside(LibMath::Vector3 const& pos) const;
 
 		LibMath::Vector3 const& GetHalfExtents() const { return m_halfExtents; }
 
@@ -34,13 +34,13 @@ namespace Apex::Physic
 		LibMath::Vector3 m_halfExtents;
 
 		// Physics
-		float m_density;                // e.g. 1000 for water
-		float m_drag;                   // single drag value (0-1, higher = more resistance)
-		float m_buoyancyMultiplier;     // 1.0 = realistic, 0.5 = half buoyancy, 2.0 = bouncy
+		float m_density = 1000;                // e.g. 1000 for water
+		float m_drag = 0;                   // single drag value (0-1, higher = more resistance)
+		float m_buoyancyMultiplier = 1;     // 1.0 = realistic, 0.5 = half buoyancy, 2.0 = bouncy
 
 		// Movement
-		LibMath::Vector3 m_flowDirection;        // current direction (normalized)
-		float m_flowSpeed;              // m/s of current at full strength
+		LibMath::Vector3 m_flowDirection{};        // current direction (normalized)
+		float m_flowSpeed = 0;              // m/s of current at full strength
 	};
 }
 
