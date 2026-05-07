@@ -291,10 +291,10 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("View Component"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(&m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
 				[this](Object* obj)
 				{
-					Component* comp = &obj->AddComponent<ViewComponent>(&m_phys, 10.f, 1.5f, 1.f, 10, 10);
+					Component* comp = &obj->AddComponent<ViewComponent>(m_phys, 10.f, 1.5f, 1.f, 10, 10);
 					return comp->GetId();
 				}));
 		}

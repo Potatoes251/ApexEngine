@@ -1,7 +1,7 @@
 #ifndef RENDER_PASS_INFO
 #define RENDER_PASS_INFO
 
-#include "ResourceHandle.h"
+#include "../../Resources/Header/ResourceHandle.h"
 #include "RHI.h"
 
 class Shader;

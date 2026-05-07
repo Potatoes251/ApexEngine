@@ -40,11 +40,11 @@ vector<ExposedVar> ViewComponent::GetExposedVariables()
 {
 	return
 	{
-		{ "range",						ExposedVar::Float,	&m_range },
-		{ "horizontal Fov (RAD)",		ExposedVar::Float,	&m_horizontalFov },
-		{ "vertical Fov (RAD)",			ExposedVar::Float,	&m_verticalFov },
-		{ "numbers of horizontal Rays",	ExposedVar::Int,	&m_horizontalRays },
-		{ "numbers of vertical Rays",	ExposedVar::Int,	&m_verticalRays },
+		{ "Range",					ExposedVar::Float,	&m_range },
+		{ "Horizontal Fov (RAD)",	ExposedVar::Float,	&m_horizontalFov },
+		{ "Vertical Fov (RAD)",		ExposedVar::Float,	&m_verticalFov },
+		{ "Horizontal Rays",		ExposedVar::Int,	&m_horizontalRays },
+		{ "Vertical Rays",			ExposedVar::Int,	&m_verticalRays },
 	};
 }
 
@@ -59,7 +59,7 @@ void ViewComponent::OnFixedUpdate(float fixedDeltaTime_s)
 	for (const Vector3& localDir : m_localDirections)
 	{
 		Vector3 worldDir = rotation.rotate(localDir);
-		castRay(origin, worldDir);
+		CastRay(origin, worldDir);
 	}
 }
 
@@ -90,7 +90,7 @@ void ViewComponent::OnStart()
 	}
 }
 
-void ViewComponent::castRay(const Vector3& origin, const Vector3& dir)
+void ViewComponent::CastRay(const Vector3& origin, const Vector3& dir)
 {
 	HitResult hit;
 

@@ -587,7 +587,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
             int vertitalRays = parser.ParseInt();
             parser.Expect(',');
 
-            obj->AddComponent<Perception::ViewComponent>(&m_physics, range, horizontalFov, vertitalFov, horizontalRays, vertitalRays);
+            obj->AddComponent<Perception::ViewComponent>(m_physics, range, horizontalFov, vertitalFov, horizontalRays, vertitalRays);
         }
 
         parser.Expect('}'); // component end

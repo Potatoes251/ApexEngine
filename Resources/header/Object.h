@@ -138,6 +138,7 @@ namespace Apex::Data
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;
 
 		bool m_pendingDestroy = false;
+		bool m_visible = false;
 	};
 
 
@@ -195,54 +196,6 @@ namespace Apex::Data
 
 		return comps;
 	}
-			return comps;
-		}
-
-		std::vector<Component*> GetComponents() const
-		{
-			std::vector<Component*> comps;
-			for (auto& c : m_components)
-				comps.push_back(c.get());
-			return comps;
-		}
-
-		Component* GetComponent(size_t id);
-
-		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys = nullptr);
-		void RemoveComponent(size_t compId, Apex::Physic::PhysicSystem* phys = nullptr);
-
-		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
-
-		void OnChanged();
-		void SetOnChangedCallback(std::function<void()> callback);
-			
-		static constexpr size_t INVALID_ID = std::numeric_limits<size_t>::max();
-
-	private:
-		static inline size_t m_nextId = 0;
-		static inline std::set<size_t> m_freeIds;
-
-		std::set<size_t> m_freeCompIds;
-		size_t m_nextCompId = 0;
-
-		size_t			m_id;
-		std::string		m_name;
-
-		LibMath::Transform				m_localTransform;
-		LibMath::Transform				m_globalTransform;
-
-		std::function<void()>			m_onChanged;
-
-		// only one of each
-		std::unordered_set<std::string>					m_tags;
-
-		std::shared_ptr<Apex::SceneGraph::SceneNode>	m_owner;
-		std::vector<std::unique_ptr<Apex::Component>>	m_components;
-
-		bool m_pendingDestroy = false;
-
-		bool m_visible = false;
-	};
 }
 
 #endif // !OBJECT

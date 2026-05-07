@@ -1,5 +1,5 @@
 #include "sceneGraph.h"
-#include <../../Resources/Header/Object.h>
+#include "../../Resources/Header/Object.h"
 
 using namespace Apex::SceneGraph;
 using namespace Apex::Data;
@@ -10,7 +10,7 @@ SceneNode::SceneNode() :
 SceneNode::SceneNode(Object* object) :
 	m_object(object) {}
 
-shared_ptr<SceneNode> const& SceneNode::GetParent() const
+shared_ptr<SceneNode> SceneNode::GetParent() const
 {
 	return m_parent.lock();
 }
