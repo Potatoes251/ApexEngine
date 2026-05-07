@@ -1,5 +1,6 @@
 {
 "materials": [
+
 ],
 "objects": [
   {
@@ -98,7 +99,8 @@
         "enabled": true,
         "groundedDistance": 1.000000,
         "speed": 1.000000,
-        "rotationSpeed": 1.000000
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
       },
       "ThirdPersonCamera": {
         "enabled": true,

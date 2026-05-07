@@ -114,12 +114,6 @@ namespace Apex::Editor
 
         m_window->SetKeyCallback([&](Input::Key key, bool down)
             {
-                if (key == Input::Key::P && down)
-                {
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
-                    m_window->SetWindowTitle("Apex Editor");
-                }
-
                 if (m_editorState == EditorState::Play && key == Input::Key::F && down)
                     m_viewport->ToggleFullScreen();
 
@@ -133,7 +127,11 @@ namespace Apex::Editor
                 }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
+                    
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)

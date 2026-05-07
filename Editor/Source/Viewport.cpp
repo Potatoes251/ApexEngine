@@ -464,6 +464,7 @@ void Viewport::DrawUI()
 	DrawPlayBar();
 	if (m_editor->GetEditorState() == EditorState::Edit)
 		DrawRightToolbar();
+	
 }
 
 void Viewport::DrawGrid()
@@ -500,28 +501,28 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_gui->SetCursorPos({ startX + PAD, startY + PAD * 0.5f });
 		};
 
-	if (m_gui->Button("Build Game"))
-	{
-		// Scan for .level files once when the popup opens
-		m_buildScenes.clear();
-		namespace fs = std::filesystem;
-		std::error_code ec;
-		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
-		{
-			if (entry.path().extension() == ".level")
-			{
-				BuildSceneEntry e;
-				e.path = entry.path().generic_string();
-				e.selected = true;
-				m_buildScenes.push_back(std::move(e));
-			}
-		}
-		m_showBuildPopup = true;
-		m_gui->OpenPopup("BuildGame");
-	}
-
 	if (state == EditorState::Edit)
 	{
+		m_gui->PushFont(FontID::Default);
+		if (m_gui->Button("Build Game"))
+		{
+			// Scan for .level files once when the popup opens
+			m_buildScenes.clear();
+			namespace fs = std::filesystem;
+			for (auto& entry : fs::recursive_directory_iterator("Assets/"))
+			{
+				if (entry.path().extension() == ".level")
+				{
+					BuildSceneEntry sceneEntry;
+					sceneEntry.path = entry.path().generic_string();
+					sceneEntry.selected = true;
+					m_buildScenes.push_back(std::move(sceneEntry));
+				}
+			}
+			m_showBuildPopup = true;
+			m_gui->OpenPopup("Build Game");
+		}
+		m_gui->PopFont();
 		drawBar(1); // only Play
 		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
 			m_editor->SetEditorState(EditorState::Play);
@@ -705,7 +706,8 @@ void Viewport::DrawBuildPopup()
 {
 	if (!m_showBuildPopup) return;
 
-	if (!m_gui->BeginPopupModal("BuildGame", { 500.f, 0.f }))
+	m_gui->PushFont(FontID::Default);
+	if (!m_gui->BeginPopupModal("Build Game", { 500.f, 0.f }))
 		return;
 
 	m_gui->Text("Select scenes to include in the build.");
@@ -741,9 +743,9 @@ void Viewport::DrawBuildPopup()
 	m_gui->Separator();
 
 	bool anySelected = false;
-	for (auto& e : m_buildScenes)
+	for (auto& entry : m_buildScenes)
 	{
-		if (e.selected) 
+		if (entry.selected) 
 		{ 
 			anySelected = true; 
 			break; 
@@ -770,6 +772,6 @@ void Viewport::DrawBuildPopup()
 		m_showBuildPopup = false;
 		m_gui->CloseCurrentPopup();
 	}
-
+	m_gui->PopFont();
 	m_gui->EndPopup();
 }

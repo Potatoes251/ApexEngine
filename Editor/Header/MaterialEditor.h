@@ -30,7 +30,7 @@ namespace Apex::Editor
         void DrawShaderSection();
         void SaveMaterial();
         void DrawTexture(Apex::Resources::ResourceHandle<Texture>* texture, int id);
-        void DrawShaderPicker(std::string& shaderPath, bool& open, std::string shaderType);
+        void DrawShaderPicker(std::string& out_shaderPath, bool& out_open, const std::string shaderType);
 
         Apex::UserInterface::IGUI* m_gui = nullptr;
         Apex::Resources::ResourceManager* m_resourceManager = nullptr;

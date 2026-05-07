@@ -179,28 +179,28 @@ void MaterialEditor::DrawTexture(Resources::ResourceHandle<Texture>* texture, in
         m_texturePicker.Open(texture);
 }
 
-void MaterialEditor::DrawShaderPicker(std::string& shaderPath, bool& open, std::string shaderType)
+void MaterialEditor::DrawShaderPicker(std::string& out_shaderPath, bool& out_open, const std::string shaderType)
 {
     m_gui->AlignTextToFramePadding();
     m_gui->Text(shaderType + " Shader:");
     m_gui->SameLine(LABEL_W);
     m_gui->SetNextItemWidth(-80.f);
-    m_gui->TextDisabled(shaderPath.empty() ? "None" : shaderPath);
+    m_gui->TextDisabled(out_shaderPath.empty() ? "None" : out_shaderPath);
 
     m_gui->Separator();
     if (m_gui->ButtonSized("Select##shad" + shaderType, { m_gui->GetAvailableSize()[0], 22.f }))
-        open = true;
+        out_open = true;
 
-    if (!open) return;
+    if (!out_open) return;
 
     m_gui->BeginModalBlock("Select " + shaderType + " Shader");
-    m_gui->BeginPanel("Select " + shaderType + " Shader", &open, false, true);
+    m_gui->BeginPanel("Select " + shaderType + " Shader", &out_open, false, true);
 
-    if (!std::filesystem::exists("ApexAssets/") || !open)
+    if (!std::filesystem::exists("ApexAssets/") || !out_open)
     {
         m_gui->EndPanel();
         m_gui->EndModalBlock();
-        open = false;
+        out_open = false;
         return;
     }
 
@@ -213,8 +213,8 @@ void MaterialEditor::DrawShaderPicker(std::string& shaderPath, bool& open, std::
         std::string path = entry.path().generic_string();
         if (m_gui->Button(path))
         {
-            shaderPath = path;
-            open = false;
+            out_shaderPath = path;
+            out_open = false;
             break;
         }
     }
