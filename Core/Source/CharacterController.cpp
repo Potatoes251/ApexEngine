@@ -239,7 +239,7 @@ std::vector<WaterVolume*> CharacterController::GetWaterVolumes()
 {
 	std::vector<WaterVolume*> res;
 
-	for (WaterVolume* vol : Application::GetCurrentScene()->GetComponents<WaterVolume>())
+	for (WaterVolume* vol : Application::Get()->GetScene()->GetComponents<WaterVolume>())
 	{
 		if (vol->IsInside(m_targetPos))
 		{

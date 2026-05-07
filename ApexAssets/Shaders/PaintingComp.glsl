@@ -2,24 +2,28 @@
 
 layout(local_size_x = 64) in;
 
-struct Vertex {
+struct Vertex 
+{
     vec4 position;
     vec4 normal;
     ivec4 boneIDs;
     vec4 weights;
 };
 
-layout(std430, binding = 0) readonly buffer InVertices {
+layout(std430, binding = 0) readonly buffer InVertices 
+{
     Vertex vertices[];
 };
 
-layout(std430, binding = 1) writeonly buffer OutVertices {
+layout(std430, binding = 1) writeonly buffer OutVertices 
+{
     Vertex displaced[];
 };
 
 uniform float uTime;
 
-float getDisplacement(vec2 uv) {
+float getDisplacement(vec2 uv) 
+{
     float speed = 2;
     vec2  center = uv - 0.5;
     float dist   = length(center);

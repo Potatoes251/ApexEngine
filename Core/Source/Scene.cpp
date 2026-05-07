@@ -246,7 +246,6 @@ namespace Apex::Rendering
 			{
 				renderer->ComputePass();
 			}
-			passInfo.m_rhi->Barrier();
 		}
 		else
 		{
@@ -259,9 +258,7 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
-		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
-
-		for (MeshRenderer* renderer : renderers)
+		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())
 		{
 			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
