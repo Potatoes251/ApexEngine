@@ -144,9 +144,16 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
-          "targetScene": "Assets/Scenes/roger.level",
+          "targetScene": "Assets/Scenes/test.level",
           "loadTime": 1.000000
         }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/calmPiano.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
       }
     }
   },

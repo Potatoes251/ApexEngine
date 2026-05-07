@@ -214,11 +214,6 @@ namespace Apex::Editor
         return true;
     }
 
-    void Editor::OnGameStopped()
-    {
-        m_app = nullptr;
-    }
-
     void Editor::Render()
     {
         if (!m_window) return;
@@ -412,6 +407,7 @@ namespace Apex::Editor
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
+            m_app->GetAudio()->StopAll();
             if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
             if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
             auto* ui = m_app->GetUI();
