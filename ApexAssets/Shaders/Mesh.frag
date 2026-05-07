@@ -6,6 +6,7 @@ in vec2 vTexCoord;
 in vec4 FragPosLightSpace[10];
 
 uniform int       uUseTexture;
+uniform vec3      uTint;
 
 layout(binding = 0) uniform sampler2D uTexture;
 
@@ -275,8 +276,8 @@ void main()
 {
     // Base color: texture or solid color
     vec3 baseColor = (uUseTexture == 1)
-        ? texture(uTexture, vTexCoord).rgb
-        : vec3(0.72, 0.45, 0.20);   // warm orange fallback
+        ? texture(uTexture, vTexCoord).rgb * uTint
+        : uTint;   // pure tint when no texture
 
 	vec3 color = vec3(0.0);
 	

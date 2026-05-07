@@ -58,7 +58,7 @@
         "enabled": true,
         "color": [1.000000, 1.000000, 1.000000],
         "intensity": 0.883000,
-        "shadowDistance": 100.000000,
+        "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
       }
     }
@@ -206,7 +206,7 @@
     "id": 10,
     "parent": null,
     "name": "Cube1",
-    "position": [34.143551,0.214497,6.287846],
+    "position": [33.500000,0.214497,6.287846],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [5.000000,1.000000,10.000000],
     "components": {
@@ -240,12 +240,12 @@
       "MeshRenderer": {
         "enabled": true,
         "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Default.mat",
+        "material": "Assets/Material/Test.mat",
         "castShadow": true
       },
       "RigidBody": {
         "enabled": true,
-        "type": "Static",
+        "type": "Kinematic",
         "mass": 1.000000
       },
       "BoxCollider": {
@@ -258,8 +258,11 @@
         "enabled": true,
         "script": "Assets/Scripts/MovingPlatform.lua",
         "vars": {
-          "speed": 2.000000,
-          "distance": 5.000000
+          "Speed": 1.000000,
+          "Distance": 5.000000,
+          "MoveX": true,
+          "MoveY": false,
+          "MoveZ": false
         }
       }
     }

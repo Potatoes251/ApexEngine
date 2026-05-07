@@ -366,6 +366,7 @@ namespace Apex::Editor
     {
         const Fs::path& destination = destDir.empty() ? m_currentPath : destDir;
         bool anyChange = false;
+        bool hasMeshImport = false;
 
         for (const auto& src : sources)
         {
@@ -377,6 +378,7 @@ namespace Apex::Editor
                 if (isMesh)
                 {
                     Core::ThreadPool::Get().Enqueue(&MeshLoader::Import, src.string());
+                    hasMeshImport = true;
                 }
                 continue;
             }
@@ -397,6 +399,7 @@ namespace Apex::Editor
                 if (isMesh)
                 {
                     Core::ThreadPool::Get().Enqueue(&MeshLoader::Import, target.string());
+                    hasMeshImport = true;
                 }
                 anyChange = true;
             }
@@ -407,6 +410,9 @@ namespace Apex::Editor
             m_externalDropDest.clear();
             Refresh();
         } 
+
+        if (hasMeshImport)
+            m_pendingRefresh = true;
     }
 
     bool ContentBrowser::ContainsGridPoint(float x, float y) const
@@ -417,6 +423,12 @@ namespace Apex::Editor
 
     void ContentBrowser::Draw()
     {
+        if (m_pendingRefresh)
+        {
+            Refresh();
+            m_pendingRefresh = false;
+        }
+
         m_gui.PushFont(FontID::Default);
         m_gui.BeginPanel("Content Browser");
         m_gui.PopFont();

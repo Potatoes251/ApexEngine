@@ -127,13 +127,15 @@ namespace Apex::Editor
         if (m_matShader == 0 || !m_sphereMesh.IsReady()) return 0;
         if (!mat.IsValid()) return 0;
 
-        Apex::Rendering::RHITextureHandle colorTexture = 0;
-        Apex::Rendering::RHIFrameBufferHandle fbo = m_rhi.CreateFrameBuffer(static_cast<int>(SIZE), static_cast<int>(SIZE), colorTexture);
+        Apex::Rendering::RHITextureHandle colorTex = 0;
+        Apex::Rendering::RHIFrameBufferHandle fbo =
+            m_rhi.CreateFrameBuffer(static_cast<int>(SIZE), static_cast<int>(SIZE), colorTex);
 
         m_rhi.BindFrameBuffer(fbo, static_cast<int>(SIZE), static_cast<int>(SIZE));
         m_rhi.SetClearColor(0.12f, 0.12f, 0.14f, 1.f);
         m_rhi.Clear();
 
+        // Fixed camera looking at the origin Ã¢ÂÂ sphere is at origin, radius 1
         LibMath::Vector3 eye = { 1.8f, 1.2f, 2.2f };
         LibMath::Vector3 center = { 0.f, 0.f, 0.f };
         LibMath::Vector3 up = { 0.f, 1.f, 0.f };
@@ -150,6 +152,7 @@ namespace Apex::Editor
         m_rhi.SetUniformVec3(m_matShader, "uLightDir", lightDir);
         m_rhi.SetUniformVec3(m_matShader, "uCamPos", eye);
         m_rhi.SetUniformFloat(m_matShader, "uExposure", 1.f);
+        m_rhi.SetUniformInt(m_matShader, "uAlbedoTex", 0);
 
         auto& textures = mat->GetTextures();
         bool hasTexture = !textures.empty() && textures[0].IsReady();
@@ -164,14 +167,14 @@ namespace Apex::Editor
             m_rhi.SetUniformVec3(m_matShader, "uBaseColor", { 0.7f, 0.7f, 0.7f });
             m_rhi.SetUniformInt(m_matShader, "uUseTexture", 0);
         }
-        // Apply tint (RGB only — alpha handled by blending)
+
         LibMath::Vector3 tint = mat->GetTint();
         m_rhi.SetUniformVec3(m_matShader, "uTint", tint);
 
         m_sphereMesh->Draw();
         m_rhi.UnBindFrameBuffer();
 
-        return m_rhi.GetTexture(colorTexture);
+        return m_rhi.GetTexture(colorTex);
     }
 
     uint32_t ThumbnailRenderer::GetOrRenderMaterial(const Fs::path& matPath)

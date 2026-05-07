@@ -79,6 +79,7 @@ void Apex::Editor::ComponentsViewer::SetThumbnailRenderer(ThumbnailRenderer* t)
 	m_thumbnailRenderer = t;
 	m_meshPicker.SetThumbnailRenderer(t);
 	m_texturePicker.SetThumbnailRenderer(t);
+	m_materialPicker.SetThumbnailRenderer(t);
 }
 
 void ComponentsViewer::Draw()
