@@ -19,6 +19,8 @@
 
 #include "CharacterController.h"
 
+#include "ViewComponent.h"
+
 #include "Command/SetExposedVarCommand.h"
 #include "Command/SetScriptVarCommand.h"
 #include "Command/RemoveCompCommand.h"
@@ -35,6 +37,7 @@ using namespace Apex::Scripting;
 using namespace Apex::Lighting;
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
+using namespace Apex::Perception;
 
 // Accent colors per component category
 static constexpr uint32_t COL_RENDER = 0xFF81C784; // green
@@ -43,6 +46,7 @@ static constexpr uint32_t COL_SCRIPT = 0xFFFFA500; // orange
 static constexpr uint32_t COL_LIGHT = 0xFFFFEE58; // yellow
 static constexpr uint32_t COL_CAMERA = 0xFF80DEEA; // cyan
 static constexpr uint32_t COL_AUDIO = 0xFFCE93D8; // purple
+static constexpr uint32_t COL_VIEW = 0xFF64B5F6; // blue
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
@@ -69,6 +73,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("WaterVolume") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
 	if (type.find("Audio") != std::string::npos) return COL_AUDIO;
+	if (type.find("View") != std::string::npos) return COL_VIEW;
 	return COL_DEFAULT;
 }
 
@@ -296,6 +301,16 @@ void ComponentsViewer::Draw()
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Audio::AudioComponent>(nullptr);
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("View Component"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<ViewComponent>(m_phys, 10.f, 1.5f, 1.f, 10, 10);
 					return comp->GetId();
 				}));
 		}

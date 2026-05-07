@@ -67,6 +67,9 @@ namespace Apex::Data
 		const LibMath::Quaternion&	GetGlobalRotation() const { return m_globalTransform.getRotation(); }
 		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
 
+		bool	GetVisibility() const { return m_visible; }
+		void	SetVisibility(bool newState) { m_visible = newState; }
+
 		Object*		GetParent() const;
 
 		void		Start();
@@ -134,6 +137,7 @@ namespace Apex::Data
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;
 
 		bool m_pendingDestroy = false;
+		bool m_visible = false;
 	};
 
 

@@ -144,6 +144,8 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
+          "targetScene": "Assets/Scenes/roger.level",
+          "loadTime": 1.000000
         }
       }
     }

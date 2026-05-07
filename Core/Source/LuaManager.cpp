@@ -62,6 +62,7 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
+    Apex::Log::RegisterLua(*this);
     Apex::Anim::RegisterLua(*this);
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);

@@ -1,5 +1,5 @@
 #include "sceneGraph.h"
-#include <../../Resources/Header/Object.h>
+#include "../../Resources/Header/Object.h"
 
 using namespace Apex::SceneGraph;
 using namespace Apex::Data;
