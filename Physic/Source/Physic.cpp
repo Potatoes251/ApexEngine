@@ -6,10 +6,7 @@
 #include <cassert>
 
 #include "Rigidbody.h"
-#include "Collider.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "Mesh.h"
 #include "Shader.h"
 

@@ -9,6 +9,9 @@
 
 #include "RenderPassInfo.h"
 
+#include <memory>
+#include <filesystem>
+
 namespace Apex::Rendering
 {
     class IRHI;
@@ -33,10 +36,6 @@ namespace Apex::UserInterface
     class IGUI;
 }
 
-#include "Animator.h"
-
-#include <memory>
-#include <filesystem>
 namespace Apex::Scripting
 {
     class LuaManager;
@@ -63,10 +62,13 @@ namespace Apex
 
         bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
         void Tick();
-        void LoadScene();
+        void LoadScene(bool isBuild, bool startScene = true);
+        void LoadScene(const std::string& path, bool startScene = true);
 
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
+
+        static Rendering::Scene*    GetCurrentScene() { return m_scene.get(); }
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -77,7 +79,7 @@ namespace Apex
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
-        float                       GetDeltaTime() { return m_deltaTime_s; }
+        float                       GetDeltaTime() const { return m_deltaTime_s; }
 
     private:
         bool InitLog();
@@ -92,6 +94,11 @@ namespace Apex
         bool InitScene();
 
         void UpdateAudioListener();
+
+        static void EnsureDefaultScene(const std::string& path);
+        void SaveLastScene(const std::string& path);
+        std::string LoadLastScene() const;
+        std::string LoadBuildStartScene() const;
 
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
@@ -109,7 +116,11 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        std::unique_ptr<Rendering::Scene> m_scene = nullptr;
+        static inline std::unique_ptr<Rendering::Scene> m_scene;
+
+        static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
+        static constexpr const char* m_prefsPath = "Editor/prefs.ini";
+        static constexpr const char* m_lastSceneKey = "LastScene=";
 	};
 }
 

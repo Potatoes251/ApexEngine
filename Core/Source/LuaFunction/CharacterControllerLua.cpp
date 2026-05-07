@@ -18,6 +18,7 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("CC_Jump_Internal", Apex::Controller::Lua_CC_Jump);
     lua.RegisterFunction("CC_GetVelocity_Internal", Apex::Controller::Lua_CC_GetVelocity);
     lua.RegisterFunction("CC_IsGrounded_Internal", Apex::Controller::Lua_CC_IsGrounded);
+    lua.RegisterFunction("CC_IsInWater_Internal", Apex::Controller::Lua_CC_IsInWater);
 }
 
 CharacterController* Apex::Controller::GetCC(lua_State* L, int index)
@@ -72,6 +73,17 @@ int Apex::Controller::Lua_CC_IsGrounded(lua_State* L)
     if (!cc) return 0;
 
     lua_pushboolean(L, cc->IsGrounded());
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_IsInWater(lua_State* L)
+{
+    CharacterController* cc = GetCC(L, 1);
+
+    if (!cc) return 0;
+
+    lua_pushboolean(L, cc->IsInWater());
 
     return 1;
 }

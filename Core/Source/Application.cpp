@@ -21,10 +21,8 @@
 #include "ResourceManager.h"
 
 #include "Rigidbody.h"
-#include "BoxCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "DebugRenderer.h"
-#include "CapsuleCollider.h"
 
 #include "UI.h"
 #include "Hud.h"
@@ -180,38 +178,64 @@ bool Apex::Application::InitScene()
     return true;
 }
 
-void Apex::Application::LoadScene()
+void Apex::Application::LoadScene(bool isBuild, bool startScene)
 {
-    Apex::Resources::ResourceHandle<Cubemap> cubemap = m_resourceManager->CreateAsync<Cubemap>(
+    std::string scenePath;
+
+    if (isBuild)
+    {
+        scenePath = LoadBuildStartScene();          // build_scenes.json - first entry
+        if (scenePath.empty())
+            scenePath = "Assets/Scenes/scene.level"; // fallback
+    }
+    else
+    {
+        scenePath = LoadLastScene();               // Editor/prefs.ini
+        if (scenePath.empty())
+            scenePath = "Assets/Scenes/scene.level";
+
+        EnsureDefaultScene(scenePath);
+    }
+
+    LoadScene(scenePath, startScene);
+}
+
+void Apex::Application::LoadScene(const std::string& path, bool startScene)
+{
+    // Reset scene
+    m_scene = std::make_unique<Scene>();
+
+    // Skybox (engine-level stuff stays here)
+    auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
         "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
-    Apex::Resources::ResourceHandle<Mesh> cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
-    Apex::Resources::ResourceHandle<Shader> shader = m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
+
+    auto cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
+    auto shader = m_resourceManager->CreateAsync<Shader>(
+        "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
 
     m_scene->SetSkybox(sk);
-    
+
+    // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
-    loader.LoadScene(*m_scene, "Assets/Scenes/scene.level");
-
+    loader.LoadScene(*m_scene, path);
+    
+    // (optional) async wait — same as your code
     bool ready = false;
-
     while (!ready)
     {
         ready = true;
-
         for (auto& objPtr : m_scene->GetObjects())
         {
             Object* obj = objPtr.get();
 
             if (auto* renderer = obj->GetComponent<MeshRenderer>())
             {
-                if (!renderer->GetMesh().IsReady())
-                    ready = false;
-
-                if (!renderer->GetMaterial().IsReady())
+                if (!renderer->GetMesh().IsReady() ||
+                    !renderer->GetMaterial().IsReady())
                     ready = false;
             }
 
@@ -224,7 +248,8 @@ void Apex::Application::LoadScene()
 
         m_resourceManager->ProcessGpuUploads();
     }
-
+    
+    // Rebuild physics
     for (auto& obj : m_scene->GetObjects())
     {
         auto* body = obj->GetComponent<RigidBodyComponent>();
@@ -233,6 +258,12 @@ void Apex::Application::LoadScene()
         if (body && collider)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
+
+    if (startScene)
+        m_scene->Start();
+
+    else
+        SaveLastScene(path);
 }
 
 void Apex::Application::Tick()
@@ -298,4 +329,78 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
     DebugRenderer::Get().DrawLines(pass.m_camera->GetViewProj());
 
     m_uiManager->RenderHUD(gui->GetBackgroundDrawList(), { 0, 0 }, { (float)m_window->GetWidth(), (float)m_window->GetHeight() });
+}
+
+void Apex::Application::EnsureDefaultScene(const std::string& path)
+{
+    if (std::filesystem::exists(path))
+        return;
+
+    // Create parent directories if needed
+    std::filesystem::path p(path);
+    if (p.has_parent_path())
+        std::filesystem::create_directories(p.parent_path());
+
+    std::ofstream file(path);
+    if (!file.is_open())
+    {
+        LOG_ERROR("Failed to create default scene at: {}", path);
+        return;
+    }
+
+    // Minimal valid .level file — adjust to match your actual format
+    file << "{\n";
+    file << "\"materials\": [\n";
+    file << "],\n";
+    file << "\"objects\": [\n";
+    file << "]\n";
+    file << "}";
+
+    LOG_INFO("Created default scene at: {}", path);
+}
+
+void Apex::Application::SaveLastScene(const std::string& path)
+{
+    std::filesystem::create_directories("Editor");
+    std::ofstream file(m_prefsPath);
+    if (file.is_open())
+        file << m_lastSceneKey << path << "\n";
+}
+
+std::string Apex::Application::LoadLastScene() const
+{
+    std::ifstream file(m_prefsPath);
+    std::string line;
+    while (std::getline(file, line))
+    {
+        if (line.rfind(m_lastSceneKey, 0) == 0)
+            return line.substr(std::strlen(m_lastSceneKey));
+    }
+    return "";
+}
+
+std::string Apex::Application::LoadBuildStartScene() const
+{
+    std::ifstream file(m_buildScenesPath);
+    if (!file.is_open()) return "";
+
+    std::string content((std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>());
+
+    // Find "scenes" key
+    size_t scenesPos = content.find("\"scenes\"");
+    if (scenesPos == std::string::npos) return "";
+
+    // Find the opening bracket of the array
+    size_t arrayStart = content.find('[', scenesPos);
+    if (arrayStart == std::string::npos) return "";
+
+    // Find the first quoted string inside the array
+    size_t firstQuote = content.find('"', arrayStart + 1);
+    if (firstQuote == std::string::npos) return "";
+
+    size_t secondQuote = content.find('"', firstQuote + 1);
+    if (secondQuote == std::string::npos) return "";
+
+    return content.substr(firstQuote + 1, secondQuote - firstQuote - 1);
 }
