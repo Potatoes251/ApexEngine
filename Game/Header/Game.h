@@ -29,7 +29,6 @@ namespace Apex::Game
         std::unique_ptr<Apex::Application>          m_app;
         std::unique_ptr<Apex::Windowing::IWindow>	m_window;
         std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
-        Apex::UserInterface::UIManager* m_uiManager;
 	};
 }
 

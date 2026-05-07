@@ -2,29 +2,19 @@
 
 #include "Object.h"
 #include "Component.h"
-#include "Physic.h"
-#include "Scene.h"
+#include "Application.h"
 
 using namespace Apex::CtrlZ;
 
-AddCompCommand::AddCompCommand(Rendering::Scene* scene, Data::Object* target, createFunc createFunc)
+AddCompCommand::AddCompCommand(Data::Object* target, createFunc createFunc)
 {
-	m_scene = scene;
 	m_targetId = target->GetId();
 	m_createFunc = createFunc;
-}
-
-AddCompCommand::AddCompCommand(Rendering::Scene* scene, Data::Object* target, Physic::PhysicSystem* physic, createFunc createFunc)
-{
-	m_scene = scene;
-	m_targetId = target->GetId();
-	m_createFunc = createFunc;
-	m_physic = physic;
 }
 
 void AddCompCommand::Execute()
 {
-	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
+	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
 	if (target)
 	{
 		m_compId = m_createFunc(target);
@@ -33,9 +23,10 @@ void AddCompCommand::Execute()
 
 void AddCompCommand::Undo()
 {
-	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
+	Rendering::Scene* scene = Application::Get()->GetScene();
+	Data::Object* target = scene->GetObjectWithId(m_targetId);
 	if (target)
 	{
-		target->RemoveComponent(m_compId, m_physic);
+		target->RemoveComponent(m_compId, scene->GetPhysic());
 	}
 }

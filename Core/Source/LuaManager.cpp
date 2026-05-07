@@ -67,6 +67,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Data::RegisterLua(*this);
     Apex::Mezh::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
+    Apex::Scene::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);
     Apex::Vector3::RegisterLua(*this);
     Apex::Hierarchy::RegisterLua(*this);

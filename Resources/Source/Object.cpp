@@ -226,7 +226,7 @@ void Object::UpdateGlobalTransform() const
 
 Object* Object::GetParent() const
 {
-	auto& parentNode = m_owner->GetParent();
+	auto parentNode = m_owner->GetParent();
 
 	if (!parentNode) return nullptr;
 
