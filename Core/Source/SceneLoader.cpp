@@ -2,17 +2,20 @@
 
 #include "Scene.h"
 #include "Object.h"
+#include "Animator.h"
 #include "Rigidbody.h"
 #include "Colliders.h"
 #include "WaterVolume.h"
 #include "MeshRenderer.h"
+#include "ViewComponent.h"
+#include "AudioComponent.h"
 #include "Lighting/Lights.h"
 #include "ScriptComponent.h"
 #include "ThirdPersonCamera.h"
 #include "FirstPersonCamera.h"
 #include "CharacterController.h"
-#include "Animator.h"
-#include "ViewComponent.h"
+
+#include "Application.h"
 
 #include <fstream>
 #include <sstream>
@@ -207,6 +210,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         else if (compName == "ViewComponent")
         {
             ParseViewComponent(obj, parser);
+        }
+        else if (compName == "AudioComponent")
+        {
+            ParseAudioComponent(obj, parser);
         }
 
         parser.Expect('}'); // component end
@@ -597,9 +604,9 @@ void SceneLoader::ParseAnimator(Data::Object* obj, SerialParser& parser)
     parser.ParseString(); parser.Expect(':');
     std::string meshPath = parser.ParseString();
 
-    Rendering::Animator& anim = obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
-    anim.SetFPS(fps);
-    anim.SetEnabled(enabled);
+    Rendering::Animator& comp = obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
+    comp.SetFPS(fps);
+    comp.SetEnabled(enabled);
 }
 
 void SceneLoader::ParseWaterVolume(Data::Object* obj, SerialParser& parser)
@@ -644,8 +651,8 @@ void SceneLoader::ParseWaterVolume(Data::Object* obj, SerialParser& parser)
 
     float flowSpeed = parser.ParseFloat();
 
-    auto& vol = obj->AddComponent<Physic::WaterVolume>(halfExtents, density, drag, buoyencyMult, flowDir, flowSpeed);
-    vol.SetEnabled(enabled);
+    Physic::WaterVolume& comp = obj->AddComponent<Physic::WaterVolume>(halfExtents, density, drag, buoyencyMult, flowDir, flowSpeed);
+    comp.SetEnabled(enabled);
 }
 
 void SceneLoader::ParseViewComponent(Data::Object* obj, SerialParser& parser)
@@ -655,23 +662,64 @@ void SceneLoader::ParseViewComponent(Data::Object* obj, SerialParser& parser)
     bool enabled = parser.ParseBool();
     parser.Expect(',');
 
+    parser.ParseString();
+    parser.Expect(':');
     float range = parser.ParseFloat();
     parser.Expect(',');
 
+    parser.ParseString();
+    parser.Expect(':');
     float horizontalFov = parser.ParseFloat();
     parser.Expect(',');
 
+    parser.ParseString();
+    parser.Expect(':');
     float vertitalFov = parser.ParseFloat();
     parser.Expect(',');
 
+    parser.ParseString();
+    parser.Expect(':');
     int horizontalRays = parser.ParseInt();
     parser.Expect(',');
 
+    parser.ParseString();
+    parser.Expect(':');
     int vertitalRays = parser.ParseInt();
+
+    auto& comp = obj->AddComponent<Perception::ViewComponent>(m_physics, range, horizontalFov, vertitalFov, horizontalRays, vertitalRays);
+    comp.SetEnabled(enabled);
+}
+
+void SceneLoader::ParseAudioComponent(Data::Object* obj, SerialParser& parser)
+{
+    parser.ParseString();
+    parser.Expect(':');
+    bool enabled = parser.ParseBool();
     parser.Expect(',');
 
-    auto& perc = obj->AddComponent<Perception::ViewComponent>(m_physics, range, horizontalFov, vertitalFov, horizontalRays, vertitalRays);
-    perc.SetEnabled(enabled);
+    parser.ParseString();
+    parser.Expect(':');
+    std::string name = parser.ParseString();
+    parser.Expect(',');
+
+    parser.ParseString();
+    parser.Expect(':');
+    float volume = parser.ParseFloat();
+    parser.Expect(',');
+
+    parser.ParseString();
+    parser.Expect(':');
+    float channel = parser.ParseInt();
+    parser.Expect(',');
+
+    parser.ParseString();
+    parser.Expect(':');
+    int loop = parser.ParseInt();
+
+    Audio::IAudioEngine* audio = Application::Get()->GetAudio();
+
+    Audio::AudioComponent& comp = obj->AddComponent<Audio::AudioComponent>(audio, name, channel, volume, loop);
+    comp.SetEnabled(enabled);
 }
 
 void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)

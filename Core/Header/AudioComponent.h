@@ -11,8 +11,8 @@ namespace Apex::Audio
 	{
 	public:
 		AudioComponent(IAudioEngine* audioEngine) : m_engine(audioEngine) {}
-		AudioComponent(IAudioEngine* audioEngine, std::string name, int channel) : 
-			m_engine(audioEngine), m_sound(name), m_channel(channel) {}
+		AudioComponent(IAudioEngine* audioEngine, std::string name, int channel, float volume, bool loop) : 
+			m_engine(audioEngine), m_sound(name), m_channel(channel), m_volume(volume), m_loop(loop) {}
 
 		void Play();
 		void PlayAt();
