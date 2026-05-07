@@ -37,7 +37,7 @@ namespace Apex::Perception
 		void OnStart() override;
 
 		const vector<HitResult>& GetHits()	{ return m_Hits; }
-		int GetNuberOfHits()				{ return m_Hits.size(); }
+		int GetNumberOfHits()				{ return m_Hits.size(); }
 
 	private:
 		void CastRay(const Vector3& origin, const Vector3& dir);

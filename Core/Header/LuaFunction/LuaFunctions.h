@@ -1,6 +1,7 @@
 #ifndef LUA_FUNCTIONS
 #define LUA_FUNCTIONS
 
+#include "LogLua.h"
 #include "HudFunc.h"
 #include "MeshLua.h"
 #include "InputLua.h"

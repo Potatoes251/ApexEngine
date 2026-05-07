@@ -68,7 +68,7 @@ namespace Apex::Data
 		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
 
 		bool	GetVisibility() const { return m_visible; }
-		void	SeyVisibility(bool newState) { m_visible = newState; }
+		void	SetVisibility(bool newState) { m_visible = newState; }
 
 		Object*		GetParent() const;
 
