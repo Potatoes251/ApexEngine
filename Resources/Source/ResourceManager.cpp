@@ -22,16 +22,11 @@ void ResourceManager::ProcessGpuUploads()
 			m_gpuUploadQueue.pop();
 		}
 
-		if (resource.IsFailed())
-		{
-			LOG_ERROR_CAT("Resource", "failed 1: \"{}\"", resource->GetPath()); continue;
-		}
+		if (resource.IsFailed()) continue;
+		
 		resource->UploadToGpu();
-		if (resource.IsFailed())
-		{
-			LOG_ERROR_CAT("Resource", "failed 2: \"{}\"", resource->GetPath());
-			continue;
-		}
+		if (resource.IsFailed()) continue;
+
 		resource->SetState(ResourceState::Uploaded);
 	}
 }
@@ -50,7 +45,7 @@ void Apex::Resources::ResourceManager::CollectGarbage(float deltaTime)
 
 			if (entry->m_timeSinceUnused > 5.0f)
 			{
-				printf("Releasing resource %s\n", id.c_str());
+				LOG_INFO_CAT("Resource", "Releasing resource %s\n", id.c_str());
 				entry->m_resource.reset();
 				it = m_resources.erase(it);
 				continue;
@@ -63,6 +58,15 @@ void Apex::Resources::ResourceManager::CollectGarbage(float deltaTime)
 
 		++it;
 	}
+}
+
+void ResourceManager::WaitForAll()
+{
+	std::unique_lock<std::mutex> lock(m_allLoadedMutex);
+	m_allLoadedCV.wait(lock, [this]
+		{
+			return m_pendingLoads.load(std::memory_order_acquire) == 0;
+		});
 }
 
 void ResourceManager::AddToGpuQueue(ResourceHandle<IResource> resource)

@@ -53,33 +53,30 @@ using namespace Apex::Resources;
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
 
-Apex::Application::Application() = default;
+Apex::Application::Application(IWindow* window, IGUI* gui)
+{
+    assert(m_instance == nullptr && "Only one Application instance allowed");
+    m_instance = this;
+
+    InitLog();
+    InitWindow(window);
+    InitResourceManager();
+    InitRHI();
+    InitLighting();
+    InitRendering();
+    InitAudio();
+    InitUI(gui);
+    InitLua();
+}
+
 Apex::Application::~Application() = default;
 
-bool Apex::Application::Init(IWindow* window, IGUI* gui)
-{
-    if (!InitLog()
-    || !InitWindow(window)
-    || !InitResourceManager()  
-    || !InitRHI()  
-    || !InitLighting()
-    || !InitRendering()
-    || !InitAudio()
-    || !InitUI(gui)
-    || !InitLua()
-    || !InitScene())
-        return false;
-
-    return true;
-}
-
-bool Apex::Application::InitResourceManager()
+void Apex::Application::InitResourceManager()
 {
     m_resourceManager = std::make_unique<ResourceManager>();
-    return true;
 }
 
-bool Apex::Application::InitLog()
+void Apex::Application::InitLog()
 {
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -88,94 +85,57 @@ bool Apex::Application::InitLog()
 
     m_fileLog = std::make_unique<FileLog>(oss.str());
     LogSystem::AddSink(m_fileLog.get());
-
-    return true;
 }
 
-bool Apex::Application::InitWindow(IWindow* window)
+void Apex::Application::InitWindow(IWindow* window)
 {
     m_window = window;
-
-    if (!m_window)
-        return false;
 
     m_window->SetKeyCallback([&](Key key, bool down)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
         });
-
-    return true;
 }
 
-bool Apex::Application::InitRHI()
+void Apex::Application::InitRHI()
 {
     m_rhi = std::unique_ptr<IRHI>(CreateOpenGLRHI());
 
-    if (!m_rhi)
-        return false;
-
     m_resourceManager->SetRHI(m_rhi.get());
     m_rhi->SetClearColor(0.12f, 0.12f, 0.15f);
-
-    return true;
 }
 
-bool Apex::Application::InitRendering()
+void Apex::Application::InitRendering()
 {
     DebugRenderer::Initialize(m_resourceManager->CreateAsync<Shader>
         ("ApexAssets/Shaders/LineVert.glsl|ApexAssets/Shaders/LineFrag.glsl"), m_rhi.get());
-
-    return true;
 }
 
-bool Apex::Application::InitAudio()
+void Apex::Application::InitAudio()
 {
     m_audio = std::unique_ptr<IAudioEngine>(CreateAudioEngine());
-
-    if (m_audio)
-        m_audio->Preload("fragments of hope.ogg");
-
-    return true;
 }
 
-bool Apex::Application::InitUI(IGUI* gui)
+void Apex::Application::InitUI(IGUI* gui)
 {
-    if (!m_window) return false;
-
     m_uiManager = std::make_unique<UIManager>(gui, m_resourceManager.get(), m_rhi.get());
-
-    if (!m_uiManager)
-        return false;
-
-    return true;
 }
 
-bool Apex::Application::InitLighting()
+void Apex::Application::InitLighting()
 {
     m_lightManager = std::make_unique<LightManager>(m_rhi.get());
     m_shadowManager = std::make_unique<ShadowManager>(m_rhi.get(), 
         m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/DirShadowVert.glsl|ApexAssets/Shaders/DirShadowFrag.glsl"), 
         m_resourceManager->CreateAsync<Shader>(
             "ApexAssets/Shaders/OmniShadowVert.glsl|ApexAssets/Shaders/OmniShadowFrag.glsl|ApexAssets/Shaders/OmniShadowGeo.glsl"));
-    return true;
 }
 
-bool Apex::Application::InitLua()
+void Apex::Application::InitLua()
 {
     m_luaManager = std::make_unique<Scripting::LuaManager>();
-    if (!m_luaManager) return false;
 
-    if (m_uiManager)
-        m_luaManager->RegisterHudBindings(m_uiManager.get());
-
-    return true;
-}
-
-bool Apex::Application::InitScene()
-{
-    m_scene = std::make_unique<Apex::Rendering::Scene>();
-    return true;
+    m_luaManager->RegisterHudBindings(m_uiManager.get());
 }
 
 void Apex::Application::LoadScene(bool isBuild, bool startScene)
@@ -205,7 +165,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
     // Reset scene
     m_scene = std::make_unique<Scene>();
 
-    // Skybox (engine-level stuff stays here)
+    // Skybox
     auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
@@ -215,39 +175,14 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
     auto shader = m_resourceManager->CreateAsync<Shader>(
         "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
-    auto sk = std::make_unique<Skybox>(cubemap, cube, shader);
-
-    m_scene->SetSkybox(sk);
+    m_scene->SetSkybox(std::make_unique<Skybox>(cubemap, cube, shader));
 
     // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
     loader.LoadScene(*m_scene, path);
     
-    // (optional) async wait — same as your code
-    bool ready = false;
-    while (!ready)
-    {
-        ready = true;
-        for (auto& objPtr : m_scene->GetObjects())
-        {
-            Object* obj = objPtr.get();
-
-            if (auto* renderer = obj->GetComponent<MeshRenderer>())
-            {
-                if (!renderer->GetMesh().IsReady() ||
-                    !renderer->GetMaterial().IsReady())
-                    ready = false;
-            }
-
-            if (auto* collider = obj->GetComponent<MeshCollider>())
-            {
-                if (!collider->GetMesh().IsReady())
-                    ready = false;
-            }
-        }
-
-        m_resourceManager->ProcessGpuUploads();
-    }
+    m_resourceManager->WaitForAll();
+    m_resourceManager->ProcessGpuUploads();
     
     // Rebuild physics
     for (auto& obj : m_scene->GetObjects())
@@ -261,17 +196,21 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
 
     if (startScene)
         m_scene->Start();
-
     else
         SaveLastScene(path);
 }
 
 void Apex::Application::Tick()
 {
+    if (!m_targetScene.empty())
+    {
+        LoadScene(m_targetScene, true);
+        m_targetScene.clear();
+    }
+
     constexpr float fixedUpdateTime_s = 1.f / 60.f;
 
     m_deltaTime_s = m_window->GetDeltaTime();
-    if (m_deltaTime_s > 0.1f) m_deltaTime_s = fixedUpdateTime_s;
 
     m_scene->Update(m_deltaTime_s);
 
@@ -288,24 +227,20 @@ void Apex::Application::Tick()
 
 void Apex::Application::UpdateAudioListener()
 {
-    if (m_audio)
-    {
-        LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
-        LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
-        m_audio->SetListenerPosition(
-            { pos[0],   pos[1],   pos[2] },
-            { front[0], front[1], front[2] }
-        );
-    }
+    LibMath::Vector3 pos = m_scene->GetMainCamera()->GetPosition();
+    LibMath::Vector3 front = m_scene->GetMainCamera()->GetFront();
+    LibMath::Vector3 up = m_scene->GetMainCamera()->GetUp();
+    m_audio->SetListenerPosition(pos, front, up);
 }
 
 void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
 
-    pass.m_rhi = m_rhi.get();
-
     m_scene->ComputePass(pass);
+
+    if (pass.m_flags & PerformCompute)
+        m_rhi->Barrier();
 
     VisibleLights visibleLights = m_scene->GetVisibleLights();
 
@@ -348,7 +283,7 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
         return;
     }
 
-    // Minimal valid .level file — adjust to match your actual format
+    // Minimal valid .level file
     file << "{\n";
     file << "\"materials\": [\n";
     file << "],\n";

@@ -3,8 +3,6 @@
 
 #include "ThreadPool.h"
 
-#include "Physic.h"
-
 #include "Scene.h"
 
 #include "RenderPassInfo.h"
@@ -15,8 +13,8 @@
 namespace Apex::Rendering
 {
     class IRHI;
-    class Scene;
 }
+
 namespace Apex::Windowing
 {
     class IWindow;
@@ -54,21 +52,22 @@ namespace Apex
 	class Application
 	{
     public:
-        Application();
+        Application(Windowing::IWindow* window, UserInterface::IGUI* gui);
         ~Application();
 
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
-        bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
+        static Application* Get() { return m_instance; }
+
         void Tick();
         void LoadScene(bool isBuild, bool startScene = true);
         void LoadScene(const std::string& path, bool startScene = true);
 
+        void SetTargetScene(std::string targetScene) { m_targetScene = targetScene; }
+
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
-
-        static Rendering::Scene*    GetCurrentScene() { return m_scene.get(); }
 
         Windowing::IWindow*         GetWindow() { return m_window; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
@@ -82,16 +81,15 @@ namespace Apex
         float                       GetDeltaTime() const { return m_deltaTime_s; }
 
     private:
-        bool InitLog();
-        bool InitWindow(Windowing::IWindow* window);
-        bool InitResourceManager();
-        bool InitRHI();
-        bool InitRendering();
-        bool InitAudio();
-        bool InitUI(UserInterface::IGUI* gui);
-        bool InitLighting();
-        bool InitLua();
-        bool InitScene();
+        void InitLog();
+        void InitWindow(Windowing::IWindow* window);
+        void InitResourceManager();
+        void InitRHI();
+        void InitRendering();
+        void InitAudio();
+        void InitUI(UserInterface::IGUI* gui);
+        void InitLighting();
+        void InitLua();
 
         void UpdateAudioListener();
 
@@ -116,7 +114,11 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        static inline std::unique_ptr<Rendering::Scene> m_scene;
+        std::unique_ptr<Rendering::Scene> m_scene;
+
+        std::string m_targetScene{};
+
+        static inline Application* m_instance = nullptr;
 
         static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";

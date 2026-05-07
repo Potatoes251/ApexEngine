@@ -40,7 +40,7 @@ namespace Apex::Perception
 		int GetNuberOfHits()				{ return m_Hits.size(); }
 
 	private:
-		void castRay(const Vector3& origin, const Vector3& dir);
+		void CastRay(const Vector3& origin, const Vector3& dir);
 
 		float	m_range = 10.f;
 		float	m_horizontalFov = 1.5f;	//in rad
