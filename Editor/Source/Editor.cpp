@@ -791,8 +791,8 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        fs::path src = fs::current_path() / "Assets/Fonts";
-        fs::path dst = outputDir / "Assets/Fonts";
+        fs::path src = fs::current_path() / "ApexAssets/Fonts";
+        fs::path dst = outputDir / "ApexAssets/Fonts";
 
         fs::create_directories(dst, ec);
 
