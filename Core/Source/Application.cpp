@@ -202,6 +202,12 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
 
 void Apex::Application::Tick()
 {
+    if (!m_targetScene.empty())
+    {
+        LoadScene(m_targetScene, true);
+        m_targetScene.clear();
+    }
+
     constexpr float fixedUpdateTime_s = 1.f / 60.f;
 
     m_deltaTime_s = m_window->GetDeltaTime();

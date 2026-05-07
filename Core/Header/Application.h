@@ -64,6 +64,8 @@ namespace Apex
         void LoadScene(bool isBuild, bool startScene = true);
         void LoadScene(const std::string& path, bool startScene = true);
 
+        void SetTargetScene(std::string targetScene) { m_targetScene = targetScene; }
+
         void Render(UserInterface::IGUI* gui, 
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
@@ -113,6 +115,8 @@ namespace Apex
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         std::unique_ptr<Rendering::Scene> m_scene;
+
+        std::string m_targetScene{};
 
         static inline Application* m_instance = nullptr;
 

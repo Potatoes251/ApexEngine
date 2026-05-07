@@ -11,8 +11,16 @@ function Painting:New()
     mesh = nil,
      -- variables
     accumulatedTime = 0,
+    loadTime = 1,
     startEffect = false,
+    targetScene = "",
     }
+
+    instance.__exposed = {
+        "targetScene",
+        "loadTime",
+    }
+
     setmetatable(instance, { __index = self })
     return instance
 end
@@ -24,11 +32,11 @@ end
 function Painting:Update(dt)
     if self.startEffect then
         self.accumulatedTime = self.accumulatedTime + dt
-        if self.accumulatedTime > 1.0 then
-
+        self.mesh:SetUniform("uTime", self.accumulatedTime)
+        if self.accumulatedTime > loadTime then
+            LoadScene(self.targetScene)
         end
 
-        self.mesh:SetUniform("uTime", self.accumulatedTime)
     end
 end
 
