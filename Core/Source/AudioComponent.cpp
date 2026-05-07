@@ -9,7 +9,7 @@ void AudioComponent::Play()
 	m_soundHandle = m_engine->Play2D(m_sound, { m_loop, m_volume });
 }
 
-void AudioComponent::PlayAt()
+void AudioComponent::Play3D()
 {
 	m_soundHandle = m_engine->Play3D(m_sound, GetOwner()->GetGlobalPosition(), { m_loop, m_volume });
 }

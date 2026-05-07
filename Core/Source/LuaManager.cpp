@@ -67,6 +67,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);
     Apex::Mezh::RegisterLua(*this);
+    Apex::Audio::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
     Apex::Scene::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);

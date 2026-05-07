@@ -15,7 +15,7 @@ namespace Apex::Audio
 			m_engine(audioEngine), m_sound(name), m_channel(channel), m_volume(volume), m_loop(loop) {}
 
 		void Play();
-		void PlayAt();
+		void Play3D();
 		void PlayAt(LibMath::Vector3 pos);
 		void Stop();
 

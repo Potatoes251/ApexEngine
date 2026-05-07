@@ -6,7 +6,6 @@
 
 #include "Component.h"
 #include "SceneGraph.h"
-#include "../../Physic/Header/Physic.h"
 
 #include <unordered_set>
 #include <vector>
@@ -19,6 +18,12 @@
 #undef min
 #undef max
 #endif
+
+namespace Apex::Physic
+{
+	class PhysicSystem;
+	class Collider;
+}
 
 namespace Apex::Data
 {
