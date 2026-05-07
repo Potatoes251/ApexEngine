@@ -127,7 +127,11 @@ namespace Apex::Editor
                 }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
+                    
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -368,6 +372,7 @@ namespace Apex::Editor
         m_meshViewers.clear();
         m_soundPlayers.clear();
         m_hudEditors.clear();
+        m_materialEditor.reset();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
@@ -936,6 +941,7 @@ namespace Apex::Editor
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)
     {
         m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
+        m_materialEditor->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
         m_materialEditor->Open(path.string());
     }
 }

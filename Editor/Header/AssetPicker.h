@@ -42,6 +42,9 @@ namespace Apex::Resources
         if (ext == ".mesh")
             return thumbnails ? thumbnails->GetOrRender(path) : 0;
 
+        if (ext == ".mat")
+            return thumbnails ? thumbnails->GetOrRenderMaterial(path) : 0;
+
         return EditorIcon::Get(path);
     }
 

@@ -116,22 +116,6 @@
     }
   },
   {
-    "id": 6,
-    "parent": null,
-    "name": "Object6",
-    "position": [3.011898,1.203338,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [0.010000,0.010000,0.010000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Default.mat",
-        "castShadow": true
-      }
-    }
-  },
-  {
     "id": 4,
     "parent": null,
     "name": "Painting",
@@ -160,59 +144,127 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
-          "targetScene": "Assets/Scenes/gerard.level",
-          "loadTime": 2.000000
         }
-      }
-    }
-  },
-  {
-    "id": 7,
-    "parent": null,
-    "name": "Water",
-    "position": [-5.528850,2.636424,-1.838250],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [2.000000,20.000000,2.000000],
-    "components": {
-      "WaterVolume": {
-        "enabled": true,
-        "halfExtents": [1.000000,10.000000,1.000000],
-        "density": 1000.000000,
-        "drag": 0.500000,
-        "buoyancy Multiplier": 1.000000,
-        "flow Direction": [0.000000,1.000000,0.000000],
-        "flow Speed": 1.000000
-      },
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Default.mat",
-        "castShadow": false 
       }
     }
   },
   {
     "id": 8,
     "parent": null,
-    "name": "WaterCurrent",
-    "position": [15.311808,1.417259,-2.053998],
+    "name": "Bridge",
+    "position": [14.747446,0.448022,6.376845],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [20.000000,2.000000,20.000000],
+    "scale": [5.000000,1.000000,5.000000],
     "components": {
-      "WaterVolume": {
+      "MeshRenderer": {
         "enabled": true,
-        "halfExtents": [10.000000,1.000000,10.000000],
-        "density": 1000.000000,
-        "drag": 0.500000,
-        "buoyancy Multiplier": 1.000000,
-        "flow Direction": [1.000000,0.000000,0.000000],
-        "flow Speed": 10.000000
+        "mesh": "Assets/Meshes/garden_bridge_01/garden_bridge_01.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
       },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/garden_bridge_01/garden_bridge_01.mesh",
+        "type": "Triangle",
+        "isTrigger": false,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 9,
+    "parent": null,
+    "name": "Cube",
+    "position": [21.035189,0.214497,6.287846],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,10.000000],
+    "components": {
       "MeshRenderer": {
         "enabled": true,
         "mesh": "ApexAssets/Meshes/cube/cube.mesh",
         "material": "Assets/Material/Default.mat",
-        "castShadow": false 
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [2.500000, 0.500000, 5.000000],
+        "isTrigger": false,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 10,
+    "parent": null,
+    "name": "Cube1",
+    "position": [33.500000,0.214497,6.287846],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,10.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [2.500000, 0.500000, 5.000000],
+        "isTrigger": false,
+        "material": null
+      }
+    }
+  },
+  {
+    "id": 11,
+    "parent": null,
+    "name": "MovingPlatform1",
+    "position": [24.784225,0.213979,6.037433],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.500000,1.000000,2.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
+        "material": "Assets/Material/Test.mat",
+        "castShadow": true
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [1.250000, 0.500000, 1.250000],
+        "isTrigger": false,
+        "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/MovingPlatform.lua",
+        "vars": {
+          "Speed": 1.000000,
+          "Distance": 5.000000,
+          "MoveX": true,
+          "MoveY": false,
+          "MoveZ": false
+        }
       }
     }
   }

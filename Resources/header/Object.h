@@ -115,7 +115,6 @@ namespace Apex::Data
 
 	private:
 		static inline size_t m_nextId = 0;
-		static inline std::set<size_t> m_freeIds;
 
 		std::set<size_t> m_freeCompIds;
 		size_t m_nextCompId = 0;

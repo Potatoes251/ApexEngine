@@ -135,6 +135,7 @@ namespace Apex::Editor
 		char								m_lastSearch[256] = {};
 
 		char   m_searchBuffer[256] = {};
+		bool   m_pendingRefresh = false;
 		int    m_tileSize = 120;
 		bool   m_showTree = true;
 

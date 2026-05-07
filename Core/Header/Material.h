@@ -39,6 +39,9 @@ namespace Apex::Rendering
 		void SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
 		void SetComputeShader(Resources::ResourceHandle<ComputeShader> shader) { m_computeShader = shader; }
 
+		LibMath::Vector3 GetTint() const { return m_tint; }
+		void SetTint(const LibMath::Vector3& t) { m_tint = t; }
+
 		void AddEmptyTexture();
 
 		Resources::ResourceHandle<Shader> GetShader() const { return m_shader; }
@@ -59,6 +62,7 @@ namespace Apex::Rendering
 
 		Resources::ResourceHandle<Shader> m_shader;
 		Resources::ResourceHandle<ComputeShader> m_computeShader = nullptr;
+		LibMath::Vector3 m_tint{ 1.f, 1.f, 1.f };
 	};
 }
 
