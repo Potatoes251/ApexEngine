@@ -16,13 +16,13 @@ namespace Apex::Editor
 {
     AssetType ContentBrowser::ClassifyExtension(const std::string& ext)
     {
-        if (ext == ".mesh")                  
+        if (ext == ".mesh")
             return AssetType::Mesh;
-        if (ext == ".jpg" || ext == ".png" || ext == ".tga" || ext == ".hdr") 
+        if (ext == ".jpg" || ext == ".png" || ext == ".tga" || ext == ".hdr")
             return AssetType::Texture;
-        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") 
+        if (ext == ".ogg" || ext == ".wav" || ext == ".mp3")
             return AssetType::Sound;
-        if (ext == ".level")                                 
+        if (ext == ".level")
             return AssetType::Level;
         if (ext == ".lua")
             return AssetType::Script;
@@ -117,10 +117,10 @@ namespace Apex::Editor
     }
 
     ContentBrowser::ContentBrowser(Apex::UserInterface::IGUI& gui,
-                                   Apex::Windowing::IWindow& window,
-                                   const Fs::path& rootPath,
-                                   Apex::Rendering::IRHI& rhi,
-                                   Apex::Resources::ResourceManager& resourceManager)
+        Apex::Windowing::IWindow& window,
+        const Fs::path& rootPath,
+        Apex::Rendering::IRHI& rhi,
+        Apex::Resources::ResourceManager& resourceManager)
         : m_gui(gui),
         m_window(window),
         m_rootPath(Fs::weakly_canonical(rootPath)),
@@ -131,9 +131,9 @@ namespace Apex::Editor
         Refresh();
     }
 
-    void ContentBrowser::Refresh() 
-    { 
-        ScanCurrentDirectory(); 
+    void ContentBrowser::Refresh()
+    {
+        ScanCurrentDirectory();
     }
 
     void ContentBrowser::NavigateTo(const Fs::path& dir)
@@ -159,9 +159,9 @@ namespace Apex::Editor
                 continue;
 
             AssetEntry assetEntry = ClassifyEntry(entry);
-            if (assetEntry.m_isFolder) 
+            if (assetEntry.m_isFolder)
                 folders.push_back(assetEntry);
-            else               
+            else
                 files.push_back(assetEntry);
         }
 
@@ -212,7 +212,7 @@ namespace Apex::Editor
         if (from == toDirectory || from.parent_path() == toDirectory) return;
 
         Fs::path destination = toDirectory / from.filename();
-        
+
         std::error_code error;
         Fs::rename(from, destination, error);
         if (!error)
@@ -263,6 +263,43 @@ namespace Apex::Editor
             dest = src.parent_path() / (stem.string() + "_copy" + std::to_string(n++) + ext.string());
 
         Fs::copy_file(src, dest, Fs::copy_options::skip_existing);
+        Refresh();
+    }
+
+    // Ctrl+D — duplicate the currently selected entry in-place.
+    void ContentBrowser::DuplicateSelected()
+    {
+        if (m_selectedPath.empty() || Fs::is_directory(m_selectedPath))
+            return;
+
+        // Reuse DuplicateEntry by building a temporary AssetEntry.
+        AssetEntry entry;
+        entry.m_path = m_selectedPath;
+        DuplicateEntry(entry);
+    }
+
+    // Ctrl+V — paste a file that was Ctrl+C'd into the current folder.
+    // If the source is already in the current folder the result is a _copy.
+    void ContentBrowser::PasteFile(const Fs::path& sourcePath)
+    {
+        if (sourcePath.empty() || !Fs::exists(sourcePath) || Fs::is_directory(sourcePath))
+            return;
+
+        Fs::path stem = sourcePath.stem();
+        Fs::path ext = sourcePath.extension();
+        Fs::path dest = m_currentPath / (stem.string() + ext.string());
+
+        // If pasting into the same folder, or the name already exists, append _copy.
+        if (Fs::exists(dest))
+        {
+            dest = m_currentPath / (stem.string() + "_copy" + ext.string());
+            int n = 2;
+            while (Fs::exists(dest))
+                dest = m_currentPath / (stem.string() + "_copy" + std::to_string(n++) + ext.string());
+        }
+
+        Fs::copy_file(sourcePath, dest, Fs::copy_options::skip_existing);
+        m_selectedPath = dest;
         Refresh();
     }
 
@@ -398,13 +435,13 @@ namespace Apex::Editor
         {
             m_externalDropDest.clear();
             Refresh();
-        } 
+        }
     }
 
     bool ContentBrowser::ContainsGridPoint(float x, float y) const
     {
         return x >= m_gridX && x <= m_gridX + m_gridWidth &&
-               y >= m_gridY && y <= m_gridY + m_gridHeight;
+            y >= m_gridY && y <= m_gridY + m_gridHeight;
     }
 
     void ContentBrowser::Draw()
@@ -433,10 +470,11 @@ namespace Apex::Editor
         // Capture grid bounds for external drop hit-test
         LibMath::Vector2 gridPos = m_gui.GetPanelPos();
         LibMath::Vector2 gridSize = m_gui.GetPanelSize();
-        m_gridX = gridPos[0];  
+        m_gridX = gridPos[0];
         m_gridY = gridPos[1];
-        m_gridWidth = gridSize[0]; 
+        m_gridWidth = gridSize[0];
         m_gridHeight = gridSize[1];
+        m_isFocused = m_gui.IsPanelFocused();
         DrawAssetGrid();
         m_gui.EndChildPanel();
 
@@ -475,7 +513,7 @@ namespace Apex::Editor
     Fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
         for (const auto& rect : m_breadcrumbRects)
-            if (mouseX >= rect.m_x && mouseX <= rect.m_x + rect.m_width && 
+            if (mouseX >= rect.m_x && mouseX <= rect.m_x + rect.m_width &&
                 mouseY >= rect.m_y && mouseY <= rect.m_y + rect.m_height)
                 return rect.m_path;
 
@@ -526,11 +564,11 @@ namespace Apex::Editor
         m_gui.VerticalSeparator();
         m_gui.SameLine(0.f, 16.f);
 
-		m_gui.TextDisabled("Tile Size:");
+        m_gui.TextDisabled("Tile Size:");
         m_gui.SameLine();
         m_gui.SetNextItemWidth(120.f);
         m_gui.SliderInt("##tilesize", &m_tileSize, 80, 160);
-        
+
         m_gui.PopFont();
         m_gui.PopStyleVariable();
     }
@@ -553,11 +591,11 @@ namespace Apex::Editor
         {
             accumulated /= part;
 
-            if (!first) 
-            { 
-                m_gui.SameLine(0.f, 2.f); 
-                m_gui.TextDisabled("/"); 
-                m_gui.SameLine(0.f, 2.f); 
+            if (!first)
+            {
+                m_gui.SameLine(0.f, 2.f);
+                m_gui.TextDisabled("/");
+                m_gui.SameLine(0.f, 2.f);
             }
 
             first = false;
@@ -648,7 +686,7 @@ namespace Apex::Editor
                 break;
             }
         }
-            
+
         TreeNodeFlags flags = TreeNodeFlags::OpenOnArrow | TreeNodeFlags::SpanAvailWidth;
         if (!hasSubDirs)         flags = flags | TreeNodeFlags::Leaf;
         if (path == m_currentPath) flags = flags | TreeNodeFlags::Selected;
@@ -701,7 +739,7 @@ namespace Apex::Editor
         // F2 - rename selected entry
         if (!m_selectedPath.empty() && m_gui.IsKeyPressed(UIKey::F2))
             BeginRename(m_selectedPath);
-        
+
     }
 
     void ContentBrowser::DrawAddPopup()
@@ -739,25 +777,25 @@ namespace Apex::Editor
 
         if (m_gui.MenuItem("New HUD"))
         {
-            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n");
             Refresh();
         }
 
         if (m_gui.MenuItem("New Material"))
         {
-            CreateAssetFile(m_currentPath, "NewMaterial", ".mat", "{\n}"); 
+            CreateAssetFile(m_currentPath, "NewMaterial", ".mat", "{\n}");
             Refresh();
         }
 
         if (m_gui.MenuItem("New Level"))
         {
-            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n");
             Refresh();
         }
 
         if (m_gui.MenuItem("New Script"))
         {
-            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n");
             Refresh();
         }
 
@@ -965,7 +1003,7 @@ namespace Apex::Editor
         {
             m_onLoad(entry);
         }
-               
+
         m_gui.Separator();
 
         if (m_gui.MenuItem("Rename"))                          BeginRename(entry.m_path);
@@ -1023,7 +1061,7 @@ namespace Apex::Editor
 
         if (m_gui.MenuItem("New HUD"))
         {
-            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n"); 
+            CreateAssetFile(m_currentPath, "NewHUD", ".hud", "{\n  \"widgets\": []\n}\n");
             Refresh();
         }
 
@@ -1035,13 +1073,13 @@ namespace Apex::Editor
 
         if (m_gui.MenuItem("New Level"))
         {
-            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n"); 
+            CreateAssetFile(m_currentPath, "NewLevel", ".level", "{\n  \"materials\": [],\n  \"objects\": []\n}\n");
             Refresh();
         }
 
         if (m_gui.MenuItem("New Script"))
         {
-            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n"); 
+            CreateAssetFile(m_currentPath, "NewScript", ".lua", "-- New Script\n");
             Refresh();
         }
 

@@ -37,7 +37,7 @@ namespace Apex::Editor
 	class Hierarchy
 	{
 	public:
-		Hierarchy(Apex::UserInterface::IGUI& gui, Apex::Rendering::Scene* scene, 
+		Hierarchy(Apex::UserInterface::IGUI& gui, Apex::Rendering::Scene* scene,
 			ComponentsViewer* compViewer, Apex::Windowing::IWindow& window,
 			Apex::Resources::ResourceManager* resourceManager);
 
@@ -48,6 +48,11 @@ namespace Apex::Editor
 		void SelectObject(Apex::Data::Object* selected, bool send = true);
 		Apex::Data::Object* GetSelected() const { return m_selected; }
 		void ClearSelection();
+
+		// Clipboard / shortcut helpers called by Editor.
+		bool IsFocused()    const { return m_isFocused; }
+		void DuplicateSelected();
+		void PasteObject(Apex::Data::Object* source);
 
 	private:
 		void DrawNode(Apex::SceneGraph::SceneNode* node);
@@ -62,7 +67,7 @@ namespace Apex::Editor
 		void HandleDropTarget(Apex::SceneGraph::SceneNode* node);
 		void HandleInsertLine(Apex::SceneGraph::SceneNode* node);
 		void HandleAcceptDrop(Apex::SceneGraph::SceneNode* node);
-		
+
 		void SetPending(Apex::SceneGraph::SceneNode* dragged, Apex::SceneGraph::SceneNode* target, PendingOp op);
 
 		void DrawInsertLine(float y);
@@ -92,6 +97,8 @@ namespace Apex::Editor
 		Viewport* m_viewport = nullptr;
 
 		PendingOp m_pendingOp = PendingOp::None;
+
+		bool m_isFocused = false;
 
 		Apex::Data::Object* m_renaming = nullptr;
 		char m_renameBuffer[256] = {};

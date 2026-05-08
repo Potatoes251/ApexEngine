@@ -9,6 +9,7 @@
 // only stops the game tick.
 // ============================================================
 
+#include <filesystem>
 #include "Application.h"
 #include "ContentBrowser.h"
 #include "Hierarchy.h"
@@ -69,6 +70,11 @@ namespace Apex::Editor
 		void						SetEditorState(EditorState newState);
 		EditorState					GetEditorState() const { return m_editorState; }
 
+		// Shortcut handlers — each checks which panel is focused and acts accordingly.
+		void						CopySelected();
+		void						PasteClipboard();
+		void						DuplicateSelected();
+
 	private:
 		static const char* TypeToString(AssetType type);
 
@@ -106,6 +112,12 @@ namespace Apex::Editor
 		std::unique_ptr<Console>					m_console;
 
 		EditorState	m_editorState = EditorState::Edit;
+
+		// Clipboard for Ctrl+C / Ctrl+V / Ctrl+D shortcuts.
+		// Object clipboard: set by Hierarchy/Viewport, consumed by Paste/Duplicate.
+		Apex::Data::Object*	m_clipboardObject = nullptr;
+		// File clipboard: set by ContentBrowser copy, consumed by Paste.
+		std::filesystem::path m_clipboardFile;
 
 		bool m_confirmClosePopup = false;
 		bool m_editingUI = false;
