@@ -4,6 +4,11 @@
 
 using namespace Apex::Audio;
 
+AudioComponent::~AudioComponent()
+{
+	Stop();
+}
+
 void AudioComponent::Play()
 {
 	m_soundHandle = m_engine->Play2D(m_sound, { m_loop, m_volume });

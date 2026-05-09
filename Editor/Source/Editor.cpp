@@ -374,6 +374,7 @@ namespace Apex::Editor
         EditorIcon::Shutdown();
         m_gui.reset();
         m_window.reset();
+        m_editScene.reset();
     }
 
     void Editor::SetEditorState(EditorState newState)

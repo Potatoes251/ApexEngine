@@ -11,45 +11,27 @@ namespace Apex::Audio
     IAudioEngine* CreateAudioEngine()
     {
         IAudioEngine* engine = new IrrKlangAudio();
-        engine->Initialize();
         return engine;
     }
 
-    // ── Destructor ───────────────────────────────────────────────────
-    IrrKlangAudio::~IrrKlangAudio()
-    {
-        Shutdown();
-    }
-
-    // ── Lifecycle ────────────────────────────────────────────────────
-    bool IrrKlangAudio::Initialize()
+    IrrKlangAudio::IrrKlangAudio()
     {
         m_engine = irrklang::createIrrKlangDevice();
         if (!m_engine)
         {
             LOG_ERROR("[Audio] Failed to create irrKlang device");
-            return false;
         }
-        return true;
+
+        m_channelVolumes.resize((size_t)AudioChannel::Count, 1);
     }
 
-    void IrrKlangAudio::Shutdown()
+    // ── Destructor ───────────────────────────────────────────────────
+    IrrKlangAudio::~IrrKlangAudio()
     {
-        // Drop all tracked sound instances first.
-        for (auto& [handle, sound] : m_sounds)
-        {
-            if (sound)
-            {
-                sound->stop();
-                sound->drop();
-            }
-        }
-        m_sounds.clear();
-
         if (m_engine)
         {
+            StopAll();
             m_engine->drop();
-            m_engine = nullptr;
         }
     }
 
@@ -59,9 +41,22 @@ namespace Apex::Audio
         if (m_engine) m_engine->setSoundVolume(volume);
     }
 
+    void IrrKlangAudio::SetChannelVolume(AudioChannel channel, float volume)
+    {
+        m_channelVolumes[(int)channel] = volume;
+
+        for (auto& sound : m_channelSounds[(int)channel])
+            GetSound(sound)->setVolume(sound.m_baseVolume * volume);
+    }
+
     float IrrKlangAudio::GetMasterVolume() const
     {
         return m_engine ? m_engine->getSoundVolume() : 0.f;
+    }
+
+    float IrrKlangAudio::GetChannelVolume(AudioChannel channel) const
+    {
+        return m_channelVolumes.at((int)channel);
     }
 
     void IrrKlangAudio::SetAllPaused(bool paused)
@@ -78,94 +73,90 @@ namespace Apex::Audio
     }
 
     // ── 2-D playback ─────────────────────────────────────────────────
-    SoundHandle IrrKlangAudio::Play2D(const std::string& filePath,
+    TrackedSound IrrKlangAudio::Play2D(const std::string& filePath,
         const PlayOptions& options)
     {
-        if (!m_engine) return INVALID_SOUND;
-
-		const std::string path = filePath;
+        if (!m_engine) return {};
 
         irrklang::ISound* sound = m_engine->play2D(
-            path.c_str(),
+            filePath.c_str(),
             options.m_loop,
             options.m_startPaused,
             true
         );
 
-        if (!sound) return INVALID_SOUND;
+        if (!sound) return {};
 
-        sound->setVolume(options.m_volume);
-        return RegisterSound(sound);
+        sound->setVolume(options.m_volume * m_channelVolumes[(int)options.m_channel]);
+        return RegisterSound(sound, options.m_volume);
     }
 
     // ── 3-D positional playback ───────────────────────────────────────
-    SoundHandle IrrKlangAudio::Play3D(const std::string& filePath,
+    TrackedSound IrrKlangAudio::Play3D(const std::string& filePath,
                                       const LibMath::Vector3& position,
                                       const PlayOptions& options)
     {
-        if (!m_engine) return INVALID_SOUND;
+        if (!m_engine) return {};
 
         irrklang::vec3df pos(position[0], position[1], position[2]);
 
-		const std::string path = filePath;
-
         irrklang::ISound* sound = m_engine->play3D(
-            path.c_str(),
+            filePath.c_str(),
             pos,
             options.m_loop,
             options.m_startPaused,
             true
         );
 
-        if (!sound) return INVALID_SOUND;
+        if (!sound) return {};
 
-        sound->setVolume(options.m_volume);
+        sound->setVolume(options.m_volume * m_channelVolumes[(int)options.m_channel]);
         return RegisterSound(sound);
     }
 
     // ── Per-instance controls ─────────────────────────────────────────
-    void IrrKlangAudio::StopSound(SoundHandle handle)
+    void IrrKlangAudio::StopSound(TrackedSound handle)
     {
         irrklang::ISound* sound = GetSound(handle);
         if (!sound) return;
 
         sound->stop();
         sound->drop();
-        m_sounds.erase(handle);
+        m_sounds.erase(handle.m_sound);
     }
 
-    void IrrKlangAudio::PauseSound(SoundHandle handle, bool paused)
+    void IrrKlangAudio::PauseSound(TrackedSound handle, bool paused)
     {
         irrklang::ISound* sound = GetSound(handle);
         if (sound) sound->setIsPaused(paused);
     }
 
-    void IrrKlangAudio::SetVolume(SoundHandle handle, float volume)
+    void IrrKlangAudio::SetVolume(TrackedSound handle, float volume)
     {
         irrklang::ISound* sound = GetSound(handle);
         if (sound) sound->setVolume(volume);
     }
 
-    bool IrrKlangAudio::IsPlaying(SoundHandle handle) const
+    bool IrrKlangAudio::IsPlaying(TrackedSound handle) const
     {
         irrklang::ISound* sound = GetSound(handle);
         return sound && !sound->isFinished() && !sound->getIsPaused();
     }
 
-    bool IrrKlangAudio::IsPaused(SoundHandle handle) const
+    bool IrrKlangAudio::IsPaused(TrackedSound handle) const
     {
         irrklang::ISound* sound = GetSound(handle);
         return sound && !sound->isFinished() && sound->getIsPaused();
     }
 
-    float IrrKlangAudio::GetPlayPosition(SoundHandle handle) const
+    float IrrKlangAudio::GetPlayPosition(TrackedSound handle) const
     {
         irrklang::ISound* sound = GetSound(handle);
         if (!sound) return 0.f;
         return static_cast<float>(sound->getPlayPosition()) / 1000.f; // divide by 1000 because it's in milliseconds
     }
 
-    float IrrKlangAudio::GetDuration(SoundHandle handle) const
+    float IrrKlangAudio::GetDuration(TrackedSound handle) const
     {
         irrklang::ISound* sound = GetSound(handle);
         if (!sound) return 0.f;
@@ -226,16 +217,16 @@ namespace Apex::Audio
     }
 
     // ── Private helpers ───────────────────────────────────────────────
-    SoundHandle IrrKlangAudio::RegisterSound(irrklang::ISound* sound)
+    TrackedSound IrrKlangAudio::RegisterSound(irrklang::ISound* sound, float volume)
     {
-        SoundHandle handle = m_nextHandle++;
-        m_sounds[handle] = sound;
+        TrackedSound handle = { m_nextHandle++, volume };
+        m_sounds[handle.m_sound] = sound;
         return handle;
     }
 
-    irrklang::ISound* IrrKlangAudio::GetSound(SoundHandle handle) const
+    irrklang::ISound* IrrKlangAudio::GetSound(TrackedSound handle) const
     {
-        auto it = m_sounds.find(handle);
+        auto it = m_sounds.find(handle.m_sound);
         return (it != m_sounds.end()) ? it->second : nullptr;
     }
 

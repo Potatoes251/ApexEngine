@@ -14,6 +14,8 @@ namespace Apex::Audio
 		AudioComponent(IAudioEngine* audioEngine, std::string name, int channel, float volume, bool loop) : 
 			m_engine(audioEngine), m_sound(name), m_channel(channel), m_volume(volume), m_loop(loop) {}
 
+		~AudioComponent();
+
 		void Play();
 		void Play3D();
 		void PlayAt(LibMath::Vector3 pos);
@@ -27,11 +29,11 @@ namespace Apex::Audio
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 	private:
-		std::string m_sound = "";
+		std::string m_sound{};
 
 		IAudioEngine* m_engine = nullptr;
 
-		SoundHandle m_soundHandle = INVALID_SOUND;
+		TrackedSound m_soundHandle{};
 
 		int m_channel = 0;
 		float m_volume = 1.0f;
