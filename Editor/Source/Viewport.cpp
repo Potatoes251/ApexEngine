@@ -500,6 +500,7 @@ void Apex::Editor::Viewport::DrawPlayBar()
 	if (state == EditorState::Edit)
 	{
 		m_gui->PushFont(FontID::Default);
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 27.5f }, { 125.f, BUTTON + PAD * 2.f }, ROUND);
 		if (m_gui->Button("Build Game"))
 		{
 			// Scan for .level files once when the popup opens
