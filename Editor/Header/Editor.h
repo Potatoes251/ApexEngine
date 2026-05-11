@@ -71,6 +71,8 @@ namespace Apex::Editor
 		void						PasteClipboard();
 		void						DuplicateSelected();
 
+		void						CleanClipboard();
+
 	private:
 		static const char* TypeToString(AssetType type);
 
@@ -111,7 +113,8 @@ namespace Apex::Editor
 
 		// Clipboard for Ctrl+C / Ctrl+V / Ctrl+D shortcuts.
 		// Object clipboard: set by Hierarchy/Viewport, consumed by Paste/Duplicate.
-		Apex::Data::Object*	m_clipboardObject = nullptr;
+		size_t m_clipboardObjectId = 0;   // 0 == empty
+		bool   m_hasClipboardObject = false;
 		// File clipboard: set by ContentBrowser copy, consumed by Paste.
 		std::filesystem::path m_clipboardFile;
 
