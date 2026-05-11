@@ -44,11 +44,11 @@ namespace Apex::Editor
 	public:
 		// gui      - IGUI reference owned by the Application.
 		// rootPath - assets root directory (e.g. "Assets/").
-		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, 
-								Apex::Windowing::IWindow& window, 
-								const Fs::path& rootPath,
-								Apex::Rendering::IRHI& rhi,
-								Apex::Resources::ResourceManager& resourceManager);
+		explicit ContentBrowser(Apex::UserInterface::IGUI& gui,
+			Apex::Windowing::IWindow& window,
+			const Fs::path& rootPath,
+			Apex::Rendering::IRHI& rhi,
+			Apex::Resources::ResourceManager& resourceManager);
 		~ContentBrowser() = default;
 		ContentBrowser(const ContentBrowser&) = delete;
 		ContentBrowser& operator=(const ContentBrowser&) = delete;
@@ -68,6 +68,18 @@ namespace Apex::Editor
 
 		// Force a re-scan of the current folder (call after import / delete).
 		void Refresh();
+
+		// Returns true when the Content Browser panel (or its grid child) has focus.
+		bool IsFocused() const { return m_isFocused; }
+
+		// Returns the currently selected file path (empty if nothing selected).
+		Fs::path GetSelectedPath() const { return m_selectedPath; }
+
+		// Paste a previously copied file into the current folder.
+		void PasteFile(const Fs::path& sourcePath);
+
+		// Duplicate the currently selected file in-place (Ctrl+D).
+		void DuplicateSelected();
 
 		// Copy external files/folders into the currently open folder.
 		// Called by the OS drop callback registered in Editor::InitPanels.
@@ -124,9 +136,9 @@ namespace Apex::Editor
 		static bool		   IsPathInsideProject(const Fs::path& projectRoot, const Fs::path& path);
 
 		// State
-		Apex::UserInterface::IGUI&			m_gui;
-		Apex::Windowing::IWindow&			m_window;
-		Apex::Resources::ResourceManager&	m_resourceManager;
+		Apex::UserInterface::IGUI& m_gui;
+		Apex::Windowing::IWindow& m_window;
+		Apex::Resources::ResourceManager& m_resourceManager;
 		ThumbnailRenderer					m_thumbnails;
 		Fs::path							m_rootPath;
 		Fs::path							m_currentPath;
@@ -138,6 +150,7 @@ namespace Apex::Editor
 		bool   m_pendingRefresh = false;
 		int    m_tileSize = 120;
 		bool   m_showTree = true;
+		bool   m_isFocused = false;
 
 		Fs::path             m_selectedPath;
 		Fs::path             m_pendingNavigate;

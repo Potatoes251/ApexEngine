@@ -4,6 +4,8 @@
 #include "Scene.h"
 #include "Object.h"
 
+#include "Log.h"
+
 #include "Command/RemoveObjectCommand.h"
 #include "Command/AddObjectCommand.h"
 #include "CommandManager.h"
@@ -28,6 +30,8 @@ void Hierarchy::Draw()
     m_gui.PushFont(FontID::Default);
 
     m_gui.BeginPanel("Hierarchy");
+
+    m_isFocused = m_gui.IsPanelFocused();
 
     if (m_gui.Button(" + Add "))
         m_gui.OpenPopup("AddObject");
@@ -145,11 +149,11 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
 void Apex::Editor::Hierarchy::ClearSelection()
 {
     SelectObject(nullptr);
-	m_pendingClone = nullptr;
+    m_pendingClone = nullptr;
     m_pendingDelete = nullptr;
     m_pendingParent = nullptr;
     m_pendingReparent = nullptr;
-	m_pendingTarget = nullptr;
+    m_pendingTarget = nullptr;
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -437,8 +441,10 @@ void Hierarchy::DrawInsertLine(float y)
 Object* Hierarchy::DuplicateObject(Object* original)
 {
     std::unique_ptr<Object> clone = original->Clone();
-    size_t id = clone->NewId();
+    size_t id = clone->GetId();
     m_scene->AddObject(std::move(clone));
+
+    Object* obj = m_scene->GetObjectWithId(id);
 
     return m_scene->GetObjectWithId(id);
 }
@@ -453,4 +459,20 @@ void Hierarchy::DestroyObject(size_t objId)
     obj->Destroy();
 
     m_scene->DestroyObject(objId);
+}
+
+// Ctrl+D — duplicate the currently selected object (same as context-menu Duplicate).
+void Hierarchy::DuplicateSelected()
+{
+    if (!m_selected) return;
+    m_pendingClone = m_selected;
+}
+
+// Ctrl+V — paste a previously copied object into the scene as a new duplicate.
+// Source is the object that was selected at Ctrl+C time.
+void Hierarchy::PasteObject(Data::Object* source)
+{
+    if (!source) return;
+    Object* clone = DuplicateObject(source);
+    SelectObject(clone);
 }

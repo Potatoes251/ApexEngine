@@ -70,6 +70,7 @@ namespace Apex
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
+        std::string                 GetScenePath() { return m_scenePath; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
@@ -119,6 +120,7 @@ namespace Apex
         std::string m_targetScene{};
 
         static inline Application* m_instance = nullptr;
+        std::string m_scenePath = "Assets/Scenes/scene.level";
 
         static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";

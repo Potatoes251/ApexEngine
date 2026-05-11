@@ -17,10 +17,10 @@
 #include "Log.h"
 
 #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #define NOMINMAX
-    #include <windows.h>
-    #undef CreateWindow
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#undef CreateWindow
 #endif
 
 using namespace Apex::Windowing;
@@ -38,7 +38,7 @@ using namespace Apex::Input;
 using namespace Apex::Scripting;
 using namespace Apex::UserInterface;
 
-namespace Apex::Editor 
+namespace Apex::Editor
 {
     bool Editor::InitWindow()
     {
@@ -107,7 +107,7 @@ namespace Apex::Editor
         m_viewport->SetHierarchy(m_hierarchy.get());
         m_hierarchy->SetViewport(m_viewport.get());
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/", *app.GetRhi(), *app.GetResourceManager());
 
         if (m_componentsViewer && m_contentBrowser)
             m_componentsViewer->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
@@ -124,6 +124,18 @@ namespace Apex::Editor
                 if (key == Input::Key::Y && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
                     CommandManager::Get().Redo();
+                }
+                if (key == Input::Key::C && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CopySelected();
+                }
+                if (key == Input::Key::V && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    PasteClipboard();
+                }
+                if (key == Input::Key::D && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    DuplicateSelected();
                 }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
@@ -196,6 +208,8 @@ namespace Apex::Editor
                         SetEditorState(EditorState::Edit);
 
                     m_app->LoadScene(entry.m_path.string(), false);
+
+                    CleanClipboard();
 
                     // Sync panels
                     if (m_hierarchy)        m_hierarchy->SetScene(m_app->GetScene());
@@ -286,7 +300,7 @@ namespace Apex::Editor
         {
             CommandManager::Get().EndBatch();
         }
-        
+
         m_editingUI = editing;
 
         m_gui->EndFrame();
@@ -385,7 +399,7 @@ namespace Apex::Editor
         // Always clear selection before destroying old scene objects
         if (m_componentsViewer) m_componentsViewer->ClearSelection();
         if (m_hierarchy)        m_hierarchy->ClearSelection();
-        
+
         // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
@@ -673,10 +687,10 @@ namespace Apex::Editor
                 else if (c == '{')
                 {
                     parser.Expect('{');
-                    if (parser.Peek('}')) 
-                    { 
-                        parser.Expect('}'); 
-                        return; 
+                    if (parser.Peek('}'))
+                    {
+                        parser.Expect('}');
+                        return;
                     }
 
                     while (true)
@@ -704,10 +718,10 @@ namespace Apex::Editor
                             collectValues();
                         }
 
-                        if (parser.Peek(',')) 
-                        { 
-                            parser.Expect(','); 
-                            continue; 
+                        if (parser.Peek(','))
+                        {
+                            parser.Expect(',');
+                            continue;
                         }
                         break;
                     }
@@ -717,20 +731,20 @@ namespace Apex::Editor
                 else if (c == '[')
                 {
                     parser.Expect('[');
-                    if (parser.Peek(']')) 
-                    { 
-                        parser.Expect(']'); 
-                        return; 
+                    if (parser.Peek(']'))
+                    {
+                        parser.Expect(']');
+                        return;
                     }
 
                     while (true)
                     {
                         collectValues();
 
-                        if (parser.Peek(',')) 
-                        { 
-                            parser.Expect(','); 
-                            continue; 
+                        if (parser.Peek(','))
+                        {
+                            parser.Expect(',');
+                            continue;
                         }
                         break;
                     }
@@ -940,5 +954,78 @@ namespace Apex::Editor
         m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
         m_materialEditor->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
         m_materialEditor->Open(path.string());
+    }
+
+    // ---------------------------------------------------------------------------
+    // Clipboard shortcuts — Ctrl+C / Ctrl+V / Ctrl+D
+    //
+    // Priority order for focus: Viewport > Hierarchy > ContentBrowser.
+    // ContentBrowser copy/paste operates on files; Hierarchy/Viewport operate on
+    // scene objects.  Only one "clipboard slot" is live at a time: copying an
+    // object clears the file clipboard and vice-versa.
+    // ---------------------------------------------------------------------------
+
+    void Editor::CopySelected()
+    {
+        if (m_hierarchy && m_hierarchy->IsFocused())
+        {
+            Data::Object* obj = m_hierarchy->GetSelected();
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
+        }
+        else if (m_viewport && m_viewport->IsFocus())
+        {
+            // Viewport stores its own selected pointer — grab it via hierarchy
+            Data::Object* obj = m_hierarchy ? m_hierarchy->GetSelected() : nullptr;
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
+        }
+    }
+
+    void Editor::PasteClipboard()
+    {
+        // --- object paste ---
+        if (m_hasClipboardObject && m_hierarchy)
+        {
+            // Resolve the ID against the *current* scene.
+            Data::Object* source = m_editScene->GetObjectWithId(m_clipboardObjectId);
+            if (source)
+                m_hierarchy->PasteObject(source);
+            else
+                m_hasClipboardObject = false;  // stale — clear silently
+        }
+
+        // --- file paste (unchanged) ---
+        if (!m_clipboardFile.empty() && m_contentBrowser)
+            m_contentBrowser->PasteFile(m_clipboardFile);
+    }
+
+    void Editor::DuplicateSelected()
+    {
+        // Viewport focus — duplicate the currently selected object
+        if ((m_viewport && m_viewport->IsFocus()) ||
+            (m_hierarchy && m_hierarchy->IsFocused()))
+        {
+            if (m_hierarchy)
+                m_hierarchy->DuplicateSelected();
+            return;
+        }
+
+        // ContentBrowser focused — duplicate selected file in-place
+        if (m_contentBrowser && m_contentBrowser->IsFocused())
+        {
+            m_contentBrowser->DuplicateSelected();
+        }
+    }
+    void Editor::CleanClipboard()
+    {
+        m_hasClipboardObject = false;
+        m_clipboardObjectId = 0;
     }
 }
