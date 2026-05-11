@@ -469,8 +469,7 @@ void Hierarchy::DuplicateSelected()
 }
 
 // Ctrl+V — paste a previously copied object into the scene as a new duplicate.
-// Source is the object that was selected at Ctrl+C time; it may have been
-// modified since, but it is still alive (the editor holds the scene).
+// Source is the object that was selected at Ctrl+C time.
 void Hierarchy::PasteObject(Data::Object* source)
 {
     if (!source) return;

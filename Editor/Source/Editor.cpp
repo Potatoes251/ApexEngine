@@ -966,17 +966,10 @@ namespace Apex::Editor
     void Editor::CopySelected()
     {
         // Viewport focus takes priority (it shares the same selection as Hierarchy)
-        if (m_viewport && m_viewport->IsFocus())
+        if ((m_viewport && m_viewport->IsFocus()) || 
+            (m_hierarchy && m_hierarchy->IsFocused()))
         {
             m_clipboardObject = m_hierarchy ? m_hierarchy->GetSelected() : nullptr;
-            m_clipboardFile.clear();
-            return;
-        }
-
-        // Hierarchy panel focused
-        if (m_hierarchy && m_hierarchy->IsFocused())
-        {
-            m_clipboardObject = m_hierarchy->GetSelected();
             m_clipboardFile.clear();
             return;
         }
@@ -1008,17 +1001,11 @@ namespace Apex::Editor
     void Editor::DuplicateSelected()
     {
         // Viewport focus — duplicate the currently selected object
-        if (m_viewport && m_viewport->IsFocus())
+        if ((m_viewport && m_viewport->IsFocus()) ||
+            (m_hierarchy && m_hierarchy->IsFocused()))
         {
             if (m_hierarchy)
                 m_hierarchy->DuplicateSelected();
-            return;
-        }
-
-        // Hierarchy focused
-        if (m_hierarchy && m_hierarchy->IsFocused())
-        {
-            m_hierarchy->DuplicateSelected();
             return;
         }
 
