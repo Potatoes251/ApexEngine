@@ -1,0 +1,8 @@
+{
+	"shader": "|ApexAssets/Shaders/Mesh.frag",
+	"computeShader": "ApexAssets/Shaders/Mesh.vert",
+	"tint": [1, 1, 1],
+	"textures": [
+		"Assets/Textures/tex_801A530.png"
+	]
+}
