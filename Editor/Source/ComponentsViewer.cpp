@@ -9,6 +9,7 @@
 #include "WaterVolume.h"
 
 #include "ScriptComponent.h"
+#include "AudioComponent.h"
 
 #include "Lighting/Lights.h"
 #include "Animator.h"
@@ -17,6 +18,8 @@
 #include "ThirdPersonCamera.h"
 
 #include "CharacterController.h"
+
+#include "ViewComponent.h"
 
 #include "Command/SetExposedVarCommand.h"
 #include "Command/SetScriptVarCommand.h"
@@ -34,6 +37,7 @@ using namespace Apex::Scripting;
 using namespace Apex::Lighting;
 using namespace Apex::Data;
 using namespace Apex::CtrlZ;
+using namespace Apex::Perception;
 
 // Accent colors per component category
 static constexpr uint32_t COL_RENDER = 0xFF81C784; // green
@@ -41,6 +45,8 @@ static constexpr uint32_t COL_PHYSICS = 0xFFFF69B4; // pink
 static constexpr uint32_t COL_SCRIPT = 0xFFFFA500; // orange
 static constexpr uint32_t COL_LIGHT = 0xFFFFEE58; // yellow
 static constexpr uint32_t COL_CAMERA = 0xFF80DEEA; // cyan
+static constexpr uint32_t COL_AUDIO = 0xFFCE93D8; // purple
+static constexpr uint32_t COL_VIEW = 0xFF64B5F6; // blue
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
@@ -66,6 +72,8 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
 	if (type.find("WaterVolume") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
+	if (type.find("Audio") != std::string::npos) return COL_AUDIO;
+	if (type.find("View") != std::string::npos) return COL_VIEW;
 	return COL_DEFAULT;
 }
 
@@ -81,6 +89,7 @@ void Apex::Editor::ComponentsViewer::SetThumbnailRenderer(ThumbnailRenderer* t)
 	m_thumbnailRenderer = t;
 	m_meshPicker.SetThumbnailRenderer(t);
 	m_texturePicker.SetThumbnailRenderer(t);
+	m_materialPicker.SetThumbnailRenderer(t);
 }
 
 void ComponentsViewer::Draw()
@@ -115,7 +124,7 @@ void ComponentsViewer::Draw()
 
 	if (m_pendingDelete)
 	{
-		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_scene, m_selectedObj, m_pendingDelete, m_phys));
+		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete));
 		m_pendingDelete = nullptr;
 	}
 
@@ -133,7 +142,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr &&
 			m_gui->MenuItem("Mesh Renderer"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, 
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
@@ -144,7 +153,7 @@ void ComponentsViewer::Draw()
 		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
 			m_gui->MenuItem("Rigidbody"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
@@ -158,7 +167,7 @@ void ComponentsViewer::Draw()
 			auto* mr = m_selectedObj->GetComponent<MeshRenderer>();
 			if (mr && m_gui->MenuItem("Mesh Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<MeshCollider>(
@@ -171,7 +180,7 @@ void ComponentsViewer::Draw()
 			}
 			else if (m_gui->MenuItem("Box Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
@@ -182,7 +191,7 @@ void ComponentsViewer::Draw()
 			}
 			else if (m_gui->MenuItem("Capsule Collider"))
 			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj, m_phys,
+				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 					[this](Object* obj)
 					{
 						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
@@ -194,7 +203,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("WaterVolume"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					WaterVolume& comp = obj->AddComponent<WaterVolume>();
@@ -205,7 +214,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Lua Script"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
@@ -216,7 +225,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Directional Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
@@ -226,7 +235,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Point Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<PointLightComponent>();
@@ -236,7 +245,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Spot Light"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<SpotLightComponent>();
@@ -247,7 +256,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("First Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<FirstPersonCamera>();
@@ -257,7 +266,7 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Third Person Camera"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
@@ -268,7 +277,7 @@ void ComponentsViewer::Draw()
 		m_gui->Separator();
 		if (m_gui->MenuItem("Character Controller"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Controller::CharacterController>();
@@ -278,10 +287,30 @@ void ComponentsViewer::Draw()
 
 		if (m_gui->MenuItem("Animator"))
 		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_scene, m_selectedObj,
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("Sound"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Audio::AudioComponent>(nullptr);
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("View Component"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<ViewComponent>(m_phys, 10.f, 1.5f, 1.f, 10, 10);
 					return comp->GetId();
 				}));
 		}
@@ -328,7 +357,7 @@ void ComponentsViewer::DrawTransform(Object* obj)
 		transform.setEulerRotation(m_cachedEuler * (g_Pi / 180.f));
 		transform.setScale(scale);
 		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_scene, obj, transform, false));
+			std::make_unique<TransformCommand>(obj, transform, false));
 	}
 }
 
@@ -524,7 +553,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data));
 			}
 			break;
 		}
@@ -539,7 +568,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
 			}
 			break;
 		}
@@ -553,7 +582,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data));
 			}
 			break;
 		}
@@ -564,11 +593,15 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
 			std::string oldVal = *(std::string*)var.data;
-			if (m_gui->InputText(wid, (char*)var.data, 256))
+			char buf[256];
+			strncpy(buf, oldVal.c_str(), sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0'; // ensure null termination
+
+			if (m_gui->InputText(wid, buf, sizeof(buf)))
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, *(std::string*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<std::string>>(var, obj, comp, oldVal, buf));
 			}
 			break;
 		}
@@ -578,7 +611,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentEnum(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
 			}
 			break;
 		}
@@ -588,7 +621,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponent(var.name, *(LibMath::Vector3*)var.data))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
 			}
 			break;
 		}
@@ -598,7 +631,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponent((PhysicMaterial*)var.data))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data));
 			}
 			break;
 		}
@@ -617,7 +650,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentColor3(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
 			}
 			break;
 		}
@@ -628,7 +661,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			if (DrawComponentColor4(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data, m_scene));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data));
 			}
 			break;
 		}
@@ -711,43 +744,48 @@ bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
 	return false;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Mesh>* handle)
+void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Mesh>* mesh)
 {
-	uint32_t thumb = handle->IsValid() ? ResolveMeshPreview((*handle)->GetPath()) : 0;
+	uint32_t thumb = mesh->IsValid() ? ResolveMeshPreview((*mesh)->GetPath()) : 0;
 	DrawAssetPreview(thumb, "Mesh", PREVIEW_SIZE);
 	m_gui->SameLine(0.f, 6.f);
 
 	m_gui->BeginChildPanel(std::string("##meshcol") + name, 0.f, PREVIEW_SIZE, false);
-	m_gui->TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	m_gui->TextDisabled(mesh->IsValid() ? std::filesystem::path((*mesh)->GetPath()).filename().string() : "None");
+
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
-		m_meshPicker.Open(handle);
+		m_meshPicker.Open(mesh);
 	m_gui->EndChildPanel();
 }
 
 void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Material>* material)
 {
-	m_gui->AlignTextToFramePadding();
-	m_gui->Text("Material:");
-	m_gui->SameLine(LABEL_WIDTH);
-	m_gui->TextDisabled(material->IsValid() ? (*material)->GetPath() : "None");
+	uint32_t thumb = material->IsValid() ? ResolveMaterialPreview((*material)->GetPath()) : 0;
+	DrawAssetPreview(thumb, "Material", PREVIEW_SIZE);
+	m_gui->SameLine(0.f, 6.f);
+
+	m_gui->BeginChildPanel(std::string("##matcol") + name, 0.f, PREVIEW_SIZE, false);
+	m_gui->TextDisabled(material->IsValid() ? std::filesystem::path((*material)->GetPath()).filename().string() : "None");
 
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
 		m_materialPicker.Open(material);
+	m_gui->EndChildPanel();
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Texture>* handle)
+void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Texture>* texture)
 {
-	uint32_t thumb = handle->IsValid() ? ResolveTexturePreview(handle) : 0;
+	uint32_t thumb = texture->IsValid() ? ResolveTexturePreview(texture) : 0;
 	DrawAssetPreview(thumb, "Tex", PREVIEW_SIZE);
 	m_gui->SameLine(0.f, 6.f);
 
 	m_gui->BeginChildPanel(std::string("##texcol") + name, 0.f, PREVIEW_SIZE, false);
-	m_gui->TextDisabled(handle->IsValid() ? std::filesystem::path((*handle)->GetPath()).filename().string() : "None");
+	m_gui->TextDisabled(texture->IsValid() ? std::filesystem::path((*texture)->GetPath()).filename().string() : "None");
+
 	float width = m_gui->GetAvailableSize()[0];
 	if (m_gui->ButtonSized(std::string("Select##") + name, { width, 22.f }))
-		m_texturePicker.Open(handle);
+		m_texturePicker.Open(texture);
 	m_gui->EndChildPanel();
 }
 
@@ -761,6 +799,12 @@ uint32_t Apex::Editor::ComponentsViewer::ResolveMeshPreview(const std::string& p
 {
 	if (path.empty() || !m_thumbnailRenderer) return 0;
 	return m_thumbnailRenderer->GetOrRender(path);
+}
+
+uint32_t Apex::Editor::ComponentsViewer::ResolveMaterialPreview(const std::string& path) const
+{
+	if (path.empty() || !m_thumbnailRenderer) return 0;
+	return m_thumbnailRenderer->GetOrRenderMaterial(path);
 }
 
 void Apex::Editor::ComponentsViewer::DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size)

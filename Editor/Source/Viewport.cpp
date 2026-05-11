@@ -103,8 +103,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
 		newTransform.setPosition(m_initialTransform.getPosition() + movementVec);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Rotation:
@@ -122,8 +121,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
 		newTransform.setRotation(deltaAngle * m_initialTransform.getRotation());
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Scale:
@@ -139,8 +137,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
 
 		newTransform.setScale(newScale);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	default:
@@ -222,7 +219,6 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
-	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
@@ -464,6 +460,7 @@ void Viewport::DrawUI()
 	DrawPlayBar();
 	if (m_editor->GetEditorState() == EditorState::Edit)
 		DrawRightToolbar();
+	
 }
 
 void Viewport::DrawGrid()
@@ -500,28 +497,29 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_gui->SetCursorPos({ startX + PAD, startY + PAD * 0.5f });
 		};
 
-	if (m_gui->Button("Build Game"))
-	{
-		// Scan for .level files once when the popup opens
-		m_buildScenes.clear();
-		namespace fs = std::filesystem;
-		std::error_code ec;
-		for (auto& entry : fs::recursive_directory_iterator("Assets/", ec))
-		{
-			if (entry.path().extension() == ".level")
-			{
-				BuildSceneEntry e;
-				e.path = entry.path().generic_string();
-				e.selected = true;
-				m_buildScenes.push_back(std::move(e));
-			}
-		}
-		m_showBuildPopup = true;
-		m_gui->OpenPopup("BuildGame");
-	}
-
 	if (state == EditorState::Edit)
 	{
+		m_gui->PushFont(FontID::Default);
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 27.5f }, { 125.f, BUTTON + PAD * 2.f }, ROUND);
+		if (m_gui->Button("Build Game"))
+		{
+			// Scan for .level files once when the popup opens
+			m_buildScenes.clear();
+			namespace fs = std::filesystem;
+			for (auto& entry : fs::recursive_directory_iterator("Assets/"))
+			{
+				if (entry.path().extension() == ".level")
+				{
+					BuildSceneEntry sceneEntry;
+					sceneEntry.path = entry.path().generic_string();
+					sceneEntry.selected = true;
+					m_buildScenes.push_back(std::move(sceneEntry));
+				}
+			}
+			m_showBuildPopup = true;
+			m_gui->OpenPopup("Build Game");
+		}
+		m_gui->PopFont();
 		drawBar(1); // only Play
 		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
 			m_editor->SetEditorState(EditorState::Play);
@@ -705,7 +703,8 @@ void Viewport::DrawBuildPopup()
 {
 	if (!m_showBuildPopup) return;
 
-	if (!m_gui->BeginPopupModal("BuildGame", { 500.f, 0.f }))
+	m_gui->PushFont(FontID::Default);
+	if (!m_gui->BeginPopupModal("Build Game", { 500.f, 0.f }))
 		return;
 
 	m_gui->Text("Select scenes to include in the build.");
@@ -741,9 +740,9 @@ void Viewport::DrawBuildPopup()
 	m_gui->Separator();
 
 	bool anySelected = false;
-	for (auto& e : m_buildScenes)
+	for (auto& entry : m_buildScenes)
 	{
-		if (e.selected) 
+		if (entry.selected) 
 		{ 
 			anySelected = true; 
 			break; 
@@ -770,6 +769,6 @@ void Viewport::DrawBuildPopup()
 		m_showBuildPopup = false;
 		m_gui->CloseCurrentPopup();
 	}
-
+	m_gui->PopFont();
 	m_gui->EndPopup();
 }

@@ -3,7 +3,7 @@
 
 #include "ICommand.h"
 #include "Component.h"
-#include "Scene.h"
+#include "Application.h"
 #include "Object.h"
 
 namespace Apex::CtrlZ
@@ -12,8 +12,7 @@ namespace Apex::CtrlZ
 	class SetExposedVarCommand : public ICommand
 	{
 	public:
-		SetExposedVarCommand(ExposedVar var, Data::Object* obj, Component* comp, T oldValue, T newValue, Rendering::Scene* scene)
-			: m_scene(scene)
+		SetExposedVarCommand(ExposedVar var, Data::Object* obj, Component* comp, T oldValue, T newValue)
 		{
 			m_targetCompId = comp->GetId();
 			m_targetId = obj->GetId();
@@ -25,7 +24,7 @@ namespace Apex::CtrlZ
 
 		void Execute() override
 		{
-			Data::Object* obj = m_scene->GetObjectWithId(m_targetId);
+			Data::Object* obj = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
 			if (!obj) return;
 
 			Component* comp = obj->GetComponent(m_targetCompId);
@@ -43,7 +42,7 @@ namespace Apex::CtrlZ
 
 		void Undo() override
 		{
-			Data::Object* obj = m_scene->GetObjectWithId(m_targetId);
+			Data::Object* obj = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
 			if (!obj) return;
 
 			Component* comp = obj->GetComponent(m_targetCompId);
@@ -63,7 +62,6 @@ namespace Apex::CtrlZ
 		std::string			m_varName;
 		size_t				m_targetId;
 		size_t				m_targetCompId;
-		Rendering::Scene*	m_scene;
 		T	m_newValue;
 		T	m_oldValue;
 	};

@@ -11,10 +11,10 @@ namespace Apex::UserInterface
 {
     // Font Table
     const std::vector<FontInitializer> ImGUIManager::m_fontDefinitions = {
-    { FontID::Small,   "Assets/Fonts/Roboto-Regular.ttf", FontSize::SMALL   },
-    { FontID::Default, "Assets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
-    { FontID::Large,   "Assets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE   },
-    { FontID::Title,   "Assets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE   },
+    { FontID::Small,   "ApexAssets/Fonts/Roboto-Regular.ttf", FontSize::SMALL   },
+    { FontID::Default, "ApexAssets/Fonts/Roboto-Regular.ttf", FontSize::DEFAULT },
+    { FontID::Large,   "ApexAssets/Fonts/Roboto-Bold.ttf",    FontSize::LARGE   },
+    { FontID::Title,   "ApexAssets/Fonts/Roboto-Bold.ttf",    FontSize::TITLE   },
     };
 
     // Helpers: flag/enum translation 

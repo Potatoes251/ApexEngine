@@ -44,14 +44,11 @@ int main(int /*argc*/, char* argv[])
     if (!editor.InitWindow())
         return 1;
 
-    auto app = std::make_unique<Apex::Application>();
-    // dont create window for the scene while in editor
-    if (!app->Init(editor.GetWindow(), editor.GetGUI()))
-        return 1;
+    Apex::Application app(editor.GetWindow(), editor.GetGUI());
 
-	app->LoadScene(false, false);
+	app.LoadScene(false, false);
 
-    if (!editor.InitPanels(*app))
+    if (!editor.InitPanels(app))
         return 1;
 
     while (!editor.GetWindow()->ShouldClose())
@@ -62,7 +59,7 @@ int main(int /*argc*/, char* argv[])
         editor.Update();
         // Editor render - always runs while editor window is open.
         editor.Render();
-        app->GetResourceManager()->ProcessGpuUploads();
+        app.GetResourceManager()->ProcessGpuUploads();
     }
 
     editor.Shutdown();

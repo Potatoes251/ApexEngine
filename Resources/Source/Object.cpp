@@ -1,6 +1,7 @@
 #include "Object.h"
 
 #include "../../Physic/Header/Rigidbody.h"
+#include "../../Physic/Header/Physic.h"
 
 #include "Log.h"
 
@@ -11,15 +12,7 @@ using namespace Apex::SceneGraph;
 Apex::Data::Object::Object()
 {
 	m_owner = std::make_shared<SceneNode>(this);
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
+	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
 }
 
@@ -28,7 +21,6 @@ Apex::Data::Object::Object(size_t forcedId)
 	m_owner = std::make_shared<SceneNode>(this);
 	
 	m_id = forcedId;
-	m_freeIds.erase(forcedId);
 
 	if (forcedId != INVALID_ID && m_nextId <= forcedId)
 		m_nextId = ++forcedId;
@@ -40,21 +32,12 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
+	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
 }
 
 Apex::Data::Object::~Object()
 {
-	m_freeIds.insert(m_id);
 }
 
 std::unique_ptr<Object> Object::Clone()
@@ -91,13 +74,9 @@ std::unique_ptr<Object> Object::Clone()
 
 void Object::SetId(size_t id)
 {
-	if (m_id == id || id == INVALID_ID) return;
-
-	if (m_id != INVALID_ID)
-		m_freeIds.insert(m_id);
+	if (id == INVALID_ID) return;
 
 	m_id = id;
-	m_freeIds.erase(id);
 
 	if (m_nextId <= id)
 		m_nextId = ++id;
@@ -137,29 +116,12 @@ void Object::SetCompId(Component* comp, size_t newId)
 
 size_t Object::NewId()
 {
-	size_t oldId = m_id;
-
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
-
-	if (m_id != INVALID_ID)
-		m_freeIds.insert(oldId);
-
+	m_id = m_nextId++;
 	return m_id;
 }
 
 void Object::RemoveId()
 {
-	if (m_id == INVALID_ID) return;
-
-	m_freeIds.insert(m_id);
 	m_id = INVALID_ID;
 }
 
@@ -265,7 +227,7 @@ void Object::UpdateGlobalTransform() const
 
 Object* Object::GetParent() const
 {
-	auto& parentNode = m_owner->GetParent();
+	auto parentNode = m_owner->GetParent();
 
 	if (!parentNode) return nullptr;
 

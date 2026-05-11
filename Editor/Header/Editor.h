@@ -47,10 +47,6 @@ namespace Apex::Editor
 		// Creates ImGui and all panels that need the live app.
 		bool InitPanels(Apex::Application& app);
 
-		// Call when the game window closes, before destroying Application.
-		// Clears any panel references to the app so the reset is safe.
-		void OnGameStopped();
-
 		// One editor frame: make editor context current, render all panels,
 		void Render();
 

@@ -139,7 +139,11 @@ namespace Apex::Editor
                 }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
                     m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_window->SetWindowTitle("Apex Editor");
+                }
+                    
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
@@ -220,11 +224,6 @@ namespace Apex::Editor
             });
 
         return true;
-    }
-
-    void Editor::OnGameStopped()
-    {
-        m_app = nullptr;
     }
 
     void Editor::Render()
@@ -380,12 +379,14 @@ namespace Apex::Editor
         m_meshViewers.clear();
         m_soundPlayers.clear();
         m_hudEditors.clear();
+        m_materialEditor.reset();
         m_contentBrowser.reset();
         m_hierarchy.reset();
         m_viewport.reset();
         EditorIcon::Shutdown();
         m_gui.reset();
         m_window.reset();
+        m_editScene.reset();
     }
 
     void Editor::SetEditorState(EditorState newState)
@@ -419,6 +420,7 @@ namespace Apex::Editor
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
+            m_app->GetAudio()->StopAll();
             if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
             if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
             auto* ui = m_app->GetUI();
@@ -798,8 +800,8 @@ namespace Apex::Editor
                     fs::copy_options::overwrite_existing, ec);
         }
 
-        fs::path src = fs::current_path() / "Assets/Fonts";
-        fs::path dst = outputDir / "Assets/Fonts";
+        fs::path src = fs::current_path() / "ApexAssets/Fonts";
+        fs::path dst = outputDir / "ApexAssets/Fonts";
 
         fs::create_directories(dst, ec);
 
@@ -948,6 +950,7 @@ namespace Apex::Editor
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)
     {
         m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
+        m_materialEditor->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
         m_materialEditor->Open(path.string());
     }
 

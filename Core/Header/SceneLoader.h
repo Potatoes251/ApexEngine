@@ -39,6 +39,24 @@ namespace Apex::Serialization
 
         Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Data::Object* obj, Apex::Serialization::SerialParser& parser);
+
+        void ParseMeshRenderer(Data::Object* obj, SerialParser& parser);
+        void ParseRigidBody(Data::Object* obj, SerialParser& parser);
+        void ParseMeshCollider(Data::Object* obj, SerialParser& parser);
+        void ParseBoxCollider(Data::Object* obj, SerialParser& parser);
+        void ParseCapsuleCollider(Data::Object* obj, SerialParser& parser);
+        void ParseDirectionalLight(Data::Object* obj, SerialParser& parser);
+        void ParseSpotLight(Data::Object* obj, SerialParser& parser);
+        void ParsePointLight(Data::Object* obj, SerialParser& parser);
+        void ParseCharacterController(Data::Object* obj, SerialParser& parser);
+        void ParseThirdPersonCamera(Data::Object* obj, SerialParser& parser);
+        void ParseFirstPersonCamera(Data::Object* obj, SerialParser& parser);
+        void ParseScriptComponent(Data::Object* obj, SerialParser& parser);
+        void ParseAnimator(Data::Object* obj, SerialParser& parser);
+        void ParseWaterVolume(Data::Object* obj, SerialParser& parser);
+        void ParseViewComponent(Data::Object* obj, SerialParser& parser);
+        void ParseAudioComponent(Data::Object* obj, SerialParser& parser);
+
         void ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 

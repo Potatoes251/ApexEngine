@@ -1,17 +1,20 @@
 #ifndef LUA_FUNCTIONS
 #define LUA_FUNCTIONS
 
-#include "AnimationLua.h"
+#include "LogLua.h"
+#include "HudFunc.h"
+#include "MeshLua.h"
+#include "AudioLua.h"
+#include "InputLua.h"
+#include "SceneLua.h"
 #include "CameraLua.h"
-#include "CharacterControllerLua.h"
+#include "ObjectLua.h"
+#include "Vector3Lua.h"
+#include "AnimationLua.h"
 #include "ComponentLua.h"
 #include "HierarchyFunc.h"
-#include "HudFunc.h"
-#include "InputLua.h"
-#include "MeshLua.h"
-#include "ObjectLua.h"
 #include "TransformFunc.h"
-#include "Vector3Lua.h"
+#include "CharacterControllerLua.h"
 
 
 #endif // !LUA_FUNCTIONS

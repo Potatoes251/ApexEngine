@@ -24,10 +24,10 @@ void MeshImporter::EnsureManager()
     }
 }
 
-bool MeshImporter::Import(std::string path, Mesh& mesh)
+bool MeshImporter::Import(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials)
 {
     LOG_INFO_CAT("Resource", "Start importing {}", path);
-    if (ImportFbx(path, mesh))
+    if (ImportFbx(path, mesh, materials))
     {
         LOG_INFO_CAT("Resource", "Successfully imported {}", path);
         return true;
@@ -39,7 +39,7 @@ bool MeshImporter::Import(std::string path, Mesh& mesh)
     return false;
 }
 
-bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
+bool MeshImporter::ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials)
 {
     // Serialize all FBX operations — the SDK is not thread-safe.
     std::lock_guard<std::mutex> lock(s_mutex);
@@ -94,6 +94,9 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh)
     }
 
     ExtractAnimations(scene, mesh);
+
+    std::string fbxDir = std::filesystem::path(path).parent_path().generic_string();
+    ExtractSceneMaterials(scene, fbxDir, materials);
 
     m_ctrlPointToVertices.clear();
 
@@ -490,6 +493,72 @@ FbxAMatrix MeshImporter::GetGeometryTransform(FbxNode* node)
     FbxVector4 s = node->GetGeometricScaling(FbxNode::eSourcePivot);
 
     return FbxAMatrix(t, r, s);
+}
+
+void MeshImporter::ExtractSceneMaterials(FbxScene* scene, const std::string& fbxDir, std::vector<MaterialImportData>& materials)
+{
+    int matCount = scene->GetMaterialCount();
+    for (int i = 0; i < matCount; ++i)
+    {
+        FbxSurfaceMaterial* fbxMat = scene->GetMaterial(i);
+        if (!fbxMat) continue;
+
+        MaterialImportData data;
+        data.m_name = fbxMat->GetName();
+        data.m_shaderPath = "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag";
+
+        data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuse, fbxDir);
+        data.m_normalPath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sNormalMap, fbxDir);
+        data.m_specularPath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sSpecular, fbxDir);
+
+        // Some exporters use "sSpecularFactor" or "sShininess" — try sDiffuseFactor as fallback
+        if (data.m_diffusePath.empty())
+            data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuseFactor, fbxDir);
+
+        materials.push_back(std::move(data));
+    }
+}
+
+std::string MeshImporter::ResolveTexturePath(FbxSurfaceMaterial* mat, const char* propName, const std::string& fbxDir)
+{
+    FbxProperty prop = mat->FindProperty(propName);
+    if (!prop.IsValid()) return {};
+
+    int texCount = prop.GetSrcObjectCount<FbxFileTexture>();
+    if (texCount == 0) return {};
+
+    FbxFileTexture* tex = prop.GetSrcObject<FbxFileTexture>(0);
+    if (!tex) return {};
+
+    // Prefer relative filename so paths survive moving the project
+    std::string relPath = tex->GetRelativeFileName();
+    std::string absPath = tex->GetFileName();
+
+    // Normalise path separators
+    for (auto& c : relPath) 
+        if (c == '\\') 
+            c = '/';
+    for (auto& c : absPath) 
+        if (c == '\\') 
+            c = '/';
+
+    // If the relative path exists alongside the FBX, use it
+    if (!relPath.empty() && relPath != "." && relPath != "./")
+    {
+        std::filesystem::path candidate =
+            std::filesystem::path(fbxDir) / std::filesystem::path(relPath);
+        if (std::filesystem::exists(candidate))
+            return candidate.generic_string();
+    }
+
+    // Fall back to absolute path
+    if (!absPath.empty())
+    {
+        if (std::filesystem::exists(absPath))
+            return absPath;
+    }
+
+    return {};
 }
 
 Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
