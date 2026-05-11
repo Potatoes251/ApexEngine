@@ -27,7 +27,7 @@ namespace Apex::Perception
 		void OnStart() override;
 
 		const std::vector<Apex::Physic::HitResult>& GetHits() const { return m_Hits; }
-		int GetNumberOfHits() const { return m_Hits.size(); }
+		size_t GetNumberOfHits() const { return m_Hits.size(); }
 
 	private:
 		void CastRay(const LibMath::Vector3& origin, const LibMath::Vector3& dir);

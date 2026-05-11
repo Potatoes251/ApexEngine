@@ -16,7 +16,11 @@ void AudioComponent::Play()
 
 void AudioComponent::Play3D()
 {
-	m_soundHandle = m_engine->Play3D(m_sound, GetOwner()->GetGlobalPosition(), { m_loop, m_volume });
+	Object* owner = GetOwner();
+	
+	if (!owner) return;
+
+	m_soundHandle = m_engine->Play3D(m_sound, owner->GetGlobalPosition(), { m_loop, m_volume });
 }
 
 void AudioComponent::PlayAt(LibMath::Vector3 pos)
