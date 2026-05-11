@@ -74,7 +74,7 @@ void Material::Save()
 	}
 
 	const bool hasShader = m_shader.IsValid();
-	const bool hasComputeShader = m_computeShader.IsValid();
+	const bool hasComputeShader = m_computeShader.IsValid() && !m_computeShader->GetPath().empty();
 	const bool hasUniforms = m_uniforms.size() > 0;
 	const bool hasTextures = m_textures.size() > 0;
 

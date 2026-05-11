@@ -3,6 +3,7 @@
 #include "LibMath/Angle.h"
 #include "Rigidbody.h"
 #include "Object.h"
+#include "Application.h"
 
 using namespace Apex::Perception;
 using namespace Apex::Physic;
@@ -35,8 +36,7 @@ void ViewComponent::Serialize(std::ostream& out) const
 
 std::unique_ptr<Component> ViewComponent::Clone()
 {
-	auto clone = std::make_unique<ViewComponent>(*this);
-	return clone;
+	return std::make_unique<ViewComponent>(*this);
 }
 
 std::vector<ExposedVar> ViewComponent::GetExposedVariables()
@@ -68,7 +68,9 @@ void ViewComponent::OnFixedUpdate(float fixedDeltaTime_s)
 
 void ViewComponent::OnStart()
 {
-	m_localDirections.reserve(m_horizontalRays * m_verticalRays);
+	m_physicSystem = Application::Get()->GetScene()->GetPhysic();
+
+	m_localDirections.reserve((size_t)m_horizontalRays * (size_t)m_verticalRays);
 
 	float halfH = m_horizontalFov * 0.5f;
 	float halfV = m_verticalFov * 0.5f;

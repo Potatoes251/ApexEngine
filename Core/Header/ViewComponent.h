@@ -13,7 +13,7 @@ namespace Apex::Perception
 	public:
 		ViewComponent() = delete;
 		ViewComponent(Apex::Physic::PhysicSystem* physic, float range, float horizontalFov, float verticalFov, int horizontalRays, int verticalRays);
-		~ViewComponent() = default ;
+		~ViewComponent() = default;
 		ViewComponent(const ViewComponent& other);
 		ViewComponent& operator=(const ViewComponent& other) = default;
 
