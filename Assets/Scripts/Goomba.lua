@@ -1,4 +1,5 @@
 local CharacterController = require("CharacterController")
+local ViewComp = require("ViewComponent")
 local Collider = require("Collider")
 local Object = require("Object")
 local Input = require("Input")
@@ -10,6 +11,7 @@ function Goomba:New()
     local instance = { 
      -- component
     cc = nil, 
+    view = nil,
     -- variables
     }
     setmetatable(instance, { __index = self })
@@ -18,14 +20,17 @@ end
 
 function Goomba:Start()
     self.cc = CharacterController.Get(self)
-    if self.cc ~= nil then
+    self.view = ViewComp.Get(self)
+    if self.view ~= nil then
         Log("Hello bitches")
     end
 end
 
 
 function Goomba:Update()
-
+    if self.view:SeesTag("Player") then
+        Log("Hello bitches")
+    end
 end
 
 return Goomba

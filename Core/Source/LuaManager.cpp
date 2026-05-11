@@ -75,6 +75,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Hierarchy::RegisterLua(*this);
     Apex::Transform::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
+    Apex::Perception::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

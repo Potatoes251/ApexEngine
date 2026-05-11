@@ -33,7 +33,7 @@ function Player:Start()
     self.anim:StartBlend("Idle", "Walking", 0, true)
 end
 
-function Player:Update(dt)
+function Player:FixedUpdate(dt)
     self:ProcessInput(dt)
 
     self.anim:SetBlendRatio(self.smoothBlend)
