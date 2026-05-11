@@ -44,8 +44,8 @@ static void WriteMaterialFile(const std::filesystem::path& fbxPath, const Materi
 
     file << "{\n";
     file << "\t\"shader\": \"" << mat.m_shaderPath << "\",\n";
-    file << "\t\"tint\": [1.0, 1.0, 1.0, 1.0],\n";
-    file << "\t\"textures\": {";
+    file << "\t\"tint\": [1.0, 1.0, 1.0],\n";
+    file << "\t\"textures\": [";
 
     bool first = true;
     if (!mat.m_diffusePath.empty())
@@ -71,7 +71,7 @@ static void WriteMaterialFile(const std::filesystem::path& fbxPath, const Materi
         file << "\n\t\t\"Assets/Textures/Blank.png\"";
     }
 
-    file << "\n\t}\n}\n";
+    file << "\n\t]\n}\n";
 
     LOG_INFO_CAT("Resource", "Generated material file: {}", matPath.generic_string());
 }
