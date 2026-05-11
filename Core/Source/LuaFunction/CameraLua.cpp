@@ -62,12 +62,12 @@ int Apex::Camera::Lua_GetCamera(lua_State* L)
     if (!obj)
         return 0;
 
-    Rendering::Camera* cc = obj->GetComponent<Rendering::Camera>();
-    if (!cc)
+    Rendering::Camera* cam = obj->GetComponent<Rendering::Camera>();
+    if (!cam)
         return 0;
 
     // push component as userdata
-    lua_pushlightuserdata(L, cc);
+    lua_pushlightuserdata(L, cam);
 
     return 1;
 }

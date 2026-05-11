@@ -52,7 +52,7 @@ namespace Apex::Editor
         std::string m_filename;
         uintmax_t   m_fileBytes = 0;
 
-        Apex::Audio::SoundHandle m_handle = Apex::Audio::INVALID_SOUND;
+        Apex::Audio::TrackedSound m_handle{};
         float m_volume = 1.f;
         bool  m_loop = false;
 

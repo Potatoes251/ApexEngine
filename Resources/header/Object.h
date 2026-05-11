@@ -6,7 +6,6 @@
 
 #include "Component.h"
 #include "SceneGraph.h"
-#include "../../Physic/Header/Physic.h"
 
 #include <unordered_set>
 #include <vector>
@@ -19,6 +18,12 @@
 #undef min
 #undef max
 #endif
+
+namespace Apex::Physic
+{
+	class PhysicSystem;
+	class Collider;
+}
 
 namespace Apex::Data
 {
@@ -66,6 +71,9 @@ namespace Apex::Data
 		const LibMath::Vector3&		GetGlobalPosition() const { return m_globalTransform.getPosition(); }
 		const LibMath::Quaternion&	GetGlobalRotation() const { return m_globalTransform.getRotation(); }
 		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
+
+		bool	GetVisibility() const { return m_visible; }
+		void	SetVisibility(bool newState) { m_visible = newState; }
 
 		Object*		GetParent() const;
 
@@ -134,6 +142,7 @@ namespace Apex::Data
 		std::vector<std::unique_ptr<Apex::Component>>	m_components;
 
 		bool m_pendingDestroy = false;
+		bool m_visible = false;
 	};
 
 
