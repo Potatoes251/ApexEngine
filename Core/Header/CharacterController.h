@@ -55,7 +55,7 @@ namespace Apex::Controller
 		void Focus(float deltatime_s);
 		LibMath::Vector3 CalculateDisplacement(float deltatime_s);
 
-		std::vector<Physic::WaterVolume*> GetWaterVolumes();
+		std::vector<Physic::WaterVolume*> GetWaterVolumes() const;
 
 		Physic::PhysicSystem*		m_physic = nullptr;
 		Physic::RigidBodyComponent* m_body = nullptr;
