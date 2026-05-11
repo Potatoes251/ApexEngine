@@ -209,6 +209,8 @@ namespace Apex::Editor
 
                     m_app->LoadScene(entry.m_path.string(), false);
 
+                    CleanClipboard();
+
                     // Sync panels
                     if (m_hierarchy)        m_hierarchy->SetScene(m_app->GetScene());
                     if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
@@ -965,60 +967,53 @@ namespace Apex::Editor
 
     void Editor::CopySelected()
     {
-        // Viewport focus takes priority (it shares the same selection as Hierarchy)
-        if (m_viewport && m_viewport->IsFocus())
-        {
-            m_clipboardObject = m_hierarchy ? m_hierarchy->GetSelected() : nullptr;
-            m_clipboardFile.clear();
-            return;
-        }
-
-        // Hierarchy panel focused
         if (m_hierarchy && m_hierarchy->IsFocused())
         {
-            m_clipboardObject = m_hierarchy->GetSelected();
-            m_clipboardFile.clear();
-            return;
+            Data::Object* obj = m_hierarchy->GetSelected();
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
         }
-
-        // ContentBrowser focused — copy the selected file path
-        if (m_contentBrowser && m_contentBrowser->IsFocused())
+        else if (m_viewport && m_viewport->IsFocus())
         {
-            m_clipboardFile = m_contentBrowser->GetSelectedPath();
-            m_clipboardObject = nullptr;
+            // Viewport stores its own selected pointer — grab it via hierarchy
+            Data::Object* obj = m_hierarchy ? m_hierarchy->GetSelected() : nullptr;
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
         }
     }
 
     void Editor::PasteClipboard()
     {
-        // Paste a copied object into the scene
-        if (m_clipboardObject && m_hierarchy)
+        // --- object paste ---
+        if (m_hasClipboardObject && m_hierarchy)
         {
-            m_hierarchy->PasteObject(m_clipboardObject);
-            return;
+            // Resolve the ID against the *current* scene.
+            Data::Object* source = m_editScene->GetObjectWithId(m_clipboardObjectId);
+            if (source)
+                m_hierarchy->PasteObject(source);
+            else
+                m_hasClipboardObject = false;  // stale — clear silently
         }
 
-        // Paste a copied file into the current ContentBrowser folder
+        // --- file paste (unchanged) ---
         if (!m_clipboardFile.empty() && m_contentBrowser)
-        {
             m_contentBrowser->PasteFile(m_clipboardFile);
-        }
     }
 
     void Editor::DuplicateSelected()
     {
         // Viewport focus — duplicate the currently selected object
-        if (m_viewport && m_viewport->IsFocus())
+        if ((m_viewport && m_viewport->IsFocus()) ||
+            (m_hierarchy && m_hierarchy->IsFocused()))
         {
             if (m_hierarchy)
                 m_hierarchy->DuplicateSelected();
-            return;
-        }
-
-        // Hierarchy focused
-        if (m_hierarchy && m_hierarchy->IsFocused())
-        {
-            m_hierarchy->DuplicateSelected();
             return;
         }
 
@@ -1027,5 +1022,10 @@ namespace Apex::Editor
         {
             m_contentBrowser->DuplicateSelected();
         }
+    }
+    void Editor::CleanClipboard()
+    {
+        m_hasClipboardObject = false;
+        m_clipboardObjectId = 0;
     }
 }
