@@ -1,9 +1,12 @@
 #include "ViewComponent.h"
 
-using namespace Apex::Perception;
+#include "LibMath/Angle.h"
+#include "Rigidbody.h"
+#include "Object.h"
 
-using Apex::Component;
-using Apex::ExposedVar;
+using namespace Apex::Perception;
+using namespace Apex::Physic;
+using namespace Apex;
 
 ViewComponent::ViewComponent(PhysicSystem* physic, float range, float horizontalFov, float verticalFov, int horizontalRays, int verticalRays) :
 	m_physicSystem(physic), m_range(range),
@@ -30,13 +33,13 @@ void ViewComponent::Serialize(std::ostream& out) const
 	out << "      }";
 }
 
-unique_ptr<Component> ViewComponent::Clone()
+std::unique_ptr<Component> ViewComponent::Clone()
 {
 	auto clone = std::make_unique<ViewComponent>(*this);
 	return clone;
 }
 
-vector<ExposedVar> ViewComponent::GetExposedVariables()
+std::vector<ExposedVar> ViewComponent::GetExposedVariables()
 {
 	return
 	{
