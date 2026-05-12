@@ -24,4 +24,8 @@ function ViewComp:SeesTag(tag)
     return ViewComp_SeesTag_Internal(self, tag)
 end
 
+function ViewComp:GetClosestWithTag(tag)
+    return ViewComp_GetClosestWithTag_Internal(self, tag)
+end
+
 return ViewComp

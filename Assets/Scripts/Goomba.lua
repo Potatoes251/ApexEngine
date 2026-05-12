@@ -1,4 +1,4 @@
-local CharacterController = require("CharacterController")
+local AIController = require("AIController")
 local ViewComp = require("ViewComponent")
 local Collider = require("Collider")
 local Object = require("Object")
@@ -10,7 +10,7 @@ local Goomba = Object:New()
 function Goomba:New()
     local instance = { 
      -- component
-    cc = nil, 
+    aic = nil, 
     view = nil,
     -- variables
     }
@@ -19,18 +19,14 @@ function Goomba:New()
 end
 
 function Goomba:Start()
-    self.cc = CharacterController.Get(self)
+    self.aic = AIController.Get(self)
     self.view = ViewComp.Get(self)
-    if self.view ~= nil then
-        Log("Hello bitches")
-    end
 end
 
 
 function Goomba:Update()
-    if self.view:SeesTag("Player") then
-        Log("Hello bitches")
-    end
+    local obj = self.view:GetClosestWithTag("Player")
+    self.aic:SetTarget(obj)
 end
 
 return Goomba

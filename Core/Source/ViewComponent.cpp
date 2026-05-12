@@ -1,7 +1,7 @@
 #include "ViewComponent.h"
 
 #include "LibMath/Angle.h"
-#include "Rigidbody.h"
+#include "Collider.h"
 #include "Object.h"
 #include "Application.h"
 
@@ -137,10 +137,14 @@ float ViewComponent::GetShortestDistanceWithTag(std::string const& tag) const
 
 void ViewComponent::CastRay(const Vector3& origin, const Vector3& dir)
 {
-	HitResult hit;
+	std::vector<HitResult> hits;
 
-	if (m_physicSystem->Raycast(hit, origin, dir, m_range))
+	if (m_physicSystem->Raycast(hits, origin, dir, m_range))
 	{
-		m_Hits.push_back(hit);
+		for (HitResult& hit : hits)
+		{
+			if (hit.m_collider && hit.m_collider->GetOwner() != GetOwner())
+				m_Hits.push_back(hit);
+		}
 	}
 }

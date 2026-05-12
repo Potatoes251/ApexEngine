@@ -14,6 +14,7 @@ namespace Apex::Perception
 	ViewComponent* GetViewComp(lua_State* L, int index);
 
 	int Lua_ViewComp_SeesTag(lua_State* L);
+	int Lua_ViewComp_GetClosestWithTag(lua_State* L);
 
 	int Lua_GetViewComp(lua_State* L);
 }
