@@ -505,7 +505,6 @@ void MeshImporter::ExtractSceneMaterials(FbxScene* scene, const std::string& fbx
 
         MaterialImportData data;
         data.m_name = fbxMat->GetName();
-        data.m_shaderPath = "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag";
 
         data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuse, fbxDir);
         data.m_normalPath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sNormalMap, fbxDir);
@@ -515,7 +514,8 @@ void MeshImporter::ExtractSceneMaterials(FbxScene* scene, const std::string& fbx
         if (data.m_diffusePath.empty())
             data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuseFactor, fbxDir);
 
-        materials.push_back(std::move(data));
+        if (!data.m_diffusePath.empty() || !data.m_normalPath.empty() || !data.m_specularPath.empty())
+            materials.push_back(std::move(data));
     }
 }
 

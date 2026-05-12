@@ -14,7 +14,6 @@
 struct MaterialImportData
 {
 	std::string m_name;             // FBX material name becomes "<name>.mat"
-	std::string m_shaderPath;       // always "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag"
 	std::string m_diffusePath;      // albedo / diffuse texture
 	std::string m_normalPath;       // normal map
 	std::string m_specularPath;     // specular / roughness map

@@ -34,10 +34,6 @@ std::vector<ExposedVar> MeshCollider::GetExposedVariables()
 
 void MeshCollider::Serialize(std::ostream& out) const
 {
-    out << "      \"MeshCollider\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
     if (m_mesh.IsValid())
         out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
 
@@ -58,6 +54,4 @@ void MeshCollider::Serialize(std::ostream& out) const
     {
         out << "null" << "\n";
     }
-
-    out << "      }";
 }

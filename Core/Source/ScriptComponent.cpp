@@ -239,6 +239,14 @@ void ScriptComponent::OnUpdate(float deltaTime)
     }
 }
 
+void ScriptComponent::OnFixedUpdate(float deltaTime)
+{
+    if (m_instanceRef != LUA_REFNIL)
+    {
+        m_lua->CallFunction(m_instanceRef, "FixedUpdate", deltaTime);
+    }
+}
+
 void ScriptComponent::OnTriggerEnter(Physic::Collider* other)
 {
     if (m_instanceRef != LUA_REFNIL)
@@ -253,8 +261,6 @@ void ScriptComponent::OnTriggerExit(Physic::Collider* other)
 
 void ScriptComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"ScriptComponent\": {\n";
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"script\": \"" << m_scriptPath << "\",\n";
 
     auto vars = const_cast<ScriptComponent*>(this)->GetExposedVariables();
@@ -289,5 +295,4 @@ void ScriptComponent::Serialize(std::ostream& out) const
     }
 
     out << "        }\n";
-    out << "      }";
 }

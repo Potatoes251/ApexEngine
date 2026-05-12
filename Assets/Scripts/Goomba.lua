@@ -1,4 +1,5 @@
-local CharacterController = require("CharacterController")
+local AIController = require("AIController")
+local ViewComp = require("ViewComponent")
 local Collider = require("Collider")
 local Object = require("Object")
 local Input = require("Input")
@@ -9,7 +10,8 @@ local Goomba = Object:New()
 function Goomba:New()
     local instance = { 
      -- component
-    cc = nil, 
+    aic = nil, 
+    view = nil,
     -- variables
     }
     setmetatable(instance, { __index = self })
@@ -17,15 +19,14 @@ function Goomba:New()
 end
 
 function Goomba:Start()
-    self.cc = CharacterController.Get(self)
-    if self.cc ~= nil then
-        Log("Hello bitches")
-    end
+    self.aic = AIController.Get(self)
+    self.view = ViewComp.Get(self)
 end
 
 
 function Goomba:Update()
-
+    local obj = self.view:GetClosestWithTag("Player")
+    self.aic:SetTarget(obj)
 end
 
 return Goomba

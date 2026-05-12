@@ -1,7 +1,7 @@
 #include "ViewComponent.h"
 
 #include "LibMath/Angle.h"
-#include "Rigidbody.h"
+#include "Collider.h"
 #include "Object.h"
 #include "Application.h"
 
@@ -23,15 +23,11 @@ ViewComponent::ViewComponent(const ViewComponent& other) :
 
 void ViewComponent::Serialize(std::ostream& out) const
 {
-	out << "      \"ViewComponent\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
 	out << "        \"range\": "			<< m_range				<< ",\n";
 	out << "		\"horizontalFov\": "	<< m_horizontalFov		<< ",\n";
 	out << "		\"verticalFov\": "		<< m_verticalFov		<< ",\n";
 	out << "		\"horizontalRays\": "	<< m_horizontalRays		<< ",\n";
 	out << "		\"verticalRays\": "		<< m_verticalRays		<< "\n";
-	out << "      }";
 }
 
 std::unique_ptr<Component> ViewComponent::Clone()
@@ -95,13 +91,56 @@ void ViewComponent::OnStart()
 	}
 }
 
+bool ViewComponent::SeesTag(std::string const& tag) const
+{
+	for (HitResult const& hit : m_Hits)
+	{
+		if (hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag))
+			return true;
+	}
+	return false;
+}
+
+Apex::Data::Object* ViewComponent::GetClosestWithTag(std::string const& tag) const
+{
+	float minDist = FLT_MAX;
+	Object* closest = nullptr;
+	for (HitResult const& hit : m_Hits)
+	{
+		bool hasTag = hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag);
+		if (hasTag && hit.m_distance <= minDist)
+		{
+			minDist = hit.m_distance;
+			closest = hit.m_collider->GetOwner();
+		}
+	}
+	return closest;
+}
+
+float ViewComponent::GetShortestDistanceWithTag(std::string const& tag) const
+{
+	float minDist = FLT_MAX;
+	for (HitResult const& hit : m_Hits)
+	{
+		bool hasTag = hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag);
+		if (hasTag && hit.m_distance < minDist)
+		{
+			minDist = hit.m_distance;
+		}
+	}
+	return minDist == FLT_MAX ? -1.f : minDist;
+}
+
 void ViewComponent::CastRay(const Vector3& origin, const Vector3& dir)
 {
-	HitResult hit;
+	std::vector<HitResult> hits;
 
-	if (m_physicSystem->Raycast(hit, origin, dir, m_range) &&
-		hit.m_body->GetOwner()->GetVisibility())
+	if (m_physicSystem->Raycast(hits, origin, dir, m_range))
 	{
-		m_Hits.push_back(hit);
+		for (HitResult& hit : hits)
+		{
+			if (hit.m_collider && hit.m_collider->GetOwner() != GetOwner())
+				m_Hits.push_back(hit);
+		}
 	}
 }

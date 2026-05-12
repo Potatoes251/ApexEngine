@@ -18,6 +18,7 @@
 #include "ThirdPersonCamera.h"
 
 #include "CharacterController.h"
+#include "AIController.h"
 
 #include "ViewComponent.h"
 
@@ -281,6 +282,16 @@ void ComponentsViewer::Draw()
 				[](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Controller::CharacterController>();
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("AI Controller"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Controller::AIController>();
 					return comp->GetId();
 				}));
 		}

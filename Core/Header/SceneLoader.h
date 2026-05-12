@@ -49,6 +49,7 @@ namespace Apex::Serialization
         void ParseSpotLight(Data::Object* obj, SerialParser& parser);
         void ParsePointLight(Data::Object* obj, SerialParser& parser);
         void ParseCharacterController(Data::Object* obj, SerialParser& parser);
+        void ParseAIController(Data::Object* obj, SerialParser& parser);
         void ParseThirdPersonCamera(Data::Object* obj, SerialParser& parser);
         void ParseFirstPersonCamera(Data::Object* obj, SerialParser& parser);
         void ParseScriptComponent(Data::Object* obj, SerialParser& parser);

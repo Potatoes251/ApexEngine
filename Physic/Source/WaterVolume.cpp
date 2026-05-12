@@ -11,18 +11,12 @@ WaterVolume::WaterVolume(LibMath::Vector3 halfExtents, float density, float drag
 
 void WaterVolume::Serialize(std::ostream& out) const
 {
-    out << "      \"WaterVolume\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
     out << "        \"halfExtents\": " << m_halfExtents << ",\n";
     out << "        \"density\": " << m_density << ",\n";
     out << "        \"drag\": " << m_drag << ",\n";
     out << "        \"buoyancy Multiplier\": " << m_buoyancyMultiplier << ",\n";
     out << "        \"flow Direction\": " << m_flowDirection << ",\n";
     out << "        \"flow Speed\": " << m_flowSpeed << "\n";
-
-    out << "      }";
 }
 
 std::vector<Apex::ExposedVar> WaterVolume::GetExposedVariables()

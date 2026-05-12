@@ -30,8 +30,6 @@ std::vector<ExposedVar> BoxCollider::GetExposedVariables()
 
 void BoxCollider::Serialize(std::ostream& out) const
 {
-    out << "      \"BoxCollider\": {\n";
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"halfExtents\": ["
         << m_halfExtents[0] << ", "
         << m_halfExtents[1] << ", "
@@ -50,6 +48,4 @@ void BoxCollider::Serialize(std::ostream& out) const
     {
         out << "null" << "\n";
     }
-
-    out << "      }";
 }

@@ -68,21 +68,31 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 	std::vector<HitResult> hits;
 	HitResult hit;
 
-	if (m_physic->Sweep(hits, m_targetPos, displacement.normalized(), *m_collider, displacement.magnitude()) && FindClosestHit(hits, hit))
-	{
-		// Move only up to contact point
-		LibMath::Vector3 safeMove = displacement.normalized() * hit.m_distance;
-		m_targetPos += safeMove;
+	LibMath::Vector3 remaining = displacement;
+	constexpr int MAX_ITERATIONS = 3;
 
-		// Slide along surface
-		LibMath::Vector3 remaining = displacement - safeMove;
-		LibMath::Vector3 slide = remaining - hit.m_normal * remaining.dot(hit.m_normal);
-
-		m_targetPos += slide;
-	}
-	else
+	for (int i = 0; i < MAX_ITERATIONS; i++)
 	{
-		m_targetPos += displacement;
+		if (remaining.magnitudeSquared() == 0.f) break;
+
+		std::vector<HitResult> hits;
+		HitResult hit;
+
+		LibMath::Vector3 startPos = m_targetPos - LibMath::Vector3{ 0, m_collider->GetHalfHeight(), 0 };
+		if (m_physic->Sweep(hits, startPos, remaining.normalized(), *m_collider, remaining.magnitude())
+			&& FindClosestHit(hits, hit))
+		{
+			m_targetPos += remaining.normalized() * (hit.m_distance - .01f);
+
+			// Project remaining onto the hit surface
+			remaining = remaining - remaining.normalized() * hit.m_distance;
+			remaining = remaining - hit.m_normal * remaining.dot(hit.m_normal);
+		}
+		else
+		{
+			m_targetPos += remaining;
+			break; // No hit, consumed all movement
+		}
 	}
 
 	m_velocity = (m_targetPos - m_previousPos) / deltatime_s;
@@ -109,14 +119,10 @@ void CharacterController::OnUpdate(float deltatime_s)
 
 void CharacterController::Serialize(std::ostream& out) const
 {
-	out << "      \"CharacterController\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"groundedDistance\": " << m_groundedDistance << ",\n";
 	out << "        \"speed\": " << m_speed << ",\n";
 	out << "        \"rotationSpeed\": " << m_rotationSpeed << ",\n";
 	out << "        \"density\": " << m_density << "\n";
-
-	out << "      }";
 }
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
@@ -154,7 +160,7 @@ void CharacterController::UpdateGrounded()
 	
 	LibMath::Vector3 rayStart = m_targetPos + LibMath::Vector3(0, m_collider->GetHalfHeight(), 0);
 
-	m_grounded = m_physic->Raycast(hits, rayStart, LibMath::Vector3::down(), m_groundedDistance + m_collider->GetHalfHeight())
+	m_grounded = m_physic->Sweep(hits, rayStart, LibMath::Vector3::down(), *m_collider, m_groundedDistance + m_collider->GetHalfHeight())
 				&& FindClosestHit(hits, hit);
 }
 
@@ -235,7 +241,7 @@ LibMath::Vector3 CharacterController::CalculateDisplacement(float deltatime_s)
 	return velocity * deltatime_s;
 }
 
-std::vector<WaterVolume*> CharacterController::GetWaterVolumes()
+std::vector<WaterVolume*> CharacterController::GetWaterVolumes() const
 {
 	std::vector<WaterVolume*> res;
 
