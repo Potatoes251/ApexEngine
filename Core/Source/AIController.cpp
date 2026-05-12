@@ -2,7 +2,30 @@
 
 #include "Object.h"
 
+#include <sstream>
+
 using namespace Apex::Controller;
+
+void AIController::Serialize(std::ostream& out) const
+{
+    std::stringstream temp;
+    CharacterController::Serialize(temp);
+
+    std::string baseContent = temp.str();
+
+    if (!baseContent.empty() && baseContent.back() == '\n') 
+    {
+        out << baseContent.substr(0, baseContent.length() - 1);
+        out << ",\n";
+    }
+    else 
+    {
+        out << baseContent;
+        out << ",\n";
+    }
+
+    out << "\"arrivalThreshold\" :" << m_arrivalThreshold << "\n";
+}
 
 void AIController::OnFixedUpdate(float deltatime_s)
 {

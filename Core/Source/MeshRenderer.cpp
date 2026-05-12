@@ -128,17 +128,11 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
 
 void MeshRenderer::Serialize(std::ostream& out) const
 {
-    out << "      \"MeshRenderer\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
-    if (m_mesh.IsValid() && m_mesh->GetPath().size())
+    if (m_mesh.IsValid() && !m_mesh->GetPath().empty())
         out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
 
-    if (m_material.IsValid() && m_material->GetPath().size())
+    if (m_material.IsValid() && !m_material->GetPath().empty())
         out << "        \"material\": \"" << m_material->GetPath() << "\",\n";
 
     out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
-
-    out << "      }";
 }

@@ -23,15 +23,11 @@ ViewComponent::ViewComponent(const ViewComponent& other) :
 
 void ViewComponent::Serialize(std::ostream& out) const
 {
-	out << "      \"ViewComponent\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
 	out << "        \"range\": "			<< m_range				<< ",\n";
 	out << "		\"horizontalFov\": "	<< m_horizontalFov		<< ",\n";
 	out << "		\"verticalFov\": "		<< m_verticalFov		<< ",\n";
 	out << "		\"horizontalRays\": "	<< m_horizontalRays		<< ",\n";
 	out << "		\"verticalRays\": "		<< m_verticalRays		<< "\n";
-	out << "      }";
 }
 
 std::unique_ptr<Component> ViewComponent::Clone()

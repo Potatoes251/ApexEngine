@@ -425,7 +425,11 @@ namespace Apex::Rendering
 				if (!firstComponent)
 					file << ",\n";
 
+				file << "      \"" << component->GetTypeName() << "\": {\n";
+				file << "        \"enabled\": " << (component->IsEnabled() ? "true" : "false") << ",\n";
 				component->Serialize(file);
+				file << "      }";
+
 				firstComponent = false;
 			}
 

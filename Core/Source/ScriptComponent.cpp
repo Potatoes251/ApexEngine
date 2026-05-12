@@ -261,8 +261,6 @@ void ScriptComponent::OnTriggerExit(Physic::Collider* other)
 
 void ScriptComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"ScriptComponent\": {\n";
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"script\": \"" << m_scriptPath << "\",\n";
 
     auto vars = const_cast<ScriptComponent*>(this)->GetExposedVariables();
@@ -297,5 +295,4 @@ void ScriptComponent::Serialize(std::ostream& out) const
     }
 
     out << "        }\n";
-    out << "      }";
 }

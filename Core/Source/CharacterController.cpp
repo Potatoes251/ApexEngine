@@ -119,14 +119,10 @@ void CharacterController::OnUpdate(float deltatime_s)
 
 void CharacterController::Serialize(std::ostream& out) const
 {
-	out << "      \"CharacterController\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"groundedDistance\": " << m_groundedDistance << ",\n";
 	out << "        \"speed\": " << m_speed << ",\n";
 	out << "        \"rotationSpeed\": " << m_rotationSpeed << ",\n";
 	out << "        \"density\": " << m_density << "\n";
-
-	out << "      }";
 }
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
