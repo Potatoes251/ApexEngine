@@ -8,8 +8,13 @@ function Fight:New()
     return instance
 end
 
+function Fight:Start()
+    self.hud = CreateHUD("Fight")
+end
+
 function Fight:OnTriggerEnter(col)
-    -- start the battle
+    if self.hud == 0 then return end
+    ShowHUD(self.hud)
 end
 
 return Fight

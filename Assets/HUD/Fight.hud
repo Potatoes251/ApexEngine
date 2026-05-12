@@ -1,0 +1,58 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "Player",
+      "anchor": "BottomLeft",
+      "visible": true,
+      "position": [ 0.050472, -0.314046 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Player",
+      "fontSize": 24.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "PlayerLife",
+      "anchor": "BottomLeft",
+      "visible": true,
+      "position": [ 0.063443, -0.238574 ],
+      "size": [ 0.200000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "Text",
+      "name": "Enemy",
+      "anchor": "TopRight",
+      "visible": true,
+      "position": [ -0.248585, 0.085325 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Enemy",
+      "fontSize": 24.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "EnemyLife",
+      "anchor": "TopRight",
+      "visible": true,
+      "position": [ -0.242712, 0.154507 ],
+      "size": [ 0.200000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    }
+  ]
+}

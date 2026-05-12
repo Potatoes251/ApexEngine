@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 186,
+    "id": 262,
     "parent": null,
     "name": "Light",
     "position": [0.000000,0.000000,0.000000],
@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": 187,
+    "id": 263,
     "parent": null,
     "name": "Player",
     "position": [0.230901,1.806698,0.000000],
@@ -79,7 +79,7 @@
     }
   },
   {
-    "id": 188,
+    "id": 264,
     "parent": null,
     "name": "Cube",
     "position": [0.000000,0.000000,0.000000],
@@ -106,16 +106,16 @@
     }
   },
   {
-    "id": 189,
+    "id": 265,
     "parent": null,
     "name": "Sphere",
-    "position": [3.293583,1.619611,0.000000],
+    "position": [3.425968,0.536870,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.200000,1.200000,1.200000],
+    "scale": [0.010000,0.010000,0.010000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "mesh": "Assets/Meshes/Player/Player.mesh",
         "material": "Assets/Material/Default.mat",
         "castShadow": true
       },

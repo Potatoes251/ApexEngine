@@ -195,7 +195,6 @@ LibMath::Vector3 CharacterController::CalculateDisplacement(float deltatime_s)
 	if (currentVolume)
 	{
 		// Buoyancy counteracts gravity based on density ratio
-		// Assumes the character has a m_density member (e.g. 900 for a human)
 		float buoyancy = (currentVolume->GetDensity() / m_density)
 			* -GRAVITY[1]                         // flip to get positive force
 			* currentVolume->GetBuoyancyMult();
