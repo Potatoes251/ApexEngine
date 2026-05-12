@@ -140,7 +140,7 @@ namespace Apex::Editor
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_app->GetScene()->Save(m_app->GetScenePath());
                     m_window->SetWindowTitle("Apex Editor");
                 }
                     
@@ -351,7 +351,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_app->GetScene()->Save(m_app->GetScenePath());
                 m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
