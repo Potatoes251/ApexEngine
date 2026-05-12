@@ -1,6 +1,5 @@
 {
 	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-	"computeShader": "",
 	"tint": [1, 1, 1],
 	"textures": [
 		"Assets/Textures/Main_Pallete.png"

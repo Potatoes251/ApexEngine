@@ -47,7 +47,9 @@ function Painting:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if not self.startEffect and obj:HasTag("Player") then
         self.startEffect = true
-        self.audio:Play()
+        if self.audio ~= nil then
+            self.audio:Play()
+        end
     end
 end
 

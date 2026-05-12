@@ -67,11 +67,13 @@ namespace Apex::Editor
 		EditorState					GetEditorState() const { return m_editorState; }
 
 		// Shortcut handlers — each checks which panel is focused and acts accordingly.
-		void						CopySelected();
-		void						PasteClipboard();
-		void						DuplicateSelected();
-
-		void						CleanClipboard();
+		void CopySelected();
+		void PasteClipboard();
+		void DuplicateSelected();
+			 
+		void CleanClipboard();
+			 
+		void OnSceneChanged();
 
 	private:
 		static const char* TypeToString(AssetType type);
@@ -81,7 +83,6 @@ namespace Apex::Editor
 		void OpenSoundPlayer(const std::filesystem::path& path);
 		void OpenHudEditor(const std::filesystem::path& path);
 		void OpenMaterialEditor(const std::filesystem::path& path);
-		void OpenSceneFile(const std::filesystem::path& path);
 
 		void CollectAssetPaths(const std::string& scenePath,
 			std::unordered_set<std::string>& outAssets,

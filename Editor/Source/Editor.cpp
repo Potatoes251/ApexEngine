@@ -140,7 +140,7 @@ namespace Apex::Editor
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_app->GetScene()->Save(m_app->GetScenePath());
                     m_window->SetWindowTitle("Apex Editor");
                 }
                     
@@ -207,6 +207,7 @@ namespace Apex::Editor
                     if (m_editorState == EditorState::Play)
                         SetEditorState(EditorState::Edit);
 
+                    OnSceneChanged();
                     m_app->LoadScene(entry.m_path.string(), false);
 
                     CleanClipboard();
@@ -351,7 +352,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_app->GetScene()->Save(m_app->GetScenePath());
                 m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
@@ -399,6 +400,9 @@ namespace Apex::Editor
         // Always clear selection before destroying old scene objects
         if (m_componentsViewer) m_componentsViewer->ClearSelection();
         if (m_hierarchy)        m_hierarchy->ClearSelection();
+
+        if (newState == EditorState::Play || newState == EditorState::Edit)
+            OnSceneChanged();       // clear stale pointers before scene swap
 
         // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
@@ -991,19 +995,24 @@ namespace Apex::Editor
     void Editor::PasteClipboard()
     {
         // --- object paste ---
-        if (m_hasClipboardObject && m_hierarchy)
+        if (m_hasClipboardObject)
         {
-            // Resolve the ID against the *current* scene.
-            Data::Object* source = m_editScene->GetObjectWithId(m_clipboardObjectId);
-            if (source)
-                m_hierarchy->PasteObject(source);
-            else
-                m_hasClipboardObject = false;  // stale — clear silently
+            // Validate the id still exists in the CURRENT scene before touching it
+            Data::Object* src = m_app->GetScene()->GetObjectWithId(m_clipboardObjectId);
+            if (!src)
+            {
+                CleanClipboard();   // stale — silently discard
+                return;
+            }
+            if (m_hierarchy && m_hierarchy->IsFocused())
+                m_hierarchy->PasteObject(src);
         }
-
-        // --- file paste (unchanged) ---
-        if (!m_clipboardFile.empty() && m_contentBrowser)
-            m_contentBrowser->PasteFile(m_clipboardFile);
+        // --- file paste ---
+        else if (!m_clipboardFile.empty())
+        {
+            if (m_contentBrowser)
+                m_contentBrowser->PasteFile(m_clipboardFile);
+        }
     }
 
     void Editor::DuplicateSelected()
@@ -1027,5 +1036,18 @@ namespace Apex::Editor
     {
         m_hasClipboardObject = false;
         m_clipboardObjectId = 0;
+        m_clipboardFile.clear();
+    }
+    
+    void Editor::OnSceneChanged()
+    {
+        // Clear all raw-pointer state that references the old scene's objects
+        CleanClipboard();
+        if (m_hierarchy)
+            m_hierarchy->ClearSelection();
+        if (m_componentsViewer)
+            m_componentsViewer->SetSelectedObject(nullptr);
+        if (m_viewport)
+            m_viewport->SelectObject(nullptr, false);
     }
 }
