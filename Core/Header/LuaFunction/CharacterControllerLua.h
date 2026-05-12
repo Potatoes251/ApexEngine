@@ -17,6 +17,7 @@ namespace Apex::Controller
 	int Lua_CC_Move(lua_State* L);
 	int Lua_CC_Jump(lua_State* L);
 	int Lua_CC_GetVelocity(lua_State* L);
+	int Lua_CC_GetVerticalVelocity(lua_State* L);
 	int Lua_CC_IsGrounded(lua_State* L);
 	int Lua_CC_IsInWater(lua_State* L);
 	int Lua_AIC_SetTarget(lua_State* L);
