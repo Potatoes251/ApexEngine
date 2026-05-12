@@ -154,6 +154,7 @@ void Apex::Editor::Hierarchy::ClearSelection()
     m_pendingParent = nullptr;
     m_pendingReparent = nullptr;
     m_pendingTarget = nullptr;
+    m_renaming = nullptr;
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
