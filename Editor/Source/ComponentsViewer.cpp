@@ -48,6 +48,7 @@ static constexpr uint32_t COL_LIGHT = 0xFFFFEE58; // yellow
 static constexpr uint32_t COL_CAMERA = 0xFF80DEEA; // cyan
 static constexpr uint32_t COL_AUDIO = 0xFFCE93D8; // purple
 static constexpr uint32_t COL_VIEW = 0xFF64B5F6; // blue
+static constexpr uint32_t COL_CONTROLLER = 0xFFE57373; // soft red
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
@@ -70,7 +71,7 @@ static uint32_t AccentForType(const char* typeName)
 		type.find("Collider") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Script") != std::string::npos) return COL_SCRIPT;
 	if (type.find("Camera") != std::string::npos) return COL_CAMERA;
-	if (type.find("Character") != std::string::npos) return COL_PHYSICS;
+	if (type.find("Controller") != std::string::npos) return COL_CONTROLLER;
 	if (type.find("WaterVolume") != std::string::npos) return COL_PHYSICS;
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
 	if (type.find("Audio") != std::string::npos) return COL_AUDIO;

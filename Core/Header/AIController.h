@@ -18,6 +18,8 @@ namespace Apex::Controller
 
 		const char* GetTypeName() const override { return "AIController"; }
 
+		std::vector<ExposedVar> GetExposedVariables() override;
+
 		void SetTarget(Data::Object* newTarget) { m_target = newTarget; }
 
 		void OnFixedUpdate(float deltatime_s) override;

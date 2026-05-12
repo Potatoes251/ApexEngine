@@ -27,6 +27,14 @@ void AIController::Serialize(std::ostream& out) const
     out << "\"arrivalThreshold\" :" << m_arrivalThreshold << "\n";
 }
 
+std::vector<Apex::ExposedVar> Apex::Controller::AIController::GetExposedVariables()
+{
+    std::vector<ExposedVar> var = CharacterController::GetExposedVariables();
+    var.push_back({ "Arrival Threshold", ExposedVar::Float, &m_arrivalThreshold });
+
+    return var;
+}
+
 void AIController::OnFixedUpdate(float deltatime_s)
 {
     if (m_target)

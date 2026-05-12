@@ -19,6 +19,7 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("CC_Move_Internal", Apex::Controller::Lua_CC_Move);
     lua.RegisterFunction("CC_Jump_Internal", Apex::Controller::Lua_CC_Jump);
     lua.RegisterFunction("CC_GetVelocity_Internal", Apex::Controller::Lua_CC_GetVelocity);
+    lua.RegisterFunction("CC_GetVerticalVelocity_Internal", Apex::Controller::Lua_CC_GetVerticalVelocity);
     lua.RegisterFunction("CC_IsGrounded_Internal", Apex::Controller::Lua_CC_IsGrounded);
     lua.RegisterFunction("CC_IsInWater_Internal", Apex::Controller::Lua_CC_IsInWater);
     lua.RegisterFunction("AIC_SetTarget_Internal", Apex::Controller::Lua_AIC_SetTarget);
@@ -73,6 +74,17 @@ int Apex::Controller::Lua_CC_GetVelocity(lua_State* L)
     if (!cc) return 0;
 
     lua_pushnumber(L, cc->GetHorizontalVelocity());
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_GetVerticalVelocity(lua_State* L)
+{
+    CharacterController* cc = GetCC(L, 1);
+
+    if (!cc) return 0;
+
+    lua_pushnumber(L, cc->GetVerticalVelocity());
 
     return 1;
 }
