@@ -15,6 +15,8 @@
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
 
+#include "Waypoint.h"
+
 #include "Log.h"
 
 #include <fstream>
@@ -209,6 +211,7 @@ namespace Apex::Rendering
 				m_mainCamera = camera;
 			}
 		}
+		m_graph.BuildGraph(GetComponents<Pathfinding::WaypointComponent>());
 	}
 
 	void Scene::Update(float deltaTime_s)
