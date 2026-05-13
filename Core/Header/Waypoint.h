@@ -10,12 +10,12 @@ namespace Apex::Pathfinding
 	class WaypointComponent : public Component
 	{
 	public:
-		WaypointComponent() = default;
+		WaypointComponent(float radius = 5.f) : m_connectRadius(radius) {}
 
 		LibMath::Vector3 const& GetPosition() const{ return GetOwner()->GetGlobalPosition(); }
 
-		void Serialize(std::ostream& out) const {}
-		std::vector<ExposedVar> GetExposedVariables() { return{}; }
+		void Serialize(std::ostream& out) const { out << "\"connectRadius\" :" << m_connectRadius << "\n"; }
+		std::vector<ExposedVar> GetExposedVariables() { return { {"Connect Radius", ExposedVar::Float, &m_connectRadius } }; }
 		std::unique_ptr<Component> Clone() { return std::make_unique<WaypointComponent>(*this); }
 
 		char const* GetTypeName() const override { return "Waypoint"; }

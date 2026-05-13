@@ -36,9 +36,9 @@ void WaypointGraph::BuildGraph(std::vector<WaypointComponent*> waypoints)
 
 int WaypointGraph::GetClosestWaypoint(LibMath::Vector3 pos)
 {
-	int closest = SIZE_MAX;
+	int closest = -1;
 	float minSquaredDist = FLT_MAX;
-	for (Waypoint wp : m_waypoints)
+	for (Waypoint const& wp : m_waypoints)
 	{
 		float squaredDist = pos.distanceSquaredFrom(wp.m_position);
 		if (minSquaredDist > squaredDist)

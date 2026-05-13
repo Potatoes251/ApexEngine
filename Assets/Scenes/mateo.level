@@ -14,7 +14,7 @@
       "MeshRenderer": {
         "enabled": true,
         "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Ground.mat",
+        "material": "Assets/Material/Red.mat",
         "castShadow": true
       },
       "BoxCollider": {
@@ -263,6 +263,386 @@
         "radius": 0.200000,
         "isTrigger": true,
         "material": null
+      }
+    }
+  },
+  {
+    "id": 136,
+    "parent": null,
+    "name": "Cube",
+    "position": [-0.387760,0.325803,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 147,
+    "parent": null,
+    "name": "Cube",
+    "position": [-2.121043,0.325803,0.221579],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 148,
+    "parent": null,
+    "name": "Cube",
+    "position": [-2.330001,0.325803,1.887017],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 149,
+    "parent": null,
+    "name": "Cube",
+    "position": [-0.629755,0.325803,1.837283],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 150,
+    "parent": null,
+    "name": "Cube",
+    "position": [1.283924,0.325803,-0.006482],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 151,
+    "parent": null,
+    "name": "Cube",
+    "position": [1.106255,0.241930,1.726931],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 152,
+    "parent": null,
+    "name": "Cube",
+    "position": [0.404114,0.241930,3.296040],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 153,
+    "parent": null,
+    "name": "Cube",
+    "position": [-1.093700,0.241930,3.326295],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 154,
+    "parent": null,
+    "name": "Cube",
+    "position": [-2.610472,0.241930,3.319837],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 155,
+    "parent": null,
+    "name": "Cube",
+    "position": [-4.229464,0.241930,2.325885],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 156,
+    "parent": null,
+    "name": "Cube",
+    "position": [-3.920279,0.241930,0.547952],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 157,
+    "parent": null,
+    "name": "Cube",
+    "position": [-2.756652,0.241930,-1.559847],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 158,
+    "parent": null,
+    "name": "Cube",
+    "position": [-0.844689,0.241930,-1.847111],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 159,
+    "parent": null,
+    "name": "Cube",
+    "position": [0.935257,0.241930,-1.776687],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 160,
+    "parent": null,
+    "name": "Cube",
+    "position": [2.388078,0.241930,-1.882241],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 161,
+    "parent": null,
+    "name": "Cube",
+    "position": [2.905140,0.241931,-0.060216],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 162,
+    "parent": null,
+    "name": "Cube",
+    "position": [2.704121,0.241931,1.619688],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 163,
+    "parent": null,
+    "name": "Cube",
+    "position": [2.126775,0.241931,3.326078],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
+      }
+    }
+  },
+  {
+    "id": 164,
+    "parent": null,
+    "name": "Cube",
+    "position": [1.438939,0.456079,5.042482],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Waypoint": {
+        "enabled": true,
+"connectRadius" :5.000000
       }
     }
   }

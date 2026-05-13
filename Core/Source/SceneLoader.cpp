@@ -779,7 +779,11 @@ void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser
     bool enabled = parser.ParseBool();
     parser.Expect(',');
 
-    obj->AddComponent<Pathfinding::WaypointComponent>();
+    parser.ParseString();
+    parser.Expect(':');
+    float radius = parser.ParseFloat();
+
+    obj->AddComponent<Pathfinding::WaypointComponent>(radius);
 }
 
 void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)

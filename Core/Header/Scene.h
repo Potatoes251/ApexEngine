@@ -65,6 +65,7 @@ namespace Apex::Rendering
 		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+		Pathfinding::WaypointGraph* GetGraph() { return &m_graph; }
 
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
