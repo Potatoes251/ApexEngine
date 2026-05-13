@@ -45,6 +45,9 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 
 	InputSystem& input = InputSystem::Get();
 
+	// dont move while using shortcut
+	if (input.IsKeyDown(Key::Ctrl)) return;
+
 	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
 		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
 		input.IsKeyDown(Key::E), input.IsKeyDown(Key::Q), window->GetDeltaTime());

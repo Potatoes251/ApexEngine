@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "Object.h"
 #include "Animator.h"
+#include "Waypoint.h"
 #include "Rigidbody.h"
 #include "Colliders.h"
 #include "WaterVolume.h"
@@ -219,6 +220,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         else if (compName == "AudioComponent")
         {
             ParseAudioComponent(obj, parser);
+        }
+        else if (compName == "Waypoint")
+        {
+            ParseWaypointComponent(obj, parser);
         }
 
         parser.Expect('}'); // component end
@@ -765,6 +770,16 @@ void SceneLoader::ParseAudioComponent(Data::Object* obj, SerialParser& parser)
 
     Audio::AudioComponent& comp = obj->AddComponent<Audio::AudioComponent>(audio, name, channel, volume, loop);
     comp.SetEnabled(enabled);
+}
+
+void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser)
+{
+    parser.ParseString();
+    parser.Expect(':');
+    bool enabled = parser.ParseBool();
+    parser.Expect(',');
+
+    obj->AddComponent<Pathfinding::WaypointComponent>();
 }
 
 void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)
