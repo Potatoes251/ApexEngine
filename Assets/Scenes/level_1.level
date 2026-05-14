@@ -571,34 +571,6 @@
     }
   },
   {
-    "id": 2304,
-    "parent": null,
-    "name": "Platform",
-    "position": [8.000000,0.000002,0.771967],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [5.000000,1.000000,5.000000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
-        "castShadow": true
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Static",
-        "mass": 1.000000
-      },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": null
-      }
-    }
-  },
-  {
     "id": 2305,
     "parent": null,
     "name": "Platform",
