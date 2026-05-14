@@ -6,10 +6,7 @@
 #include <cassert>
 
 #include "Rigidbody.h"
-#include "Collider.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "Mesh.h"
 #include "Shader.h"
 
@@ -49,6 +46,16 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		m_pxCtx.m_dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 
+		if (!m_pxCtx.m_dispatcher)
+		{
+			LOG_ERROR("PhysX dispatcher creation failed.");
+			m_pxCtx.m_physics->release();
+			m_pxCtx.m_physics = nullptr;
+			m_pxCtx.m_foundation->release();
+			m_pxCtx.m_foundation = nullptr;
+			return;
+		}
+
 		m_isCtxInit = true;
 	}
 	physx::PxSceneDesc sceneDesc(scale);
@@ -78,6 +85,7 @@ PhysicSystem::~PhysicSystem()
 		if (m_pxCtx.m_foundation)  m_pxCtx.m_foundation->release();
 		m_pxCtx.m_physics = nullptr;
 		m_pxCtx.m_foundation = nullptr;
+		m_pxCtx.m_dispatcher = nullptr;
 	}
 }
 
@@ -607,9 +615,10 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor{
+		.m_actor = body,
+		.m_owner = &rigidBody, 
+	};
 
 	m_rigidBodies.push_back(actor);
 }
@@ -637,7 +646,7 @@ void PhysicSystem::SyncToPhysx()
 		case BodyType::Kinematic:
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
-
+			if (!body) continue;
 			physx::PxTransform target(ToPxVec(actor.m_owner->GetPosition()), ToPxQuat(actor.m_owner->GetRotation()));
 
 			body->setKinematicTarget(target);
@@ -727,11 +736,11 @@ physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceH
 {
 	physx::PxTriangleMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
 	meshDesc.points.stride = sizeof(::Vertex);
 	meshDesc.points.data = mesh->m_vertices.data();
 
-	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->m_indices.size() / 3);
+	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->GetVertexCount() / 3);
 	meshDesc.triangles.stride = sizeof(int) * 3;
 	meshDesc.triangles.data = mesh->m_indices.data();
 
@@ -755,7 +764,7 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 {
 	physx::PxConvexMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
 	meshDesc.points.stride = sizeof(::Vertex);
 	meshDesc.points.data = mesh->m_vertices.data();
 

@@ -1,6 +1,7 @@
 #include "Object.h"
 
 #include "../../Physic/Header/Rigidbody.h"
+#include "../../Physic/Header/Physic.h"
 
 #include "Log.h"
 
@@ -11,15 +12,7 @@ using namespace Apex::SceneGraph;
 Apex::Data::Object::Object()
 {
 	m_owner = std::make_shared<SceneNode>(this);
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
+	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
 }
 
@@ -28,7 +21,6 @@ Apex::Data::Object::Object(size_t forcedId)
 	m_owner = std::make_shared<SceneNode>(this);
 	
 	m_id = forcedId;
-	m_freeIds.erase(forcedId);
 
 	if (forcedId != INVALID_ID && m_nextId <= forcedId)
 		m_nextId = ++forcedId;
@@ -40,26 +32,17 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
+	m_id = m_nextId++;
 	m_name = "Object" + std::to_string(m_id);
 }
 
 Apex::Data::Object::~Object()
 {
-	m_freeIds.insert(m_id);
 }
 
 std::unique_ptr<Object> Object::Clone()
 {
-	std::unique_ptr<Object> clone = std::make_unique<Object>(m_id);
+	std::unique_ptr<Object> clone = std::make_unique<Object>();
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
 
@@ -91,13 +74,9 @@ std::unique_ptr<Object> Object::Clone()
 
 void Object::SetId(size_t id)
 {
-	if (m_id == id || id == INVALID_ID) return;
-
-	if (m_id != INVALID_ID)
-		m_freeIds.insert(m_id);
+	if (id == INVALID_ID) return;
 
 	m_id = id;
-	m_freeIds.erase(id);
 
 	if (m_nextId <= id)
 		m_nextId = ++id;
@@ -137,29 +116,12 @@ void Object::SetCompId(Component* comp, size_t newId)
 
 size_t Object::NewId()
 {
-	size_t oldId = m_id;
-
-	if (m_freeIds.empty())
-	{
-		m_id = m_nextId++;
-	}
-	else
-	{
-		m_id = *m_freeIds.begin();
-		m_freeIds.erase(m_freeIds.begin());
-	}
-
-	if (m_id != INVALID_ID)
-		m_freeIds.insert(oldId);
-
+	m_id = m_nextId++;
 	return m_id;
 }
 
 void Object::RemoveId()
 {
-	if (m_id == INVALID_ID) return;
-
-	m_freeIds.insert(m_id);
 	m_id = INVALID_ID;
 }
 
@@ -210,11 +172,22 @@ void Object::SetLocalScale(const LibMath::Vector3& scale)
 }
 
 void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
-{
-	m_globalTransform = transform;
-	m_owner->MarkDirty();
+{	
+	Object* parent = GetParent();
+	
+	if (!parent)
+	{
+		m_localTransform = transform;
+	}
+	else
+	{
+		m_localTransform = parent->GetGlobalTransform().inversed() * transform;
+	}
 
+	m_owner->MarkDirty();
 	OnChanged();
+
+	UpdateGlobalTransform();
 }
 
 void Apex::Data::Object::SetName(std::string name)
@@ -228,14 +201,14 @@ const Transform& Object::GetLocalTransform() const
 	return m_localTransform;
 }
 
-const Transform& Object::GetGlobalTransform()
+const Transform& Object::GetGlobalTransform() const
 {
 	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
 
 	return m_globalTransform;
 }
 
-void Object::UpdateGlobalTransform()
+void Object::UpdateGlobalTransform() const
 {
 	if (!m_owner || !m_owner->IsDirty()) return;
 
@@ -252,11 +225,19 @@ void Object::UpdateGlobalTransform()
 	m_owner->CleanDirty();
 }
 
+Object* Object::GetParent() const
+{
+	auto parentNode = m_owner->GetParent();
+
+	if (!parentNode) return nullptr;
+
+	return parentNode->GetObject();
+}
+
 void Object::Start()
 {
 	for (auto& comp : m_components)
-		if (comp->IsEnabled())
-			comp->OnStart();
+		comp->OnStart();
 }
 
 void Object::FixedUpdate(float deltaTime_s)
@@ -344,7 +325,15 @@ size_t Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	return m_components.back()->GetId();
 }
 
-Apex::Component* Apex::Data::Object::GetComponent(size_t id)
+std::vector<Apex::Component*> Object::GetComponents() const
+{
+	std::vector<Component*> comps;
+	for (auto& c : m_components)
+		comps.push_back(c.get());
+	return comps;
+}
+
+Apex::Component* Object::GetComponent(size_t id)
 {
 	for (auto& comp : m_components)
 	{

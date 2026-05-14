@@ -58,7 +58,7 @@ namespace Apex::Windowing
 		// Input
 		virtual void	SetCursorCaptured(bool captured) = 0;
 		virtual void	SetCrosshairCursor() = 0;
-		virtual void	ResetCursor() = 0;
+		virtual void	ResetCursorShape() = 0;
 
 		// Callbacks
 		virtual void SetKeyCallback(KeyCallback callback) = 0;
@@ -91,7 +91,7 @@ namespace Apex::Windowing
 	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext = nullptr);
 
 	// Processes events for ALL open windows — one call per frame is enough.
-	// This is a GLFW global operation, not tied to any specific window.
+	// This is a global operation, not tied to any specific window.
 	void PollAllEvents();
 
 	// Convenience: make a window's GL context current on the calling thread.

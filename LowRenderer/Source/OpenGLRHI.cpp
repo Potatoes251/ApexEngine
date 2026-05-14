@@ -81,6 +81,22 @@ namespace Apex::Rendering
 		return buffer;
 	}
 
+	RHIBufferHandle OpenGLRHI::CreateSSBO(Vertex* data, size_t sizeBytes)
+	{
+		GLuint glBuffer;
+		glGenBuffers(1, &glBuffer);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, glBuffer);
+
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeBytes, data, GL_DYNAMIC_COPY);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		RHIBufferHandle buffer = NewHandle();
+		m_buffers[buffer] = glBuffer;
+		return buffer;
+	}
+
 	void OpenGLRHI::UpdateBuffer(RHIBufferHandle buffer, const void* data, size_t sizeBytes) 
 	{
 		GLuint glBuffer = GetBuffer(buffer);
@@ -91,6 +107,11 @@ namespace Apex::Rendering
 	void OpenGLRHI::BindBuffer(RHIBufferHandle buffer, BufferType type) 
 	{
 		glBindBuffer(GetGLBufferType(type), GetBuffer(buffer));
+	}
+
+	void OpenGLRHI::BindStorageBuffer(uint32_t binding, RHIBufferHandle buffer)
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, GetBuffer(buffer));
 	}
 
 	void OpenGLRHI::DeleteBuffer(RHIBufferHandle buffer) 
@@ -164,9 +185,10 @@ namespace Apex::Rendering
 		glViewport(0, 0, viewportWidth, viewportHeight);
 	}
 
-	void OpenGLRHI::UnBindFrameBuffer()
+	void OpenGLRHI::UnBindFrameBuffer(unsigned width, unsigned height)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
 	}
 
 	void OpenGLRHI::DeleteFrameBuffer(RHIFrameBufferHandle buffer)
@@ -352,8 +374,8 @@ namespace Apex::Rendering
 	// ── Shaders ──────────────────────────────────────────────────
 	RHIShaderHandle OpenGLRHI::CreateShader(const ShaderSource& source)
 	{
-		GLuint vertexShader = CompileShader(source.vertexPath, GL_VERTEX_SHADER);
-		GLuint fragmentShader = CompileShader(source.fragmentPath, GL_FRAGMENT_SHADER);
+		GLuint vertexShader = CompileShader(source.m_vertexPath, GL_VERTEX_SHADER);
+		GLuint fragmentShader = CompileShader(source.m_fragmentPath, GL_FRAGMENT_SHADER);
 		GLuint program = glCreateProgram();
 		glAttachShader(program, vertexShader);
 		glAttachShader(program, fragmentShader);
@@ -377,9 +399,9 @@ namespace Apex::Rendering
 
 	RHIShaderHandle OpenGLRHI::CreateShaderGeo(const ShaderSource& source)
 	{
-		GLuint vertexShader = CompileShader(source.vertexPath, GL_VERTEX_SHADER);
-		GLuint fragmentShader = CompileShader(source.fragmentPath, GL_FRAGMENT_SHADER);
-		GLuint geometryShader = CompileShader(source.geometryPath, GL_GEOMETRY_SHADER);
+		GLuint vertexShader = CompileShader(source.m_vertexPath, GL_VERTEX_SHADER);
+		GLuint fragmentShader = CompileShader(source.m_fragmentPath, GL_FRAGMENT_SHADER);
+		GLuint geometryShader = CompileShader(source.m_geometryPath, GL_GEOMETRY_SHADER);
 		GLuint program = glCreateProgram();
 		glAttachShader(program, vertexShader);
 		glAttachShader(program, fragmentShader);
@@ -419,10 +441,47 @@ namespace Apex::Rendering
 		return shader;
 	}
 
+	RHIShaderHandle OpenGLRHI::CreateComputeShader(const std::string& source)
+	{
+		std::string file = ReadFile(source);
+		char const* content = file.c_str();
+
+		GLuint compute = glCreateShader(GL_COMPUTE_SHADER);
+		glShaderSource(compute, 1, &content, NULL);
+		glCompileShader(compute);
+
+		GLuint program = glCreateProgram();
+		glAttachShader(program, compute);
+		glLinkProgram(program);
+
+		GLint success;
+		glGetShaderiv(compute, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			GLchar infoLog[512];
+			glGetShaderInfoLog(compute, 512, nullptr, infoLog);
+			LOG_ERROR("Shader program compilation failed : {}", infoLog);
+		}
+
+		success = 0;
+		glGetProgramiv(program, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			GLchar infoLog[512];
+			glGetProgramInfoLog(program, 512, nullptr, infoLog);
+			LOG_ERROR("Shader program linking failed : {}", infoLog);
+		}
+
+		RHIShaderHandle shader = NewHandle();
+		m_shaders[shader] = program;
+		return shader;
+	}
+
 	void OpenGLRHI::BindShader(RHIShaderHandle shader)
 	{
 		glUseProgram(GetShader(shader));
 	}
+
 
 	void OpenGLRHI::DeleteShader(RHIShaderHandle shader)
 	{
@@ -430,40 +489,50 @@ namespace Apex::Rendering
 		m_shaders.erase(shader);
 	}
 
-	// ── Uniforms ─────────────────────────────────────────────────
-	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string& name, int value)
+	void OpenGLRHI::Barrier()
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	}
+
+	void OpenGLRHI::DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ)
+	{
+		glDispatchCompute(groupX, groupY, groupZ);
+	}
+
+	// ── Uniforms ─────────────────────────────────────────────────
+	void OpenGLRHI::SetUniformInt(RHIShaderHandle shader, const std::string_view& name, int value)
+	{
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniform1i(location, value);
 	}
 
-	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string& name, float value)
+	void OpenGLRHI::SetUniformFloat(RHIShaderHandle shader, const std::string_view& name, float value)
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniform1f(location, value);
 	}
 
-	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string& name, const LibMath::Vector3& vec)
+	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec)
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniform3f(location, vec[0], vec[1], vec[2]);
 	}
 
-	void OpenGLRHI::SetUniformVec4(RHIShaderHandle shader, const std::string& name, const LibMath::Vector4& vec)
+	void OpenGLRHI::SetUniformVec4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector4& vec)
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniform4f(location, vec[0], vec[1], vec[2], vec[3]);
 	}
 
-	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix)
+	void OpenGLRHI::SetUniformMat4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix)
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix.data());
 	}
 
-	void OpenGLRHI::SetUniformMat4Array(RHIShaderHandle shader, const std::string& name, const LibMath::Matrix4& matrix, int count)
+	void OpenGLRHI::SetUniformMat4Array(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix, int count)
 	{
-		GLint location = glGetUniformLocation(GetShader(shader), name.c_str());
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniformMatrix4fv(location, count, GL_FALSE, matrix.data());
 	}
 
@@ -471,16 +540,14 @@ namespace Apex::Rendering
 	{
 		//mesh datas
 		glEnableVertexAttribArray(0); // Position
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
 		glEnableVertexAttribArray(1); // Normal
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
-		glEnableVertexAttribArray(2); // UV
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_uv));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
 
 		//animation datas
-		glEnableVertexAttribArray(3); //bone IDs
+		glEnableVertexAttribArray(2); //bone IDs
 		glVertexAttribIPointer(3, 4, GL_INT,  sizeof(Vertex), (void*)offsetof(Vertex, m_boneIDs));
-		glEnableVertexAttribArray(4); //bone weights
+		glEnableVertexAttribArray(3); //bone weights
 		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_weights));
 	}
 
@@ -515,11 +582,6 @@ namespace Apex::Rendering
 	void OpenGLRHI::DrawLineArrays(uint32_t vertexCount)
 	{
 		glDrawArrays(GL_LINES, 0, vertexCount);
-	}
-
-	void OpenGLRHI::DrawLineLoop(uint32_t vertexCount)
-	{
-		glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
 	}
 
 	void OpenGLRHI::SetDepthTest(bool enabled) 

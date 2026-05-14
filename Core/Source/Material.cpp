@@ -1,3 +1,4 @@
+#include "ComputeShader.h"
 #include "Material.h"
 
 #include "Log.h"
@@ -13,6 +14,8 @@ using namespace Apex::Resources;
 
 void Material::Bind()
 {
+	if (!m_shader.IsReady()) return;
+
 	m_shader->Use();
 
 	for (auto& [name, value] : m_uniforms)
@@ -32,6 +35,33 @@ void Material::Bind()
 	{
 		m_shader->SetUniform("uUseTexture", 1);
 	}
+	m_shader->SetUniform("uTint", m_tint);
+}
+
+void Material::BindCompute()
+{
+	if (!m_computeShader.IsReady())
+		return;
+
+	m_computeShader->Use();
+
+	for (auto& [name, value] : m_uniforms)
+	{
+		std::visit([&](auto&& v)
+			{
+				m_computeShader->SetUniform(name, v);
+			}, value);
+	}
+}
+
+void Material::StartCompute(uint32_t vertexCount)
+{
+	if (!m_computeShader.IsReady() || vertexCount == 0)
+		return;
+
+	constexpr int localSize = 64; // must match local_size_x in the shader
+	int groups = (vertexCount + localSize - 1) / localSize;
+	m_computeShader->Dispatch(groups, 1, 1);
 }
 
 void Material::Save()
@@ -43,36 +73,62 @@ void Material::Save()
 		return;
 	}
 
+	const bool hasShader = m_shader.IsValid();
+	const bool hasComputeShader = m_computeShader.IsValid() && !m_computeShader->GetPath().empty();
+	const bool hasUniforms = m_uniforms.size() > 0;
+	const bool hasTextures = m_textures.size() > 0;
+
 	file << "{\n";
 
-	if (m_shader.IsValid())
+	bool needsComma = false;
+
+	if (hasShader)
 	{
-		file << "\t\"shader\": \"" << m_shader->GetPath() << "\",\n";
+		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
+		needsComma = true;
 	}
-	if (m_uniforms.size() > 0)
+	if (hasComputeShader)
 	{
+		if (needsComma) file << ",\n";
+		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
+		needsComma = true;
+	}
+
+	if (needsComma) file << ",\n";
+	file << "\t\"tint\": [" << m_tint[0] << ", " << m_tint[1] << ", " << m_tint[2] << "]";
+
+	if (hasUniforms)
+	{
+		if (needsComma) file << ",\n";
 		file << "\t\"properties\": {";
-
 		WriteProperties(file);
-
-		file << "},\n";
+		file << "\n\t}";
+		needsComma = true;
 	}
-	if (m_textures.size() > 0)
-	{
-		file << "\t\"textures\": {";
 
+	if (hasTextures)
+	{
+		if (needsComma) file << ",\n";
+		file << "\t\"textures\": [";
+
+		bool firstTex = true;
 		for (ResourceHandle<Texture>& tex : m_textures)
 		{
 			if (tex.IsValid())
-				file << "\t\t\"" << tex->GetPath() << "\",\n";
+			{
+				if (!firstTex) file << ",";
+				file << "\n\t\t\"" << tex->GetPath() << "\"";
+				firstTex = false;
+			}
 		}
 
-		file << "}\n";
+		file << "\n\t]";
 	}
 
-	file << "}\n";
+	file << "\n}\n";
 
 	LOG_INFO_CAT("Resource", "\"{}\" saved successfully", m_path);
+
 }
 
 void Material::AddEmptyTexture()
@@ -141,6 +197,14 @@ void Material::LoadFromFile()
 		{
 			m_shader = m_rm->CreateAsync<Shader>(parser.ParseString());
 		}
+		else if (category == "computeShader")
+		{
+			m_computeShader = m_rm->CreateAsync<ComputeShader>(parser.ParseString());
+		}
+		else if (category == "tint")
+		{
+			m_tint = parser.ParseVector3();
+		}
 		else if (category == "properties")
 		{
 			ParseProperties(parser);
@@ -193,17 +257,21 @@ void Material::ParseProperties(Serialization::SerialParser& parser)
 		if (parser.Peek(','))
 			parser.Expect(',');
 	}
+
+	parser.Expect('}');
 }
 
 void Material::ParseTextures(Serialization::SerialParser& parser)
 {
-	parser.Expect('{');
+	parser.Expect('[');
 
-	while (!parser.Peek('}'))
+	while (!parser.Peek(']'))
 	{
 		m_textures.push_back(m_rm->CreateAsync<Texture>(parser.ParseString()));
 
 		if (parser.Peek(','))
 			parser.Expect(',');
 	}
+
+	parser.Expect(']');
 }

@@ -3,10 +3,9 @@
 using namespace Apex;
 using namespace Apex::Physic;
 
-BoxCollider::BoxCollider(BoxCollider const& other) : Collider(other.m_material, other.m_isTrigger)
-{
-	m_halfExtents = other.m_halfExtents;
-}
+BoxCollider::BoxCollider(BoxCollider const& other) : 
+    Collider(other.m_material, other.m_isTrigger), m_halfExtents(other.m_halfExtents)
+{}
 
 BoxCollider& BoxCollider::operator=(BoxCollider const& other)
 {
@@ -31,8 +30,6 @@ std::vector<ExposedVar> BoxCollider::GetExposedVariables()
 
 void BoxCollider::Serialize(std::ostream& out) const
 {
-    out << "      \"BoxCollider\": {\n";
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"halfExtents\": ["
         << m_halfExtents[0] << ", "
         << m_halfExtents[1] << ", "
@@ -51,6 +48,4 @@ void BoxCollider::Serialize(std::ostream& out) const
     {
         out << "null" << "\n";
     }
-
-    out << "      }";
 }

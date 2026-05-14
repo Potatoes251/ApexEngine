@@ -23,10 +23,10 @@ namespace Apex::Rendering
     {
     public:
         MeshRenderer() = default;
-        MeshRenderer(Apex::Resources::ResourceManager& resourceManager);
+        MeshRenderer(Apex::Resources::ResourceManager* resourceManager);
 
-        void SetMesh(Apex::Resources::ResourceHandle<Mesh>& mesh);
-        void SetMaterial(Apex::Resources::ResourceHandle<Material>& shader);
+        void SetMesh(Apex::Resources::ResourceHandle<Mesh> mesh);
+        void SetMaterial(Apex::Resources::ResourceHandle<Material> shader);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
         Apex::Resources::ResourceHandle<Mesh>& GetMesh();
@@ -37,14 +37,17 @@ namespace Apex::Rendering
 
         std::unique_ptr<Apex::Component> Clone() override;
 
+        void ComputePass();
         void Render(RenderPassInfo passInfo);
 
         void Serialize(std::ostream& out) const override;
 
+        void SetSkinned(bool enabled) { m_useSkinnedVAO = enabled; }
     private:
         Apex::Resources::ResourceHandle<Mesh> m_mesh;
         Apex::Resources::ResourceHandle<Material> m_material;
         bool m_castShadow = true;
+        bool m_useSkinnedVAO = false;
     };
 }
 

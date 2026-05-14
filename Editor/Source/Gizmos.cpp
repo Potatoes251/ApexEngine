@@ -35,7 +35,7 @@ Gizmos::Gizmos(Resources::ResourceHandle<Shader> shader, Rendering::IRHI* rhi) :
     m_thorus.ClearVertices();
 }
 
-void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
+void Gizmos::DrawGizmos(const Data::Object* object, GizmoMode mode, LibMath::Matrix4 viewProj, LibMath::Vector3 viewPos, bool picking, bool local)
 {
     if (!object || !m_shader.IsReady()) return;
 
@@ -63,7 +63,7 @@ void Gizmos::DrawGizmos(Data::Object* object, GizmoMode mode, LibMath::Matrix4 v
 	}
 }
 
-void Gizmos::DrawTranslation(Data::Object* object, bool picking, bool local)
+void Gizmos::DrawTranslation(const Data::Object* object, bool picking, bool local)
 {
     LibMath::Transform trans = object->GetGlobalTransform();
     trans.setScale(LibMath::Vector3(1.f));
@@ -197,7 +197,7 @@ void Gizmos::DrawTranslationArrows(LibMath::Matrix4 transMatrix, bool picking)
     }
 }
 
-void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
+void Gizmos::DrawRotation(const Data::Object* object, bool picking, bool local)
 {
     LibMath::Transform trans = object->GetGlobalTransform();
     trans.setScale(LibMath::Vector3(1.f));
@@ -243,7 +243,7 @@ void Gizmos::DrawRotation(Data::Object* object, bool picking, bool local)
     }
 }
 
-void Gizmos::DrawScale(Data::Object* object, bool picking)
+void Gizmos::DrawScale(const Data::Object* object, bool picking)
 {
     LibMath::Vector3 pos = object->GetGlobalTransform().getPosition();
 
@@ -361,23 +361,23 @@ void Gizmos::CreateCube()
     m_cube.m_vertices =
     {
         // Front (+Z)
-        {{-0.5f,-0.5f, 0.5f},{0,0,1},{0,0}},{{0.5f,-0.5f, 0.5f},{0,0,1},{1,0}},
-        {{ 0.5f, 0.5f, 0.5f},{0,0,1},{1,1}},{{-0.5f, 0.5f, 0.5f},{0,0,1},{0,1}},
-        // Back (-Z)
-        {{ 0.5f,-0.5f,-0.5f},{0,0,-1},{0,0}},{{-0.5f,-0.5f,-0.5f},{0,0,-1},{1,0}},
-        {{-0.5f, 0.5f,-0.5f},{0,0,-1},{1,1}},{{ 0.5f, 0.5f,-0.5f},{0,0,-1},{0,1}},
+        {{-0.5f,-0.5f, 0.5f, 0}},{{0.5f,-0.5f, 0.5f,0}},
+        {{ 0.5f, 0.5f, 0.5f, 0}},{{-0.5f, 0.5f, 0.5f,0}},
+        // Back (-Z)    
+        {{ 0.5f,-0.5f,-0.5f, 0}},{{-0.5f,-0.5f,-0.5f,0}},
+        {{-0.5f, 0.5f,-0.5f, 0}},{{ 0.5f, 0.5f,-0.5f,0}},
         // Left (-X)
-        {{-0.5f,-0.5f,-0.5f},{-1,0,0},{0,0}},{{-0.5f,-0.5f, 0.5f},{-1,0,0},{1,0}},
-        {{-0.5f, 0.5f, 0.5f},{-1,0,0},{1,1}},{{-0.5f, 0.5f,-0.5f},{-1,0,0},{0,1}},
-        // Right (+X)
-        {{ 0.5f,-0.5f, 0.5f},{1,0,0},{0,0}},{{ 0.5f,-0.5f,-0.5f},{1,0,0},{1,0}},
-        {{ 0.5f, 0.5f,-0.5f},{1,0,0},{1,1}},{{ 0.5f, 0.5f, 0.5f},{1,0,0},{0,1}},
-        // Top (+Y)
-        {{-0.5f, 0.5f, 0.5f},{0,1,0},{0,0}},{{ 0.5f, 0.5f, 0.5f},{0,1,0},{1,0}},
-        {{ 0.5f, 0.5f,-0.5f},{0,1,0},{1,1}},{{-0.5f, 0.5f,-0.5f},{0,1,0},{0,1}},
+        {{-0.5f,-0.5f,-0.5f, 0}},{{-0.5f,-0.5f, 0.5f,0}},
+        {{-0.5f, 0.5f, 0.5f, 0}},{{-0.5f, 0.5f,-0.5f,0}},
+        // Right (+X)    
+        {{ 0.5f,-0.5f, 0.5f, 0}},{{ 0.5f,-0.5f,-0.5f,0}},
+        {{ 0.5f, 0.5f,-0.5f, 0}},{{ 0.5f, 0.5f, 0.5f,0}},
+        // Top (+Y)  
+        {{-0.5f, 0.5f, 0.5f, 0}},{{ 0.5f, 0.5f, 0.5f,0}},
+        {{ 0.5f, 0.5f,-0.5f, 0}},{{-0.5f, 0.5f,-0.5f,0}},
         // Bottom (-Y)
-        {{-0.5f,-0.5f,-0.5f},{0,-1,0},{0,0}},{{ 0.5f,-0.5f,-0.5f},{0,-1,0},{1,0}},
-        {{ 0.5f,-0.5f, 0.5f},{0,-1,0},{1,1}},{{-0.5f,-0.5f, 0.5f},{0,-1,0},{0,1}},
+        {{-0.5f,-0.5f,-0.5f, 0}},{{ 0.5f,-0.5f,-0.5f,0}},
+        {{ 0.5f,-0.5f, 0.5f, 0}},{{-0.5f,-0.5f, 0.5f,0}},
     };
 
     m_cube.m_indices =
@@ -398,11 +398,11 @@ void Gizmos::CreateCone()
     constexpr float height = 1.0f;
 
     // Tip vertex
-    m_cone.m_vertices.push_back({ {0, height * 0.5f, 0}, {0,0,0}, {0,0} });
+    m_cone.m_vertices.push_back({ {0, height * 0.5f, 0, 0}, {0,0,0, 0} });
     unsigned int tipIndex = 0;
 
     // Base center
-    m_cone.m_vertices.push_back({ {0, -height * 0.5f, 0}, {0,0,0}, {0,0} });
+    m_cone.m_vertices.push_back({ {0, -height * 0.5f, 0, 0}, {0,0,0,0} });
     unsigned int baseCenterIndex = 1;
 
     // Base ring vertices
@@ -413,7 +413,7 @@ void Gizmos::CreateCone()
         float x = cos(angle) * radius;
         float z = sin(angle) * radius;
 
-        m_cone.m_vertices.push_back({ {x, -height * 0.5f, z}, {0,0,0}, {0,0} });
+        m_cone.m_vertices.push_back({ {x, -height * 0.5f, z, 0}, {0,0,0,0} });
     }
 
     // Side triangles
@@ -448,8 +448,8 @@ void Gizmos::CreateCylinder()
     // Top and bottom center vertices
     constexpr unsigned int topCenter = 0;
     constexpr unsigned int bottomCenter = 1;
-    m_cylinder.m_vertices.push_back({ {0,  halfHeight, 0}, {0,0,0}, {0,0} });
-    m_cylinder.m_vertices.push_back({ {0, -halfHeight, 0}, {0,0,0}, {0,0} });
+    m_cylinder.m_vertices.push_back({ {0,  halfHeight, 0, 0}, {0,0,0, 0}});
+    m_cylinder.m_vertices.push_back({ {0, -halfHeight, 0, 0}, {0,0,0, 0}});
 
     // Rings
     for (int i = 0; i < segments; i++)
@@ -460,9 +460,9 @@ void Gizmos::CreateCylinder()
         float z = sin(angle) * radius;
 
         // top vertex
-        m_cylinder.m_vertices.push_back({ {x,  halfHeight, z}, {0,0,0}, {0,0} });
+        m_cylinder.m_vertices.push_back({ {x,  halfHeight, z,0}, {0,0,0,0} });
         // bottom vertex
-        m_cylinder.m_vertices.push_back({ {x, -halfHeight, z}, {0,0,0}, {0,0} });
+        m_cylinder.m_vertices.push_back({ {x, -halfHeight, z,0}, {0,0,0,0} });
     }
 
     // Side triangles
@@ -529,7 +529,7 @@ void Gizmos::CreateThorus()
             float y = thickness * sinV;
             float z = (circleRadius + thickness * cosV) * sinU;
 
-            LibMath::Vector3 pos(x, y, z);
+            LibMath::Vector4 pos(x, y, z, 0);
 
             m_thorus.m_vertices.push_back({ pos });
         }
@@ -557,7 +557,8 @@ void Gizmos::CreateThorus()
 
 
 LibMath::Vector2 Apex::Editor::GetScreenPos(
-    LibMath::Vector3 worldPos, LibMath::Matrix4 const& viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+    LibMath::Vector3 const& worldPos, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize)
 {
     LibMath::Vector4 clip = viewProj * LibMath::Vector4(worldPos, 1.0f);
 
@@ -577,7 +578,8 @@ LibMath::Vector2 Apex::Editor::GetScreenPos(
 }
 
 LibMath::Line3D Apex::Editor::ScreenToWorldRay(
-    LibMath::Vector2 mousePosOnScreen, LibMath::Matrix4 viewProj, LibMath::Vector2 panelOffset, LibMath::Vector2 panelSize)
+    LibMath::Vector2 const& mousePosOnScreen, LibMath::Matrix4 const& viewProj, 
+    LibMath::Vector2 const& panelOffset, LibMath::Vector2 const& panelSize)
 {
     // 1. Adjust mouse for viewport
     float mx = mousePosOnScreen[0] - panelOffset[0];

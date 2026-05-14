@@ -6,6 +6,7 @@
 #include "Log.H"
 
 #include <filesystem>
+#include <fstream>
 
 void MeshLoader::Load(std::string path, Mesh& mesh)
 {
@@ -21,32 +22,79 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     if (!sourcePath.empty()) path = sourcePath;
 
     MeshImporter importer;
-    if (importer.Import(path, mesh))
+    std::vector<MaterialImportData> mats;
+    if (importer.Import(path, mesh, mats))
     {
         binLoader.Export(path, mesh);
         return;
     }
 }
 
-void MeshLoader::Load(std::string path, Animation& animation)
+static void WriteMaterialFile(const std::filesystem::path& fbxPath, const MaterialImportData& mat)
 {
-    std::filesystem::path filePath(path);
-    std::string extension = filePath.extension().string();
+    if (mat.m_name.empty()) return;
 
-    BinLoader binLoader;
-    std::string sourcePath;
-    if (IsBinFile(extension) && binLoader.Load(path, animation)) return;
+    std::filesystem::path matPath = fbxPath.parent_path() / (mat.m_name + ".mat");
+
+    // Don't overwrite an existing hand-authored material
+    if (std::filesystem::exists(matPath)) return;
+
+    std::ofstream file(matPath);
+    if (!file) return;
+
+    file << "{\n";
+    file << "\t\"shader\": \"ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag\",\n";
+    file << "\t\"tint\": [1.0, 1.0, 1.0],\n";
+    file << "\t\"textures\": [";
+
+    bool first = true;
+    if (!mat.m_diffusePath.empty())
+    {
+        if (!first) file << ",";
+        file << "\n\t\t\"" << mat.m_diffusePath << "\"";
+        first = false;
+    }
+    if (!mat.m_normalPath.empty())
+    {
+        if (!first) file << ",";
+        file << "\n\t\t\"" << mat.m_normalPath << "\"";
+        first = false;
+    }
+    if (!mat.m_specularPath.empty())
+    {
+        if (!first) file << ",";
+        file << "\n\t\t\"" << mat.m_specularPath << "\"";
+    }
+    if (first)
+    {
+        // No textures — write a blank texture so Bind() never crashes
+        file << "\n\t\t\"Assets/Textures/Blank.png\"";
+    }
+
+    file << "\n\t]\n}\n";
+
+    LOG_INFO_CAT("Resource", "Generated material file: {}", matPath.generic_string());
 }
 
 void MeshLoader::Import(std::string path)
 {
     Mesh mesh;
+    std::vector<MaterialImportData> materials;
     MeshImporter importer;
-    if (importer.Import(path, mesh))
+
+    if (importer.Import(path, mesh, materials))
     {
         BinLoader binLoader;
         binLoader.Export(path, mesh);
-        return;
+
+        // Write a .mat file for each extracted material
+        std::filesystem::path fbxPath(path);
+        for (const auto& mat : materials)
+            WriteMaterialFile(fbxPath, mat);
+
+        if (!materials.empty())
+            LOG_INFO_CAT("Resource", "Extracted {} material(s) from {}",
+                materials.size(), path);
     }
 }
 

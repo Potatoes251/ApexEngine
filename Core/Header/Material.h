@@ -10,6 +10,8 @@
 #include "ResourceManager.h"
 #include "SerializationParser.h"
 
+#include "ComputeShader.h"
+
 #include "LibMath/Vector.h"
 
 class Texture;
@@ -28,15 +30,22 @@ namespace Apex::Rendering
 		void SetMaterialUniform(std::string name, LibMath::Vector4& val) { m_uniforms[name] = val; }
 
 		void Bind();
+		void BindCompute();
+		void StartCompute(uint32_t vertexCount);
 
 		void LoadFromFile() override;
 		void Save();
 
 		void SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
+		void SetComputeShader(Resources::ResourceHandle<ComputeShader> shader) { m_computeShader = shader; }
+
+		LibMath::Vector3 GetTint() const { return m_tint; }
+		void SetTint(const LibMath::Vector3& t) { m_tint = t; }
 
 		void AddEmptyTexture();
 
 		Resources::ResourceHandle<Shader> GetShader() const { return m_shader; }
+		Resources::ResourceHandle<ComputeShader> GetComputeShader() const { return m_computeShader; }
 		std::vector<Resources::ResourceHandle<Texture>>& GetTextures() { return m_textures; }
 
 	private:
@@ -52,6 +61,8 @@ namespace Apex::Rendering
 		std::vector<Resources::ResourceHandle<Texture>> m_textures;
 
 		Resources::ResourceHandle<Shader> m_shader;
+		Resources::ResourceHandle<ComputeShader> m_computeShader = nullptr;
+		LibMath::Vector3 m_tint{ 1.f, 1.f, 1.f };
 	};
 }
 

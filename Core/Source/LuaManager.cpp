@@ -2,16 +2,7 @@
 
 #include "Log.h"
 
-#include "LuaFunction/HudFunc.h"
-#include "LuaFunction/InputLua.h"
-#include "LuaFunction/CameraLua.h"
-#include "LuaFunction/ObjectLua.h"
-#include "LuaFunction/Vector3Lua.h"
-#include "LuaFunction/AnimationLua.h"
-#include "LuaFunction/ComponentLua.h"
-#include "LuaFunction/TransformFunc.h"
-#include "LuaFunction/HierarchyFunc.h"
-#include "LuaFunction/CharacterControllerLua.h"
+#include "LuaFunction/LuaFunctions.h"
 
 #include <iostream>
 
@@ -71,15 +62,20 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
+    Apex::Log::RegisterLua(*this);
     Apex::Anim::RegisterLua(*this);
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);
+    Apex::Mezh::RegisterLua(*this);
+    Apex::Audio::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
+    Apex::Scene::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);
     Apex::Vector3::RegisterLua(*this);
     Apex::Hierarchy::RegisterLua(*this);
     Apex::Transform::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
+    Apex::Perception::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
@@ -219,4 +215,9 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIManager* ui)
 {
     Apex::HudBindings::RegisterHudFunctions(luaState, ui);
+}
+
+void Apex::Scripting::LuaManager::RegisterScriptCast(Application* app)
+{
+    Apex::ScriptCast::Register(luaState, app);
 }

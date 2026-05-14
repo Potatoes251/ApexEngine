@@ -36,4 +36,8 @@ function CharacterController:IsGrounded()
     return CC_IsGrounded_Internal(self)
 end
 
+function CharacterController:IsInWater()
+    return CC_IsInWater_Internal(self)
+end
+
 return CharacterController

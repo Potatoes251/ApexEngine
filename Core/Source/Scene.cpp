@@ -9,6 +9,8 @@
 
 #include "Rigidbody.h"
 #include "BoxCollider.h"
+#include "WaterVolume.h"
+#include "DebugRenderer.h"
 
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
@@ -30,8 +32,6 @@ namespace Apex::Rendering
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
 
-		copy->m_mainCamera = m_mainCamera;
-
 		for (const auto& obj : m_objects)
 		{
 			copy->m_objects.push_back(obj->Clone());
@@ -46,7 +46,7 @@ namespace Apex::Rendering
 
 				if (mat.IsValid())
 					collider->SetMaterial(copy->m_physics.CreateMaterial(
-						mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
+						mat->GetPath(), mat->MutStaticFriction(), mat->MutDynamicFriction(), mat->MutBounciness()));
 				
 				copy->m_physics.CreateActor(*collider, *body);
 			}
@@ -55,6 +55,16 @@ namespace Apex::Rendering
 				{
 					MarkDirty();
 				});
+		}
+
+		for (auto& obj : copy->m_objects)
+		{
+			Camera* cam = obj->GetComponent<Camera>();
+			if (cam && cam->IsMainCamera())
+			{
+				copy->m_mainCamera = cam;
+				break;
+			}
 		}
 
 		return copy;
@@ -138,7 +148,7 @@ namespace Apex::Rendering
 		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
 		if (node && node->GetParent())
-			node->GetParent()->DestroyChild(node);
+			node->Destroy();
 
 		auto it = std::find_if(
 			m_objects.begin(),
@@ -189,8 +199,6 @@ namespace Apex::Rendering
 			if (character) 
 			{
 				character->SetPhysic(&m_physics);
-				character->SetPhysic(&m_physics);
-				character->SetPhysic(&m_physics);
 			}
 
 			if (m_mainCamera) continue;
@@ -228,14 +236,31 @@ namespace Apex::Rendering
 			obj->FixedUpdate(deltaTime_s);
 	}
 
+	void Scene::ComputePass(RenderPassInfo passInfo)
+	{
+		std::vector<MeshRenderer*> renderers = GetComponents<MeshRenderer>();
+
+		if (passInfo.m_flags & PerformCompute)
+		{
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->ComputePass();
+			}
+		}
+		else
+		{
+			for (MeshRenderer* renderer : renderers)
+			{
+				renderer->SetSkinned(false);
+			}
+		}
+	}
+
 	void Scene::Render(RenderPassInfo passInfo)
 	{
-		for (auto& obj : m_objects)
+		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())
 		{
-			passInfo.m_id++;
-			MeshRenderer* renderer = obj->GetComponent<MeshRenderer>();
-			if (!renderer)
-				continue;
+			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)
@@ -247,7 +272,14 @@ namespace Apex::Rendering
 			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
 		}
 		if (passInfo.m_flags & ShowCollider)
+		{
+			DebugRenderer& dr = DebugRenderer::Get();
+			for (WaterVolume* vol : GetComponents<WaterVolume>())
+			{
+				dr.AddBox(vol->GetOwner()->GetGlobalPosition(), {}, vol->GetHalfExtents());
+			}
 			m_physics.DrawColliders();
+		}
 	}
 
 	Object* Scene::GetObjectWithId(size_t id)
@@ -267,18 +299,16 @@ namespace Apex::Rendering
 		if (!dragged || !target || dragged == target)
 			return;
 
-		auto& objs = m_objects;
-
-		auto itDragged = std::find_if(objs.begin(), objs.end(),
+		auto itDragged = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == dragged; });
 
-		auto itTarget = std::find_if(objs.begin(), objs.end(),
+		auto itTarget = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == target; });
 
 		if (std::next(itDragged) == itTarget)
 			return;
 
-		if (itDragged == objs.end() || itTarget == objs.end())
+		if (itDragged == m_objects.end() || itTarget == m_objects.end())
 			return;
 
 		if (itDragged < itTarget)
@@ -294,18 +324,16 @@ namespace Apex::Rendering
 		if (!dragged || !target || dragged == target)
 			return;
 
-		auto& objs = m_objects;
-
-		auto itDragged = std::find_if(objs.begin(), objs.end(),
+		auto itDragged = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == dragged; });
 
-		auto itTarget = std::find_if(objs.begin(), objs.end(),
+		auto itTarget = std::find_if(m_objects.begin(), m_objects.end(),
 			[&](auto& o) { return o.get() == target; });
 
 		if (std::next(itTarget) == itDragged)
 			return;
 
-		if (itDragged == objs.end() || itTarget == objs.end())
+		if (itDragged == m_objects.end() || itTarget == m_objects.end())
 			return;
 
 		if (itDragged < itTarget)
@@ -351,9 +379,9 @@ namespace Apex::Rendering
 			file <<
 				"  {\n"
 				"    \"id\": " << material->GetId() << ",\n"
-				"    \"static friction\": " << material->GetStaticFriction() << ",\n"
-				"    \"dynamic friction\": " << material->GetDynamicFriction() << ",\n"
-				"    \"bounciness\": " << material->GetBounciness() << "\n"
+				"    \"static friction\": " << material->MutStaticFriction() << ",\n"
+				"    \"dynamic friction\": " << material->MutDynamicFriction() << ",\n"
+				"    \"bounciness\": " << material->MutBounciness() << "\n"
 				"  }";
 		}
 
@@ -397,7 +425,11 @@ namespace Apex::Rendering
 				if (!firstComponent)
 					file << ",\n";
 
+				file << "      \"" << component->GetTypeName() << "\": {\n";
+				file << "        \"enabled\": " << (component->IsEnabled() ? "true" : "false") << ",\n";
 				component->Serialize(file);
+				file << "      }";
+
 				firstComponent = false;
 			}
 

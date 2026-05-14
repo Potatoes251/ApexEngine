@@ -31,6 +31,8 @@ namespace Apex::Vector3
         return out;
     }
 
+    int Lua_Vector3_New(lua_State* L);
+    int Lua_Vector3_GarbageCollect(lua_State* L);
     int Lua_Vector3_Normalized(lua_State* L);
     int Lua_Vector3_Add(lua_State* L);
     int Lua_Vector3_Mul(lua_State* L);

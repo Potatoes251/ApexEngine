@@ -12,28 +12,40 @@ namespace Apex::Editor
 	{
 	public:
 		MaterialEditor(UserInterface::IGUI* gui, Resources::ResourceManager* resourceManager)
-			: m_gui(gui), m_resourceManager(resourceManager), m_texturePicker(*gui, *resourceManager) {}
+			: m_gui(gui), m_resourceManager(resourceManager), m_texturePicker(gui, resourceManager) {}
 
 		void Open(std::string path);
 		void Close();
 
 		void Draw();
 
+		bool IsOpen() const { return m_open; }
+
+		void SetThumbnailRenderer(ThumbnailRenderer* t);
+
 	private:
-		void DrawTexture(Resources::ResourceHandle<Texture>* texture, int id);
-		void DrawShaderPicker(std::string& shaderPath, bool& open, std::string shaderType);
+        void DrawPreviewAndHeader();
+        void DrawTint();
+        void DrawTextureList();
+        void DrawShaderSection();
+        void SaveMaterial();
+        void DrawTexture(Apex::Resources::ResourceHandle<Texture>* texture, int id);
+        void DrawShaderPicker(std::string& out_shaderPath, bool& out_open, const std::string shaderType);
 
-		Resources::AssetPicker<Texture> m_texturePicker;
+        Apex::UserInterface::IGUI* m_gui = nullptr;
+        Apex::Resources::ResourceManager* m_resourceManager = nullptr;
+        ThumbnailRenderer* m_thumbnails = nullptr;
 
-		Resources::ResourceHandle<Rendering::Material> m_currentMat;
-		UserInterface::IGUI* m_gui;
-		Resources::ResourceManager* m_resourceManager;
+        Apex::Resources::ResourceHandle<Apex::Rendering::Material> m_currentMat;
+        Apex::Resources::AssetPicker<Texture> m_texturePicker;
 
+		std::string m_computeShader;
 		std::string m_vertexShader;
 		std::string m_fragmentShader;
 
 		bool m_vertShadPickOpen = false;
 		bool m_fragShadPickOpen = false;
+		bool m_compShadPickOpen = false;
 		bool m_open = false;
 		bool m_wasReady = false;
 	};

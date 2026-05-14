@@ -20,12 +20,8 @@ Animator::Animator(const Animator& other)
 
 void Animator::Serialize(std::ostream& out) const
 {
-	out << "      \"Animator\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
 	out << "        \"fps\": " << m_fps << ",\n";
 	out << "		\"Mesh\": \"" << m_mesh->GetPath() << "\"\n";
-	out << "      }";
 }
 
 
@@ -541,7 +537,7 @@ void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance&
 
 }
 
-void Animator::SendSkeletonMatrixToGPU(const ResourceHandle<Shader>& shader)
+void Animator::SendSkeletonMatrixToGPU(const ResourceHandle<ComputeShader>& shader)
 {
 	if (m_skeletonMatrix.size() > 0)
 		shader->SetUniform("u_Bones", m_skeletonMatrix[0], (int)m_skeletonMatrix.size());

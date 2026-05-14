@@ -2,16 +2,16 @@
 
 #include "EditorIcon.h"
 
-#include <iostream>
+#include "Log.h"
 
-#ifndef STB_IMAGE_STATIC
 extern "C"
 {
-    extern unsigned char* stbi_load(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
-    extern float*         stbi_loadf(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
-    extern void           stbi_image_free(void* retval_from_stbi_load);
+    unsigned char* stbi_load(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
+    float*         stbi_loadf(const char* filename, int* x, int* y, int* channels_in_file, int desired_channels);
+    void           stbi_image_free(void* retval_from_stbi_load);
 }
-#endif
+
+#include <iostream>
 
 #include <stb_dxt.h>
 #include <stb_image_write.h>
@@ -24,9 +24,8 @@ extern "C"
 namespace Apex::Editor
 {
     TextureEditor::TextureEditor(IGUI& gui, Apex::Windowing::IWindow& window) : m_gui(gui), m_window(window) {}
-    TextureEditor::~TextureEditor() { UnloadTexture(); }
 
-    void TextureEditor::Open(const fs::path& path, int instanceIndex)
+    void TextureEditor::Open(const Fs::path& path, int instanceIndex)
     {
         UnloadTexture();
         m_path = path;
@@ -55,16 +54,11 @@ namespace Apex::Editor
         if (m_pickerModeActive)
         {
             m_pickerModeActive = false;
-            m_window.ResetCursor();
+            m_window.ResetCursorShape();
             m_gui.SetManagesCursor(true);
         }
         UnloadTexture();
         m_open = false;
-    }
-
-    void TextureEditor::Focus()
-    {
-        m_pendingFocus = true;
     }
 
     void TextureEditor::Draw()
@@ -318,7 +312,7 @@ namespace Apex::Editor
             }
             else
             {
-                m_window.ResetCursor();
+                m_window.ResetCursorShape();
                 m_gui.SetManagesCursor(true);
             }
         }
@@ -436,7 +430,7 @@ namespace Apex::Editor
                     if (picked)
                     {
                         m_pickerModeActive = false;
-                        m_window.ResetCursor();
+                        m_window.ResetCursorShape();
                         m_gui.SetManagesCursor(true);
                     }
                 }
@@ -445,7 +439,7 @@ namespace Apex::Editor
             if (m_pickerModeActive && m_gui.IsKeyPressed(UIKey::Escape))
             {
                 m_pickerModeActive = false;
-                m_window.ResetCursor();
+                m_window.ResetCursorShape();
                 m_gui.SetManagesCursor(true);
             }
         }
@@ -895,7 +889,7 @@ namespace Apex::Editor
     void TextureEditor::LoadTexture()
     {
         m_filename = m_path.filename().string();
-        m_fileBytes = fs::exists(m_path) ? fs::file_size(m_path) : 0;
+        m_fileBytes = Fs::exists(m_path) ? Fs::file_size(m_path) : 0;
         m_pixels.clear();
         m_pixelsHDR.clear();
 
@@ -1072,7 +1066,7 @@ namespace Apex::Editor
         // Suggest the current filename as a default
         std::string suggested = m_path.stem().string()
             + (IsHDR() ? ".hdr" : ".png");
-        fs::path dest = m_window.SaveFileDialog(suggested);
+        Fs::path dest = m_window.SaveFileDialog(suggested);
         if (dest.empty()) return;
 
         if (!m_pixelsHDR.empty())
@@ -1087,15 +1081,20 @@ namespace Apex::Editor
             // LDR export — prefer PNG, fallback to JPG
             if (dest.extension().empty()) dest += ".png";
             std::string destStr = dest.string();
-            int ok = stbi_write_png(destStr.c_str(),
+            int success = stbi_write_png(destStr.c_str(),
                 m_width, m_height, 4,
                 m_pixels.data(), m_width * 4);
-            if (!ok)
+            if (!success)
             {
                 dest.replace_extension(".jpg");
-                stbi_write_jpg(dest.string().c_str(),
+                success = stbi_write_jpg(dest.string().c_str(),
                     m_width, m_height, 4,
                     m_pixels.data(), 90);
+
+                if (!success)
+                {
+                    LOG_WARNING_CAT("Resource", "Failed to save \"{}\"", dest.string());
+                }
             }
         }
     }
@@ -1202,12 +1201,7 @@ namespace Apex::Editor
 
     std::string TextureEditor::FileSizeString() const
     {
-        if (m_fileBytes >= 1024 * 1024)
-            return std::to_string(m_fileBytes / (1024 * 1024)) + " MB";
-        else if (m_fileBytes >= 1024)
-            return std::to_string(m_fileBytes / 1024) + " KB";
-        else
-            return std::to_string(m_fileBytes) + " B";
+        return FormatBytes(m_fileBytes);
     }
 
     std::string TextureEditor::CompressionFormatString(CompressionFormat format) const

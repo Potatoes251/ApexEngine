@@ -2,15 +2,19 @@
 #define APPLICATION
 
 #include "ThreadPool.h"
-#include "Physic.h"
+
 #include "Scene.h"
+
 #include "RenderPassInfo.h"
+
+#include <memory>
+#include <filesystem>
 
 namespace Apex::Rendering
 {
     class IRHI;
-    class Scene;
 }
+
 namespace Apex::Windowing
 {
     class IWindow;
@@ -30,10 +34,6 @@ namespace Apex::UserInterface
     class IGUI;
 }
 
-#include "Animator.h"
-
-#include <memory>
-#include <filesystem>
 namespace Apex::Scripting
 {
     class LuaManager;
@@ -52,19 +52,25 @@ namespace Apex
 	class Application
 	{
     public:
-        Application();
+        Application(Windowing::IWindow* window, UserInterface::IGUI* gui);
         ~Application();
 
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
-        bool Init(Windowing::IWindow* window, UserInterface::IGUI* gui);
-        void Tick();
-        void LoadScene();
+        static Application* Get() { return m_instance; }
 
-        void Render(Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
+        void Tick();
+        void LoadScene(bool isBuild, bool startScene = true);
+        void LoadScene(const std::string& path, bool startScene = true);
+
+        void SetTargetScene(std::string targetScene) { m_targetScene = targetScene; }
+
+        void Render(UserInterface::IGUI* gui, 
+            Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
+        std::string                 GetScenePath() { return m_scenePath; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
@@ -73,19 +79,25 @@ namespace Apex
         UserInterface::UIManager*   GetUI() { return m_uiManager.get(); }
         Scripting::LuaManager*      GetLuaManager() { return m_luaManager.get(); }
 
+        float                       GetDeltaTime() const { return m_deltaTime_s; }
+
     private:
-        bool InitLog();
-        bool InitWindow(Windowing::IWindow* window);
-        bool InitResourceManager();
-        bool InitRHI();
-        bool InitRendering();
-        bool InitAudio();
-        bool InitUI(UserInterface::IGUI* gui);
-        bool InitLighting();
-        bool InitLua();
-        bool InitScene();
+        void InitLog();
+        void InitWindow(Windowing::IWindow* window);
+        void InitResourceManager();
+        void InitRHI();
+        void InitRendering();
+        void InitAudio();
+        void InitUI(UserInterface::IGUI* gui);
+        void InitLighting();
+        void InitLua();
 
         void UpdateAudioListener();
+
+        static void EnsureDefaultScene(const std::string& path);
+        void SaveLastScene(const std::string& path);
+        std::string LoadLastScene() const;
+        std::string LoadBuildStartScene() const;
 
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
@@ -103,7 +115,16 @@ namespace Apex
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
-        std::unique_ptr<Rendering::Scene> m_scene = nullptr;
+        std::unique_ptr<Rendering::Scene> m_scene;
+
+        std::string m_targetScene{};
+
+        static inline Application* m_instance = nullptr;
+        std::string m_scenePath = "Assets/Scenes/scene.level";
+
+        static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
+        static constexpr const char* m_prefsPath = "Editor/prefs.ini";
+        static constexpr const char* m_lastSceneKey = "LastScene=";
 	};
 }
 

@@ -1,7 +1,6 @@
 #include "MeshRenderer.h"
 
 #include "Animator.h"
-
 #include "Camera.h"
 
 using namespace LibMath;
@@ -9,18 +8,18 @@ using namespace Apex;
 using namespace Apex::Resources;
 using namespace Apex::Rendering;
 
-Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager& resourceManager)
+Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager* resourceManager)
 {
-    m_mesh = resourceManager.CreateAsync<Mesh>("Assets/Meshes/cube.obj");
-    m_material = resourceManager.CreateAsync<Material>("Assets/Textures/Default.mat");
+    m_mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
+    m_material = resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
 }
 
-void MeshRenderer::SetMesh(ResourceHandle<Mesh>& mesh)
+void MeshRenderer::SetMesh(ResourceHandle<Mesh> mesh)
 {
     m_mesh = mesh;
 }
 
-void MeshRenderer::SetMaterial(ResourceHandle<Material>& material)
+void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
 {
     m_material = material;
 }
@@ -56,6 +55,36 @@ std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
     return clone;
 }
 
+void MeshRenderer::ComputePass()
+{
+    if (!m_mesh.IsReady() ||
+        !m_material.IsReady())
+        return;
+
+    ResourceHandle<ComputeShader> computeShader = m_material->GetComputeShader();
+
+    if (!computeShader.IsReady()) 
+    {
+        m_useSkinnedVAO = false;
+        return;
+    }
+    m_useSkinnedVAO = true;
+
+    m_material->BindCompute();
+
+    m_mesh->BindForCompute();
+
+    Data::Object* owner = GetOwner();
+    if (owner)
+    {
+        Animator* animator = owner->GetComponent<Animator>();
+
+        if (animator) animator->SendSkeletonMatrixToGPU(computeShader);
+    }
+
+    m_material->StartCompute(m_mesh->GetVertexCount());
+}
+
 void MeshRenderer::Render(RenderPassInfo passInfo)
 {
     if (!m_mesh.IsReady() ||
@@ -76,14 +105,6 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         m_material->Bind();
     }
 
-    Data::Object* owner = GetOwner();
-    if (owner)
-    {
-        Animator* animator = owner->GetComponent<Animator>();
-
-        if (animator) animator->SendSkeletonMatrixToGPU(currentShader);
-    }
-
     Matrix4 model = GetOwner()->GetGlobalTransform();
 
     currentShader->SetUniform("uModel", model);
@@ -93,7 +114,7 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
     }
 
-    if (passInfo.m_flags & UseIdAsColor) 
+    if (passInfo.m_flags & UseIdAsColor)
     {
         LibMath::Vector3 color;
         color[0] = (passInfo.m_id >> 16) & 0xFF; // highest byte
@@ -102,22 +123,16 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         currentShader->SetUniform("uColor", color / 255.f);
     }
 
-    m_mesh->Draw();
+    m_mesh->Draw(m_useSkinnedVAO);
 }
 
 void MeshRenderer::Serialize(std::ostream& out) const
 {
-    out << "      \"MeshRenderer\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
-    if (m_mesh.IsValid() && m_mesh->GetPath().size())
+    if (m_mesh.IsValid() && !m_mesh->GetPath().empty())
         out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
 
-    if (m_material.IsValid() && m_material->GetPath().size())
+    if (m_material.IsValid() && !m_material->GetPath().empty())
         out << "        \"material\": \"" << m_material->GetPath() << "\",\n";
 
     out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
-
-    out << "      }";
 }

@@ -5,9 +5,11 @@
 #include "ThreadPool.h"
  
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <shared_mutex>
 #include <cassert>
+#include <sstream>
 
 namespace Apex::Resources
 {
@@ -32,9 +34,14 @@ namespace Apex::Resources
 		template<typename T>
 		std::vector<ResourceHandle<T>> GetAll();
 
+		const std::unordered_set<std::string>& GetLoadedAssets() const;
+
 		void ProcessGpuUploads();
+		void CollectGarbage(float deltaTime);
 
 		void SetRHI(Rendering::IRHI* rhi) { m_rhi = rhi; }
+
+		void WaitForAll();
 
 	private:
 		void AddToGpuQueue(ResourceHandle<IResource>);
@@ -48,6 +55,12 @@ namespace Apex::Resources
 
 		std::shared_mutex		m_mapMutex;
 		std::unordered_map<std::string, std::unique_ptr<ResourceEntry>> m_resources;
+
+		std::unordered_set<std::string> m_loadedAssets;
+
+		std::atomic<int>        m_pendingLoads{ 0 };
+		std::mutex              m_allLoadedMutex;   // dedicated mutex for the CV
+		std::condition_variable m_allLoadedCV;
 	};
 
 
@@ -71,7 +84,20 @@ namespace Apex::Resources
 		entry->m_resource->SetRhi(m_rhi);
 		entry->m_resource->SetResourceManager(this);
 
+		m_pendingLoads.fetch_add(1, std::memory_order_relaxed);
+
 		Core::ThreadPool::Get().Enqueue(&ResourceManager::Create<ResourceType>, this, id);
+		
+		if (id.starts_with("Assets/") || id.find("|Assets/") != std::string::npos)
+		{
+			std::stringstream ss(id);
+			std::string part;
+			while (std::getline(ss, part, '|'))
+			{
+				if (part.starts_with("Assets/"))
+					m_loadedAssets.insert(part);
+			}
+		}
 
 		return ResourceHandle<ResourceType>(entry);
 	}
@@ -95,6 +121,13 @@ namespace Apex::Resources
 	template <typename ResourceType>
 	void ResourceManager::Create(std::string const& id)
 	{
+		auto guard = [this](void*)
+			{
+				if (m_pendingLoads.fetch_sub(1, std::memory_order_acq_rel) == 1)
+					m_allLoadedCV.notify_all(); // last one out flips the light
+			};
+		std::unique_ptr<void, decltype(guard)> _(this, guard);
+
 		ResourceHandle resource = Get<IResource>(id);
 
 		if (!resource.IsValid()) return;

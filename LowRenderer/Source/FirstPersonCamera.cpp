@@ -85,15 +85,12 @@ void FirstPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 void FirstPersonCamera::ProcessScroll(double yoffset)
 {
 	m_fov -= LibMath::Degree((float)yoffset);
-	m_fov = LibMath::Degree(LibMath::clamp(m_fov.raw(), 1.f, 90.f));
+	m_fov = LibMath::Degree(LibMath::clamp(m_fov.raw(), 1.f, 180.f));
 }
 
 void FirstPersonCamera::Serialize(std::ostream& out) const
 {
-	out << "      \"ThirdPersonCamera\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << "\n";
-	out << "      }";
 }
 
 void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)
