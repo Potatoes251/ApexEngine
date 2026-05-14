@@ -153,7 +153,8 @@ void UIButton::Draw(const UIDrawContext& context) const
         inputPos[0] <= max[0] &&
         inputPos[1] >= pos[1] &&
         inputPos[1] <= max[1] &&
-        m_onClick)
+        m_onClick &&
+        m_visible)                      //maybe to change for a system that allows HUDs to be closed and it's elements be invisible. 
     {
         m_onClick();
     }
