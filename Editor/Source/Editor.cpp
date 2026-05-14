@@ -181,6 +181,17 @@ namespace Apex::Editor
                 }
             });
 
+        m_window->SetScrollCallback([&](double /*xoffset*/, double yoffset)
+            {
+                if (m_editorState != EditorState::Play
+                    && m_viewport->IsFocus()
+                    && InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right))
+                {
+                    m_viewport->GetCamera().ProcessScroll(yoffset);
+                    return;
+                }
+            });
+
         m_window->MakeContextCurrent();
 
         m_contentBrowser->SetOnAssetLoad([this](const AssetEntry& entry)

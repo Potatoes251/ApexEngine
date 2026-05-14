@@ -460,7 +460,8 @@ void Viewport::DrawUI()
 	DrawPlayBar();
 	if (m_editor->GetEditorState() == EditorState::Edit)
 		DrawRightToolbar();
-	
+
+	DrawCameraSpeed();
 }
 
 void Viewport::DrawGrid()
@@ -615,6 +616,51 @@ void Apex::Editor::Viewport::DrawRightToolbar()
 	curY += PAD * 5.f; 
 
 	DrawSnapButtons(BUTTON, PAD, rightX, curY, ROUND);
+}
+
+void Apex::Editor::Viewport::DrawCameraSpeed()
+{
+	if (!InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right) ||
+		m_editor->GetEditorState() == EditorState::Play)
+		return;
+
+	constexpr float PAD = 4.f;
+	constexpr float HEIGHT = 36.f;
+	constexpr float ROUND = HEIGHT * 0.5f;
+
+	float speed = m_camera.GetSpeed();
+
+	char buf[32];
+	snprintf(buf, sizeof(buf), "Speed: %.1f", speed);
+
+	// Position
+	LibMath::Vector2 pos =
+	{
+		m_panelPos[0] + 5.f,
+		m_panelPos[1] + 78.f
+	};
+
+	// Background size
+	LibMath::Vector2 size =
+	{
+		speed < 10.f ? 110.f : 120.f ,
+		HEIGHT
+	};
+
+	// Draw pill background
+	DrawPillGroup(pos, size, ROUND);
+
+	// Draw text inside
+	m_gui->PushFont(FontID::Default);
+
+	m_gui->SetCursorPos({
+		pos[0] + PAD * 3.f,
+		pos[1] + PAD * 1.5f
+		});
+
+	m_gui->Text(buf);
+
+	m_gui->PopFont();
 }
 
 void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round)
