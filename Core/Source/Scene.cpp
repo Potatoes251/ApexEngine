@@ -15,6 +15,8 @@
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
 
+#include "Waypoint.h"
+
 #include "Log.h"
 
 #include <fstream>
@@ -31,6 +33,7 @@ namespace Apex::Rendering
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
+		copy->m_graph = m_graph;
 
 		for (const auto& obj : m_objects)
 		{
@@ -279,6 +282,7 @@ namespace Apex::Rendering
 				dr.AddBox(vol->GetOwner()->GetGlobalPosition(), {}, vol->GetHalfExtents());
 			}
 			m_physics.DrawColliders();
+			m_graph.DebugRender();
 		}
 	}
 

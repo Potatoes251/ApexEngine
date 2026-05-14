@@ -23,7 +23,7 @@
         "isTrigger": false,
         "material": null
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Static",
         "mass": 1.000000
@@ -77,7 +77,7 @@
         "material": "Assets/Material/Player.mat",
         "castShadow": true
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Kinematic",
         "mass": 1.000000
@@ -145,7 +145,7 @@
         "material": "Assets/Material/Painting.mat",
         "castShadow": true
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Static",
         "mass": 1.000000

@@ -21,8 +21,8 @@ end
 function Goomba:Start()
     self.aic = AIController.Get(self)
     self.view = ViewComp.Get(self)
+    self:AddTag("Goomba")
 end
-
 
 function Goomba:Update()
     local obj = self.view:GetClosestWithTag("Player")

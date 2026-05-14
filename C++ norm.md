@@ -53,7 +53,6 @@
 * Function parameters used to output data must have their name ending with "\_out" (ex: var\_out)
 * Single-letter variables may only be used as iterators in for loops and for math (x, y, z)
 * In cpp files, the first include statement must be the one directly associated to the file (ex: vector.cpp must first include vector.h)
-* Include statements from the same library/project must be grouped together
 * Different groups of include statements must be separated by an empty line
 * Do not typedef primitive types
 * "using namespace" keyword is prohibited if namespace is from c++ standard or an external library (including LibMath)

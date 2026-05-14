@@ -16,6 +16,7 @@
 #include "TransformFunc.h"
 #include "ViewComponentLua.h"
 #include "CharacterControllerLua.h"
+#include "ScriptcastLua.h"
 
 
 #endif // !LUA_FUNCTIONS
