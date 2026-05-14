@@ -76,7 +76,7 @@ namespace Apex::Editor
 		void OnSceneChanged();
 
 		void LoadCameraSettings();
-		void SaveCameraSettings();
+		void SaveUserSettings();
 
 	private:
 		static const char* TypeToString(AssetType type);

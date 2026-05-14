@@ -82,6 +82,7 @@ namespace Apex
         float                       GetDeltaTime() const { return m_deltaTime_s; }
 
         std::string                 GetPrefsPath() const { return m_prefsPath; }
+        const char*                 GetLastSceneKey() const { return m_lastSceneKey; }
 
     private:
         void InitLog();
@@ -97,7 +98,6 @@ namespace Apex
         void UpdateAudioListener();
 
         static void EnsureDefaultScene(const std::string& path);
-        void SaveLastScene(const std::string& path);
         std::string LoadLastScene() const;
         std::string LoadBuildStartScene() const;
 

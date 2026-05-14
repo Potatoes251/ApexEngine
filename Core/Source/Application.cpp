@@ -165,6 +165,8 @@ void Apex::Application::LoadScene(bool isBuild, bool startScene)
 
 void Apex::Application::LoadScene(const std::string& path, bool startScene)
 {
+    m_scenePath = path;
+
     // Reset scene
     m_scene = std::make_unique<Scene>();
 
@@ -199,8 +201,6 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
 
     if (startScene)
         m_scene->Start();
-    else
-        SaveLastScene(path);
 }
 
 void Apex::Application::Tick()
@@ -297,36 +297,6 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
     file << "}";
 
     LOG_INFO("Created default scene at: {}", path);
-}
-
-void Apex::Application::SaveLastScene(const std::string& path)
-{
-    std::filesystem::create_directories("Editor");
-
-    // Read existing lines
-    std::vector<std::string> lines;
-    bool found = false;
-    {
-        std::ifstream in(m_prefsPath);
-        std::string line;
-        while (std::getline(in, line))
-        {
-            if (line.rfind(m_lastSceneKey, 0) == 0)
-            {
-                line = std::string(m_lastSceneKey) + path;
-                found = true;
-            }
-            lines.push_back(line);
-        }
-    }
-
-    if (!found)
-        lines.insert(lines.begin(), std::string(m_lastSceneKey) + path);
-
-    // Rewrite
-    std::ofstream out(m_prefsPath, std::ios::trunc);
-    for (const auto& l : lines)
-        out << l << '\n';
 }
 
 std::string Apex::Application::LoadLastScene() const

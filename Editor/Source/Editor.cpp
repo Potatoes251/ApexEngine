@@ -392,7 +392,7 @@ namespace Apex::Editor
 
     void Editor::Shutdown()
     {
-        SaveCameraSettings();
+        SaveUserSettings();
 
         m_textureEditors.clear();
         m_meshViewers.clear();
@@ -1139,86 +1139,50 @@ namespace Apex::Editor
         }
     }
 
-    void Editor::SaveCameraSettings()
+    void Editor::SaveUserSettings()
     {
-        std::ifstream inputFile(m_app->GetPrefsPath());
+        std::filesystem::create_directories("Editor");
 
+        // Read existing file
         std::vector<std::string> lines;
-        std::string line;
-
-        bool hasCameraPosition = false;
-        bool hasCameraSpeed = false;
-        bool hasCameraYaw = false;
-        bool hasCameraPitch = false;
-
-        while (std::getline(inputFile, line))
         {
-            if (line.starts_with("CameraPosition="))
-            {
-                LibMath::Vector3 pos = m_viewport->GetCamera().GetPosition();
-
-                line = "CameraPosition={"
-                    + std::to_string(pos[0]) + "f, "
-                    + std::to_string(pos[1]) + "f, "
-                    + std::to_string(pos[2]) + "f};";
-
-                hasCameraPosition = true;
-            }
-            else if (line.starts_with("CameraSpeed="))
-            {
-                float speed = m_viewport->GetCamera().GetSpeed();
-
-                line = "CameraSpeed=" + std::to_string(speed) + "f;";
-
-                hasCameraSpeed = true;
-            }
-            else if (line.starts_with("CameraYaw="))
-            {
-                float yaw = m_viewport->GetCamera().GetYaw().raw();
-                line = "CameraYaw=" + std::to_string(yaw) + "f;";
-                hasCameraYaw = true;
-            }
-            else if (line.starts_with("CameraPitch="))
-            {
-                float pitch = m_viewport->GetCamera().GetPitch().raw();
-                line = "CameraPitch=" + std::to_string(pitch) + "f;";
-                hasCameraPitch = true;
-            }
-
-            lines.push_back(line);
+            std::ifstream inputFile(m_app->GetPrefsPath());
+            std::string line;
+            while (std::getline(inputFile, line))
+                lines.push_back(line);
         }
 
-        inputFile.close();
+        // Helper: update a line in-place, or append it if missing
+        auto upsert = [&](std::string_view key, std::string value, bool prepend = false)
+            {
+                for (auto& l : lines)
+                {
+                    if (l.starts_with(key))
+                    {
+                        l = std::string(key) + value;
+                        return;
+                    }
+                }
+                // Not found — insert
+                if (prepend)
+                    lines.insert(lines.begin(), std::string(key) + value);
+                else
+                    lines.push_back(std::string(key) + value);
+            };
 
-        // Add missing entries if they don't exist
-        if (!hasCameraPosition)
-        {
-            LibMath::Vector3 pos = m_viewport->GetCamera().GetPosition();
+        const Camera& cam = m_viewport->GetCamera();
+        LibMath::Vector3 pos = cam.GetPosition();
 
-            lines.push_back(
-                "CameraPosition={"
-                + std::to_string(pos[0]) + "f, "
-                + std::to_string(pos[1]) + "f, "
-                + std::to_string(pos[2]) + "f};"
-            );
-        }
-
-        if (!hasCameraSpeed)
-        {
-            float speed = m_viewport->GetCamera().GetSpeed();
-
-            lines.push_back(
-                "CameraSpeed=" + std::to_string(speed) + "f;"
-            );
-        }
-
-        if (!hasCameraYaw)
-            lines.push_back("CameraYaw=" + std::to_string(m_viewport->GetCamera().GetYaw().raw()) + "f;");
-        if (!hasCameraPitch)
-            lines.push_back("CameraPitch=" + std::to_string(m_viewport->GetCamera().GetPitch().raw()) + "f;");
+        upsert(m_app->GetLastSceneKey(), m_app->GetScenePath(), true);
+        upsert("CameraPosition=", "{"
+            + std::to_string(pos[0]) + "f, "
+            + std::to_string(pos[1]) + "f, "
+            + std::to_string(pos[2]) + "f};");
+        upsert("CameraSpeed=", std::to_string(cam.GetSpeed()) + "f;");
+        upsert("CameraYaw=", std::to_string(cam.GetYaw().raw()) + "f;");
+        upsert("CameraPitch=", std::to_string(cam.GetPitch().raw()) + "f;");
 
         std::ofstream outputFile(m_app->GetPrefsPath(), std::ios::trunc);
-
         for (const std::string& l : lines)
             outputFile << l << '\n';
     }
