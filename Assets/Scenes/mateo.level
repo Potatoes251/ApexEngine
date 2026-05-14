@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 46,
+    "id": 118,
     "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
@@ -14,7 +14,7 @@
       "MeshRenderer": {
         "enabled": true,
         "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Ground.mat",
+        "material": "Assets/Material/Red.mat",
         "castShadow": true
       },
       "BoxCollider": {
@@ -31,7 +31,7 @@
     }
   },
   {
-    "id": 47,
+    "id": 119,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -47,7 +47,7 @@
     }
   },
   {
-    "id": 48,
+    "id": 120,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -64,7 +64,7 @@
     }
   },
   {
-    "id": 49,
+    "id": 121,
     "parent": null,
     "name": "Player",
     "position": [0.230901,1.694018,0.000000],
@@ -98,7 +98,7 @@
       "CharacterController": {
         "enabled": true,
         "groundedDistance": 0.800000,
-        "speed": 1.000000,
+        "speed": 2.000000,
         "rotationSpeed": 1.000000,
         "density": 950.000000
       },
@@ -116,7 +116,7 @@
     }
   },
   {
-    "id": 50,
+    "id": 122,
     "parent": null,
     "name": "Object6",
     "position": [3.011898,1.203338,0.000000],
@@ -132,7 +132,7 @@
     }
   },
   {
-    "id": 51,
+    "id": 123,
     "parent": null,
     "name": "Painting",
     "position": [-0.859334,3.197713,-2.798263],
@@ -167,7 +167,7 @@
     }
   },
   {
-    "id": 52,
+    "id": 124,
     "parent": null,
     "name": "Water",
     "position": [-5.528850,2.636424,-1.838250],
@@ -192,7 +192,7 @@
     }
   },
   {
-    "id": 53,
+    "id": 125,
     "parent": null,
     "name": "WaterCurrent",
     "position": [15.311808,1.417259,-2.053998],
@@ -217,17 +217,17 @@
     }
   },
   {
-    "id": 54,
+    "id": 126,
     "parent": null,
-    "name": "Object18",
+    "name": "Goomba",
     "position": [1.610418,2.124156,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.000000,1.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Default.mat",
+        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
+        "material": "Assets/Material/Goomba.mat",
         "castShadow": true
       },
       "ScriptComponent": {
@@ -239,7 +239,7 @@
       "AIController": {
         "enabled": true,
         "groundedDistance": 0.5,
-        "speed": 5,
+        "speed": 1,
         "rotationSpeed": 5,
         "density": 980,
 "arrivalThreshold" :0.500000
@@ -259,10 +259,25 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.500000,
+        "halfHeight": 0.250000,
         "radius": 0.200000,
-        "isTrigger": false,
+        "isTrigger": true,
         "material": null
+      }
+    }
+  },
+  {
+    "id": 136,
+    "parent": null,
+    "name": "Object136",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [100.000000,100.000000,100.000000],
+    "components": {
+      "NavGenVolume": {
+        "enabled": true,
+        "spacing": 1.000000,
+        "genHeight": 1.000000
       }
     }
   }

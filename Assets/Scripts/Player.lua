@@ -107,7 +107,7 @@ end
 
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
-    if (obj:HasTag("Coin")) then
+    if obj:HasTag("Coin") then
         self.coinCount = self.coinCount + 1
 
         if self.hud ~= nil then
@@ -115,6 +115,10 @@ function Player:OnTriggerEnter(col)
         end
 
         obj:Destroy()
+    elseif obj:HasTag("Goomba") then
+        if self.cc:GetVerticalVelocity() < 0 then
+            obj:Destroy()
+        end
     end
 end
 

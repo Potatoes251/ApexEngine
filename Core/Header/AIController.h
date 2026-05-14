@@ -3,6 +3,8 @@
 
 #include "CharacterController.h"
 
+namespace Apex::Pathfinding { class WaypointGraph; }
+
 namespace Apex::Controller
 {
 	class AIController : public CharacterController
@@ -18,14 +20,26 @@ namespace Apex::Controller
 
 		const char* GetTypeName() const override { return "AIController"; }
 
-		void SetTarget(Data::Object* newTarget) { m_target = newTarget; }
+		std::vector<ExposedVar> GetExposedVariables() override;
 
+		void SetTarget(Data::Object* newTarget);
+
+		void OnStart() override;
 		void OnFixedUpdate(float deltatime_s) override;
 
 	private:
+		void SetPath(std::vector<LibMath::Vector3> const& path);
+
 		Data::Object* m_target = nullptr;
+		Pathfinding::WaypointGraph* m_graph = nullptr;
+
+		std::vector<LibMath::Vector3> m_path;
+		size_t m_pathIdx = 0;
 
 		float m_arrivalThreshold = .5f;
+		float m_pathRefreshTimer = 0.f;
+		// refresh path each X second
+		float m_pathRefreshInterval = .5f;
 	};
 }
 

@@ -57,6 +57,7 @@ namespace Apex::Serialization
         void ParseWaterVolume(Data::Object* obj, SerialParser& parser);
         void ParseViewComponent(Data::Object* obj, SerialParser& parser);
         void ParseAudioComponent(Data::Object* obj, SerialParser& parser);
+        void ParseWaypointComponent(Data::Object* obj, SerialParser& parser);
 
         void ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser);
         void ParseMaterials(SerialParser& parser);

@@ -20,4 +20,3 @@ namespace Apex::Data
 }
 
 #endif // !OBJECT_LUA
-

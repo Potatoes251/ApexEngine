@@ -15,6 +15,9 @@
 #include "Hud.h"
 #include "EditorIcon.h"
 
+#include "WaypointGraph.h"
+#include "Waypoint.h"
+
 using namespace Apex::Data;
 
 using namespace Apex::Editor;
@@ -44,6 +47,9 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 	if (!m_isFocus || m_editor->GetEditorState() == EditorState::Play) return;
 
 	InputSystem& input = InputSystem::Get();
+
+	// dont move while using shortcut
+	if (input.IsKeyDown(Key::Ctrl)) return;
 
 	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
 		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
@@ -519,6 +525,16 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_showBuildPopup = true;
 			m_gui->OpenPopup("Build Game");
 		}
+		if (m_gui->Button("GenerateNavGraph"))
+		{
+			Scene* scene = m_editor->GetApp()->GetScene();
+			std::filesystem::path path{ m_editor->GetApp()->GetScenePath() };
+			path.replace_extension(".nav");
+			std::vector<Pathfinding::NavGenVolume*> navVol = scene->GetComponents<Pathfinding::NavGenVolume>();
+			if (!navVol.empty())
+				scene->GetGraph()->GenerateGraph(path.string(), scene->GetPhysic(), navVol[0]);
+		}
+
 		m_gui->PopFont();
 		drawBar(1); // only Play
 		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
