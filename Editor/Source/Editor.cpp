@@ -104,6 +104,9 @@ namespace Apex::Editor
             m_gui.get(),
             this
         );
+
+        LoadCameraSettings();
+
         m_viewport->SetHierarchy(m_hierarchy.get());
         m_hierarchy->SetViewport(m_viewport.get());
 
@@ -236,7 +239,7 @@ namespace Apex::Editor
                     break;
                 }
             });
-
+        
         return true;
     }
 
@@ -389,6 +392,8 @@ namespace Apex::Editor
 
     void Editor::Shutdown()
     {
+        SaveCameraSettings();
+
         m_textureEditors.clear();
         m_meshViewers.clear();
         m_soundPlayers.clear();
@@ -1060,5 +1065,161 @@ namespace Apex::Editor
             m_componentsViewer->SetSelectedObject(nullptr);
         if (m_viewport)
             m_viewport->SelectObject(nullptr, false);
+    }
+
+    void Editor::LoadCameraSettings()
+    {
+        std::ifstream file(m_app->GetPrefsPath());
+
+        if (!file.is_open())
+            return;
+
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            if (line.starts_with("CameraPosition="))
+            {
+                size_t start = line.find('{');
+                size_t end = line.find('}');
+
+                if (start != std::string::npos && end != std::string::npos)
+                {
+                    std::string values = line.substr(start + 1, end - start - 1);
+
+                    float x, y, z;
+
+                    if (sscanf_s(values.c_str(), "%ff, %ff, %ff", &x, &y, &z) == 3)
+                        m_viewport->GetCamera().SetPosition({ x, y, z });
+                }
+            }
+
+            else if (line.starts_with("CameraSpeed="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+
+                    float speed;
+
+                    if (sscanf_s(value.c_str(), "%ff", &speed) == 1)
+                        m_viewport->GetCamera().SetSpeed(speed);
+                }
+            }
+
+            else if (line.starts_with("CameraYaw="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+                    float yaw;
+                    if (sscanf_s(value.c_str(), "%ff", &yaw) == 1)
+                        m_viewport->GetCamera().SetOrientation(
+                            m_viewport->GetCamera().GetPitch(), LibMath::Degree(yaw));
+                }
+            }
+            else if (line.starts_with("CameraPitch="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+                    float pitch;
+                    if (sscanf_s(value.c_str(), "%ff", &pitch) == 1)
+                        m_viewport->GetCamera().SetOrientation(
+                            LibMath::Degree(pitch), m_viewport->GetCamera().GetYaw());
+                }
+            }
+        }
+    }
+
+    void Editor::SaveCameraSettings()
+    {
+        std::ifstream inputFile(m_app->GetPrefsPath());
+
+        std::vector<std::string> lines;
+        std::string line;
+
+        bool hasCameraPosition = false;
+        bool hasCameraSpeed = false;
+        bool hasCameraYaw = false;
+        bool hasCameraPitch = false;
+
+        while (std::getline(inputFile, line))
+        {
+            if (line.starts_with("CameraPosition="))
+            {
+                LibMath::Vector3 pos = m_viewport->GetCamera().GetPosition();
+
+                line = "CameraPosition={"
+                    + std::to_string(pos[0]) + "f, "
+                    + std::to_string(pos[1]) + "f, "
+                    + std::to_string(pos[2]) + "f};";
+
+                hasCameraPosition = true;
+            }
+            else if (line.starts_with("CameraSpeed="))
+            {
+                float speed = m_viewport->GetCamera().GetSpeed();
+
+                line = "CameraSpeed=" + std::to_string(speed) + "f;";
+
+                hasCameraSpeed = true;
+            }
+            else if (line.starts_with("CameraYaw="))
+            {
+                float yaw = m_viewport->GetCamera().GetYaw().raw();
+                line = "CameraYaw=" + std::to_string(yaw) + "f;";
+                hasCameraYaw = true;
+            }
+            else if (line.starts_with("CameraPitch="))
+            {
+                float pitch = m_viewport->GetCamera().GetPitch().raw();
+                line = "CameraPitch=" + std::to_string(pitch) + "f;";
+                hasCameraPitch = true;
+            }
+
+            lines.push_back(line);
+        }
+
+        inputFile.close();
+
+        // Add missing entries if they don't exist
+        if (!hasCameraPosition)
+        {
+            LibMath::Vector3 pos = m_viewport->GetCamera().GetPosition();
+
+            lines.push_back(
+                "CameraPosition={"
+                + std::to_string(pos[0]) + "f, "
+                + std::to_string(pos[1]) + "f, "
+                + std::to_string(pos[2]) + "f};"
+            );
+        }
+
+        if (!hasCameraSpeed)
+        {
+            float speed = m_viewport->GetCamera().GetSpeed();
+
+            lines.push_back(
+                "CameraSpeed=" + std::to_string(speed) + "f;"
+            );
+        }
+
+        if (!hasCameraYaw)
+            lines.push_back("CameraYaw=" + std::to_string(m_viewport->GetCamera().GetYaw().raw()) + "f;");
+        if (!hasCameraPitch)
+            lines.push_back("CameraPitch=" + std::to_string(m_viewport->GetCamera().GetPitch().raw()) + "f;");
+
+        std::ofstream outputFile(m_app->GetPrefsPath(), std::ios::trunc);
+
+        for (const std::string& l : lines)
+            outputFile << l << '\n';
     }
 }

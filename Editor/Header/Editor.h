@@ -75,6 +75,9 @@ namespace Apex::Editor
 			 
 		void OnSceneChanged();
 
+		void LoadCameraSettings();
+		void SaveCameraSettings();
+
 	private:
 		static const char* TypeToString(AssetType type);
 
@@ -121,6 +124,8 @@ namespace Apex::Editor
 
 		bool m_confirmClosePopup = false;
 		bool m_editingUI = false;
+
+		bool m_cameraSettingsLoaded = false;
 	};
 }
 

@@ -81,6 +81,8 @@ namespace Apex
 
         float                       GetDeltaTime() const { return m_deltaTime_s; }
 
+        std::string                 GetPrefsPath() const { return m_prefsPath; }
+
     private:
         void InitLog();
         void InitWindow(Windowing::IWindow* window);

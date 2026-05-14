@@ -33,6 +33,9 @@ namespace Apex::Rendering
 		virtual LibMath::Vector3	GetRight() const = 0;
 		virtual LibMath::Vector3	GetUp() const = 0;
 
+		LibMath::Degree				GetPitch() const { return m_pitch; }
+		LibMath::Degree				GetYaw()   const { return m_yaw; }
+
 		void SetPosition(LibMath::Vector3 pos);
 
 		virtual void OnStart() override;

@@ -302,9 +302,31 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
 void Apex::Application::SaveLastScene(const std::string& path)
 {
     std::filesystem::create_directories("Editor");
-    std::ofstream file(m_prefsPath);
-    if (file.is_open())
-        file << m_lastSceneKey << path << "\n";
+
+    // Read existing lines
+    std::vector<std::string> lines;
+    bool found = false;
+    {
+        std::ifstream in(m_prefsPath);
+        std::string line;
+        while (std::getline(in, line))
+        {
+            if (line.rfind(m_lastSceneKey, 0) == 0)
+            {
+                line = std::string(m_lastSceneKey) + path;
+                found = true;
+            }
+            lines.push_back(line);
+        }
+    }
+
+    if (!found)
+        lines.insert(lines.begin(), std::string(m_lastSceneKey) + path);
+
+    // Rewrite
+    std::ofstream out(m_prefsPath, std::ios::trunc);
+    for (const auto& l : lines)
+        out << l << '\n';
 }
 
 std::string Apex::Application::LoadLastScene() const

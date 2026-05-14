@@ -100,3 +100,10 @@ void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)
 
 	SetPosition(owner->GetGlobalTransform().getPosition());
 }
+
+void FirstPersonCamera::SetOrientation(LibMath::Degree pitch, LibMath::Degree yaw)
+{
+	m_pitch = LibMath::Degree(LibMath::clamp(pitch.raw(), -89.f, 89.f));
+	m_yaw = yaw;
+	UpdateVectors();
+}
