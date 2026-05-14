@@ -11,7 +11,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open bin file : {}", path);
+        LOG_ERROR_CAT("Resource", "Failed to open bin file : {}", path);
         return false;
     }
 
@@ -20,7 +20,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (size == 0)
     {
-        LOG_ERROR("File is empty : {}", path);
+        LOG_ERROR_CAT("Resource", "File is empty : {}", path);
         return false;
     }
 
@@ -68,7 +68,7 @@ bool BinLoader::Export(std::string path, Mesh const& mesh)
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open file '{}' for writing", path);
+        LOG_ERROR_CAT("Resource", "Failed to open file '{}' for writing", path);
         return false;
     }
 
@@ -255,7 +255,7 @@ bool BinLoader::ReadAnimation(Mesh& mesh, std::filesystem::path const& path)
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open file '{}' for reading", path.string());
+        LOG_ERROR_CAT("Resource", "Failed to open file '{}' for reading", path.string());
         return false;
     }
 
@@ -455,7 +455,7 @@ bool BinLoader::WriteAnimations(Mesh const& mesh, std::filesystem::path const& p
 
         if (!file.is_open())
         {
-            LOG_ERROR("Failed to open file '{}' for writing", path.string());
+            LOG_ERROR_CAT("Resource", "Failed to open file '{}' for writing", path.string());
             return false;
         }
 

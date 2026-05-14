@@ -68,9 +68,9 @@ namespace Apex::Data
 
 		void		SetGlobalTransform(const LibMath::Transform& transform);
 
-		const LibMath::Vector3&		GetGlobalPosition() const { return m_globalTransform.getPosition(); }
-		const LibMath::Quaternion&	GetGlobalRotation() const { return m_globalTransform.getRotation(); }
-		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
+		const LibMath::Vector3&		GetGlobalPosition() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();return m_globalTransform.getPosition(); }
+		const LibMath::Quaternion&	GetGlobalRotation() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform(); return m_globalTransform.getRotation(); }
+		const LibMath::Vector3&		GetGlobalScale() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();return m_globalTransform.getScale(); }
 
 		Object*		GetParent() const;
 

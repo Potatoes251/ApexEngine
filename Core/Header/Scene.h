@@ -12,6 +12,8 @@
 
 #include "Skybox.h"
 
+#include "WaypointGraph.h"
+
 #include "Lighting/VisibleLights.h"
 
 #include "LibMath/Matrix/Matrix4.h"
@@ -63,6 +65,7 @@ namespace Apex::Rendering
 		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+		Pathfinding::WaypointGraph* GetGraph() { return &m_graph; }
 
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
@@ -71,6 +74,7 @@ namespace Apex::Rendering
 		void DestroyObject(Apex::Data::Object* obj);
 
 		Physic::PhysicSystem m_physics;
+		Pathfinding::WaypointGraph m_graph;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
 		std::unique_ptr<Skybox> m_skybox;

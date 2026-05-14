@@ -30,6 +30,7 @@ namespace Apex::Controller
 		void SetDensity(float density) { m_density = density; }
 
 		float GetHorizontalVelocity() const;
+		float GetVerticalVelocity() const { return m_verticalVelocity; }
 		bool IsGrounded() const { return m_grounded; }
 		bool IsInWater() const { return m_inWater; }
 
