@@ -23,9 +23,6 @@ DirectionalLightComponent& DirectionalLightComponent::operator=(DirectionalLight
 
 void DirectionalLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"DirectionalLight\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"color\": ["
         << m_color[0] << ", "
         << m_color[1] << ", "
@@ -33,8 +30,6 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
     out << "        \"intensity\": " << m_intensity << ",\n";
     out << "        \"shadowDistance\": " << m_shadowDistance << ",\n";
     out << "        \"shadowExtent\": " << m_shadowExtents << "\n";
-
-    out << "      }";
 }
 
 std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()

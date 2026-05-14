@@ -75,6 +75,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Hierarchy::RegisterLua(*this);
     Apex::Transform::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
+    Apex::Perception::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)
@@ -214,4 +215,9 @@ bool Apex::Scripting::LuaManager::CallFunction(int instanceRef, const std::strin
 void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIManager* ui)
 {
     Apex::HudBindings::RegisterHudFunctions(luaState, ui);
+}
+
+void Apex::Scripting::LuaManager::RegisterScriptCast(Application* app)
+{
+    Apex::ScriptCast::Register(luaState, app);
 }

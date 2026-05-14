@@ -3,6 +3,7 @@
 #include "LuaFunction/Vector3Lua.h"
 
 #include "CharacterController.h"
+#include "AIController.h"
 
 #include "Log.h"
 
@@ -14,17 +15,27 @@ using namespace Apex::Controller;
 void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
 {
     lua.RegisterFunction("GetCharacterController_Internal", Apex::Controller::Lua_GetCharacterController);
+    lua.RegisterFunction("GetAIController_Internal", Apex::Controller::Lua_GetAIController);
     lua.RegisterFunction("CC_Move_Internal", Apex::Controller::Lua_CC_Move);
     lua.RegisterFunction("CC_Jump_Internal", Apex::Controller::Lua_CC_Jump);
     lua.RegisterFunction("CC_GetVelocity_Internal", Apex::Controller::Lua_CC_GetVelocity);
     lua.RegisterFunction("CC_IsGrounded_Internal", Apex::Controller::Lua_CC_IsGrounded);
     lua.RegisterFunction("CC_IsInWater_Internal", Apex::Controller::Lua_CC_IsInWater);
+    lua.RegisterFunction("AIC_SetTarget_Internal", Apex::Controller::Lua_AIC_SetTarget);
 }
 
 CharacterController* Apex::Controller::GetCC(lua_State* L, int index)
 {
     lua_getfield(L, index, "__object");
     CharacterController* cc = static_cast<CharacterController*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+    return cc;
+}
+
+AIController* Apex::Controller::GetAIC(lua_State* L, int index)
+{
+    lua_getfield(L, index, "__object");
+    AIController* cc = static_cast<AIController*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
     return cc;
 }
@@ -88,6 +99,24 @@ int Apex::Controller::Lua_CC_IsInWater(lua_State* L)
     return 1;
 }
 
+int Apex::Controller::Lua_AIC_SetTarget(lua_State* L)
+{
+    AIController* AI = GetAIC(L, 1);
+    if (!AI)
+        return 0;
+
+    Object* target = nullptr;
+
+    target = static_cast<Object*>(lua_touserdata(L, 2));
+    
+    if (!target)
+        return 0;
+
+    AI->SetTarget(target);
+
+    return 0;
+}
+
 int Apex::Controller::Lua_GetCharacterController(lua_State* L)
 {
     Object* obj = GetObject(L, 1);
@@ -95,6 +124,22 @@ int Apex::Controller::Lua_GetCharacterController(lua_State* L)
         return 0;
 
     CharacterController* cc = obj->GetComponent<CharacterController>();
+    if (!cc)
+        return 0;
+
+    // push component as userdata
+    lua_pushlightuserdata(L, cc);
+
+    return 1;
+}
+
+int Apex::Controller::Lua_GetAIController(lua_State* L)
+{
+    Object* obj = GetObject(L, 1);
+    if (!obj)
+        return 0;
+
+    AIController* cc = obj->GetComponent<AIController>();
     if (!cc)
         return 0;
 

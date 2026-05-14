@@ -136,6 +136,7 @@ void Apex::Application::InitLua()
     m_luaManager = std::make_unique<Scripting::LuaManager>();
 
     m_luaManager->RegisterHudBindings(m_uiManager.get());
+    m_luaManager->RegisterScriptCast(this);
 }
 
 void Apex::Application::LoadScene(bool isBuild, bool startScene)

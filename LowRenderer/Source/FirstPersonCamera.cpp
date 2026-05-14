@@ -90,10 +90,7 @@ void FirstPersonCamera::ProcessScroll(double yoffset)
 
 void FirstPersonCamera::Serialize(std::ostream& out) const
 {
-	out << "      \"ThirdPersonCamera\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << "\n";
-	out << "      }";
 }
 
 void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)

@@ -14,6 +14,7 @@ function Player:New()
     cc = nil, 
     cam = nil, 
     anim = nil,
+    hud = nil,
     -- variables
     coinCount = 0;
     wasGrounded = false, 
@@ -21,7 +22,7 @@ function Player:New()
     accumulatedTime = 0,
     smoothBlend = 0,
     }
-    setmetatable(instance, { __index = self })
+    setmetatable(instance, { __index = Player })
     return instance
 end
 
@@ -31,9 +32,15 @@ function Player:Start()
     self.cam = Camera.Get(self)
     self:AddTag("Player")
     self.anim:StartBlend("Idle", "Walking", 0, true)
+
+    self.hud = Cast("HUDController", "HudController")
+    if self.hud == nil then
+        print("[Player] WARNING: HudController not found. Make sure an object"
+              .. " named 'HUDManager' has HudController.lua attached.")
+    end
 end
 
-function Player:Update(dt)
+function Player:FixedUpdate(dt)
     self:ProcessInput(dt)
 
     self.anim:SetBlendRatio(self.smoothBlend)
@@ -102,8 +109,17 @@ function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if (obj:HasTag("Coin")) then
         self.coinCount = self.coinCount + 1
+
+        if self.hud ~= nil then
+            self.hud:AddScore(1)
+        end
+
         obj:Destroy()
     end
+end
+
+function Player:GetCoinCount()
+    return self.coinCount
 end
 
 return Player

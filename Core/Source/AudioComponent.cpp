@@ -36,14 +36,10 @@ void AudioComponent::Stop()
 
 void AudioComponent::Serialize(std::ostream& out) const
 {
-	out << "      \"AudioComponent\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"sound\": \"" << m_sound << "\",\n";
 	out << "        \"volume\": " << m_volume << ",\n";
 	out << "        \"channel\": " << m_channel << ",\n";
 	out << "        \"loop\": " << m_loop << "\n";
-
-	out << "      }";
 }
 
 std::vector<Apex::ExposedVar> AudioComponent::GetExposedVariables()

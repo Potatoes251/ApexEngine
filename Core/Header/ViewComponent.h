@@ -29,6 +29,13 @@ namespace Apex::Perception
 		const std::vector<Apex::Physic::HitResult>& GetHits() const { return m_Hits; }
 		size_t GetNumberOfHits() const { return m_Hits.size(); }
 
+		// Check if any of the hit object has a tag
+		bool SeesTag(std::string const& tag) const;
+		// Get closest object with the given tag
+		Data::Object* GetClosestWithTag(std::string const& tag) const;
+		// Get the shortest distance to an object with the tag
+		float GetShortestDistanceWithTag(std::string const& tag) const;
+
 	private:
 		void CastRay(const LibMath::Vector3& origin, const LibMath::Vector3& dir);
 

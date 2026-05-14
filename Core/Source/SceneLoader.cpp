@@ -6,6 +6,7 @@
 #include "Rigidbody.h"
 #include "Colliders.h"
 #include "WaterVolume.h"
+#include "AIController.h"
 #include "MeshRenderer.h"
 #include "ViewComponent.h"
 #include "AudioComponent.h"
@@ -155,7 +156,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         {
             ParseMeshRenderer(obj, parser);
         }
-        else if (compName == "RigidBody")
+        else if (compName == "Rigidbody")
         {
             ParseRigidBody(obj, parser);
         }
@@ -186,6 +187,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         else if (compName == "CharacterController")
         {
             ParseCharacterController(obj, parser);
+        }
+        else if (compName == "AIController")
+        {
+            ParseAIController(obj, parser);
         }
         else if (compName == "ThirdPersonCamera")
         {
@@ -510,6 +515,46 @@ void SceneLoader::ParseCharacterController(Data::Object* obj, SerialParser& pars
     comp.SetRotationSpeed(rotationSpeed);
     comp.SetGroundedDistance(groundedDistance);
     comp.SetDensity(density);
+}
+
+void SceneLoader::ParseAIController(Data::Object* obj, SerialParser& parser)
+{
+    parser.ParseString();
+    parser.Expect(':');
+    bool enabled = parser.ParseBool();
+
+    parser.Expect(',');
+    parser.ParseString();
+    parser.Expect(':');
+    float groundedDistance = parser.ParseFloat();
+
+    parser.Expect(',');
+    parser.ParseString();
+    parser.Expect(':');
+    float speed = parser.ParseFloat();
+
+    parser.Expect(',');
+    parser.ParseString();
+    parser.Expect(':');
+    float rotationSpeed = parser.ParseFloat();
+
+    parser.Expect(',');
+    parser.ParseString();
+    parser.Expect(':');
+    float density = parser.ParseFloat();
+
+    parser.Expect(',');
+    parser.ParseString();
+    parser.Expect(':');
+    float arrThres = parser.ParseFloat();
+
+    auto& comp = obj->AddComponent<Apex::Controller::AIController>();
+    comp.SetEnabled(enabled);
+    comp.SetSpeed(speed);
+    comp.SetRotationSpeed(rotationSpeed);
+    comp.SetGroundedDistance(groundedDistance);
+    comp.SetDensity(density);
+    comp.SetArrivalThreshold(arrThres);
 }
 
 void SceneLoader::ParseThirdPersonCamera(Data::Object* obj, SerialParser& parser)
