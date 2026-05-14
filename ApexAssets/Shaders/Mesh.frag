@@ -277,7 +277,7 @@ void main()
     // Base color: texture or solid color
     vec3 baseColor = (uUseTexture == 1)
         ? texture(uTexture, vTexCoord).rgb * uTint
-        : uTint;   // pure tint when no texture
+        : vec3(0.75, 0.75, 0.75) * uTint;
 
 	vec3 color = vec3(0.0);
 	

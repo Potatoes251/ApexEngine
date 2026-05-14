@@ -13,6 +13,7 @@
 #include "HierarchyFunc.h"
 #include "TransformFunc.h"
 #include "CharacterControllerLua.h"
+#include "ScriptcastLua.h"
 
 
 #endif // !LUA_FUNCTIONS
