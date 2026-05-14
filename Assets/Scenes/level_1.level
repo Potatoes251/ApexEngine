@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 2285,
+    "id": 2648,
     "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
@@ -31,7 +31,7 @@
     }
   },
   {
-    "id": 2286,
+    "id": 2649,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -47,7 +47,7 @@
     }
   },
   {
-    "id": 2287,
+    "id": 2650,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -64,7 +64,7 @@
     }
   },
   {
-    "id": 2288,
+    "id": 2651,
     "parent": null,
     "name": "Player",
     "position": [0.534259,2.021664,4.421952],
@@ -116,7 +116,7 @@
     }
   },
   {
-    "id": 2289,
+    "id": 2652,
     "parent": null,
     "name": "WaterCurrent",
     "position": [30.861206,-3.806236,0.080175],
@@ -141,7 +141,7 @@
     }
   },
   {
-    "id": 2290,
+    "id": 2653,
     "parent": null,
     "name": "Platform",
     "position": [48.398689,0.000000,0.000000],
@@ -169,7 +169,7 @@
     }
   },
   {
-    "id": 2291,
+    "id": 2654,
     "parent": null,
     "name": "Coin",
     "position": [8.580971,1.596644,-3.946078],
@@ -203,7 +203,7 @@
     }
   },
   {
-    "id": 2292,
+    "id": 2655,
     "parent": null,
     "name": "Coin",
     "position": [13.138493,1.596644,1.085545],
@@ -237,7 +237,7 @@
     }
   },
   {
-    "id": 2293,
+    "id": 2656,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,-8.131828],
@@ -271,7 +271,7 @@
     }
   },
   {
-    "id": 2294,
+    "id": 2657,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,10.051377],
@@ -305,7 +305,7 @@
     }
   },
   {
-    "id": 2295,
+    "id": 2658,
     "parent": null,
     "name": "Goomba",
     "position": [0.232368,1.190966,0.000000],
@@ -347,7 +347,7 @@
     }
   },
   {
-    "id": 2296,
+    "id": 2659,
     "parent": null,
     "name": "PoolWall",
     "position": [30.581680,-3.773233,18.222446],
@@ -375,7 +375,7 @@
     }
   },
   {
-    "id": 2297,
+    "id": 2660,
     "parent": null,
     "name": "PoolWall",
     "position": [30.961494,-3.718727,-17.883265],
@@ -403,7 +403,7 @@
     }
   },
   {
-    "id": 2298,
+    "id": 2661,
     "parent": null,
     "name": "PoolWall",
     "position": [20.143110,-3.990068,-0.149099],
@@ -431,7 +431,7 @@
     }
   },
   {
-    "id": 2299,
+    "id": 2662,
     "parent": null,
     "name": "PoolWall",
     "position": [39.734138,-3.990068,-0.149099],
@@ -459,7 +459,7 @@
     }
   },
   {
-    "id": 2300,
+    "id": 2663,
     "parent": null,
     "name": "PoolWall",
     "position": [29.979202,-7.835294,-0.149099],
@@ -487,7 +487,7 @@
     }
   },
   {
-    "id": 2301,
+    "id": 2664,
     "parent": null,
     "name": "Platform",
     "position": [62.219765,0.000002,0.771967],
@@ -515,7 +515,7 @@
     }
   },
   {
-    "id": 2302,
+    "id": 2665,
     "parent": null,
     "name": "Platform",
     "position": [73.371742,0.000002,10.000000],
@@ -543,7 +543,7 @@
     }
   },
   {
-    "id": 2303,
+    "id": 2666,
     "parent": null,
     "name": "Platform",
     "position": [84.500000,0.000002,0.771967],
@@ -571,7 +571,7 @@
     }
   },
   {
-    "id": 2305,
+    "id": 2667,
     "parent": null,
     "name": "Platform",
     "position": [96.838928,0.000002,0.809082],
@@ -599,7 +599,7 @@
     }
   },
   {
-    "id": 2306,
+    "id": 2668,
     "parent": null,
     "name": "Goomba",
     "position": [100.000000,1.110799,3.720859],
@@ -641,7 +641,7 @@
     }
   },
   {
-    "id": 2307,
+    "id": 2669,
     "parent": null,
     "name": "Coin",
     "position": [61.975533,1.596642,0.901356],
@@ -675,7 +675,7 @@
     }
   },
   {
-    "id": 2308,
+    "id": 2670,
     "parent": null,
     "name": "Coin",
     "position": [73.292206,1.596640,10.540983],
@@ -709,7 +709,7 @@
     }
   },
   {
-    "id": 2309,
+    "id": 2671,
     "parent": null,
     "name": "Coin",
     "position": [84.224602,1.596640,0.824762],
@@ -743,7 +743,7 @@
     }
   },
   {
-    "id": 2310,
+    "id": 2672,
     "parent": null,
     "name": "Coin",
     "position": [96.052116,1.596640,6.135586],
@@ -777,7 +777,7 @@
     }
   },
   {
-    "id": 2311,
+    "id": 2673,
     "parent": null,
     "name": "Coin",
     "position": [93.757751,5.874397,1.861258],
@@ -807,6 +807,41 @@
         "type": "Convex",
         "isTrigger": true,
         "material": null
+      }
+    }
+  },
+  {
+    "id": 2674,
+    "parent": null,
+    "name": "Painting",
+    "position": [100.000000,2.285035,0.000000],
+    "rotation": [0.000000,0.707107,0.000000,0.707107],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
+        "material": "Assets/Material/Painting.mat",
+        "castShadow": false 
+      },
+      "RigidBody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [2.000000, 2.000000, 0.100000],
+        "isTrigger": true,
+        "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Painting.lua",
+        "vars": {
+          "targetScene": "Assets/Scenes/scene.level",
+          "loadTime": 1.000000
+        }
       }
     }
   }
