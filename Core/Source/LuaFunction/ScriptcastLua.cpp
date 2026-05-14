@@ -99,7 +99,10 @@ namespace Apex::ScriptCast
         {
             if (obj->GetName() != objName) continue;
             ScriptComponent* scriptComponent = FindScript(obj.get(), scriptStem);
-            PushInstance(L, scriptComponent);
+            if (!PushInstance(L, scriptComponent))
+            {
+                lua_pushnil(L);
+            }
             return 1;
         }
 
@@ -122,7 +125,10 @@ namespace Apex::ScriptCast
         {
             if (obj->GetName() != objName) continue;
             ScriptComponent* scriptComponent = FindScript(obj.get(), "");
-            PushInstance(L, scriptComponent);
+            if (!PushInstance(L, scriptComponent))
+            {
+                lua_pushnil(L);
+            }
             return 1;
         }
 
