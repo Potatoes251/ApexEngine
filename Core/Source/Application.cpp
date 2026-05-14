@@ -159,6 +159,8 @@ void Apex::Application::LoadScene(bool isBuild, bool startScene)
     }
 
     LoadScene(scenePath, startScene);
+
+    m_scenePath = scenePath;
 }
 
 void Apex::Application::LoadScene(const std::string& path, bool startScene)
@@ -224,6 +226,8 @@ void Apex::Application::Tick()
     }
 
     m_scene->LateUpdate(m_deltaTime_s);
+    // listener is the camera so it updates after the camera
+    UpdateAudioListener();
 }
 
 void Apex::Application::UpdateAudioListener()

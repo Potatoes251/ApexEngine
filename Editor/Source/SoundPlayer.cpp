@@ -86,7 +86,8 @@ namespace Apex::Editor
     void SoundPlayer::DrawToolbar()
     {
         m_gui->PushStyleVariable(StyleVariable::FramePadding, 6.f, 4.f);
-        bool isPlaying = m_audio->IsPlaying(m_handle), isPaused = m_audio->IsPaused(m_handle);
+        bool isPlaying = m_audio->IsPlaying(m_handle);
+        bool isPaused = m_audio->IsPaused(m_handle);
         auto showTooltip = [&](const char* text) 
             { 
                 if (m_gui->IsItemHovered()) 
@@ -113,7 +114,7 @@ namespace Apex::Editor
         if (m_gui->ImageButton("##stop", EditorIcon::Get("ApexAssets/Icons/stop.png"), { 22.f, 22.f })) 
         {
             m_audio->StopSound(m_handle);
-            m_handle = Apex::Audio::INVALID_SOUND;
+            m_handle.m_sound = Apex::Audio::INVALID_SOUND;
         }
         showTooltip("Stop");
 
@@ -132,7 +133,7 @@ namespace Apex::Editor
         m_gui->Text("Volume:");
         m_gui->SameLine(0.f, 6.f);
         m_gui->SetNextItemWidth(80.f);
-        if (m_gui->SliderFloat("##vol", &m_volume, 0.f, 1.f) && m_handle != Apex::Audio::INVALID_SOUND)
+        if (m_gui->SliderFloat("##vol", &m_volume, 0.f, 1.f) && m_handle.m_sound != Apex::Audio::INVALID_SOUND)
             m_audio->SetVolume(m_handle, m_volume);
 
         m_gui->SameLine(0.f, 16.f);
@@ -222,10 +223,10 @@ namespace Apex::Editor
 
     void SoundPlayer::UnloadAudio()
     {
-        if (m_handle != Apex::Audio::INVALID_SOUND)
+        if (m_handle.m_sound != Apex::Audio::INVALID_SOUND)
         {
             m_audio->StopSound(m_handle);
-            m_handle = Apex::Audio::INVALID_SOUND;
+            m_handle.m_sound = Apex::Audio::INVALID_SOUND;
         }
         m_waveform.clear();
     }

@@ -36,6 +36,7 @@ namespace Apex::Scripting
 
         void OnStart() override;
         void OnUpdate(float deltaTime) override;
+        void OnFixedUpdate(float deltaTime) override;
         void OnTriggerEnter(Physic::Collider* other) override;
         void OnTriggerExit(Physic::Collider* other) override;
 

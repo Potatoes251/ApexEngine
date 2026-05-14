@@ -62,10 +62,12 @@ void Apex::Scripting::LuaManager::RegisterFunction(const char* name, lua_CFuncti
 
 void Apex::Scripting::LuaManager::RegisterFunctions()
 {
+    Apex::Log::RegisterLua(*this);
     Apex::Anim::RegisterLua(*this);
     Apex::Comp::RegisterLua(*this);
     Apex::Data::RegisterLua(*this);
     Apex::Mezh::RegisterLua(*this);
+    Apex::Audio::RegisterLua(*this);
     Apex::Input::RegisterLua(*this);
     Apex::Scene::RegisterLua(*this);
     Apex::Camera::RegisterLua(*this);
@@ -73,6 +75,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Hierarchy::RegisterLua(*this);
     Apex::Transform::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
+    Apex::Perception::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

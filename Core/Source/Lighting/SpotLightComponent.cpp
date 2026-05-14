@@ -33,9 +33,6 @@ SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& othe
 
 void SpotLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"SpotLight\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"color\": ["
         << m_color[0] << ", "
         << m_color[1] << ", "
@@ -43,8 +40,6 @@ void SpotLightComponent::Serialize(std::ostream& out) const
     out << "        \"intensity\": " << m_intensity << ",\n";
     out << "        \"innerCutOff\": " << m_innerCutoff << ",\n";
     out << "        \"outerCutOff\": " << m_outerCutoff << "\n";
-
-    out << "      }";
 }
 
 std::vector<ExposedVar> SpotLightComponent::GetExposedVariables()

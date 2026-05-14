@@ -20,12 +20,8 @@ Animator::Animator(const Animator& other)
 
 void Animator::Serialize(std::ostream& out) const
 {
-	out << "      \"Animator\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-
 	out << "        \"fps\": " << m_fps << ",\n";
 	out << "		\"Mesh\": \"" << m_mesh->GetPath() << "\"\n";
-	out << "      }";
 }
 
 

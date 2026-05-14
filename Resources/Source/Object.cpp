@@ -1,6 +1,7 @@
 #include "Object.h"
 
 #include "../../Physic/Header/Rigidbody.h"
+#include "../../Physic/Header/Physic.h"
 
 #include "Log.h"
 
@@ -41,7 +42,7 @@ Apex::Data::Object::~Object()
 
 std::unique_ptr<Object> Object::Clone()
 {
-	std::unique_ptr<Object> clone = std::make_unique<Object>(m_id);
+	std::unique_ptr<Object> clone = std::make_unique<Object>();
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
 

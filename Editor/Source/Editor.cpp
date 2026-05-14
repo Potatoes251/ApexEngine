@@ -17,10 +17,10 @@
 #include "Log.h"
 
 #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #define NOMINMAX
-    #include <windows.h>
-    #undef CreateWindow
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#undef CreateWindow
 #endif
 
 using namespace Apex::Windowing;
@@ -38,7 +38,7 @@ using namespace Apex::Input;
 using namespace Apex::Scripting;
 using namespace Apex::UserInterface;
 
-namespace Apex::Editor 
+namespace Apex::Editor
 {
     bool Editor::InitWindow()
     {
@@ -107,7 +107,7 @@ namespace Apex::Editor
         m_viewport->SetHierarchy(m_hierarchy.get());
         m_hierarchy->SetViewport(m_viewport.get());
 
-        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/" ,*app.GetRhi(), *app.GetResourceManager());
+        m_contentBrowser = std::make_unique<ContentBrowser>(*m_gui, *m_window, "Assets/", *app.GetRhi(), *app.GetResourceManager());
 
         if (m_componentsViewer && m_contentBrowser)
             m_componentsViewer->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
@@ -125,10 +125,22 @@ namespace Apex::Editor
                 {
                     CommandManager::Get().Redo();
                 }
+                if (key == Input::Key::C && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    CopySelected();
+                }
+                if (key == Input::Key::V && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    PasteClipboard();
+                }
+                if (key == Input::Key::D && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
+                {
+                    DuplicateSelected();
+                }
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
-                    m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                    m_app->GetScene()->Save(m_app->GetScenePath());
                     m_window->SetWindowTitle("Apex Editor");
                 }
                     
@@ -195,7 +207,10 @@ namespace Apex::Editor
                     if (m_editorState == EditorState::Play)
                         SetEditorState(EditorState::Edit);
 
+                    OnSceneChanged();
                     m_app->LoadScene(entry.m_path.string(), false);
+
+                    CleanClipboard();
 
                     // Sync panels
                     if (m_hierarchy)        m_hierarchy->SetScene(m_app->GetScene());
@@ -212,11 +227,6 @@ namespace Apex::Editor
             });
 
         return true;
-    }
-
-    void Editor::OnGameStopped()
-    {
-        m_app = nullptr;
     }
 
     void Editor::Render()
@@ -291,7 +301,7 @@ namespace Apex::Editor
         {
             CommandManager::Get().EndBatch();
         }
-        
+
         m_editingUI = editing;
 
         m_gui->EndFrame();
@@ -342,7 +352,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_app->GetScene()->Save("Assets/Scenes/scene.level");
+                m_app->GetScene()->Save(m_app->GetScenePath());
                 m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
@@ -379,6 +389,7 @@ namespace Apex::Editor
         EditorIcon::Shutdown();
         m_gui.reset();
         m_window.reset();
+        m_editScene.reset();
     }
 
     void Editor::SetEditorState(EditorState newState)
@@ -389,7 +400,10 @@ namespace Apex::Editor
         // Always clear selection before destroying old scene objects
         if (m_componentsViewer) m_componentsViewer->ClearSelection();
         if (m_hierarchy)        m_hierarchy->ClearSelection();
-        
+
+        if (newState == EditorState::Play || newState == EditorState::Edit)
+            OnSceneChanged();       // clear stale pointers before scene swap
+
         // start
         if (m_editorState == EditorState::Edit && newState == EditorState::Play)
         {
@@ -412,6 +426,7 @@ namespace Apex::Editor
         else if (newState == EditorState::Edit)
         {
             m_app->SetScene(m_editScene->Clone());
+            m_app->GetAudio()->StopAll();
             if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
             if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
             auto* ui = m_app->GetUI();
@@ -676,10 +691,10 @@ namespace Apex::Editor
                 else if (c == '{')
                 {
                     parser.Expect('{');
-                    if (parser.Peek('}')) 
-                    { 
-                        parser.Expect('}'); 
-                        return; 
+                    if (parser.Peek('}'))
+                    {
+                        parser.Expect('}');
+                        return;
                     }
 
                     while (true)
@@ -707,10 +722,10 @@ namespace Apex::Editor
                             collectValues();
                         }
 
-                        if (parser.Peek(',')) 
-                        { 
-                            parser.Expect(','); 
-                            continue; 
+                        if (parser.Peek(','))
+                        {
+                            parser.Expect(',');
+                            continue;
                         }
                         break;
                     }
@@ -720,20 +735,20 @@ namespace Apex::Editor
                 else if (c == '[')
                 {
                     parser.Expect('[');
-                    if (parser.Peek(']')) 
-                    { 
-                        parser.Expect(']'); 
-                        return; 
+                    if (parser.Peek(']'))
+                    {
+                        parser.Expect(']');
+                        return;
                     }
 
                     while (true)
                     {
                         collectValues();
 
-                        if (parser.Peek(',')) 
-                        { 
-                            parser.Expect(','); 
-                            continue; 
+                        if (parser.Peek(','))
+                        {
+                            parser.Expect(',');
+                            continue;
                         }
                         break;
                     }
@@ -943,5 +958,96 @@ namespace Apex::Editor
         m_materialEditor = std::make_unique<MaterialEditor>(m_gui.get(), m_app->GetResourceManager());
         m_materialEditor->SetThumbnailRenderer(&m_contentBrowser->GetThumbnails());
         m_materialEditor->Open(path.string());
+    }
+
+    // ---------------------------------------------------------------------------
+    // Clipboard shortcuts — Ctrl+C / Ctrl+V / Ctrl+D
+    //
+    // Priority order for focus: Viewport > Hierarchy > ContentBrowser.
+    // ContentBrowser copy/paste operates on files; Hierarchy/Viewport operate on
+    // scene objects.  Only one "clipboard slot" is live at a time: copying an
+    // object clears the file clipboard and vice-versa.
+    // ---------------------------------------------------------------------------
+
+    void Editor::CopySelected()
+    {
+        if (m_hierarchy && m_hierarchy->IsFocused())
+        {
+            Data::Object* obj = m_hierarchy->GetSelected();
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
+        }
+        else if (m_viewport && m_viewport->IsFocus())
+        {
+            // Viewport stores its own selected pointer — grab it via hierarchy
+            Data::Object* obj = m_hierarchy ? m_hierarchy->GetSelected() : nullptr;
+            if (obj)
+            {
+                m_clipboardObjectId = obj->GetId();
+                m_hasClipboardObject = true;
+            }
+        }
+    }
+
+    void Editor::PasteClipboard()
+    {
+        // --- object paste ---
+        if (m_hasClipboardObject)
+        {
+            // Validate the id still exists in the CURRENT scene before touching it
+            Data::Object* src = m_app->GetScene()->GetObjectWithId(m_clipboardObjectId);
+            if (!src)
+            {
+                CleanClipboard();   // stale — silently discard
+                return;
+            }
+            if (m_hierarchy && m_hierarchy->IsFocused())
+                m_hierarchy->PasteObject(src);
+        }
+        // --- file paste ---
+        else if (!m_clipboardFile.empty())
+        {
+            if (m_contentBrowser)
+                m_contentBrowser->PasteFile(m_clipboardFile);
+        }
+    }
+
+    void Editor::DuplicateSelected()
+    {
+        // Viewport focus — duplicate the currently selected object
+        if ((m_viewport && m_viewport->IsFocus()) ||
+            (m_hierarchy && m_hierarchy->IsFocused()))
+        {
+            if (m_hierarchy)
+                m_hierarchy->DuplicateSelected();
+            return;
+        }
+
+        // ContentBrowser focused — duplicate selected file in-place
+        if (m_contentBrowser && m_contentBrowser->IsFocused())
+        {
+            m_contentBrowser->DuplicateSelected();
+        }
+    }
+    void Editor::CleanClipboard()
+    {
+        m_hasClipboardObject = false;
+        m_clipboardObjectId = 0;
+        m_clipboardFile.clear();
+    }
+    
+    void Editor::OnSceneChanged()
+    {
+        // Clear all raw-pointer state that references the old scene's objects
+        CleanClipboard();
+        if (m_hierarchy)
+            m_hierarchy->ClearSelection();
+        if (m_componentsViewer)
+            m_componentsViewer->SetSelectedObject(nullptr);
+        if (m_viewport)
+            m_viewport->SelectObject(nullptr, false);
     }
 }

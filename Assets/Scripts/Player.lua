@@ -40,7 +40,7 @@ function Player:Start()
     end
 end
 
-function Player:Update(dt)
+function Player:FixedUpdate(dt)
     self:ProcessInput(dt)
 
     self.anim:SetBlendRatio(self.smoothBlend)
