@@ -3,6 +3,7 @@
 
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Matrix/Matrix4.h"
+#include "LibMath/Arithmetic.h"
 
 #include "../../Resources/Header/Component.h"
 
@@ -20,6 +21,9 @@ namespace Apex::Rendering
 		void	SetMainCamera(bool enabled) { m_isMain = enabled; }
 		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
 
+		float	GetSpeed() const { return m_speed; }
+		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, 50.f); }
+
 		LibMath::Matrix4	GetViewProj();
 		LibMath::Matrix4	GetProjection();
 		LibMath::Matrix4	GetViewMatrix();
@@ -28,6 +32,9 @@ namespace Apex::Rendering
 		virtual LibMath::Vector3	GetFront() const = 0;
 		virtual LibMath::Vector3	GetRight() const = 0;
 		virtual LibMath::Vector3	GetUp() const = 0;
+
+		LibMath::Degree				GetPitch() const { return m_pitch; }
+		LibMath::Degree				GetYaw()   const { return m_yaw; }
 
 		void SetPosition(LibMath::Vector3 pos);
 
