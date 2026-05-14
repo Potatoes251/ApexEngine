@@ -8,6 +8,7 @@
 
 namespace Apex::UserInterface { class UIManager; }
 namespace Apex::Physic { class Collider; }
+namespace Apex { class Application; }
 
 namespace Apex::Scripting
 {
@@ -28,6 +29,7 @@ namespace Apex::Scripting
         void RegisterFunctions();
 
         void RegisterHudBindings(Apex::UserInterface::UIManager* ui);
+        void RegisterScriptCast(Application* app);
 
         int CreateScriptInstance(int scriptRef);
         bool CallFunction(int instanceRef, const std::string& funcName);

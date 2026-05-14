@@ -216,3 +216,8 @@ void Apex::Scripting::LuaManager::RegisterHudBindings(Apex::UserInterface::UIMan
 {
     Apex::HudBindings::RegisterHudFunctions(luaState, ui);
 }
+
+void Apex::Scripting::LuaManager::RegisterScriptCast(Application* app)
+{
+    Apex::ScriptCast::Register(luaState, app);
+}
