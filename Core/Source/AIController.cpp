@@ -64,7 +64,6 @@ void AIController::OnStart()
 
 void AIController::OnFixedUpdate(float deltatime_s)
 {
-    m_pathRefreshTimer = 0;
     m_pathRefreshTimer += deltatime_s;
     if (m_pathRefreshTimer >= m_pathRefreshInterval && m_target)
     {
