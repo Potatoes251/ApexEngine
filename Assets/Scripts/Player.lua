@@ -16,7 +16,6 @@ function Player:New()
     anim = nil,
     hud = nil,
     -- variables
-    coinCount = 0;
     wasGrounded = false, 
     wasInWater = false, 
     accumulatedTime = 0,
@@ -35,8 +34,7 @@ function Player:Start()
 
     self.hud = Cast("HUDController", "HudController")
     if self.hud == nil then
-        print("[Player] WARNING: HudController not found. Make sure an object"
-              .. " named 'HUDManager' has HudController.lua attached.")
+        log("HudController not found. Make sure an object named 'HUDController' has HudController.lua attached.")
     end
 end
 
@@ -108,22 +106,15 @@ end
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Coin") then
-        self.coinCount = self.coinCount + 1
-
         if self.hud ~= nil then
             self.hud:AddScore(1)
         end
-
         obj:Destroy()
     elseif obj:HasTag("Goomba") then
         if self.cc:GetVerticalVelocity() < 0 then
             obj:Destroy()
         end
     end
-end
-
-function Player:GetCoinCount()
-    return self.coinCount
 end
 
 return Player
