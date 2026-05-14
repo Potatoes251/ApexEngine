@@ -7,24 +7,22 @@
 
 namespace Apex::Pathfinding
 {
-	class WaypointComponent : public Component
+	class NavGenVolume : public Component
 	{
 	public:
-		WaypointComponent(float radius = 5.f) : m_connectRadius(radius) {}
+		NavGenVolume() = default;
 
-		LibMath::Vector3 const& GetPosition() const{ return GetOwner()->GetGlobalPosition(); }
+		void Serialize(std::ostream& out) const;
+		std::vector<ExposedVar> GetExposedVariables();
+		std::unique_ptr<Component> Clone() { return std::make_unique<NavGenVolume>(*this); }
 
-		void Serialize(std::ostream& out) const { out << "\"connectRadius\" :" << m_connectRadius << "\n"; }
-		std::vector<ExposedVar> GetExposedVariables() { return { {"Connect Radius", ExposedVar::Float, &m_connectRadius } }; }
-		std::unique_ptr<Component> Clone() { return std::make_unique<WaypointComponent>(*this); }
+		char const* GetTypeName() const override { return "NavGenVolume"; }
 
-		char const* GetTypeName() const override { return "Waypoint"; }
+		LibMath::Vector3 GetMinBound();
+		LibMath::Vector3 GetMaxBound();
 
-		void SetGraphId(size_t id) { m_graphId = id; }
-		float GetRadius() const { return m_connectRadius; }
-	private:
-		size_t m_graphId = SIZE_MAX;
-		float m_connectRadius = 5.f;
+		float   m_spacing = 1.f;
+		float   m_genHeight = 1.f;
 	};
 }
 

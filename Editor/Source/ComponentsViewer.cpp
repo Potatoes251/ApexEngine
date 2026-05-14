@@ -78,7 +78,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Animator") != std::string::npos) return COL_RENDER;
 	if (type.find("Audio") != std::string::npos) return COL_AUDIO;
 	if (type.find("View") != std::string::npos) return COL_VIEW;
-	if (type.find("Waypoint") != std::string::npos) return COL_PATHFINDING;
+	if (type.find("Nav") != std::string::npos) return COL_PATHFINDING;
 	return COL_DEFAULT;
 }
 
@@ -330,12 +330,12 @@ void ComponentsViewer::Draw()
 				}));
 		}
 
-		if (m_gui->MenuItem("Waypoint"))
+		if (m_gui->MenuItem("NavGenVolume"))
 		{
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
-					Component* comp = &obj->AddComponent<Pathfinding::WaypointComponent>();
+					Component* comp = &obj->AddComponent<Pathfinding::NavGenVolume>();
 					return comp->GetId();
 				}));
 		}

@@ -105,9 +105,7 @@ function Player:OnTriggerEnter(col)
         obj:Destroy()
     elseif obj:HasTag("Goomba") then
         if self.cc:GetVerticalVelocity() < 0 then
-            --obj:Destroy()
-        else
-            Log("taking damage")
+            obj:Destroy()
         end
     end
 end

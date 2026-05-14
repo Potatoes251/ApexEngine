@@ -30,6 +30,9 @@ using namespace Apex::Serialization;
 
 void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& path)
 {
+    std::filesystem::path graphPath{ path };
+    scene.GetGraph()->Load(graphPath.replace_extension(".nav").string());
+
     std::ifstream file(path);
     assert(file && "Cannot open scene file");
 
@@ -221,7 +224,7 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         {
             ParseAudioComponent(obj, parser);
         }
-        else if (compName == "Waypoint")
+        else if (compName == "NavGenVolume")
         {
             ParseWaypointComponent(obj, parser);
         }
@@ -781,9 +784,16 @@ void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser
 
     parser.ParseString();
     parser.Expect(':');
-    float radius = parser.ParseFloat();
+    float spacing = parser.ParseFloat();
+    parser.Expect(',');
 
-    obj->AddComponent<Pathfinding::WaypointComponent>(radius);
+    parser.ParseString();
+    parser.Expect(':');
+    float genHeight = parser.ParseFloat();
+
+    auto& comp = obj->AddComponent<Pathfinding::NavGenVolume>();
+    comp.m_genHeight = genHeight;
+    comp.m_spacing = spacing;
 }
 
 void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)
