@@ -23,8 +23,7 @@ void main()
         albedo = texture(uAlbedoTex, vUV).rgb * uTint;
     else
     {
-        vec3 fallbackColor = (length(uBaseColor) < 0.001) ? vec3(0.5) : uBaseColor;
-        albedo = fallbackColor * uTint;
+        albedo = uBaseColor;
     }
 
     vec3 N = normalize(vNormal);

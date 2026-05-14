@@ -50,7 +50,7 @@
         "material": "Assets/Material/Player.mat",
         "castShadow": true
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Kinematic",
         "mass": 1.000000
@@ -102,7 +102,7 @@
         "material": "Assets/Material/Painting.mat",
         "castShadow": true
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Static",
         "mass": 1.000000
@@ -137,7 +137,7 @@
         "material": "Assets/Material/Main_Map.mat",
         "castShadow": true
       },
-      "RigidBody": {
+      "Rigidbody": {
         "enabled": true,
         "type": "Static",
         "mass": 1.000000
@@ -148,6 +148,39 @@
         "type": "Triangle",
         "isTrigger": false,
         "material": null
+      }
+    }
+  },
+  {
+    "id": 13,
+    "parent": null,
+    "name": "Cube",
+    "position": [6.517717,1.297301,21.513992],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [0.500000, 0.500000, 0.500000],
+        "isTrigger": true,
+        "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
       }
     }
   }
