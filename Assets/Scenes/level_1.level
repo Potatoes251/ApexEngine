@@ -64,7 +64,7 @@
     }
   },
   {
-    "id": 3002,
+    "id": 3191,
     "parent": null,
     "name": "Player",
     "position": [0.534259,2.021664,4.421952],
@@ -98,7 +98,7 @@
       "CharacterController": {
         "enabled": true,
         "groundedDistance": 1.000000,
-        "speed": 1.000000,
+        "speed": 5.000000,
         "rotationSpeed": 1.000000,
         "density": 950.000000
       },

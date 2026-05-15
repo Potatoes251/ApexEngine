@@ -70,22 +70,30 @@ void WaypointGraph::Load(std::string path)
 	{
 		Waypoint wp;
 
-		BinLoader::Read32Bits(file, *(uint32_t*)&wp.m_position[0]);
-		BinLoader::Read32Bits(file, *(uint32_t*)&wp.m_position[1]);
-		BinLoader::Read32Bits(file, *(uint32_t*)&wp.m_position[2]);
-		BinLoader::Read32Bits(file, *(uint32_t*)&wp.m_id);
+		uint32_t x;
+		uint32_t y;
+		uint32_t z;
+		uint32_t id;
+
+		BinLoader::Read32Bits(file, x);
+		BinLoader::Read32Bits(file, y);
+		BinLoader::Read32Bits(file, z);
+		BinLoader::Read32Bits(file, id);
+
+		wp.m_position = { std::bit_cast<float>(x), std::bit_cast<float>(y), std::bit_cast<float>(z) };
+		wp.m_id = std::bit_cast<int32_t>(id);
 
 		uint32_t nbNeighbor;
 		BinLoader::Read32Bits(file, nbNeighbor);
 
 		for (uint32_t i = 0; i < nbNeighbor; i++)
 		{
-			int32_t neighborId;
-			float neighborDist;
-			BinLoader::Read32Bits(file, *(uint32_t*)&neighborId);
-			BinLoader::Read32Bits(file, *(uint32_t*)&neighborDist);
+			uint32_t neighborId;
+			uint32_t neighborDist;
+			BinLoader::Read32Bits(file, neighborId);
+			BinLoader::Read32Bits(file, neighborDist);
 
-			wp.m_neighbors[neighborId] = neighborDist;
+			wp.m_neighbors[std::bit_cast<int32_t>(neighborId)] = std::bit_cast<float>(neighborDist);
 		}
 		m_waypoints.push_back(wp);
 	}
@@ -237,18 +245,18 @@ void WaypointGraph::Save() const
 
 	for (Waypoint wp : m_waypoints)
 	{		
-		BinLoader::Write32Bits(file, *(uint32_t*)&wp.m_position[0]);
-		BinLoader::Write32Bits(file, *(uint32_t*)&wp.m_position[1]);
-		BinLoader::Write32Bits(file, *(uint32_t*)&wp.m_position[2]);
-		BinLoader::Write32Bits(file, *(uint32_t*)&wp.m_id);
+		BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(wp.m_position[0]));
+		BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(wp.m_position[1]));
+		BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(wp.m_position[2]));
+		BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(wp.m_id));
 
 		size = (uint32_t)wp.m_neighbors.size();
 		BinLoader::Write32Bits(file, size);
 
 		for (auto const& [neighborId, dist] : wp.m_neighbors)
 		{
-			BinLoader::Write32Bits(file, *(uint32_t*)&(neighborId));
-			BinLoader::Write32Bits(file, *(uint32_t*)&dist);
+			BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(neighborId));
+			BinLoader::Write32Bits(file, std::bit_cast<uint32_t>(dist));
 		}
 	}
 }
