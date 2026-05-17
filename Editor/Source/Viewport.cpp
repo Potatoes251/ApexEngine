@@ -656,10 +656,25 @@ void Apex::Editor::Viewport::DrawCameraSpeed()
 		m_panelPos[1] + 78.f
 	};
 
+	float backgroundWidth = 110.f;
+
+	// Add 10.f for every extra digit after the first.
+	// 0-9   -> 110.f
+	// 10-99 -> 120.f
+	// 100+  -> 130.f
+
+	float absSpeed = std::abs(speed);
+
+	while (absSpeed >= 10.f)
+	{
+		backgroundWidth += 10.f;
+		absSpeed /= 10.f;
+	}
+
 	// Background size
 	LibMath::Vector2 size =
 	{
-		speed < 10.f ? 110.f : 120.f ,
+		backgroundWidth,
 		HEIGHT
 	};
 
