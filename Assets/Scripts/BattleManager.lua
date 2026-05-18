@@ -26,6 +26,8 @@ function Fight:Start()
 
     self.enemy:SetOpponent(self.player)
     self.player:SetOpponent(self.enemy)
+    self.enemy:SetHuD(self.hud, "EnemyLife")
+    self.player:SetHuD(self.hud, "PlayerLife")
 end
 
 function Fight:OnTriggerEnter(col)
@@ -39,6 +41,8 @@ function Fight:OnBattleStart()
     self.cc:TeleportToTarget(self.playerTargetPos)
     self.playerScript:SetEnabled(false)
     self.playerScript:StopAnim()
+    self.player:SetEnabled(true)
+    self.enemy:SetEnabled(true)
 end
 
 return Fight
