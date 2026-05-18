@@ -21,7 +21,7 @@ function Player:New()
     accumulatedTime = 0,
     smoothBlend = 0,
     }
-    setmetatable(instance, { __index = Player })
+    setmetatable(instance, { __index = self })
     return instance
 end
 
@@ -34,7 +34,7 @@ function Player:Start()
 
     self.hud = Cast("HUDController", "HudController")
     if self.hud == nil then
-        log("HudController not found. Make sure an object named 'HUDController' has HudController.lua attached.")
+        Log("HudController not found. Make sure an object named 'HUDController' has HudController.lua attached.")
     end
 end
 

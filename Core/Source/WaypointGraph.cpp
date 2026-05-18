@@ -17,7 +17,7 @@
 
 using namespace Apex::Pathfinding;
 
-void WaypointGraph::GenerateGraph(std::string path, Physic::PhysicSystem* physic, NavGenVolume* param)
+void WaypointGraph::GenerateGraph(std::string const& path, Physic::PhysicSystem* physic, NavGenVolume* param)
 {
 	m_path = path;
 	m_waypoints.clear();
@@ -42,7 +42,7 @@ void WaypointGraph::GenerateGraph(std::string path, Physic::PhysicSystem* physic
 	Save();
 }
 
-void WaypointGraph::Load(std::string path)
+void WaypointGraph::Load(std::string const& path)
 {
 	std::ifstream file(path, std::ios::binary);
 
@@ -99,7 +99,7 @@ void WaypointGraph::Load(std::string path)
 	}
 }
 
-int WaypointGraph::GetClosestWaypoint(LibMath::Vector3 pos)
+int WaypointGraph::GetClosestWaypoint(LibMath::Vector3 const& pos)
 {
 	int closest = -1;
 	float minSquaredDist = FLT_MAX;
@@ -207,7 +207,7 @@ void WaypointGraph::DebugRender()
 	}
 }
 
-void WaypointGraph::AddWaypoint(LibMath::Vector3 pos)
+void WaypointGraph::AddWaypoint(LibMath::Vector3 const& pos)
 {
 	m_waypoints.push_back({ pos, m_nextId++ });
 }

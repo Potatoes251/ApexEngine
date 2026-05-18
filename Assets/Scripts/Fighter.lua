@@ -1,18 +1,22 @@
 
 
-
 local Fighter = {}
 
 function Fighter:New()
     local instance = { 
-     -- component
-    oponent = nil,
+    -- component
+    opponent = nil,
     -- variables
     hp = 19,
     maxhp = 10,
     }
-    setmetatable(instance, { __index = Player })
+    setmetatable(instance, { __index = self })
     return instance
+end
+
+function Fighter:SetOpponent(opp)
+    self.opponent = opp
+    Log("hello")
 end
 
 

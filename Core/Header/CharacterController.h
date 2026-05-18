@@ -4,13 +4,17 @@
 #include "Component.h"
 
 #include "LibMath/Vector/Vector3.h"
-#include "Physic.h"
+
+namespace LibMath { class Transform; }
 
 namespace Apex::Physic 
 { 
 	class RigidBodyComponent; 
 	class CapsuleCollider;
 	class WaterVolume;
+	class PhysicSystem;
+
+	struct HitResult;
 }
 
 namespace Apex::Controller
@@ -34,7 +38,11 @@ namespace Apex::Controller
 		bool IsGrounded() const { return m_grounded; }
 		bool IsInWater() const { return m_inWater; }
 
-		void Move(LibMath::Vector3 movement);
+		// instantly moves the CC to the given transform
+		void Teleport(LibMath::Transform const& newPos);
+		void Teleport(LibMath::Vector3 const& newPos);
+
+		void Move(LibMath::Vector3 const& movement);
 		void Jump();
 
 		void OnStart() override;

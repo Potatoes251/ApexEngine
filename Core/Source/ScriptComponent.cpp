@@ -19,7 +19,7 @@ std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 
 void ScriptComponent::SetScript(const std::string& path)
 {
-    if ((m_scriptPath == path && m_instanceRef != LUA_REFNIL))
+    if (m_scriptPath == path && m_instanceRef != LUA_REFNIL)
         return;
 
     m_scriptPath = path;
@@ -48,6 +48,9 @@ void ScriptComponent::SetScript(const std::string& path)
 
 void Apex::Scripting::ScriptComponent::SetObjectPtr()
 {
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
     lua_State* L = m_lua->GetState();
 
     // Push instance

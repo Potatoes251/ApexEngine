@@ -10,6 +10,7 @@
 
 #include "LibMath/Trigonometry.h"
 #include "LibMath/Arithmetic.h"
+#include "LibMath/Transform.h"
 
 #include "Log.h"
 
@@ -26,17 +27,38 @@ float CharacterController::GetHorizontalVelocity() const
 	return horizontalVelocity.magnitude();
 }
 
-void CharacterController::Move(LibMath::Vector3 movement)
+void CharacterController::Teleport(LibMath::Transform const& newPos)
+{
+	GetOwner()->SetGlobalTransform(newPos);
+
+	m_targetPos = newPos.getPosition();
+	m_targetYaw = LibMath::Degree(newPos.getEulerRotation()[1]);
+
+	m_grounded = false;
+	m_inWater = false;
+}
+
+void CharacterController::Teleport(LibMath::Vector3 const& newPos)
+{
+	LibMath::Transform trans = GetOwner()->GetGlobalTransform();
+	trans.setPosition(newPos);
+	GetOwner()->SetGlobalTransform(trans);
+
+	m_targetPos = newPos;
+	m_targetYaw = LibMath::Degree(trans.getEulerRotation()[1]);
+
+	m_grounded = false;
+	m_inWater = false;
+}
+
+void CharacterController::Move(LibMath::Vector3 const& movement)
 {
 	m_moveInput += movement;
 }
 
 void CharacterController::Jump()
 {
-	if (m_grounded)
-	{
-		m_verticalVelocity = m_jumpForce;
-	}
+	m_verticalVelocity = m_jumpForce;
 }
 
 void CharacterController::OnStart()

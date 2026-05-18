@@ -16,6 +16,8 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
 {
     lua.RegisterFunction("GetCharacterController_Internal", Apex::Controller::Lua_GetCharacterController);
     lua.RegisterFunction("GetAIController_Internal", Apex::Controller::Lua_GetAIController);
+    lua.RegisterFunction("CC_TP_Internal", Apex::Controller::Lua_CC_TP);
+    lua.RegisterFunction("CC_TPToTarget_Internal", Apex::Controller::Lua_CC_TPToTarget);
     lua.RegisterFunction("CC_Move_Internal", Apex::Controller::Lua_CC_Move);
     lua.RegisterFunction("CC_Jump_Internal", Apex::Controller::Lua_CC_Jump);
     lua.RegisterFunction("CC_GetVelocity_Internal", Apex::Controller::Lua_CC_GetVelocity);
@@ -39,6 +41,36 @@ AIController* Apex::Controller::GetAIC(lua_State* L, int index)
     AIController* cc = static_cast<AIController*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
     return cc;
+}
+
+int Apex::Controller::Lua_CC_TP(lua_State* L)
+{
+    CharacterController* cc = GetCC(L, 1);
+
+    if (!cc)
+        return 0;
+
+    LuaVector3* pos = CheckVector3(L, 2);
+
+    cc->Teleport(pos->m_value);
+
+    return 0;
+}
+
+int Apex::Controller::Lua_CC_TPToTarget(lua_State* L)
+{
+    CharacterController* cc = GetCC(L, 1);
+
+    if (!cc)
+        return 0;
+
+    Object* obj = GetObject(L, 2);
+    if (!obj)
+        return 0;
+
+    cc->Teleport(obj->GetGlobalTransform());
+
+    return 0;
 }
 
 int Apex::Controller::Lua_CC_Move(lua_State* L)
