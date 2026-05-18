@@ -8,10 +8,12 @@ function Fighter:New()
     -- component
     opponent = nil,
     -- variables
+    battleManager = nil,
     hud = nil,
     barName = "",
     hp = 19,
     maxhp = 10,
+    isMyTurn = false,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -19,6 +21,10 @@ end
 
 function Fighter:SetOpponent(opp)
     self.opponent = opp
+end
+
+function Fighter:SetBattleMng(bm)
+    self.battleManager = bm
 end
 
 function Fighter:SetHuD(hud, barName)
@@ -32,8 +38,8 @@ function Fighter:Start()
 end
 
 function Fighter:Update(dt)
-    if Input.IsKeyDown("P") then
-        self.opponent:TakeDamage(0.1)
+    if self.isMyTurn and Input.IsKeyDown("P") then
+        self:Attack()
     end
 end
 
@@ -46,6 +52,16 @@ function Fighter:TakeDamage(damage)
     end
 
     HUD_SetProgress(self.hud, self.barName, self.hp / self.maxhp)
+end
+
+function Fighter:Attack()
+    if self.hp <= 0 then return end
+
+    self.isMyTurn = false
+    self.opponent:TakeDamage(1)
+    if self.battleManager ~= nil then
+        self.battleManager:OnTurnEnd(self)
+    end
 end
 
 
