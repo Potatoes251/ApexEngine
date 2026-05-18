@@ -117,4 +117,8 @@ function Player:OnTriggerEnter(col)
     end
 end
 
+function Player:StopAnim()
+    self.anim:Play("Idle")
+end
+
 return Player

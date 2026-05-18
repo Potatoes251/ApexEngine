@@ -42,6 +42,9 @@ void ScriptComponent::SetScript(const std::string& path)
     // instance.__object = pointer
     lua_setfield(L, -2, "__object");
 
+    lua_pushlightuserdata(L, static_cast<Component*>(this));
+    lua_setfield(L, -2, "__component");
+
     // pop instance
     lua_pop(L, 1);
 }

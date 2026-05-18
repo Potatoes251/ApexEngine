@@ -122,7 +122,7 @@ namespace Apex::ScriptCast
         for (const auto& obj : scene->GetObjects())
         {
             if (obj->GetName() != objName) continue;
-            ScriptComponent* scriptComponent = FindScript(obj.get(), "");
+            ScriptComponent* scriptComponent = obj->GetComponent<ScriptComponent>();
             if (!PushInstance(L, scriptComponent))
             {
                 lua_pushnil(L);

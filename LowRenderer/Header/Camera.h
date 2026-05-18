@@ -37,6 +37,7 @@ namespace Apex::Rendering
 		LibMath::Degree				GetYaw()   const { return m_yaw; }
 
 		void SetPosition(LibMath::Vector3 pos);
+		virtual void Teleport(LibMath::Vector3 pos) { SetPosition(pos); }
 
 		virtual void OnStart() override;
 

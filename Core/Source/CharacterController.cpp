@@ -1,6 +1,7 @@
 #include "CharacterController.h"
 
 #include "Object.h"
+#include "Camera.h"
 #include "Physic.h"
 #include "Rigidbody.h"
 #include "WaterVolume.h"
@@ -36,19 +37,16 @@ void CharacterController::Teleport(LibMath::Transform const& newPos)
 
 	m_grounded = false;
 	m_inWater = false;
+
+	Rendering::Camera* cam = GetOwner()->GetComponent<Rendering::Camera>();
+	if (cam) cam->Teleport(m_targetPos);
 }
 
 void CharacterController::Teleport(LibMath::Vector3 const& newPos)
 {
 	LibMath::Transform trans = GetOwner()->GetGlobalTransform();
 	trans.setPosition(newPos);
-	GetOwner()->SetGlobalTransform(trans);
-
-	m_targetPos = newPos;
-	m_targetYaw = LibMath::Degree(trans.getEulerRotation()[1]);
-
-	m_grounded = false;
-	m_inWater = false;
+	Teleport(trans);
 }
 
 void CharacterController::Move(LibMath::Vector3 const& movement)

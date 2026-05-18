@@ -11,9 +11,6 @@ namespace Apex::Controller
 
 	void RegisterLua(Scripting::LuaManager& lua);
 
-	CharacterController* GetCC(lua_State* L, int index);
-	AIController* GetAIC(lua_State* L, int index);
-
 	int Lua_CC_TP(lua_State* L);
 	int Lua_CC_TPToTarget(lua_State* L);
 	int Lua_CC_Move(lua_State* L);

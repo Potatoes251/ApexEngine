@@ -1,5 +1,6 @@
 #include "LuaFunction/MeshLua.h"
 #include "LuaFunction/ObjectLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "MeshRenderer.h"
 #include "Object.h"
@@ -15,17 +16,9 @@ void Apex::Mezh::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("SetUniform_Internal", Apex::Mezh::Lua_SetUniform);
 }
 
-MeshRenderer* Apex::Mezh::GetMesh(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    MeshRenderer* mesh = static_cast<MeshRenderer*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return mesh;
-}
-
 int Apex::Mezh::Lua_SetUniform(lua_State* L)
 {
-    MeshRenderer* mesh = GetMesh(L, 1);
+    MeshRenderer* mesh = Comp::GetComponent<MeshRenderer>(L, 1);
 
     if (!mesh)
     {

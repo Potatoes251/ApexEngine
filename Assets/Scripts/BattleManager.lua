@@ -9,6 +9,7 @@ function Fight:New()
     hud = nil,
     enemy = nil,
     player = nil,
+    playerScript = nil,
     playerTargetPos = nil,
     }
     setmetatable(instance, { __index = self })
@@ -20,6 +21,7 @@ function Fight:Start()
     self.cc = CharacterController.Get(self)
     self.enemy = Cast("Enemy", "Fighter")
     self.player = Cast("Player", "Fighter")
+    self.playerScript = Cast("Player", "Player")
     self.playerTargetPos = Cast("playerArenaPos")
 
     self.enemy:SetOpponent(self.player)
@@ -27,10 +29,16 @@ function Fight:Start()
 end
 
 function Fight:OnTriggerEnter(col)
+    self:OnBattleStart()
+end
+
+function Fight:OnBattleStart()
     if self.hud ~= 0 then 
         ShowHUD(self.hud) 
     end
     self.cc:TeleportToTarget(self.playerTargetPos)
+    self.playerScript:SetEnabled(false)
+    self.playerScript:StopAnim()
 end
 
 return Fight

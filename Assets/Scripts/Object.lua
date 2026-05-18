@@ -6,6 +6,10 @@ function Object:New()
     return instance
 end
 
+function Object:SetEnabled(enabled)
+    SetEnabled_Internal(self, enabled)
+end
+
 function Object:AddChild(child)
     AddChild_Internal(self, child)
 end
