@@ -93,7 +93,7 @@ function Player:ProcessInput(dt)
             moveDir = moveDir + Vector3.New(0, y, 0)
         end
 
-        self.cc:Move(moveDir)
+        self.cc:Move(moveDir:Normalized())
     end
 
     local speed     = self.cc:GetVelocity()
@@ -119,6 +119,10 @@ end
 
 function Player:StopAnim()
     self.anim:Play("Idle")
+end
+
+function Player:StartAnim()
+    self.anim:StartBlend("Idle", "Walking", 0, true)
 end
 
 return Player

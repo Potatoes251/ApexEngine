@@ -32,8 +32,12 @@ function Fighter:SetHuD(hud, barName)
     self.barName = barName
 end
 
-function Fighter:Start()
+function Fighter:OnBattleStart()
     self.hp = self.maxhp
+    HUD_SetProgress(self.hud, self.barName, 1.0)
+end
+
+function Fighter:Start()
     self:SetEnabled(false)
 end
 
@@ -44,11 +48,10 @@ function Fighter:Update(dt)
 end
 
 function Fighter:TakeDamage(damage)
-    Log("Ouch")
     self.hp = self.hp - damage
 
     if self.hp <= 0 then
-        Log("grlunnqrniqenivgiuveqpuvrmuirebigribvarz")
+        self.battleManager:OnBattleEnd()
     end
 
     HUD_SetProgress(self.hud, self.barName, self.hp / self.maxhp)

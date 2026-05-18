@@ -1,19 +1,27 @@
 local CharacterController = require("CharacterController")
 local Object = require("Object")
+local Vector3 = require("Vector3")
 
 local Fight = Object:New()
 
 function Fight:New()
     local instance = {
-    cc = nil,
     hud = nil,
+    
     enemy = nil,
     player = nil,
+    
     playerScript = nil,
     playerTargetPos = nil,
+    oldPos = nil,
+
     playerTurn = true,
     battleActive = false,
     enemyAttackTimer = 0,
+
+    isInGrass = false,
+    encounterTimer = 0,
+    encounterChance = 10, -- 1 in encounterChance
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -21,7 +29,7 @@ end
 
 function Fight:Start()
     self.hud = CreateHUD("Fight")
-    self.cc = CharacterController.Get(self)
+
     self.enemy = Cast("Enemy", "Fighter")
     self.player = Cast("Player", "Fighter")
     self.playerScript = Cast("Player", "Player")
@@ -35,8 +43,23 @@ function Fight:Start()
     self.player:SetBattleMng(self)
 end
 
+function Fight:CheckEncounter(dt)
+    if not isInGrass then return end
+
+    self.encounterTimer = self.encounterTimer + dt
+    if self.encounterTimer > 1 then
+        if math.random(0, self.encounterChance) == 0 then
+            self:OnBattleStart()
+        end
+        self.encounterTimer = 0
+    end
+end
+
 function Fight:Update(dt)
-    if not self.battleActive then return end
+    if not self.battleActive then 
+        self:CheckEncounter(dt)
+        return
+    end
 
     self.enemyAttackTimer = self.enemyAttackTimer + dt
 
@@ -47,18 +70,26 @@ function Fight:Update(dt)
 end
 
 function Fight:OnTriggerEnter(col)
-    self:OnBattleStart()
+    isInGrass = true
+end
+
+function Fight:OnTriggerExit(col)
+    isInGrass = false
 end
 
 function Fight:OnBattleStart()
     self.battleActive = true
+    self.oldPos = self.playerScript:GetPosition()
     if self.hud ~= 0 then 
         ShowHUD(self.hud)
     end
-    self.cc:TeleportToTarget(self.playerTargetPos)
+    self.playerScript.cc:TeleportToTarget(self.playerTargetPos)
     self.playerScript:SetEnabled(false)
     self.playerScript:StopAnim()
     self.player:SetEnabled(true)
+
+    self.player:OnBattleStart()
+    self.enemy:OnBattleStart()
 
     if math.random(0, 1) == 0 then
         self:StartPlayerTurn()
@@ -72,8 +103,9 @@ function Fight:OnBattleEnd()
     if self.hud ~= 0 then 
         HideHUD(self.hud)
     end
-    -- self.cc:TeleportToTarget(self.playerTargetPos) -- TODO: reset to old pos
+    self.playerScript.cc:Teleport(self.oldPos)
     self.playerScript:SetEnabled(true)
+    self.playerScript:StartAnim()
     self.player:SetEnabled(false)
 end
 
@@ -81,8 +113,6 @@ function Fight:StartPlayerTurn()
     self.playerTurn = true
     self.player.isMyTurn = true
     self.enemy.isMyTurn = false
-
-    Log("Player's turn")
 end
 
 function Fight:StartEnemyTurn()
@@ -90,7 +120,6 @@ function Fight:StartEnemyTurn()
     self.player.isMyTurn = false
     self.enemy.isMyTurn = true
     self.enemyAttackTimer = 0
-    Log("Enemy's turn")
 end
 
 function Fight:OnTurnEnd(fighter)
