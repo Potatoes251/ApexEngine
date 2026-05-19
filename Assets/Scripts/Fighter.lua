@@ -11,7 +11,7 @@ function Fighter:New()
     battleManager = nil,
     hud = nil,
     barName = "",
-    hp = 19,
+    hp = 0,
     maxhp = 10,
     isMyTurn = false,
     }
@@ -65,13 +65,17 @@ function Fighter:Attack()
     if self.hp <= 0 then return end
 
     self.isMyTurn = false
-    self.opponent:TakeDamage(1)
+    if self.opponent ~= nil then
+        self.opponent:TakeDamage(1)
+    end
     if self.battleManager ~= nil then
         self.battleManager:OnTurnEnd(self)
     end
 end
 
 function Fighter:Flee()
+    if self.hp <= 0 then return end
+    
     if self.battleManager ~= nil then
         self.battleManager:OnBattleEnd()
     end
