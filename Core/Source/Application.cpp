@@ -57,6 +57,7 @@ Apex::Application::Application(IWindow* window, IGUI* gui)
 {
     assert(m_instance == nullptr && "Only one Application instance allowed");
     m_instance = this;
+    m_saveManager = std::make_unique<Save::SaveManager>("Saves/");
 
     InitLog();
     InitWindow(window);
@@ -95,6 +96,10 @@ void Apex::Application::InitWindow(IWindow* window)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
+
+            if (key == Key::O && down)
+                if (m_onSaveRequested)
+                    m_onSaveRequested();
         });
 }
 

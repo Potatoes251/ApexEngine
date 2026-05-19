@@ -3,6 +3,8 @@
 
 #include "HUD.h"
 
+#include "Log.h"
+
 using namespace Apex::Game;
 using namespace Apex::UserInterface;
 
@@ -14,6 +16,11 @@ bool Game::Init()
     if (!m_gui) return false;
 
     m_app = std::make_unique<Apex::Application>(m_window.get(), m_gui.get());
+
+    m_app->SetSaveRequestedCallback([this]()
+        {
+            SaveGame();
+        });
 
     UIManager* uiManager = m_app->GetUI();
 
@@ -76,4 +83,95 @@ void Game::Render()
     m_gui->EndFrame();
 
     m_window->SwapBuffers();
+}
+
+void Apex::Game::Game::SaveGame()
+{
+    SaveCurrentGame(0);
+}
+
+void Apex::Game::Game::SaveCurrentGame(int slot)
+{
+    using namespace Apex::Save;
+
+    //auto* app = Apex::Application::Get();
+    auto* scene = m_app->GetScene();
+
+    // Locate the player object by name (adjust to your convention).
+    Apex::Data::Object* player = nullptr;
+    for (auto& obj : scene->GetObjects())
+    {
+        if (obj->GetName() == "Player")
+        {
+            player = obj.get();
+            break;
+        }
+    }
+
+    SaveData data;
+    data.scenePath = m_app->GetScenePath();
+
+    if (player)
+    {
+        auto pos = player->GetLocalTransform().getPosition();
+        data.playerPosition = { pos[0], pos[1], pos[2] };
+
+        // Retrieve score and lives from a ScriptComponent or a custom
+        // PlayerStats component you expose via GetComponent<PlayerStats>().
+        // Example (replace with your actual component API):
+        //   auto* stats = player->GetComponent<PlayerStats>();
+        //   if (stats) { data.score = stats->GetScore(); data.lives = stats->GetLives(); }
+
+        // Collect item IDs: your pickup system should maintain a list of
+        // object IDs that were consumed. Example:
+        //   for (size_t id : app->GetCollectedItemIds())
+        //       data.collectedItems.push_back({ id, "coin" });
+    }
+
+    m_app->GetSaveManager()->Save(data, slot);
+}
+
+void Apex::Game::Game::LoadSavedGame(int slot)
+{
+    using namespace Apex::Save;
+
+    //auto* app = Apex::Application::Get();
+
+    auto optData = m_app->GetSaveManager()->Load(slot);
+    if (!optData)
+    {
+        LOG_WARNING("LoadSavedGame – no data in slot {}", slot);
+        return;
+    }
+
+    const SaveData& data = *optData;
+
+    // 1. Load the scene without calling Start() yet.
+    m_app->LoadScene(data.scenePath, /*startScene=*/false);
+
+    // 2. Remove items the player already collected.
+    m_app->GetSaveManager()->ApplyToScene(data, m_app->GetScene());
+
+    // 3. Restore player state.
+    auto* scene = m_app->GetScene();
+    for (auto& obj : scene->GetObjects())
+    {
+        if (obj->GetName() != "Player") continue;
+
+        // Restore position via the transform (adjust to your transform API).
+        //   obj->GetLocalTransform().setPosition({ data.playerPosition.x,
+        //                                          data.playerPosition.y,
+        //                                          data.playerPosition.z });
+
+        // Restore score / lives:
+        //   auto* stats = obj->GetComponent<PlayerStats>();
+        //   if (stats) { stats->SetScore(data.score); stats->SetLives(data.lives); }
+
+        break;
+    }
+
+    // 4. Now start the scene (calls Start() on every component).
+    m_app->GetScene()->Start();
+
+    LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", slot, data.scenePath);
 }
