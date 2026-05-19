@@ -20,6 +20,14 @@ function CharacterController.Get(obj)
 end
 
 -- Methods
+function CharacterController:Teleport(pos) -- TP to a position (vec3)
+    CC_TP_Internal(self, pos)
+end
+
+function CharacterController:TeleportToTarget(obj) -- TP to another gameObject
+    CC_TPToTarget_Internal(self, obj)
+end
+
 function CharacterController:Move(moveDir)
     CC_Move_Internal(self, moveDir)
 end

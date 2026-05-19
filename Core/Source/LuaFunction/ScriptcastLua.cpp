@@ -43,10 +43,8 @@ namespace Apex::ScriptCast
     // If scriptStem is empty, returns the first ScriptComponent.
     static ScriptComponent* FindScript(Data::Object* obj, const std::string& scriptStem)
     {
-        for (auto* comp : obj->GetComponents())
+        for (ScriptComponent* scriptComponent : obj->GetComponentsByType<ScriptComponent>())
         {
-            auto* scriptComponent = dynamic_cast<ScriptComponent*>(comp);
-            if (!scriptComponent) continue;
             if (scriptStem.empty()) return scriptComponent;
 
             std::string stem = std::filesystem::path(scriptComponent->GetScriptPath()).stem().string();
@@ -124,7 +122,7 @@ namespace Apex::ScriptCast
         for (const auto& obj : scene->GetObjects())
         {
             if (obj->GetName() != objName) continue;
-            ScriptComponent* scriptComponent = FindScript(obj.get(), "");
+            ScriptComponent* scriptComponent = obj->GetComponent<ScriptComponent>();
             if (!PushInstance(L, scriptComponent))
             {
                 lua_pushnil(L);

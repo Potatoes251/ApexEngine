@@ -13,8 +13,6 @@ namespace Apex::Mezh
 {
 	void RegisterLua(Scripting::LuaManager& lua);
 
-	Rendering::MeshRenderer* GetMesh(lua_State* L, int index);
-
 	int Lua_SetUniform(lua_State* L);
 
 	int Lua_GetMesh(lua_State* L);

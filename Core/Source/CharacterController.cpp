@@ -1,6 +1,7 @@
 #include "CharacterController.h"
 
 #include "Object.h"
+#include "Camera.h"
 #include "Physic.h"
 #include "Rigidbody.h"
 #include "WaterVolume.h"
@@ -10,6 +11,7 @@
 
 #include "LibMath/Trigonometry.h"
 #include "LibMath/Arithmetic.h"
+#include "LibMath/Transform.h"
 
 #include "Log.h"
 
@@ -26,17 +28,35 @@ float CharacterController::GetHorizontalVelocity() const
 	return horizontalVelocity.magnitude();
 }
 
-void CharacterController::Move(LibMath::Vector3 movement)
+void CharacterController::Teleport(LibMath::Transform const& newPos)
+{
+	GetOwner()->SetGlobalTransform(newPos);
+
+	m_targetPos = newPos.getPosition();
+	m_targetYaw = LibMath::Degree(newPos.getEulerRotation()[1]);
+
+	m_grounded = false;
+	m_inWater = false;
+
+	Rendering::Camera* cam = GetOwner()->GetComponent<Rendering::Camera>();
+	if (cam) cam->Teleport(m_targetPos);
+}
+
+void CharacterController::Teleport(LibMath::Vector3 const& newPos)
+{
+	LibMath::Transform trans = GetOwner()->GetGlobalTransform();
+	trans.setPosition(newPos);
+	Teleport(trans);
+}
+
+void CharacterController::Move(LibMath::Vector3 const& movement)
 {
 	m_moveInput += movement;
 }
 
 void CharacterController::Jump()
 {
-	if (m_grounded)
-	{
-		m_verticalVelocity = m_jumpForce;
-	}
+	m_verticalVelocity = m_jumpForce;
 }
 
 void CharacterController::OnStart()
@@ -195,7 +215,6 @@ LibMath::Vector3 CharacterController::CalculateDisplacement(float deltatime_s)
 	if (currentVolume)
 	{
 		// Buoyancy counteracts gravity based on density ratio
-		// Assumes the character has a m_density member (e.g. 900 for a human)
 		float buoyancy = (currentVolume->GetDensity() / m_density)
 			* -GRAVITY[1]                         // flip to get positive force
 			* currentVolume->GetBuoyancyMult();

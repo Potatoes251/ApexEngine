@@ -12,6 +12,8 @@ void Apex::Console::Add(LogEntry entry)
 {
 	m_collapsedDirty = true;
 
+	std::lock_guard<std::mutex> lock(m_logMutex);
+
 	if (m_logs.empty())
 	{
 		m_logs.push_back(entry);
@@ -38,7 +40,15 @@ void Apex::Console::Draw()
 	if (m_collapseAll && m_collapsedDirty)
 		CollapseLogs();
 
-	DrawLogs(m_collapseAll ? m_collapsedLogs : m_logs);
+	if (m_collapseAll) 
+	{
+		DrawLogs(m_collapsedLogs);
+	}
+	else 
+	{
+		std::lock_guard<std::mutex> lock(m_logMutex);
+		DrawLogs(m_logs);
+	}
 
 	m_gui->EndPanel();
 }
@@ -58,6 +68,7 @@ void Apex::Console::DrawToolbar()
 	m_gui->SameLine(0.f, 16.f);
 	if (m_gui->Button("clear"))
 	{
+		std::lock_guard<std::mutex> lock(m_logMutex);
 		m_logs.clear();
 		m_collapsedDirty = true;
 	}
@@ -161,18 +172,21 @@ void Apex::Console::CollapseLogs()
 
 	std::unordered_map<std::string, LogEntry> map;
 
-	for (const LogEntry& log : m_logs)
 	{
-		std::string key = log.m_category + "|" + log.m_message + "|" + std::to_string((int)log.m_level);
+		std::lock_guard<std::mutex> lock(m_logMutex);
+		for (const LogEntry& log : m_logs)
+		{
+			std::string key = log.m_category + "|" + log.m_message + "|" + std::to_string((int)log.m_level);
 
-		auto it = map.find(key);
-		if (it == map.end())
-		{
-			map[key] = log;
-		}
-		else
-		{
-			map[key].m_count++;
+			auto it = map.find(key);
+			if (it == map.end())
+			{
+				map[key] = log;
+			}
+			else
+			{
+				map[key].m_count++;
+			}
 		}
 	}
 

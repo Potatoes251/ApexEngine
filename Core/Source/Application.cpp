@@ -159,8 +159,6 @@ void Apex::Application::LoadScene(bool isBuild, bool startScene)
     }
 
     LoadScene(scenePath, startScene);
-
-    m_scenePath = scenePath;
 }
 
 void Apex::Application::LoadScene(const std::string& path, bool startScene)

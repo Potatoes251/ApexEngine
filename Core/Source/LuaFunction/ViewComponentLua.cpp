@@ -1,5 +1,6 @@
 #include "LuaFunction/ViewComponentLua.h"
 #include "LuaFunction/ObjectLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "Object.h"
 
@@ -15,17 +16,9 @@ void Apex::Perception::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("ViewComp_GetClosestWithTag_Internal", Apex::Perception::Lua_ViewComp_GetClosestWithTag);
 }
 
-ViewComponent* Apex::Perception::GetViewComp(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    ViewComponent* comp = static_cast<ViewComponent*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return comp;
-}
-
 int Apex::Perception::Lua_ViewComp_SeesTag(lua_State* L)
 {
-    ViewComponent* comp = GetViewComp(L, 1);
+    ViewComponent* comp = Comp::GetComponent<ViewComponent>(L, 1);
     if (!comp)
         return 0;
 
@@ -45,7 +38,7 @@ int Apex::Perception::Lua_ViewComp_GetClosestWithTag(lua_State* L)
     if (!tag)
         return 0;
 
-    ViewComponent* comp = GetViewComp(L, 1);
+    ViewComponent* comp = Comp::GetComponent<ViewComponent>(L, 1);
     if (!comp)
         return 0;
 

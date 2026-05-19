@@ -45,6 +45,12 @@ void main()
 
     Vertex vin = vertices[index];
 
+    if (uTime == 0)
+    {
+        displaced[index] = vin;
+        return;
+    }
+
     vec2 uv = vec2(vin.position.w, vin.normal.w);
 
     float eps = 1.0 / 128.0;
