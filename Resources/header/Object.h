@@ -35,7 +35,6 @@ namespace Apex::Data
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other) = delete;
 		Object&	operator=(const Object& other) = delete;
-		~Object();
 
 		std::unique_ptr<Object>		Clone();
 
@@ -49,7 +48,7 @@ namespace Apex::Data
 		void			RemoveCompId(size_t oldId);
 		void			RemoveCompId(Component* comp);
 
-		std::string&	GetName() { return m_name; }
+		std::string const&	GetName() const { return m_name; }
 		void			SetName(std::string name);
 
 		const	LibMath::Transform&		GetLocalTransform() const;

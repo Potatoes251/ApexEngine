@@ -29,38 +29,16 @@ using namespace Apex::Physic;
 
 namespace Apex::Rendering
 {
-	std::unique_ptr<Scene> Scene::Clone()
+	std::unique_ptr<Scene> Scene::Clone() const
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
 		copy->m_graph = m_graph;
 
-		for (const auto& obj : m_objects)
-		{
-			copy->m_objects.push_back(obj->Clone());
-			std::unique_ptr<Object>& newObj = copy->m_objects.back();
+		CloneObjects(copy);
+		ReparentObjects(copy);
 
-			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
-			Collider* collider = newObj->GetComponent<Collider>();
-
-			if (body && collider)
-			{
-				PhysMatHandle mat = collider->GetMaterial();
-
-				if (mat.IsValid())
-					collider->SetMaterial(copy->m_physics.CreateMaterial(
-						mat->GetPath(), mat->MutStaticFriction(), mat->MutDynamicFriction(), mat->MutBounciness()));
-				
-				copy->m_physics.CreateActor(*collider, *body);
-			}
-
-			newObj->SetOnChangedCallback([this]()
-				{
-					MarkDirty();
-				});
-		}
-
-		for (auto& obj : copy->m_objects)
+		for (auto const& obj : copy->m_objects)
 		{
 			Camera* cam = obj->GetComponent<Camera>();
 			if (cam && cam->IsMainCamera())
@@ -73,11 +51,11 @@ namespace Apex::Rendering
 		return copy;
 	}
 
-	Lighting::VisibleLights Scene::GetVisibleLights()
+	Lighting::VisibleLights Scene::GetVisibleLights() const
 	{
 		Lighting::VisibleLights visibleLights;
 
-		for (std::unique_ptr<Object>& obj : m_objects)
+		for (std::unique_ptr<Object> const& obj : m_objects)
 		{
 			Lighting::DirectionalLightComponent* dirLight = obj->GetComponent<Lighting::DirectionalLightComponent>();
 
@@ -184,7 +162,7 @@ namespace Apex::Rendering
 		}
 	}
 
-	void Scene::MarkDirty()
+	void Scene::MarkDirty() const
 	{
 		m_isDirty = true;
 		if (m_onMarkedDirty)
@@ -393,15 +371,13 @@ namespace Apex::Rendering
 
 		file << "\"objects\": [\n";
 
-		for (size_t i = 0; i < m_objects.size(); i++)
+		for (const auto& obj : m_objects)
 		{
-			auto& obj = m_objects[i];
-
 			const auto& transform = obj->GetLocalTransform();
 
-			auto pos = transform.getPosition();
-			auto rot = transform.getRotation();
-			auto scale = transform.getScale();
+			auto const& pos = transform.getPosition();
+			auto const& rot = transform.getRotation();
+			auto const& scale = transform.getScale();
 
 			Apex::SceneGraph::SceneNode* node = obj->GetSceneNode().get();
 
@@ -416,9 +392,9 @@ namespace Apex::Rendering
 			file << "    \"id\": " << obj->GetId() << ",\n";
 			file << "    \"parent\": " << (parentId == SIZE_MAX ? "null" : std::to_string(parentId)) << ",\n";
 			file << "    \"name\": \"" << obj->GetName() << "\",\n";
-			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
+			file << "    \"position\": " << pos << ",\n";
 			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "," << rot[3] << "],\n";
-			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";
+			file << "    \"scale\": " << scale << ",\n";
 
 			file << "    \"components\": {\n";
 
@@ -440,7 +416,7 @@ namespace Apex::Rendering
 			file << "\n    }\n";
 			file << "  }";
 
-			if (i < m_objects.size() - 1)
+			if (obj != m_objects.back())
 				file << ",";
 
 			file << "\n";
@@ -453,9 +429,58 @@ namespace Apex::Rendering
 
 		ClearDirty();
 	}
+
 	void Scene::SetOnMarkedDirtyCallback(std::function<void()> callback)
 	{
 		if (callback)
 			m_onMarkedDirty = callback;
+	}
+
+	void Scene::CloneObjects(std::unique_ptr<Scene>& copy) const
+	{
+		for (const auto& obj : m_objects)
+		{
+			copy->m_objects.push_back(obj->Clone());
+			std::unique_ptr<Object>& newObj = copy->m_objects.back();
+
+			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
+			Collider* collider = newObj->GetComponent<Collider>();
+
+			if (body && collider)
+			{
+				PhysMatHandle mat = collider->GetMaterial();
+
+				if (mat.IsValid())
+					collider->SetMaterial(copy->m_physics.CreateMaterial(
+						mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
+
+				copy->m_physics.CreateActor(*collider, *body);
+			}
+
+			newObj->SetOnChangedCallback([this]()
+				{
+					MarkDirty();
+				});
+		}
+	}
+
+	void Scene::ReparentObjects(std::unique_ptr<Scene>& copy) const
+	{
+		for (const auto& obj : m_objects)
+		{
+			for (auto const& child : obj->GetSceneNode()->GetChildren())
+			{
+				size_t parentId = obj->GetId();
+				size_t childId = child->GetObject()->GetId();
+
+				auto parentIt = std::find_if(copy->m_objects.begin(), copy->m_objects.end(),
+					[parentId](const auto& o) { return o->GetId() == parentId; });
+				auto childIt = std::find_if(copy->m_objects.begin(), copy->m_objects.end(),
+					[childId](const auto& o) { return o->GetId() == childId; });
+
+				if (parentIt != copy->m_objects.end() && childIt != copy->m_objects.end())
+					(*parentIt)->GetSceneNode()->AddChild((*childIt)->GetSceneNode());
+			}
+		}
 	}
 }

@@ -64,7 +64,7 @@ void Hierarchy::Draw()
             comp.SetMaterial(mat);
             obj->SetName("Cube");
 
-            m_selected = obj;
+            SelectObject(obj);
         }
 
         if (m_gui.MenuItem("Sphere"))
@@ -78,7 +78,7 @@ void Hierarchy::Draw()
             comp.SetMaterial(mat);
             obj->SetName("Sphere");
 
-            m_selected = obj;
+            SelectObject(obj);
         }
         m_gui.EndPopup();
     }

@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 3784,
+    "id": 4741,
     "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
@@ -31,7 +31,7 @@
     }
   },
   {
-    "id": 3785,
+    "id": 4742,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -47,7 +47,7 @@
     }
   },
   {
-    "id": 3786,
+    "id": 4743,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -64,7 +64,7 @@
     }
   },
   {
-    "id": 3787,
+    "id": 4744,
     "parent": null,
     "name": "Player",
     "position": [0.534259,2.021664,4.421952],
@@ -116,7 +116,7 @@
     }
   },
   {
-    "id": 3788,
+    "id": 4745,
     "parent": null,
     "name": "WaterCurrent",
     "position": [30.861206,-3.806236,0.080175],
@@ -141,7 +141,7 @@
     }
   },
   {
-    "id": 3789,
+    "id": 4746,
     "parent": null,
     "name": "Platform",
     "position": [48.398689,0.000000,0.000000],
@@ -169,7 +169,7 @@
     }
   },
   {
-    "id": 3790,
+    "id": 4747,
     "parent": null,
     "name": "Coin",
     "position": [8.580971,1.596644,-3.946078],
@@ -203,7 +203,7 @@
     }
   },
   {
-    "id": 3791,
+    "id": 4748,
     "parent": null,
     "name": "Coin",
     "position": [13.138493,1.596644,1.085545],
@@ -237,7 +237,7 @@
     }
   },
   {
-    "id": 3792,
+    "id": 4749,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,-8.131828],
@@ -271,7 +271,7 @@
     }
   },
   {
-    "id": 3793,
+    "id": 4750,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,10.051377],
@@ -305,7 +305,7 @@
     }
   },
   {
-    "id": 3794,
+    "id": 4751,
     "parent": null,
     "name": "Goomba",
     "position": [20.767628,1.190966,-5.287210],
@@ -355,7 +355,7 @@
     }
   },
   {
-    "id": 3795,
+    "id": 4752,
     "parent": null,
     "name": "PoolWall",
     "position": [30.581680,-3.773233,18.222446],
@@ -383,7 +383,7 @@
     }
   },
   {
-    "id": 3796,
+    "id": 4753,
     "parent": null,
     "name": "PoolWall",
     "position": [30.961494,-3.718727,-17.883265],
@@ -411,7 +411,7 @@
     }
   },
   {
-    "id": 3797,
+    "id": 4754,
     "parent": null,
     "name": "PoolWall",
     "position": [20.143110,-3.990068,-0.149099],
@@ -439,7 +439,7 @@
     }
   },
   {
-    "id": 3798,
+    "id": 4755,
     "parent": null,
     "name": "PoolWall",
     "position": [39.734138,-3.990068,-0.149099],
@@ -467,7 +467,7 @@
     }
   },
   {
-    "id": 3799,
+    "id": 4756,
     "parent": null,
     "name": "PoolWall",
     "position": [29.979202,-7.835294,-0.149099],
@@ -495,7 +495,7 @@
     }
   },
   {
-    "id": 3800,
+    "id": 4757,
     "parent": null,
     "name": "Platform",
     "position": [62.219765,0.000002,0.771967],
@@ -523,7 +523,7 @@
     }
   },
   {
-    "id": 3801,
+    "id": 4758,
     "parent": null,
     "name": "Platform",
     "position": [73.371742,0.000002,10.000000],
@@ -551,7 +551,7 @@
     }
   },
   {
-    "id": 3802,
+    "id": 4759,
     "parent": null,
     "name": "Platform",
     "position": [84.500000,0.000002,0.771967],
@@ -579,7 +579,7 @@
     }
   },
   {
-    "id": 3803,
+    "id": 4760,
     "parent": null,
     "name": "Platform",
     "position": [96.838928,0.000002,0.809082],
@@ -607,7 +607,7 @@
     }
   },
   {
-    "id": 3804,
+    "id": 4761,
     "parent": null,
     "name": "Goomba",
     "position": [100.000000,1.110799,3.720859],
@@ -657,7 +657,7 @@
     }
   },
   {
-    "id": 3805,
+    "id": 4762,
     "parent": null,
     "name": "Coin",
     "position": [61.975533,1.596642,0.901356],
@@ -691,7 +691,7 @@
     }
   },
   {
-    "id": 3806,
+    "id": 4763,
     "parent": null,
     "name": "Coin",
     "position": [73.292206,1.596640,10.540983],
@@ -725,7 +725,7 @@
     }
   },
   {
-    "id": 3807,
+    "id": 4764,
     "parent": null,
     "name": "Coin",
     "position": [84.224602,1.596640,0.824762],
@@ -759,7 +759,7 @@
     }
   },
   {
-    "id": 3808,
+    "id": 4765,
     "parent": null,
     "name": "Coin",
     "position": [96.052116,1.596640,6.135586],
@@ -793,7 +793,7 @@
     }
   },
   {
-    "id": 3809,
+    "id": 4766,
     "parent": null,
     "name": "Coin",
     "position": [93.757751,5.874397,1.861258],
@@ -827,7 +827,7 @@
     }
   },
   {
-    "id": 3810,
+    "id": 4767,
     "parent": null,
     "name": "Painting",
     "position": [100.000000,2.285035,0.000000],
@@ -862,7 +862,7 @@
     }
   },
   {
-    "id": 3811,
+    "id": 4768,
     "parent": null,
     "name": "Bowser",
     "position": [2.157224,4.363768,-2.606731],
@@ -877,14 +877,14 @@
       },
       "Rigidbody": {
         "enabled": true,
-        "type": "Static",
+        "type": "Kinematic",
         "mass": 1.000000
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 1.000000,
+        "halfHeight": 0.500000,
         "radius": 1.000000,
-        "isTrigger": false,
+        "isTrigger": true,
         "material": null
       },
       "AIController": {
@@ -908,6 +908,32 @@
         "script": "Assets/Scripts/Bowser.lua",
         "vars": {
         }
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"Mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
+      }
+    }
+  },
+  {
+    "id": 4770,
+    "parent": 4768,
+    "name": "Cube",
+    "position": [0.000000,-20.000000,-30.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [1.000000, 1.000000, 1.000000],
+        "isTrigger": true,
+        "material": null
       }
     }
   }

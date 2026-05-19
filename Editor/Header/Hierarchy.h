@@ -78,7 +78,6 @@ namespace Apex::Editor
 
 		void DestroyObject(size_t objId);
 
-	private:
 		Apex::UserInterface::IGUI& m_gui;
 		Apex::Rendering::Scene* m_scene;
 		ComponentsViewer* m_componentsViewer;

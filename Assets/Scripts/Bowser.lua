@@ -1,5 +1,6 @@
 local AIController = require("AIController")
 local ViewComp = require("ViewComponent")
+local Animator = require("Animator")
 local Collider = require("Collider")
 local Object = require("Object")
 local Input = require("Input")
@@ -12,6 +13,7 @@ function Bowser:New()
      -- component
     aic = nil, 
     view = nil,
+    anim = nil,
     -- variables
     hp = 3,
     }
@@ -22,7 +24,9 @@ end
 function Bowser:Start()
     self.aic = AIController.Get(self)
     self.view = ViewComp.Get(self)
+    self.anim = Animator.Get(self)
     self:AddTag("Bowser")
+    self.anim:Play("Idle", true)
 end
 
 function Bowser:Update()
@@ -30,9 +34,13 @@ function Bowser:Update()
     self.aic:SetTarget(obj)
 end
 
+function Bowser:OnTriggerEnter(col)
+    self:TakeDamage()
+end
+
 function Bowser:TakeDamage()
-    hp = hp - 1
-    if hp <= 0 then
+    self.hp = self.hp - 1
+    if self.hp <= 0 then
         self:Destroy()
     end
 end

@@ -36,13 +36,9 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 	m_name = "Object" + std::to_string(m_id);
 }
 
-Apex::Data::Object::~Object()
-{
-}
-
 std::unique_ptr<Object> Object::Clone()
 {
-	std::unique_ptr<Object> clone = std::make_unique<Object>();
+	std::unique_ptr<Object> clone = std::make_unique<Object>(m_id);
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
 
@@ -57,14 +53,6 @@ std::unique_ptr<Object> Object::Clone()
 		}
 
 		clone->AddComponentDirect(std::move(newComp));
-	}
-
-	std::shared_ptr<SceneNode> cloneNode = clone->GetSceneNode();
-	for (auto& child : m_owner->GetChildren())
-	{
-		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
-		if (childClone)
-			cloneNode->AddChild(childClone->GetSceneNode());
 	}
 
 	clone->SetOnChangedCallback(m_onChanged);

@@ -31,19 +31,19 @@ namespace Apex::Rendering
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		std::unique_ptr<Scene> Clone();
+		std::unique_ptr<Scene> Clone() const;
 
 		void SetSkybox(std::unique_ptr<Skybox> skybox) { m_skybox = std::move(skybox); }
 
-		Lighting::VisibleLights GetVisibleLights();
+		Lighting::VisibleLights GetVisibleLights() const;
 
 		Data::Object* CreateObject();
 		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
 		void AddObject(std::unique_ptr<Data::Object> obj);
 		void DestroyObject(size_t objId);
 
-		void MarkDirty();
-		void ClearDirty() { m_isDirty = false; }
+		void MarkDirty() const;
+		void ClearDirty() const { m_isDirty = false; }
 		bool IsDirty() const { return m_isDirty; }
 
 		void Start();
@@ -70,6 +70,10 @@ namespace Apex::Rendering
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
+		// clone helpers
+		void CloneObjects(std::unique_ptr<Scene>& copy) const;
+		void ReparentObjects(std::unique_ptr<Scene>& copy) const;
+
 		void DestroyPendingObject();
 		void DestroyObject(Apex::Data::Object* obj);
 
@@ -82,7 +86,7 @@ namespace Apex::Rendering
 		Camera* m_mainCamera = nullptr;
 
 		std::function<void()> m_onMarkedDirty;
-		bool m_isDirty = false;
+		mutable bool m_isDirty = false;
 	};
 
 	template<typename T>
