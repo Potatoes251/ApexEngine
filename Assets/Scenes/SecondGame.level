@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 353,
+    "id": 385,
     "parent": null,
     "name": "Light",
     "position": [0.000000,0.000000,0.000000],
@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": 354,
+    "id": 386,
     "parent": null,
     "name": "Player",
     "position": [0.230901,1.806698,0.000000],
@@ -85,7 +85,7 @@
     }
   },
   {
-    "id": 355,
+    "id": 387,
     "parent": null,
     "name": "Cube",
     "position": [0.000000,0.000000,0.000000],
@@ -112,7 +112,7 @@
     }
   },
   {
-    "id": 356,
+    "id": 388,
     "parent": null,
     "name": "Sphere",
     "position": [3.425968,0.536870,0.000000],
@@ -139,7 +139,7 @@
     }
   },
   {
-    "id": 357,
+    "id": 389,
     "parent": null,
     "name": "arena",
     "position": [-197.051651,1.438063,-1.916274],
@@ -167,7 +167,7 @@
     }
   },
   {
-    "id": 358,
+    "id": 390,
     "parent": null,
     "name": "playerArenaPos",
     "position": [-190.190842,3.975250,-1.731381],
@@ -183,7 +183,7 @@
     }
   },
   {
-    "id": 359,
+    "id": 391,
     "parent": null,
     "name": "enemyArenaPos",
     "position": [-202.767899,3.182716,-1.731377],
@@ -199,7 +199,7 @@
     }
   },
   {
-    "id": 360,
+    "id": 392,
     "parent": null,
     "name": "Enemy",
     "position": [0.000000,0.000000,0.000000],

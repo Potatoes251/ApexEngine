@@ -42,8 +42,12 @@ function Fighter:Start()
 end
 
 function Fighter:Update(dt)
-    if self.isMyTurn and Input.IsKeyDown("P") then
-        self:Attack()
+    if self.isMyTurn  then
+        if Input.IsKeyDown("P") then
+            self:Attack()
+        elseif Input.IsKeyDown("O") then
+            self:Flee()
+        end
     end
 end
 
@@ -64,6 +68,12 @@ function Fighter:Attack()
     self.opponent:TakeDamage(1)
     if self.battleManager ~= nil then
         self.battleManager:OnTurnEnd(self)
+    end
+end
+
+function Fighter:Flee()
+    if self.battleManager ~= nil then
+        self.battleManager:OnBattleEnd()
     end
 end
 
