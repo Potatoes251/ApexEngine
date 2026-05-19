@@ -514,7 +514,6 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 	case MeshColliderType::Triangle:
 		if (rigidBody.GetType() != BodyType::Static)
 		{
-			assert(false && "Triangle mesh can only be static");
 			return nullptr;
 		}
 		{

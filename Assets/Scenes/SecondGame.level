@@ -4,7 +4,7 @@
 ],
 "objects": [
   {
-    "id": 385,
+    "id": 417,
     "parent": null,
     "name": "Light",
     "position": [0.000000,0.000000,0.000000],
@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": 386,
+    "id": 418,
     "parent": null,
     "name": "Player",
     "position": [0.230901,1.806698,0.000000],
@@ -85,7 +85,7 @@
     }
   },
   {
-    "id": 387,
+    "id": 419,
     "parent": null,
     "name": "Cube",
     "position": [0.000000,0.000000,0.000000],
@@ -112,16 +112,16 @@
     }
   },
   {
-    "id": 388,
+    "id": 420,
     "parent": null,
     "name": "Sphere",
-    "position": [3.425968,0.536870,0.000000],
+    "position": [10.676847,0.536870,-10.095831],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [0.010000,0.010000,0.010000],
+    "scale": [20.000000,1.000000,20.000000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
+        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
         "material": "Assets/Material/Default.mat",
         "castShadow": true
       },
@@ -132,14 +132,14 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [1.000000, 1.000000, 1.000000],
+        "halfExtents": [10.000000, 0.500000, 10.000000],
         "isTrigger": true,
         "material": null
       }
     }
   },
   {
-    "id": 389,
+    "id": 421,
     "parent": null,
     "name": "arena",
     "position": [-197.051651,1.438063,-1.916274],
@@ -167,7 +167,7 @@
     }
   },
   {
-    "id": 390,
+    "id": 422,
     "parent": null,
     "name": "playerArenaPos",
     "position": [-190.190842,3.975250,-1.731381],
@@ -183,7 +183,7 @@
     }
   },
   {
-    "id": 391,
+    "id": 423,
     "parent": null,
     "name": "enemyArenaPos",
     "position": [-202.767899,3.182716,-1.731377],
@@ -199,7 +199,7 @@
     }
   },
   {
-    "id": 392,
+    "id": 424,
     "parent": null,
     "name": "Enemy",
     "position": [0.000000,0.000000,0.000000],
