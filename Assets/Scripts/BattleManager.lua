@@ -48,7 +48,7 @@ function Fight:CheckEncounter(dt)
 
     self.encounterTimer = self.encounterTimer + dt
     if self.encounterTimer > 1 then
-        if math.random(0, self.encounterChance) == 0 then
+        if math.random(self.encounterChance) == 1 then
             self:OnBattleStart()
         end
         self.encounterTimer = 0
@@ -78,6 +78,8 @@ function Fight:OnTriggerExit(col)
 end
 
 function Fight:OnBattleStart()
+    if self.battleActive then return end
+
     self.battleActive = true
     self.oldPos = self.playerScript:GetPosition()
     if self.hud ~= 0 then 
