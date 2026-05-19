@@ -112,6 +112,12 @@
         "enabled": true,
         "fps": 30.000000,
 		"Mesh": "Assets/Meshes/Player/Player.mesh"
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/BossFighter.lua",
+        "vars": {
+        }
       }
     }
   },
@@ -919,7 +925,7 @@
   {
     "id": 4770,
     "parent": 4768,
-    "name": "Cube",
+    "name": "Tail",
     "position": [0.000000,-20.000000,-30.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
@@ -934,6 +940,12 @@
         "halfExtents": [1.000000, 1.000000, 1.000000],
         "isTrigger": true,
         "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Tail.lua",
+        "vars": {
+        }
       }
     }
   }

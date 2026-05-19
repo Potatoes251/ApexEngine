@@ -128,6 +128,15 @@ namespace Apex::Rendering
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
+		if (node)
+		{
+			for (auto const& child : node->GetChildren())
+			{
+				if (child && child->GetObject())
+					DestroyObject(child->GetObject());
+			}
+		}
+
 		if (node && node->GetParent())
 			node->Destroy();
 

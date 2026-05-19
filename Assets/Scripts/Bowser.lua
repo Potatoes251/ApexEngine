@@ -3,7 +3,6 @@ local ViewComp = require("ViewComponent")
 local Animator = require("Animator")
 local Collider = require("Collider")
 local Object = require("Object")
-local Input = require("Input")
 local Vector3 = require("Vector3")
 
 local Bowser = Object:New()
@@ -32,10 +31,6 @@ end
 function Bowser:Update()
     local obj = self.view:GetClosestWithTag("Player")
     self.aic:SetTarget(obj)
-end
-
-function Bowser:OnTriggerEnter(col)
-    self:TakeDamage()
 end
 
 function Bowser:TakeDamage()
