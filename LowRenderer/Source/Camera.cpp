@@ -13,6 +13,9 @@ Camera::Camera(LibMath::Vector3 position)
 
 void Camera::SetProjectionMatrix(float aspect, float near, float far)
 {
+	m_near = near;
+	m_far = far;
+
 	m_proj = LibMath::Matrix4::perspective(LibMath::Degree(m_fov), aspect, near, far);
 	m_viewProj = m_proj * m_view;
 }
@@ -34,6 +37,34 @@ LibMath::Matrix4 Camera::GetViewMatrix()
 	if (m_dirty) UpdateMatrices();
 	return m_view;
 } 
+
+std::array<LibMath::Vector3, 8> Apex::Rendering::Camera::GetFrustrumCorners()
+{ 
+	std::array<LibMath::Vector3, 8> frustrumCorners;
+
+	LibMath::Matrix4 inverseViewProj = GetViewProj();
+	inverseViewProj.inverse();
+
+	int i = 0;
+	for (unsigned int x = 0; x < 2; ++x)
+	{
+		for (unsigned int y = 0; y < 2; ++y)
+		{
+			for (unsigned int z = 0; z < 2; ++z)
+			{
+				const LibMath::Vector4 pt =
+					inverseViewProj * LibMath::Vector4(
+						2.0f * x - 1.0f,
+						2.0f * y - 1.0f,
+						2.0f * z - 1.0f,
+						1.0f);
+				frustrumCorners[i++] = pt / pt[3];
+			}
+		}
+	}
+
+	return frustrumCorners;
+}
 
 void Camera::SetPosition(LibMath::Vector3 pos)
 { 

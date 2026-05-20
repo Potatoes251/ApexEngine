@@ -18,6 +18,17 @@ namespace Apex::Rendering
 namespace Apex::Lighting
 {
 	class LightComponent;
+	class DirectionalLightComponent;
+
+
+	static constexpr unsigned CASCADE_COUNT = 4;
+	
+	struct CascadedShadowMap
+	{
+		LibMath::Matrix4       m_viewProj[CASCADE_COUNT];
+		Rendering::RHITextureHandle m_shadowTextures[CASCADE_COUNT];
+		float                  m_splitDepths[CASCADE_COUNT];
+	};
 
 	struct ShadowMap
 	{
@@ -43,6 +54,8 @@ namespace Apex::Lighting
 	private:
 		bool AcquireShadowMap(LightComponent* light, Rendering::Camera* camera, int idx);
 		bool AcquireShadowCubeMap(LightComponent* light, int idx);
+
+		LibMath::Matrix4 ComputeCascadeLightMatrix(Rendering::Camera* camera, DirectionalLightComponent* light, float nearSplit, float farSplit);
 
 		static constexpr unsigned SHADOW_WIDTH = 1024;
 		static constexpr unsigned SHADOW_HEIGHT = 1024;

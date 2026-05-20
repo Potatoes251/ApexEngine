@@ -9,6 +9,7 @@
 #include "ThirdPersonCamera.h"
 
 #include <cassert>
+#include <array>
 
 using namespace Apex::Lighting;
 using namespace Apex::Rendering;
@@ -46,6 +47,20 @@ ShadowManager::~ShadowManager()
 
 		m_rhi->DeleteUniformBuffer(m_lightMatrixBuffer);
 	}
+}
+
+static std::array<float, CASCADE_COUNT> ComputeSplitDepths(float near, float far, float lambda = 0.75f)
+{
+	std::array<float, CASCADE_COUNT> splits;
+	float range = far - near;
+	for (int i = 0; i < CASCADE_COUNT; i++)
+	{
+		float p = (i + 1) / (float)CASCADE_COUNT;
+		float log = near * std::pow(far / near, p);
+		float uni = near + range * p;
+		splits[i] = lambda * log + (1.f - lambda) * uni;
+	}
+	return splits;
 }
 
 void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Camera* camera)
@@ -209,4 +224,49 @@ bool ShadowManager::AcquireShadowCubeMap(LightComponent* light, int idx)
 	light->SetShadowIdx(m_shadowCubeMaps.size() - 1);
 
 	return true;
+}
+
+LibMath::Matrix4 ShadowManager::ComputeCascadeLightMatrix(Rendering::Camera* camera, DirectionalLightComponent* light, float nearSplit, float farSplit)
+{
+	std::array<LibMath::Vector3, 8> corners = camera->GetFrustrumCorners();
+
+	float camNear = camera->GetNear();
+	float camFar = camera->GetFar();
+
+	float invDenom = 1 / (camFar - camNear);
+
+	// get the corner of a slice of the frustrum
+	for (int i = 0; i < 4; i++)
+	{
+		LibMath::Vector3 near = corners[i];
+		LibMath::Vector3 far = corners[i + 4];
+		LibMath::Vector3 ray = far - near;
+
+		float t0 = (nearSplit - camNear) * invDenom;
+		float t1 = (farSplit - camNear) * invDenom;
+
+		corners[i] = near + ray * t0;		// near split plane
+		corners[i + 4] = near + ray * t1;	// far split plane
+	}
+
+	LibMath::Matrix4 lightView = light->GetViewMatrix(corners);
+
+	LibMath::Vector3 minBounds(FLT_MAX, FLT_MAX, FLT_MAX);
+	LibMath::Vector3 maxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (LibMath::Vector3& corner : corners)
+	{
+		LibMath::Vector4 lightSpacePt = lightView * LibMath::Vector4(corner, 1.f);
+
+		minBounds[0] = std::min(minBounds[0], lightSpacePt[0]);
+		maxBounds[0] = std::max(maxBounds[0], lightSpacePt[0]);
+		minBounds[1] = std::min(minBounds[1], lightSpacePt[1]);
+		maxBounds[1] = std::max(maxBounds[1], lightSpacePt[1]);
+		minBounds[2] = std::min(minBounds[2], lightSpacePt[2]);
+		maxBounds[2] = std::max(maxBounds[2], lightSpacePt[2]);
+	}
+
+	LibMath::Matrix4 lightProj = LibMath::Matrix4::orthogonal(minBounds[0], maxBounds[0], minBounds[1], maxBounds[1], minBounds[2], maxBounds[2]);
+
+	return lightView;
 }

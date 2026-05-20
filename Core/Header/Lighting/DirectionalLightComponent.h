@@ -25,6 +25,7 @@ namespace Apex::Lighting
 
 		LibMath::Matrix4	GetProjMatrix() const override;
 		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera* camera) const override;
+		LibMath::Matrix4 GetViewMatrix(std::array<LibMath::Vector3, 8> const& sliceCorners) const;	// CSM version
 	private:
 		float m_shadowDistance = 25.f;
 		float m_shadowExtents = 10.f;
