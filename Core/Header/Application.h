@@ -91,6 +91,9 @@ namespace Apex
 
         void SetSaveRequestedCallback(std::function<void()> callback) { m_onSaveRequested = std::move(callback); }
 
+        void AddCollectedObject(size_t id);
+        const std::vector<size_t>& GetCollectedObjects() const;
+
     private:
         void InitLog();
         void InitWindow(Windowing::IWindow* window);
@@ -122,6 +125,8 @@ namespace Apex
         std::unique_ptr<Resources::ResourceManager> m_resourceManager;
         std::unique_ptr<UserInterface::UIManager>   m_uiManager;
         std::unique_ptr<FileLog>					m_fileLog;
+
+        std::vector<size_t> m_collectedObjects;
 
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;

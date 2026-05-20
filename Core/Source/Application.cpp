@@ -348,3 +348,20 @@ std::string Apex::Application::LoadBuildStartScene() const
     return content.substr(firstQuote + 1,
         secondQuote - firstQuote - 1);
 }
+
+void Apex::Application::AddCollectedObject(size_t id)
+{
+    // évite les doublons
+    if (std::find(
+        m_collectedObjects.begin(),
+        m_collectedObjects.end(),
+        id) == m_collectedObjects.end())
+    {
+        m_collectedObjects.push_back(id);
+    }
+}
+
+const std::vector<size_t>& Apex::Application::GetCollectedObjects() const
+{
+    return m_collectedObjects;
+}

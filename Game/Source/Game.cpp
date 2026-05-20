@@ -128,6 +128,13 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
         //       data.collectedItems.push_back({ id, "coin" });
     }
 
+    const auto& collected = m_app->GetCollectedObjects();
+
+    for (size_t id : collected)
+    {
+        data.collectedItems.push_back({ id });
+    }
+
     m_app->GetSaveManager()->Save(data, slot);
 }
 

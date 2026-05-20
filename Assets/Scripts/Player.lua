@@ -114,7 +114,7 @@ function Player:OnTriggerEnter(col)
             self.hud:AddScore(1)
         end
 
-        obj:Destroy()
+        obj:DestroyCollectible()
     elseif obj:HasTag("Goomba") then
         if self.cc:GetVerticalVelocity() < 0 then
             obj:Destroy()

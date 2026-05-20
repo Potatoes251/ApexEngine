@@ -163,15 +163,17 @@ namespace Apex::Save
             << data.playerPosition[1] << ","
             << data.playerPosition[2] << "],\n";
 
-        o << "  \"collected\": [\n";
+        o << "  \"collected\": [";
+
         for (size_t i = 0; i < data.collectedItems.size(); ++i)
         {
-            const CollectedItem& item = data.collectedItems[i];
-            o << "    { \"id\": " << item.objectId << "\" }";
-            if (i + 1 < data.collectedItems.size()) o << ",";
-            o << "\n";
+            o << data.collectedItems[i].objectId;
+
+            if (i + 1 < data.collectedItems.size())
+                o << ", ";
         }
-        o << "  ]\n";
+
+        o << "]\n";
         o << "}\n";
 
         return o.str();
