@@ -19,6 +19,8 @@ namespace Apex::Lighting
 {
 	class LightComponent;
 	class DirectionalLightComponent;
+	class PointLightComponent;
+	class SpotLightComponent;
 
 
 	static constexpr unsigned CASCADE_COUNT = 4;
@@ -27,7 +29,7 @@ namespace Apex::Lighting
 	{
 		LibMath::Matrix4       m_viewProj[CASCADE_COUNT];
 		Rendering::RHITextureHandle m_shadowTextures[CASCADE_COUNT];
-		float                  m_splitDepths[CASCADE_COUNT];
+		float                  m_splitDepths[CASCADE_COUNT];	// depth of each cascade
 	};
 
 	struct ShadowMap
@@ -52,10 +54,12 @@ namespace Apex::Lighting
 		void BindShadowMaps();
 
 	private:
-		bool AcquireShadowMap(LightComponent* light, Rendering::Camera* camera, int idx);
-		bool AcquireShadowCubeMap(LightComponent* light, int idx);
+		bool AcquireCascadedShadowMap(DirectionalLightComponent* light, Rendering::Camera* camera, int idx);
+		bool AcquireShadowMap(SpotLightComponent* light, Rendering::Camera* camera, int idx);
+		bool AcquireShadowCubeMap(PointLightComponent* light, int idx);
 
 		LibMath::Matrix4 ComputeCascadeLightMatrix(Rendering::Camera* camera, DirectionalLightComponent* light, float nearSplit, float farSplit);
+		static std::array<float, CASCADE_COUNT> ComputeSplitDepths(float near, float far, float lambda = 0.75f);
 
 		static constexpr unsigned SHADOW_WIDTH = 1024;
 		static constexpr unsigned SHADOW_HEIGHT = 1024;
@@ -64,7 +68,7 @@ namespace Apex::Lighting
 		static constexpr unsigned FIRST_SHADOW_2D_SLOT = 5;
 		static constexpr unsigned FIRST_SHADOW_CUBE_SLOT = FIRST_SHADOW_2D_SLOT + MAX_SHADOW_2D;
 
-
+		std::vector<CascadedShadowMap>		m_cascadedShadowMaps;
 		std::vector<ShadowMap>		m_shadowMaps;
 		std::vector<ShadowCubeMap>	m_shadowCubeMaps;
 

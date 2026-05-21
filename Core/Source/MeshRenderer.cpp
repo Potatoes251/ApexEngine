@@ -111,6 +111,7 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     if (passInfo.m_camera)
     {
         currentShader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
+        currentShader->SetUniform("uView", passInfo.m_camera->GetViewMatrix());
         currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
     }
 

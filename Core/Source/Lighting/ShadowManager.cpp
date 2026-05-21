@@ -17,7 +17,7 @@ using namespace Apex::Rendering;
 ShadowManager::ShadowManager(IRHI* rhi, Resources::ResourceHandle<Shader> dirShader, Resources::ResourceHandle<Shader> omniShader) 
 	: m_rhi(rhi), m_dirShader(dirShader), m_omniShader(omniShader)
 {
-	assert(rhi != nullptr && "Shadows cannot work withput the rhi");
+	assert(rhi != nullptr && "Shadows cannot work without the rhi");
 
 	ShadowMap shadow;
 	shadow.m_shadowTexture = rhi->CreateShadowMap(SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -35,6 +35,12 @@ ShadowManager::~ShadowManager()
 	{
 		m_rhi->DeleteFrameBuffer(m_shadowFbo);
 
+		for (CascadedShadowMap& shadow : m_cascadedShadowMaps)
+		{
+			for (int i = 0; i < CASCADE_COUNT; i++)
+				m_rhi->DeleteTexture(shadow.m_shadowTextures[i]);
+		}
+
 		for (ShadowMap& shadow : m_shadowMaps)
 		{
 			m_rhi->DeleteTexture(shadow.m_shadowTexture);
@@ -49,20 +55,6 @@ ShadowManager::~ShadowManager()
 	}
 }
 
-static std::array<float, CASCADE_COUNT> ComputeSplitDepths(float near, float far, float lambda = 0.75f)
-{
-	std::array<float, CASCADE_COUNT> splits;
-	float range = far - near;
-	for (int i = 0; i < CASCADE_COUNT; i++)
-	{
-		float p = (i + 1) / (float)CASCADE_COUNT;
-		float log = near * std::pow(far / near, p);
-		float uni = near + range * p;
-		splits[i] = lambda * log + (1.f - lambda) * uni;
-	}
-	return splits;
-}
-
 void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Camera* camera)
 {
 	m_rhi->BindFrameBuffer(m_shadowFbo, SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -75,22 +67,33 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	pass.m_shader = m_dirShader;
 	m_dirShader->Use();
 
-	int shadowCount = 0;
+	int csmCount = 0;
 	for (DirectionalLightComponent* light : lights.m_directionalLights)
 	{
-		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
+		if (!light->IsCastingShadow() || !AcquireCascadedShadowMap(light, camera, csmCount)) continue;
 
-		ShadowMap& shadow = m_shadowMaps[shadowCount];
+		CascadedShadowMap& shadow = m_cascadedShadowMaps[csmCount];
 
-		m_rhi->AttachDepthTexture(shadow.m_shadowTexture);
-		m_rhi->ClearDepth();
+		auto splits = ComputeSplitDepths(camera->GetNear(), camera->GetFar());
 
-		m_dirShader->SetUniform("lightSpaceMatrix", shadow.m_viewProj);
+		for (int cascade = 0; cascade < CASCADE_COUNT; cascade++)
+		{
+			float nearSplit = (cascade == 0) ? camera->GetNear() : splits[cascade - 1];
+			float farSplit = splits[cascade];
 
-		scene->Render(pass);
+			shadow.m_viewProj[cascade] = ComputeCascadeLightMatrix(camera, light, nearSplit, farSplit);
+			shadow.m_splitDepths[cascade] = farSplit;
 
-		shadowCount++;
+			m_rhi->AttachDepthTexture(shadow.m_shadowTextures[cascade]);
+			m_rhi->ClearDepth();
+
+			m_dirShader->SetUniform("lightSpaceMatrix", shadow.m_viewProj[cascade]);
+			scene->Render(pass);
+		}
+
+		csmCount++;
 	}
+	int shadowCount = 0;
 	for (SpotLightComponent* light : lights.m_spotLights)
 	{
 		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
@@ -142,18 +145,31 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 void ShadowManager::BindShadowMaps()
 {
-	LibMath::Matrix4 lightSpaceMatrix[10];
+	LibMath::Matrix4 lightSpaceMatrix[MAX_SHADOW_2D];
+	for (int i = 0; i < m_cascadedShadowMaps.size(); i++)
+	{
+		CascadedShadowMap& csm = m_cascadedShadowMaps[i];
+
+		for (int c = 0; c < CASCADE_COUNT; c++)
+		{
+			int textureUnit = FIRST_SHADOW_2D_SLOT + (i * CASCADE_COUNT) + c;
+			m_rhi->BindTexture(csm.m_shadowTextures[c], textureUnit);
+			lightSpaceMatrix[c] = csm.m_viewProj[c];
+		}
+	}
+
+	int nbCSM = CASCADE_COUNT * m_cascadedShadowMaps.size();
 	for (int i = 0; i < m_shadowMaps.size(); i++)
 	{
 		ShadowMap& shadow = m_shadowMaps[i];
 
-		int textureUnit = FIRST_SHADOW_2D_SLOT + i;
+		int textureUnit = FIRST_SHADOW_2D_SLOT + i + nbCSM;
 		m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
 
 		lightSpaceMatrix[i] = shadow.m_viewProj;
 	}
 
-	m_rhi->BindUniformBuffer(m_lightMatrixBuffer, sizeof(LibMath::Matrix4) * 10, &lightSpaceMatrix);
+	m_rhi->BindUniformBuffer(m_lightMatrixBuffer, sizeof(LibMath::Matrix4) * MAX_SHADOW_2D, &lightSpaceMatrix);
 
 	for (int i = 0; i < m_shadowCubeMaps.size(); i++)
 	{
@@ -164,7 +180,26 @@ void ShadowManager::BindShadowMaps()
 	}
 }
 
-bool ShadowManager::AcquireShadowMap(LightComponent* light, Camera* camera, int idx)
+bool ShadowManager::AcquireCascadedShadowMap(DirectionalLightComponent* light, Rendering::Camera* camera, int idx)
+{
+	if (idx < 0 || idx >= MAX_SHADOW_2D / CASCADE_COUNT) return false;
+
+	if (idx < m_cascadedShadowMaps.size())
+	{
+		light->SetShadowIdx(idx);
+		return true;
+	}
+
+	CascadedShadowMap csm;
+	for (int c = 0; c < CASCADE_COUNT; c++)
+		csm.m_shadowTextures[c] = m_rhi->CreateShadowMap(SHADOW_WIDTH, SHADOW_HEIGHT);
+
+	m_cascadedShadowMaps.push_back(csm);
+	light->SetShadowIdx(m_cascadedShadowMaps.size() - 1);
+	return true;
+}
+
+bool ShadowManager::AcquireShadowMap(SpotLightComponent* light, Camera* camera, int idx)
 {
 	if (idx < 0 || idx >= MAX_SHADOW_2D) return false;
 
@@ -185,7 +220,7 @@ bool ShadowManager::AcquireShadowMap(LightComponent* light, Camera* camera, int 
 	return true;
 }
 
-bool ShadowManager::AcquireShadowCubeMap(LightComponent* light, int idx)
+bool ShadowManager::AcquireShadowCubeMap(PointLightComponent* light, int idx)
 {
 	if (idx < 0 || idx >= MAX_SHADOW_CUBE) return false;
 
@@ -266,7 +301,30 @@ LibMath::Matrix4 ShadowManager::ComputeCascadeLightMatrix(Rendering::Camera* cam
 		maxBounds[2] = std::max(maxBounds[2], lightSpacePt[2]);
 	}
 
+	// Snap to texel boundaries to avoid shimmering when moving around
+	float texelSizeX = (maxBounds[0] - minBounds[0]) / SHADOW_WIDTH;
+	float texelSizeY = (maxBounds[1] - minBounds[1]) / SHADOW_HEIGHT;
+
+	minBounds[0] = LibMath::floor(minBounds[0] / texelSizeX) * texelSizeX;
+	minBounds[1] = LibMath::floor(minBounds[1] / texelSizeY) * texelSizeY;
+	maxBounds[0] = LibMath::ceiling(maxBounds[0] / texelSizeX) * texelSizeX;
+	maxBounds[1] = LibMath::ceiling(maxBounds[1] / texelSizeY) * texelSizeY;
+
 	LibMath::Matrix4 lightProj = LibMath::Matrix4::orthogonal(minBounds[0], maxBounds[0], minBounds[1], maxBounds[1], minBounds[2], maxBounds[2]);
 
-	return lightView;
+	return lightProj * lightView;
+}
+
+std::array<float, CASCADE_COUNT> ShadowManager::ComputeSplitDepths(float near, float far, float lambda)
+{
+	std::array<float, CASCADE_COUNT> splits;
+	float range = far - near;
+	for (int i = 0; i < CASCADE_COUNT; i++)
+	{
+		float p = (i + 1) / (float)CASCADE_COUNT;
+		float log = near * std::pow(far / near, p);
+		float uni = near + range * p;
+		splits[i] = lambda * log + (1.f - lambda) * uni;
+	}
+	return splits;
 }
