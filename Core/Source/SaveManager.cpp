@@ -274,13 +274,11 @@ namespace Apex::Save
             SaveData data;
 
             auto slotStr = FindValue(json, "slot");
-            auto tsStr = FindValue(json, "timestamp");
             auto scoreStr = FindValue(json, "score");
-            auto livesStr = FindValue(json, "lives");
             auto sceneVal = FindValue(json, "scene");
             auto posVal = FindValue(json, "position");
 
-            if (slotStr.empty() || tsStr.empty() || sceneVal.empty())
+            if (slotStr.empty() || sceneVal.empty())
                 return std::nullopt;
 
             data.slotIndex = static_cast<uint32_t>(std::stoul(slotStr));
@@ -303,18 +301,24 @@ namespace Apex::Save
                 data.playerPosition = { components[0], components[1], components[2] };
             }
 
-            // Parse collected items
-            for (const std::string& obj : FindArray(json, "collected"))
+            // Parse collected items — stored as a flat array of integers: [123, 456, 789]
+            auto collectedVal = FindValue(json, "collected");
+            if (!collectedVal.empty() && collectedVal.front() == '[')
             {
-                auto idStr = FindValue(obj, "id");
-                auto tagVal = FindValue(obj, "tag");
+                std::string inner = collectedVal.substr(1, collectedVal.size() - 2);
+                std::istringstream ss(inner);
+                std::string tok;
+                while (std::getline(ss, tok, ','))
+                {
+                    // trim whitespace
+                    tok.erase(0, tok.find_first_not_of(" \t"));
+                    tok.erase(tok.find_last_not_of(" \t\r\n") + 1);
+                    if (tok.empty()) continue;
 
-                if (idStr.empty()) continue;
-
-                CollectedItem item;
-                item.objectId = std::stoull(idStr);
-
-                data.collectedItems.push_back(std::move(item));
+                    CollectedItem item;
+                    item.objectId = std::stoull(tok);
+                    data.collectedItems.push_back(std::move(item));
+                }
             }
 
             return data;

@@ -31,7 +31,16 @@ bool Game::Init()
         uiManager->ShowHUD(handle);
     }
 
-    m_app->LoadScene(true);
+    // Try to resume from slot 0; fall back to a fresh scene start
+    auto optData = m_app->GetSaveManager()->Load(0);
+    if (optData)
+    {
+        LoadSavedGame(0);
+    }
+    else
+    {
+        m_app->LoadScene(true); // no save yet, start fresh
+    }
 
     m_window->SetMouseMoveCallback([this](double x, double y)
         {
@@ -94,10 +103,8 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
 {
     using namespace Apex::Save;
 
-    //auto* app = Apex::Application::Get();
     auto* scene = m_app->GetScene();
 
-    // Locate the player object by name (adjust to your convention).
     Apex::Data::Object* player = nullptr;
     for (auto& obj : scene->GetObjects())
     {
@@ -108,31 +115,33 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
         }
     }
 
+    // Start from the existing save data so we don't lose previously collected items
     SaveData data;
+    auto existingData = m_app->GetSaveManager()->Load(slot);
+    if (existingData)
+        data = *existingData;
+
     data.scenePath = m_app->GetScenePath();
 
     if (player)
     {
         auto pos = player->GetLocalTransform().getPosition();
         data.playerPosition = { pos[0], pos[1], pos[2] };
-
-        // Retrieve score and lives from a ScriptComponent or a custom
-        // PlayerStats component you expose via GetComponent<PlayerStats>().
-        // Example (replace with your actual component API):
-        //   auto* stats = player->GetComponent<PlayerStats>();
-        //   if (stats) { data.score = stats->GetScore(); data.lives = stats->GetLives(); }
-
-        // Collect item IDs: your pickup system should maintain a list of
-        // object IDs that were consumed. Example:
-        //   for (size_t id : app->GetCollectedItemIds())
-        //       data.collectedItems.push_back({ id, "coin" });
     }
 
+    // Merge this session's collected IDs into whatever was already saved
     const auto& collected = m_app->GetCollectedObjects();
-
     for (size_t id : collected)
     {
-        data.collectedItems.push_back({ id });
+        // AddCollectedObject already deduplicates on the app side,
+        // but guard here too in case the old save had the same id
+        bool alreadyPresent = false;
+        for (const auto& item : data.collectedItems)
+        {
+            if (item.objectId == id) { alreadyPresent = true; break; }
+        }
+        if (!alreadyPresent)
+            data.collectedItems.push_back({ id });
     }
 
     m_app->GetSaveManager()->Save(data, slot);
