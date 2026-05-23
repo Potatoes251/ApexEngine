@@ -2,6 +2,7 @@
 #include "Camera.h"
 
 #include "HUD.h"
+#include "ScriptComponent.h"
 
 #include "Log.h"
 
@@ -127,6 +128,17 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
     {
         auto pos = player->GetLocalTransform().getPosition();
         data.playerPosition = { pos[0], pos[1], pos[2] };
+
+        auto* script = player->GetComponent<Apex::Scripting::ScriptComponent>();
+        if (script && script->GetInstanceRef() != LUA_REFNIL)
+        {
+            lua_State* L = m_app->GetLuaManager()->GetState();
+            lua_rawgeti(L, LUA_REGISTRYINDEX, script->GetInstanceRef());
+            lua_getfield(L, -1, "coinCount");
+            if (lua_isnumber(L, -1))
+                data.score = (int)lua_tonumber(L, -1);
+            lua_pop(L, 2); // pop coinCount + instance
+        }
     }
 
     // Merge this session's collected IDs into whatever was already saved
@@ -168,7 +180,10 @@ void Apex::Game::Game::LoadSavedGame(int slot)
     // 2. Remove items the player already collected.
     m_app->GetSaveManager()->ApplyToScene(data, m_app->GetScene());
 
-    // 3. Restore player state.
+    // 3. Call Start() on every object of the scene
+    m_app->GetScene()->Start();
+
+    // 4. Restore player state.
     auto* scene = m_app->GetScene();
     for (auto& obj : scene->GetObjects())
     {
@@ -179,15 +194,29 @@ void Apex::Game::Game::LoadSavedGame(int slot)
         //                                          data.playerPosition.y,
         //                                          data.playerPosition.z });
 
-        // Restore score / lives:
-        //   auto* stats = obj->GetComponent<PlayerStats>();
-        //   if (stats) { stats->SetScore(data.score); stats->SetLives(data.lives); }
+        auto* script = obj->GetComponent<Apex::Scripting::ScriptComponent>();
+        if (script && script->GetInstanceRef() != LUA_REFNIL)
+        {
+            lua_State* L = m_app->GetLuaManager()->GetState();
+            lua_rawgeti(L, LUA_REGISTRYINDEX, script->GetInstanceRef()); // push instance
+            lua_pushinteger(L, data.score);                               // push value
+            lua_setfield(L, -2, "coinCount");                             // instance.coinCount = score
+            lua_pop(L, 1);                                                // pop instance
+
+            lua_rawgeti(L, LUA_REGISTRYINDEX, script->GetInstanceRef());
+            lua_getfield(L, -1, "hud");          // push self.hud
+            if (!lua_isnil(L, -1))
+            {
+                lua_getfield(L, -1, "AddScore"); // push hud:AddScore
+                lua_pushvalue(L, -2);            // self (hud)
+                lua_pushinteger(L, data.score);
+                lua_pcall(L, 2, 0, 0);
+            }
+            lua_pop(L, 2);
+        }
 
         break;
     }
-
-    // 4. Now start the scene (calls Start() on every component).
-    m_app->GetScene()->Start();
 
     LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", slot, data.scenePath);
 }
