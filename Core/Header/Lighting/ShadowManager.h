@@ -1,13 +1,15 @@
 #ifndef SHADOW_MANAGER
 #define SHADOW_MANAGER
 
-#include "VisibleLights.h"
 #include "RHI.h"
 
 #include "ResourceHandle.h"
-#include "Shader.h"
 
 #include "LibMath/Matrix/Matrix4.h"
+
+#include <array>
+
+class Shader;
 
 namespace Apex::Rendering 
 {
@@ -21,7 +23,7 @@ namespace Apex::Lighting
 	class DirectionalLightComponent;
 	class PointLightComponent;
 	class SpotLightComponent;
-
+	struct VisibleLights;
 
 	static constexpr unsigned CASCADE_COUNT = 4;
 	
@@ -29,7 +31,6 @@ namespace Apex::Lighting
 	{
 		LibMath::Matrix4       m_viewProj[CASCADE_COUNT];
 		Rendering::RHITextureHandle m_shadowTextures[CASCADE_COUNT];
-		float                  m_splitDepths[CASCADE_COUNT];	// depth of each cascade
 	};
 
 	struct ShadowMap
@@ -51,7 +52,7 @@ namespace Apex::Lighting
 		~ShadowManager();
 
 		void RenderShadows(VisibleLights const& lights, Rendering::Scene* scene, Rendering::Camera* camera);
-		void BindShadowMaps();
+		void BindShadowMaps(Resources::ResourceHandle<Shader> shader);
 
 	private:
 		bool AcquireCascadedShadowMap(DirectionalLightComponent* light, Rendering::Camera* camera, int idx);
@@ -61,16 +62,19 @@ namespace Apex::Lighting
 		LibMath::Matrix4 ComputeCascadeLightMatrix(Rendering::Camera* camera, DirectionalLightComponent* light, float nearSplit, float farSplit);
 		static std::array<float, CASCADE_COUNT> ComputeSplitDepths(float near, float far, float lambda = 0.75f);
 
-		static constexpr unsigned SHADOW_WIDTH = 1024;
-		static constexpr unsigned SHADOW_HEIGHT = 1024;
+		static constexpr unsigned SHADOW_WIDTH = 2048;
+		static constexpr unsigned SHADOW_HEIGHT = 2048;
 		static constexpr unsigned MAX_SHADOW_2D = 10;
 		static constexpr unsigned MAX_SHADOW_CUBE = 5;
 		static constexpr unsigned FIRST_SHADOW_2D_SLOT = 5;
 		static constexpr unsigned FIRST_SHADOW_CUBE_SLOT = FIRST_SHADOW_2D_SLOT + MAX_SHADOW_2D;
 
-		std::vector<CascadedShadowMap>		m_cascadedShadowMaps;
-		std::vector<ShadowMap>		m_shadowMaps;
-		std::vector<ShadowCubeMap>	m_shadowCubeMaps;
+		// depth of each cascade
+		std::array<float, CASCADE_COUNT> m_splitDepths;
+
+		std::vector<CascadedShadowMap>	m_cascadedShadowMaps;
+		std::vector<ShadowMap>			m_shadowMaps;
+		std::vector<ShadowCubeMap>		m_shadowCubeMaps;
 
 		Resources::ResourceHandle<Shader>	m_dirShader;
 		Resources::ResourceHandle<Shader>	m_omniShader;

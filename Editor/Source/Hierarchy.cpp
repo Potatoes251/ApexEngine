@@ -445,8 +445,6 @@ Object* Hierarchy::DuplicateObject(Object* original)
     size_t id = clone->GetId();
     m_scene->AddObject(std::move(clone));
 
-    Object* obj = m_scene->GetObjectWithId(id);
-
     return m_scene->GetObjectWithId(id);
 }
 
@@ -457,7 +455,6 @@ void Hierarchy::DestroyObject(size_t objId)
 
     if (m_selected == obj)
         SelectObject(nullptr);
-    obj->Destroy();
 
     m_scene->DestroyObject(objId);
 }

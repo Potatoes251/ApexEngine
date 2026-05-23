@@ -762,7 +762,7 @@ void SceneLoader::ParseAudioComponent(Data::Object* obj, SerialParser& parser)
 
     parser.ParseString();
     parser.Expect(':');
-    float channel = parser.ParseInt();
+    int channel = parser.ParseInt();
     parser.Expect(',');
 
     parser.ParseString();
@@ -792,6 +792,7 @@ void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser
     float genHeight = parser.ParseFloat();
 
     auto& comp = obj->AddComponent<Pathfinding::NavGenVolume>();
+    comp.SetEnabled(enabled);
     comp.m_genHeight = genHeight;
     comp.m_spacing = spacing;
 }

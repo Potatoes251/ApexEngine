@@ -5,11 +5,10 @@
 
 #include "Scene.h"
 
-#include "FirstPersonCamera.h"
-#include "ThirdPersonCamera.h"
+#include "Shader.h"
+#include "Camera.h"
 
 #include <cassert>
-#include <array>
 
 using namespace Apex::Lighting;
 using namespace Apex::Rendering;
@@ -62,7 +61,7 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 	RenderPassInfo pass;
 	pass.m_flags |= ShadowPass;
-	pass.m_flags |= IgnoreModelShader;
+	pass.m_flags |= IgnoreMaterial;
 	pass.m_flags &= ~RenderSkybox;
 	pass.m_shader = m_dirShader;
 	m_dirShader->Use();
@@ -74,15 +73,14 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 
 		CascadedShadowMap& shadow = m_cascadedShadowMaps[csmCount];
 
-		auto splits = ComputeSplitDepths(camera->GetNear(), camera->GetFar());
+		m_splitDepths = ComputeSplitDepths(camera->GetNear(), camera->GetFar(), 1);
 
 		for (int cascade = 0; cascade < CASCADE_COUNT; cascade++)
 		{
-			float nearSplit = (cascade == 0) ? camera->GetNear() : splits[cascade - 1];
-			float farSplit = splits[cascade];
+			float nearSplit = (cascade == 0) ? camera->GetNear() : m_splitDepths[cascade - 1];
+			float farSplit = m_splitDepths[cascade];
 
 			shadow.m_viewProj[cascade] = ComputeCascadeLightMatrix(camera, light, nearSplit, farSplit);
-			shadow.m_splitDepths[cascade] = farSplit;
 
 			m_rhi->AttachDepthTexture(shadow.m_shadowTextures[cascade]);
 			m_rhi->ClearDepth();
@@ -143,8 +141,11 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	m_rhi->UnBindFrameBuffer();
 }
 
-void ShadowManager::BindShadowMaps()
+void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader)
 {
+	shader->Use();
+	shader->SetUniform("cascadeSplits", m_splitDepths[0], CASCADE_COUNT);
+
 	LibMath::Matrix4 lightSpaceMatrix[MAX_SHADOW_2D];
 	for (int i = 0; i < m_cascadedShadowMaps.size(); i++)
 	{
@@ -166,7 +167,7 @@ void ShadowManager::BindShadowMaps()
 		int textureUnit = FIRST_SHADOW_2D_SLOT + i + nbCSM;
 		m_rhi->BindTexture(shadow.m_shadowTexture, textureUnit);
 
-		lightSpaceMatrix[i] = shadow.m_viewProj;
+		lightSpaceMatrix[i + nbCSM] = shadow.m_viewProj;
 	}
 
 	m_rhi->BindUniformBuffer(m_lightMatrixBuffer, sizeof(LibMath::Matrix4) * MAX_SHADOW_2D, &lightSpaceMatrix);

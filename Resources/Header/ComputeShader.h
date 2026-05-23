@@ -3,6 +3,7 @@
 
 
 #include "IResource.h"
+#include "RHI.h"
 
 class ComputeShader : public IResource
 {

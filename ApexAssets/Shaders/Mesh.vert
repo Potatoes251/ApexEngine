@@ -13,6 +13,8 @@ out vec2 vTexCoord;
 out vec4 FragPosLightSpace[10];
 out float vViewSpaceDepth;
 
+#define CASCADE_COUNT 4
+
 struct DirLight
 {
     vec4 dir;
@@ -57,7 +59,7 @@ void main()
     vTexCoord      = vec2(aPosition.w, aNormal.w);
     gl_Position    = uViewProj * worldPos;
 
-    int count = int(DirCount.x + SpotCount.x);
+    int count = int(DirCount.x * CASCADE_COUNT + SpotCount.x);
     for (int i = 0; i < count; ++i)
 	{
 		FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vFragPos, 1.0);

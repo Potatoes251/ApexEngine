@@ -46,11 +46,11 @@ std::array<LibMath::Vector3, 8> Apex::Rendering::Camera::GetFrustrumCorners()
 	inverseViewProj.inverse();
 
 	int i = 0;
-	for (unsigned int x = 0; x < 2; ++x)
+	for (unsigned int z = 0; z < 2; ++z)
 	{
-		for (unsigned int y = 0; y < 2; ++y)
+		for (unsigned int x = 0; x < 2; ++x)
 		{
-			for (unsigned int z = 0; z < 2; ++z)
+			for (unsigned int y = 0; y < 2; ++y)
 			{
 				const LibMath::Vector4 pt =
 					inverseViewProj * LibMath::Vector4(
