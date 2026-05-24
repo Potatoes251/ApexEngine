@@ -102,7 +102,7 @@ float ShadowCalculation(DirLight light)
 	
 	// fix acne
 	float bias = 0;
-	bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
+	//bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
 
 	// make shadow smoother
 	float shadow = 0.0;

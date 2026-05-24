@@ -302,6 +302,10 @@ LibMath::Matrix4 ShadowManager::ComputeCascadeLightMatrix(Rendering::Camera* cam
 		maxBounds[2] = std::max(maxBounds[2], lightSpacePt[2]);
 	}
 
+	float zRange = maxBounds[2] - minBounds[2];
+	minBounds[2] -= zRange * 5.0f;
+	maxBounds[2] += zRange * 5.0f;
+
 	// Snap to texel boundaries to avoid shimmering when moving around
 	float texelSizeX = (maxBounds[0] - minBounds[0]) / SHADOW_WIDTH;
 	float texelSizeY = (maxBounds[1] - minBounds[1]) / SHADOW_HEIGHT;

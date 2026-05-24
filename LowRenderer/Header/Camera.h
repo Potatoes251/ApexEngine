@@ -21,7 +21,7 @@ namespace Apex::Rendering
 
 		bool	IsMainCamera() const{ return m_isMain; }
 		void	SetMainCamera(bool enabled) { m_isMain = enabled; }
-		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
+		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 200.f);
 
 		float	GetSpeed() const { return m_speed; }
 		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, 50.f); }
