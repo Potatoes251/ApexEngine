@@ -81,6 +81,9 @@ namespace Apex
 
         float                       GetDeltaTime() const { return m_deltaTime_s; }
 
+        void    Pause()     { m_running = false; }
+        void    Unpause()   { m_running = true; }
+
     private:
         void InitLog();
         void InitWindow(Windowing::IWindow* window);

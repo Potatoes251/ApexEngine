@@ -265,6 +265,22 @@
         "material": null
       }
     }
+  },
+  {
+    "id": 64,
+    "parent": null,
+    "name": "SpawnManager",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/SpawnManager.lua",
+        "vars": {
+        }
+      }
+    }
   }
 ]
 }

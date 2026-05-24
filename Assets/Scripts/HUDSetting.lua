@@ -1,3 +1,5 @@
+local Input = require("Input")
+
 local SettingMenuHUD = {}
 SettingMenuHUD.__index = SettingMenuHUD
 
@@ -9,16 +11,16 @@ function SettingMenuHUD:New(self)
     instance.musicVolume        = 100
     instance.soundEffectVolume  = 100
 
-    --Inputs
+    --Inputs (only stored in qwerty)
     instance.inputs =
     {
-        forward       = 'Z'
-        left          = 'Q'
-        back          = 'S'
-        right         = 'D'
-        jump          = 'SPACE'
-        swimUp        = 'A'
-        swimDown      = 'E'
+        forward       = 'W',            -- 'Z' in azerty
+        left          = 'A',            -- 'Q' in azerty
+        back          = 'S',
+        right         = 'D',
+        jump          = 'SPACE',
+        swimUp        = 'Q',            -- 'A' in azerty
+        swimDown      = 'E',
     }
 
     --Graphic
@@ -38,7 +40,7 @@ end
 
 function SettingMenuHUD:SetInput(inputName, hudElement)
     local pressedKey = "TEMP_KEY"
-    --TODO: get the input 
+    pressedKey = Input.GetPressedKey()
 
     self.inputs[inputName] = pressedKey
 
@@ -47,23 +49,34 @@ function SettingMenuHUD:SetInput(inputName, hudElement)
     end
 end
 
+function SettingMenuHUD:ExitHUD()
+    UnpauseScene(self.hud)
+end
+
 function SettingMenuHUD:Start()
     self.hud = CreateHUD("SettingHUD")
     if self.hud == 0 then return end
 
+    PauseScene(self.hud)
+
+    HUD_SetButtonCallBack(self.hud, "ExitButton"
+    function()
+    self:ExitHUD()
+    end)
+
     --Volume
-    HUD_SetText(self.hud,   "VolumeMainData", tostring(instance.mainVolume))
-    HUD_SetText(self.hud,   "VolumeMusicData", tostring(instance.musicVolume))
-    HUD_SetText(self.hud,   "VolumeSoundEffectData", tostring(instance.soundEffectVolume))
+    HUD_SetText(self.hud,   "VolumeMainData",           tostring(self.mainVolume))
+    HUD_SetText(self.hud,   "VolumeMusicData",          tostring(self.musicVolume))
+    HUD_SetText(self.hud,   "VolumeSoundEffectData",    tostring(self.soundEffectVolume))
 
     --Inputs
-    HUD_SetText(self.hud,   "ForwardInputData", instance.forwardInput)
-    HUD_SetText(self.hud,   "LeftInputData", instance.leftInput)
-    HUD_SetText(self.hud,   "BackInputData", instance.backInput)
-    HUD_SetText(self.hud,   "RightInputData", instance.rightInput)
-    HUD_SetText(self.hud,   "JumpInputData", instance.jumpInput)
-    HUD_SetText(self.hud,   "SwimUpInputData", instance.swimUpInput)
-    HUD_SetText(self.hud,   "SwimDownInputData", instance.swimDownInput)
+    HUD_SetText(self.hud,   "ForwardInputData",     self.inputs.forward)
+    HUD_SetText(self.hud,   "LeftInputData",        self.inputs.left)
+    HUD_SetText(self.hud,   "BackInputData",        self.inputs.back)
+    HUD_SetText(self.hud,   "RightInputData",       self.inputs.right)
+    HUD_SetText(self.hud,   "JumpInputData",        self.inputs.jump)
+    HUD_SetText(self.hud,   "SwimUpInputData",      self.inputs.swimUp)
+    HUD_SetText(self.hud,   "SwimDownInputData",    self.inputs.swimDown)
 
     HUD_SetButtonCallBack(self.hud, "ForwardInputData", 
     function() 
@@ -95,7 +108,10 @@ function SettingMenuHUD:Start()
     end)
 
     --Graphic
-    HUD_SetText(self.hud,   "ShadowButton", tostring(instance.ShadowToggle))
+    HUD_SetText(self.hud,   "ShadowButton", tostring(self.ShadowToggle))
 
-    HUD_SetButtonCallBack(self.hud, "ShadowButton", ToggleShadow)
+    HUD_SetButtonCallBack(self.hud, "ShadowButton", 
+    function() 
+    self:ToggleShadow() 
+    end)
 end

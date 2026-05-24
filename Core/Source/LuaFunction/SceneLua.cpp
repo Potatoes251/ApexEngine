@@ -22,10 +22,6 @@ int Apex::Scene::Lua_Scene_LoadScene(lua_State* L)
 
 int Apex::Scene::Lua_Scene_PauseScene(lua_State* L)
 {
-	const char* scenePath = luaL_checkstring(L, 1);
-
-	if (!scenePath) return 0;
-
 	Application::Get()->Pause();
 
 	return 0;
@@ -33,10 +29,6 @@ int Apex::Scene::Lua_Scene_PauseScene(lua_State* L)
 
 int Apex::Scene::Lua_Scene_UnpauseScene(lua_State* L)
 {
-	const char* scenePath = luaL_checkstring(L, 1);
-
-	if (!scenePath) return 0;
-
 	Application::Get()->Unpause();
 
 	return 0;
