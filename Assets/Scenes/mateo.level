@@ -1,7 +1,4 @@
 {
-"materials": [
-
-],
 "objects": [
   {
     "id": 118,
@@ -19,9 +16,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [10.000000, 0.500000, 10.000000],
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [10.000000,0.500000,10.000000]
       },
       "Rigidbody": {
         "enabled": true,
@@ -84,10 +83,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.750000,
-        "radius": 0.200000,
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
       },
       "ScriptComponent": {
         "enabled": true,
@@ -152,9 +153,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.000000, 2.000000, 0.100000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.000000,2.000000,0.100000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -259,10 +262,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.250000,
-        "radius": 0.200000,
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.250000,
+        "radius": 0.200000
       }
     }
   },

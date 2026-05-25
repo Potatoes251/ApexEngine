@@ -1,7 +1,4 @@
 {
-"materials": [
-
-],
 "objects": [
   {
     "id": 4741,
@@ -19,9 +16,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [20.000000, 1.025000, 20.000000],
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [20.000000,1.025000,20.000000]
       },
       "Rigidbody": {
         "enabled": true,
@@ -84,10 +83,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.750000,
-        "radius": 0.200000,
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
       },
       "ScriptComponent": {
         "enabled": true,
@@ -167,10 +168,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -201,10 +204,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -235,10 +240,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -269,10 +276,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -303,10 +312,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -331,10 +342,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
+        "type": "Convex"
       },
       "ScriptComponent": {
         "enabled": true,
@@ -381,10 +394,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -409,10 +424,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -437,10 +454,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -465,10 +484,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -493,10 +514,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -521,10 +544,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -549,10 +574,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -577,10 +604,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -605,10 +634,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -633,10 +664,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
+        "type": "Convex"
       },
       "ScriptComponent": {
         "enabled": true,
@@ -689,10 +722,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -723,10 +758,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -757,10 +794,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -791,10 +830,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -825,10 +866,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -853,9 +896,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.000000, 2.000000, 0.100000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.000000,2.000000,0.100000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -888,10 +933,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.500000,
-        "radius": 1.000000,
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.500000,
+        "radius": 1.000000
       },
       "AIController": {
         "enabled": true,
@@ -937,9 +984,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [1.000000, 1.000000, 1.000000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [1.000000,1.000000,1.000000]
       },
       "ScriptComponent": {
         "enabled": true,

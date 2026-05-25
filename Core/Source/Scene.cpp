@@ -350,34 +350,6 @@ namespace Apex::Rendering
 
 		file << "{\n";
 
-		file << "\"materials\": [\n";
-
-		auto& materials = m_physics.GetMaterials();
-
-		bool first = true;
-
-		for (auto const& [name, entry] : materials)
-		{
-			auto* material = dynamic_cast<PhysicMaterial*>(entry.m_resource.get());
-			if (!material)
-				continue;
-
-			if (!first)
-				file << ",\n";
-
-			first = false;
-
-			file <<
-				"  {\n"
-				"    \"id\": " << material->GetId() << ",\n"
-				"    \"static friction\": " << material->MutStaticFriction() << ",\n"
-				"    \"dynamic friction\": " << material->MutDynamicFriction() << ",\n"
-				"    \"bounciness\": " << material->MutBounciness() << "\n"
-				"  }";
-		}
-
-		file << "\n],\n";
-
 		file << "\"objects\": [\n";
 
 		for (const auto& obj : m_objects)
@@ -457,12 +429,6 @@ namespace Apex::Rendering
 
 			if (body && collider)
 			{
-				PhysMatHandle mat = collider->GetMaterial();
-
-				if (mat.IsValid())
-					collider->SetMaterial(copy->m_physics.CreateMaterial(
-						mat->GetPath(), mat->GetStaticFriction(), mat->GetDynamicFriction(), mat->GetBounciness()));
-
 				copy->m_physics.CreateActor(*collider, *body);
 			}
 

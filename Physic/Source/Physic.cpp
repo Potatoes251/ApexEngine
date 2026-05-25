@@ -89,26 +89,6 @@ PhysicSystem::~PhysicSystem()
 	}
 }
 
-PhysMatHandle PhysicSystem::CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness)
-{
-	auto [it, inserted] = m_materialsMap.try_emplace(name, nullptr);
-	ResourceEntry* entry = &it->second;
-
-	// If already existing, do not create again
-	if (!inserted) return PhysMatHandle(entry);
-
-	entry->m_resource = std::make_unique<PhysicMaterial>(staticFriction, dynamicFriction, bounciness);
-	PhysMatHandle handle(entry);
-
-	handle->SetName(name);
-	handle->SetState(ResourceState::Uploaded);
-	handle->SetId(m_physxMaterials.size());
-
-	m_physxMaterials.push_back(m_pxCtx.m_physics->createMaterial(staticFriction, dynamicFriction, bounciness));
-
-	return handle;
-}
-
 void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rigidBody)
 {
 	physx::PxShape* shape = nullptr;
@@ -178,11 +158,6 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 			return;
 		}
 	}
-}
-
-const std::unordered_map<std::string, ResourceEntry>& PhysicSystem::GetMaterials() const
-{
-	return m_materialsMap;
 }
 
 bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
@@ -467,20 +442,15 @@ void PhysicSystem::DrawConvexMeshCollider(
 	}
 }
 
-physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& collider) const
+physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& collider)
 {
-	physx::PxMaterial* material = m_defaultMaterial;
+	size_t id = collider.GetMatId();
 
-	PhysMatHandle matHandle = collider.GetMaterial();
+	if (id < m_physxMaterials.size() && m_physxMaterials[id]) return m_physxMaterials[id];
 
-	if (matHandle.IsValid())
-	{
-		size_t id = matHandle->GetId();
-		assert(id < m_physxMaterials.size() && "Invalid PhysicMaterial id");
-
-		if (m_physxMaterials[id]) material = m_physxMaterials[id];
-	}
-	return material;
+	m_physxMaterials.push_back(m_pxCtx.m_physics->createMaterial(collider.GetStaticFriction(), collider.GetDynamicFriction(), collider.GetBounciness()));
+	
+	return m_physxMaterials.back();
 }
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
@@ -789,22 +759,6 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 
 // SimulationCallback
 
-void PhysicSystem::SimulationCallback::onConstraintBreak(physx::PxConstraintInfo* /*constraints*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onWake(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onSleep(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onContact(physx::PxContactPairHeader const& /*pairHeader*/, physx::PxContactPair const* /*pairs*/, physx::PxU32 /*nbPairs*/)
-{
-}
-
 void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 {
 	for (unsigned int i = 0; i < count; i++)
@@ -833,8 +787,4 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 			break;
 		}
 	}
-}
-
-void PhysicSystem::SimulationCallback::onAdvance(physx::PxRigidBody const* const* /*bodyBuffer*/, physx::PxTransform const* /*poseBuffer*/, physx::PxU32 const /*count*/)
-{
 }

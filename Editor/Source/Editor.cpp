@@ -80,12 +80,10 @@ namespace Apex::Editor
         m_console = std::make_unique<Console>(m_gui.get());
         LogSystem::AddSink(m_console.get());
 
-        // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             m_gui.get(),
             app.GetScene(),
             m_app->GetResourceManager(),
-            app.GetScene()->GetPhysic(),
             m_app->GetLuaManager()
         );
 

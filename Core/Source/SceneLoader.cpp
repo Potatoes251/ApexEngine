@@ -49,11 +49,7 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
         std::string category = parser.ParseString();
         parser.Expect(':');
 
-        if (category == "materials")
-        {
-            ParseMaterials(parser);
-        }
-        else if (category == "objects")
+        if (category == "objects")
         {
             parser.Expect('[');
 
@@ -135,7 +131,7 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
     parser.ParseString(); parser.Expect(':');
     transform.setScale(parser.ParseVector3());
     parser.Expect(',');
-    obj->SetLocalTransform(transform);   
+    obj->SetLocalTransform(transform);
 
     // components
     parser.ParseString(); parser.Expect(':');
@@ -282,108 +278,126 @@ void SceneLoader::ParseRigidBody(Data::Object* obj, SerialParser& parser)
 
 void SceneLoader::ParseMeshCollider(Data::Object* obj, SerialParser& parser)
 {
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool enabled = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
-    std::string meshPath = parser.ParseString();
-    parser.Expect(',');
-
-    parser.ParseString(); parser.Expect(':');
-    std::string type = parser.ParseString();
-    parser.Expect(',');
-
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool isTrigger = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
+    float staticFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    PhysMatHandle material;
+    parser.ParseString();
+    parser.Expect(':');
+    float dynamicFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    if (!parser.Match("null"))
-    {
-        size_t id = parser.ParseInt();
-        auto it = m_materials.find(id);
-        assert(it != m_materials.end() && "Material id not found");
+    parser.ParseString();
+    parser.Expect(':');
+    float bounciness = parser.ParseFloat();
+    parser.Expect(',');
 
-        material = it->second;
-    }
+    parser.ParseString();
+    parser.Expect(':');
+    std::string meshPath = parser.ParseString();
+    parser.Expect(',');
 
-    auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger, material);
+    parser.ParseString();
+    parser.Expect(':');
+    std::string type = parser.ParseString();
+
+    auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger);
     comp.SetEnabled(enabled);
+    comp.SetStaticFriction(staticFriction);
+    comp.SetDynamicFriction(dynamicFriction);
+    comp.SetBounciness(bounciness);
 }
 
 void SceneLoader::ParseBoxCollider(Data::Object* obj, SerialParser& parser)
 {
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool enabled = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':'), parser.Expect('[');
-    float xExtent = parser.ParseFloat();
-    parser.Expect(',');
-    float yExtent = parser.ParseFloat();
-    parser.Expect(',');
-    float zExtent = parser.ParseFloat();
-    parser.Expect(']');
-    parser.Expect(',');
-
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool isTrigger = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
+    float staticFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    PhysMatHandle material;
+    parser.ParseString();
+    parser.Expect(':');
+    float dynamicFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    if (!parser.Match("null"))
-    {
-        size_t id = parser.ParseInt();
-        auto it = m_materials.find(id);
-        assert(it != m_materials.end() && "Material id not found");
+    parser.ParseString();
+    parser.Expect(':');
+    float bounciness = parser.ParseFloat();
+    parser.Expect(',');
 
-        material = it->second;
-    }
+    parser.ParseString();
+    parser.Expect(':');
+    LibMath::Vector3 halfExtent = parser.ParseVector3();
 
-    auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(LibMath::Vector3{ xExtent, yExtent, zExtent }, isTrigger, material);
+    auto& comp = obj->AddComponent<Apex::Physic::BoxCollider>(halfExtent, isTrigger);
     comp.SetEnabled(enabled);
+    comp.SetStaticFriction(staticFriction);
+    comp.SetDynamicFriction(dynamicFriction);
+    comp.SetBounciness(bounciness);
 }
 
 void SceneLoader::ParseCapsuleCollider(Data::Object* obj, SerialParser& parser)
 {
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool enabled = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
-    float halfHeight = parser.ParseFloat();
-    parser.Expect(',');
-
-    parser.ParseString(); parser.Expect(':');
-    float radius = parser.ParseFloat();
-    parser.Expect(',');
-
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
     bool isTrigger = parser.ParseBool();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
+    parser.ParseString();
+    parser.Expect(':');
+    float staticFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    PhysMatHandle material;
+    parser.ParseString();
+    parser.Expect(':');
+    float dynamicFriction = parser.ParseFloat();
+    parser.Expect(',');
 
-    if (!parser.Match("null"))
-    {
-        size_t id = parser.ParseInt();
-        auto it = m_materials.find(id);
-        assert(it != m_materials.end() && "Material id not found");
+    parser.ParseString();
+    parser.Expect(':');
+    float bounciness = parser.ParseFloat();
+    parser.Expect(',');
 
-        material = it->second;
-    }
+    parser.ParseString();
+    parser.Expect(':');
+    float halfHeight = parser.ParseFloat();
+    parser.Expect(',');
 
-    auto& comp = obj->AddComponent<Apex::Physic::CapsuleCollider>(halfHeight, radius, isTrigger, material);
+    parser.ParseString();
+    parser.Expect(':');
+    float radius = parser.ParseFloat();
+
+    auto& comp = obj->AddComponent<Apex::Physic::CapsuleCollider>(halfHeight, radius, isTrigger);
     comp.SetEnabled(enabled);
+    comp.SetStaticFriction(staticFriction);
+    comp.SetDynamicFriction(dynamicFriction);
+    comp.SetBounciness(bounciness);
 }
 
 void SceneLoader::ParseDirectionalLight(Data::Object* obj, SerialParser& parser)
@@ -395,13 +409,7 @@ void SceneLoader::ParseDirectionalLight(Data::Object* obj, SerialParser& parser)
 
     parser.ParseString();
     parser.Expect(':');
-    parser.Expect('[');
-    float xColor = parser.ParseFloat();
-    parser.Expect(',');
-    float yColor = parser.ParseFloat();
-    parser.Expect(',');
-    float zColor = parser.ParseFloat();
-    parser.Expect(']');
+    LibMath::Vector3 color = parser.ParseVector3();
     parser.Expect(',');
 
     parser.ParseString();
@@ -418,8 +426,7 @@ void SceneLoader::ParseDirectionalLight(Data::Object* obj, SerialParser& parser)
     parser.Expect(':');
     float extent = parser.ParseFloat();
 
-    auto& comp = obj->AddComponent<Apex::Lighting::DirectionalLightComponent>(
-        LibMath::Vector3{ xColor, yColor, zColor }, intensity, distance, extent);
+    auto& comp = obj->AddComponent<Apex::Lighting::DirectionalLightComponent>(color, intensity, distance, extent);
     comp.SetEnabled(enabled);
 }
 
@@ -432,13 +439,7 @@ void SceneLoader::ParseSpotLight(Data::Object* obj, SerialParser& parser)
 
     parser.ParseString();
     parser.Expect(':');
-    parser.Expect('[');
-    float xColor = parser.ParseFloat();
-    parser.Expect(',');
-    float yColor = parser.ParseFloat();
-    parser.Expect(',');
-    float zColor = parser.ParseFloat();
-    parser.Expect(']');
+    LibMath::Vector3 color = parser.ParseVector3();
     parser.Expect(',');
 
     parser.ParseString();
@@ -455,8 +456,7 @@ void SceneLoader::ParseSpotLight(Data::Object* obj, SerialParser& parser)
     parser.Expect(':');
     float outerCutoff = parser.ParseFloat();
 
-    auto& comp = obj->AddComponent<Apex::Lighting::SpotLightComponent>(
-        LibMath::Vector3{ xColor, yColor, zColor }, intensity, innerCutoff, outerCutoff);
+    auto& comp = obj->AddComponent<Apex::Lighting::SpotLightComponent>(color, intensity, innerCutoff, outerCutoff);
     comp.SetEnabled(enabled);
 }
 
@@ -469,13 +469,7 @@ void SceneLoader::ParsePointLight(Data::Object* obj, SerialParser& parser)
 
     parser.ParseString();
     parser.Expect(':');
-    parser.Expect('[');
-    float xColor = parser.ParseFloat();
-    parser.Expect(',');
-    float yColor = parser.ParseFloat();
-    parser.Expect(',');
-    float zColor = parser.ParseFloat();
-    parser.Expect(']');
+    LibMath::Vector3 color = parser.ParseVector3();
     parser.Expect(',');
 
     parser.ParseString();
@@ -486,8 +480,7 @@ void SceneLoader::ParsePointLight(Data::Object* obj, SerialParser& parser)
     parser.Expect(':');
     float radius = parser.ParseFloat();
 
-    auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(
-        LibMath::Vector3{ xColor, yColor, zColor }, intensity, radius);
+    auto& comp = obj->AddComponent<Apex::Lighting::PointLightComponent>(color, intensity, radius);
     comp.SetEnabled(enabled);
 }
 
@@ -818,58 +811,6 @@ void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParse
     {
         script.SetVariable(varName, parser.ParseFloat());
     }
-}
-
-void SceneLoader::ParseMaterials(SerialParser& parser)
-{
-    parser.Expect('[');
-
-    while (!parser.Peek(']'))
-    {
-        parser.Expect('{');
-
-        size_t id = 0;
-        float staticFriction = 0.5f;
-        float dynamicFriction = 0.5f;
-        float bounciness = 0.f;
-
-        while (!parser.Peek('}'))
-        {
-            std::string key = parser.ParseString();
-            parser.Expect(':');
-
-            if (key == "id")
-                id = parser.ParseInt();
-
-            else if (key == "static friction")
-                staticFriction = parser.ParseFloat();
-
-            else if (key == "dynamic friction")
-                dynamicFriction = parser.ParseFloat();
-
-            else if (key == "bounciness")
-                bounciness = parser.ParseFloat();
-
-            if (parser.Peek(','))
-                parser.Expect(',');
-        }
-
-        parser.Expect('}');
-
-        auto material = m_physics->CreateMaterial(
-            std::to_string(id),
-            staticFriction,
-            dynamicFriction,
-            bounciness
-        );
-
-        m_materials[id] = material;
-
-        if (parser.Peek(','))
-            parser.Expect(',');
-    }
-
-    parser.Expect(']');
 }
 
 Apex::Physic::BodyType SceneLoader::StringToBodyType(const std::string& str)

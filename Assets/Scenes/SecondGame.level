@@ -1,7 +1,4 @@
 {
-"materials": [
-
-],
 "objects": [
   {
     "id": 417,
@@ -41,10 +38,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.750000,
-        "radius": 0.200000,
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
       },
       "ScriptComponent": {
         "enabled": true,
@@ -105,9 +104,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [20.000000, 0.500000, 20.000000],
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [20.000000,0.500000,20.000000]
       }
     }
   },
@@ -132,9 +133,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [10.000000, 0.500000, 10.000000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [10.000000,0.500000,10.000000]
       }
     }
   },
@@ -159,10 +162,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Stage0/Stage0.mesh",
-        "type": "Triangle",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Stage0/Stage0.mesh",
+        "type": "Triangle"
       }
     }
   },
