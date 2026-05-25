@@ -7,6 +7,9 @@
 
 #include "RenderPassInfo.h"
 
+#include "SaveManager.h"
+
+#include <functional>
 #include <memory>
 #include <filesystem>
 
@@ -84,6 +87,13 @@ namespace Apex
         std::string                 GetPrefsPath() const { return m_prefsPath; }
         const char*                 GetLastSceneKey() const { return m_lastSceneKey; }
 
+        Save::SaveManager*          GetSaveManager() { return m_saveManager.get(); }
+
+        void SetSaveRequestedCallback(std::function<void()> callback) { m_onSaveRequested = std::move(callback); }
+
+        void AddCollectedObject(size_t id);
+        const std::vector<size_t>& GetCollectedObjects() const;
+
     private:
         void InitLog();
         void InitWindow(Windowing::IWindow* window);
@@ -101,6 +111,8 @@ namespace Apex
         std::string LoadLastScene() const;
         std::string LoadBuildStartScene() const;
 
+        std::function<void()> m_onSaveRequested;
+
         bool m_running = true;
         float m_deltaTime_s = 0.0f;
         float m_accumulator_s = 0.f;
@@ -114,17 +126,21 @@ namespace Apex
         std::unique_ptr<UserInterface::UIManager>   m_uiManager;
         std::unique_ptr<FileLog>					m_fileLog;
 
+        std::vector<size_t> m_collectedObjects;
+
         Windowing::IWindow* m_window = nullptr;
         std::unique_ptr<Audio::IAudioEngine> m_audio;
 
         std::unique_ptr<Rendering::Scene> m_scene;
 
+        std::unique_ptr<Save::SaveManager> m_saveManager;
+
         std::string m_targetScene{};
 
         static inline Application* m_instance = nullptr;
         std::string m_scenePath = "Assets/Scenes/scene.level";
-
-        static constexpr const char* m_buildScenesPath = "Assets/Scenes/build_scenes.json";
+        
+        static constexpr const char* m_saveFilePath = "Saves/slot_0.sav";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";
         static constexpr const char* m_lastSceneKey = "LastScene=";
 	};

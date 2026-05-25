@@ -85,7 +85,7 @@ void FirstPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 void FirstPersonCamera::ProcessScroll(double yoffset)
 {
 	m_speed *= (yoffset > 0) ? 1.1f : (1.f / 1.1f);
-	m_speed = LibMath::clamp(m_speed, 0.5f, 50.f);
+	m_speed = LibMath::clamp(m_speed, 0.5f, m_maxSpeed);
 }
 
 void FirstPersonCamera::Serialize(std::ostream& out) const

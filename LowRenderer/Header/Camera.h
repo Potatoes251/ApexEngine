@@ -24,7 +24,7 @@ namespace Apex::Rendering
 		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 200.f);
 
 		float	GetSpeed() const { return m_speed; }
-		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, 50.f); }
+		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, m_maxSpeed); }
 
 		LibMath::Matrix4	GetViewProj();
 		LibMath::Matrix4	GetProjection();
@@ -65,6 +65,7 @@ namespace Apex::Rendering
 		LibMath::Degree m_yaw = LibMath::Degree(-90.f);
 
 		float			m_speed = 2.5f;
+		float			m_maxSpeed = 100.f;
 
 		float			m_near = 0.1f;
 		float			m_far = 100.f;
