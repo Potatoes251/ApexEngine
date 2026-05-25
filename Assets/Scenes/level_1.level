@@ -320,15 +320,8 @@
       },
       "Rigidbody": {
         "enabled": true,
-        "type": "Dynamic",
+        "type": "Kinematic",
         "mass": 1.000000
-      },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": null
       },
       "ScriptComponent": {
         "enabled": true,
@@ -346,11 +339,18 @@
       },
       "AIController": {
         "enabled": true,
-        "groundedDistance": 0.5,
+        "groundedDistance": 0.8,
         "speed": 5,
         "rotationSpeed": 5,
         "density": 980,
 "arrivalThreshold" :0.500000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "halfHeight": 0.250000,
+        "radius": 0.200000,
+        "isTrigger": true,
+        "material": null
       }
     }
   },
@@ -625,13 +625,6 @@
         "type": "Dynamic",
         "mass": 1.000000
       },
-      "MeshCollider": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "type": "Convex",
-        "isTrigger": false,
-        "material": null
-      },
       "ScriptComponent": {
         "enabled": true,
         "script": "Assets/Scripts/Goomba.lua",
@@ -648,11 +641,18 @@
       },
       "AIController": {
         "enabled": true,
-        "groundedDistance": 0.5,
+        "groundedDistance": 0.8,
         "speed": 5,
         "rotationSpeed": 5,
         "density": 980,
 "arrivalThreshold" :0.500000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "halfHeight": 0.250000,
+        "radius": 0.200000,
+        "isTrigger": true,
+        "material": null
       }
     }
   },
@@ -855,8 +855,8 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
-          "targetScene": "Assets/Scenes/scene.level",
-          "loadTime": 1.000000
+          "TargetScene": "Assets/Scenes/scene.level",
+          "LoadTime": 1.000000
         }
       }
     }
