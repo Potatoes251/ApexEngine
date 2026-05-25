@@ -155,7 +155,7 @@ void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader)
 		{
 			int textureUnit = FIRST_SHADOW_2D_SLOT + (i * CASCADE_COUNT) + c;
 			m_rhi->BindTexture(csm.m_shadowTextures[c], textureUnit);
-			lightSpaceMatrix[c] = csm.m_viewProj[c];
+			lightSpaceMatrix[(i * CASCADE_COUNT) + c] = csm.m_viewProj[c];
 		}
 	}
 
