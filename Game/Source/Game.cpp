@@ -126,8 +126,7 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
 
     if (player)
     {
-        auto pos = player->GetLocalTransform().getPosition();
-        data.playerPosition = { pos[0], pos[1], pos[2] };
+        data.playerPosition = player->GetGlobalPosition();
 
         auto* script = player->GetComponent<Apex::Scripting::ScriptComponent>();
         if (script && script->GetInstanceRef() != LUA_REFNIL)
@@ -163,8 +162,6 @@ void Apex::Game::Game::LoadSavedGame(int slot)
 {
     using namespace Apex::Save;
 
-    //auto* app = Apex::Application::Get();
-
     auto optData = m_app->GetSaveManager()->Load(slot);
     if (!optData)
     {
@@ -188,11 +185,6 @@ void Apex::Game::Game::LoadSavedGame(int slot)
     for (auto& obj : scene->GetObjects())
     {
         if (obj->GetName() != "Player") continue;
-
-        // Restore position via the transform (adjust to your transform API).
-        //   obj->GetLocalTransform().setPosition({ data.playerPosition.x,
-        //                                          data.playerPosition.y,
-        //                                          data.playerPosition.z });
 
         auto* script = obj->GetComponent<Apex::Scripting::ScriptComponent>();
         if (script && script->GetInstanceRef() != LUA_REFNIL)

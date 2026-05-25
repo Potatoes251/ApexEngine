@@ -1,12 +1,15 @@
 #include "SaveManager.h"
 #include "Scene.h"
 #include "Log.h"
+#include "SerializationParser.h"
 
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
 #include <cassert>
+
+using namespace Apex::Serialization;
 
 namespace Apex::Save
 {
@@ -179,153 +182,73 @@ namespace Apex::Save
         return o.str();
     }
 
-    // ---- Tiny pull-parser (covers the subset we write above) ----------------
-
-    // Returns the raw value string for a top-level key, e.g. "42" or "\"foo\"".
-    std::string SaveManager::FindValue(const std::string& json, const std::string& key)
-    {
-        std::string needle = "\"" + key + "\"";
-        size_t pos = json.find(needle);
-        if (pos == std::string::npos) return {};
-
-        size_t colon = json.find(':', pos + needle.size());
-        if (colon == std::string::npos) return {};
-
-        size_t start = colon + 1;
-        while (start < json.size() && (json[start] == ' ' || json[start] == '\t')) ++start;
-
-        // Find the end of the value (next comma or closing brace at depth 0)
-        size_t end = start;
-        if (json[start] == '"')
-        {
-            // String value – walk to closing quote respecting escapes
-            ++end;
-            while (end < json.size() && !(json[end] == '"' && json[end - 1] != '\\'))
-                ++end;
-            ++end; // include closing quote
-        }
-        else if (json[start] == '[')
-        {
-            // Array – walk to matching ]
-            int depth = 0;
-            while (end < json.size())
-            {
-                if (json[end] == '[') ++depth;
-                else if (json[end] == ']') { --depth; if (depth == 0) { ++end; break; } }
-                ++end;
-            }
-        }
-        else
-        {
-            // Number / bool / null
-            while (end < json.size() && json[end] != ',' && json[end] != '\n'
-                && json[end] != '}' && json[end] != ']')
-                ++end;
-        }
-
-        std::string val = json.substr(start, end - start);
-        // Trim trailing whitespace
-        while (!val.empty() && (val.back() == ' ' || val.back() == '\t')) val.pop_back();
-        return val;
-    }
-
-    // Returns raw object strings from a JSON array with the given key.
-    std::vector<std::string> SaveManager::FindArray(const std::string& json, const std::string& key)
-    {
-        std::string needle = "\"" + key + "\"";
-        size_t pos = json.find(needle);
-        if (pos == std::string::npos) return {};
-
-        size_t bracket = json.find('[', pos);
-        if (bracket == std::string::npos) return {};
-
-        // Collect objects between '[' and matching ']'
-        std::vector<std::string> items;
-        size_t i = bracket + 1;
-        int depth = 1;
-        size_t objStart = std::string::npos;
-
-        while (i < json.size() && depth > 0)
-        {
-            char c = json[i];
-            if (c == '[') { ++depth; }
-            else if (c == ']') { --depth; if (depth == 0) break; }
-            else if (c == '{' && depth == 1)
-            {
-                objStart = i;
-                int d2 = 0;
-                while (i < json.size())
-                {
-                    if (json[i] == '{') ++d2;
-                    else if (json[i] == '}') { --d2; if (d2 == 0) { items.push_back(json.substr(objStart, i - objStart + 1)); break; } }
-                    ++i;
-                }
-            }
-            ++i;
-        }
-
-        return items;
-    }
-
     std::optional<SaveData> SaveManager::Deserialize(const std::string& json)
     {
         try
         {
+            SerialParser parser(json);
+
             SaveData data;
 
-            auto slotStr = FindValue(json, "slot");
-            auto scoreStr = FindValue(json, "score");
-            auto sceneVal = FindValue(json, "scene");
-            auto posVal = FindValue(json, "position");
+            parser.Expect('{');
 
-            if (slotStr.empty() || sceneVal.empty())
-                return std::nullopt;
-
-            data.slotIndex = static_cast<uint32_t>(std::stoul(slotStr));
-            data.score = scoreStr.empty() ? 0 : std::stoi(scoreStr);
-
-            // Strip surrounding quotes from the scene string
-            if (sceneVal.size() >= 2 && sceneVal.front() == '"')
-                data.scenePath = sceneVal.substr(1, sceneVal.size() - 2);
-
-            // Parse position array "[x,y,z]"
-            if (!posVal.empty() && posVal.front() == '[')
+            while (!parser.Peek('}'))
             {
-                std::string inner = posVal.substr(1, posVal.size() - 2);
-                std::istringstream ss(inner);
-                std::string tok;
-                float components[3] = {};
-                int idx = 0;
-                while (std::getline(ss, tok, ',') && idx < 3)
-                    components[idx++] = std::stof(tok);
-                data.playerPosition = { components[0], components[1], components[2] };
-            }
+                std::string key = parser.ParseString();
+                parser.Expect(':');
 
-            // Parse collected items — stored as a flat array of integers: [123, 456, 789]
-            auto collectedVal = FindValue(json, "collected");
-            if (!collectedVal.empty() && collectedVal.front() == '[')
-            {
-                std::string inner = collectedVal.substr(1, collectedVal.size() - 2);
-                std::istringstream ss(inner);
-                std::string tok;
-                while (std::getline(ss, tok, ','))
+                if (key == "slot")
                 {
-                    // trim whitespace
-                    tok.erase(0, tok.find_first_not_of(" \t"));
-                    tok.erase(tok.find_last_not_of(" \t\r\n") + 1);
-                    if (tok.empty()) continue;
-
-                    CollectedItem item;
-                    item.objectId = std::stoull(tok);
-                    data.collectedItems.push_back(std::move(item));
+                    data.slotIndex = parser.ParseInt();
                 }
+                else if (key == "scene")
+                {
+                    data.scenePath = parser.ParseString();
+                }
+                else if (key == "score")
+                {
+                    data.score = parser.ParseInt();
+                }
+                else if (key == "hp")
+                {
+                    data.hp = parser.ParseInt();
+                }
+                else if (key == "position")
+                {
+                    data.playerPosition = parser.ParseVector3();
+                }
+                else if (key == "collected")
+                {
+                    parser.Expect('[');
+
+                    while (!parser.Peek(']'))
+                    {
+                        CollectedItem item;
+                        item.objectId = static_cast<size_t>(parser.ParseInt());
+                        data.collectedItems.push_back(item);
+
+                        if (parser.Peek(','))
+                            parser.Expect(',');
+                    }
+
+                    parser.Expect(']');
+                }
+                else
+                {
+                    parser.ParseFloat();
+                }
+
+                if (parser.Peek(','))
+                    parser.Expect(',');
             }
+
+            parser.Expect('}');
 
             return data;
         }
-        catch (const std::exception& ex)
+        catch (...)
         {
-            LOG_ERROR("SaveManager::Deserialize – exception: {}", ex.what());
+            LOG_ERROR("SaveManager::Deserialize – parsing failed");
             return std::nullopt;
         }
     }

@@ -898,7 +898,7 @@ namespace Apex::Editor
         // Default save file
         if (!scenePaths.empty())
         {
-            fs::path savePath = outputDir / "Saves" / "slot_0.sav";
+            fs::path savePath = outputDir / "Saves/slot_0.sav";
 
             fs::create_directories(savePath.parent_path(), ec);
 

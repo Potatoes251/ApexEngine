@@ -85,10 +85,7 @@ namespace Apex::Save
         static std::string Serialize(const SaveData& data);
         static std::optional<SaveData> Deserialize(const std::string& json);
 
-        // Tiny JSON helpers
         static std::string EscapeString(const std::string& s);
-        static std::string FindValue(const std::string& json, const std::string& key);
-        static std::vector<std::string> FindArray(const std::string& json, const std::string& key);
 
         std::string m_saveDir;
     };
