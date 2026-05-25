@@ -7,6 +7,8 @@
 
 #include "../../Resources/Header/Component.h"
 
+#include <array>
+
 namespace Apex::Rendering
 {
 	class Camera : public Component
@@ -19,7 +21,7 @@ namespace Apex::Rendering
 
 		bool	IsMainCamera() const{ return m_isMain; }
 		void	SetMainCamera(bool enabled) { m_isMain = enabled; }
-		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 100.f);
+		void	SetProjectionMatrix(float aspect = 16.f / 9.f, float near = 0.1f, float far = 200.f);
 
 		float	GetSpeed() const { return m_speed; }
 		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, 50.f); }
@@ -35,6 +37,10 @@ namespace Apex::Rendering
 
 		LibMath::Degree				GetPitch() const { return m_pitch; }
 		LibMath::Degree				GetYaw()   const { return m_yaw; }
+		float	GetNear() const { return m_near; }
+		float	GetFar() const { return m_far; }
+
+		std::array<LibMath::Vector3, 8> GetFrustrumCorners();
 
 		void SetPosition(LibMath::Vector3 pos);
 		virtual void Teleport(LibMath::Vector3 pos) { SetPosition(pos); }
@@ -59,6 +65,9 @@ namespace Apex::Rendering
 		LibMath::Degree m_yaw = LibMath::Degree(-90.f);
 
 		float			m_speed = 2.5f;
+
+		float			m_near = 0.1f;
+		float			m_far = 100.f;
 
 		bool			m_dirty = true;
 		bool			m_isMain = false;

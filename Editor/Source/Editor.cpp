@@ -897,7 +897,7 @@ namespace Apex::Editor
 
         // Scene order manifest
         {
-            fs::path manifestPath = outputDir / "Assets" / "Scenes" / "build_scenes.json";
+            fs::path manifestPath = outputDir / "Assets/Scenes/build_scenes.json";
             fs::create_directories(manifestPath.parent_path(), ec);
             std::ofstream manifest(manifestPath);
             manifest << "{\n  \"scenes\": [\n";
