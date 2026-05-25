@@ -221,7 +221,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_flags |= UseIdAsColor;
-	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags |= IgnoreMaterial;
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;

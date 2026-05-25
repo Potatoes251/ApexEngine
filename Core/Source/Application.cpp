@@ -186,7 +186,8 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
         "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     m_scene->SetSkybox(std::make_unique<Skybox>(cubemap, cube, shader));
-    
+    m_scene->SetShader(m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag", true));
+
     // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
     loader.LoadScene(*m_scene, path);
@@ -256,7 +257,7 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 
     m_lightManager->UploadToGpu(visibleLights);
     m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    m_shadowManager->BindShadowMaps();
+    m_shadowManager->BindShadowMaps(m_scene->GetShader());
 
     if (pass.m_target != RHI_INVALID)
     {

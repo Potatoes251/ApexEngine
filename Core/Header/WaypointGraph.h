@@ -25,18 +25,18 @@ namespace Apex::Pathfinding
 	public:
 		WaypointGraph() = default;
 
-		void GenerateGraph(std::string path, Physic::PhysicSystem* physic, NavGenVolume* param);
+		void GenerateGraph(std::string const& path, Physic::PhysicSystem* physic, NavGenVolume* param);
 
-		void Load(std::string path);
+		void Load(std::string const& path);
 
-		int GetClosestWaypoint(LibMath::Vector3 pos);
+		int GetClosestWaypoint(LibMath::Vector3 const& pos);
 
 		std::vector<LibMath::Vector3> GetPath(int startId, int endId);
 
 		void DebugRender();
 
 	private:
-		void AddWaypoint(LibMath::Vector3 pos);
+		void AddWaypoint(LibMath::Vector3 const& pos);
 		void BuildNeighbors(float spacing);
 
 		void Save() const;

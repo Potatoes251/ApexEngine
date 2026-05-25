@@ -11,8 +11,6 @@ namespace Apex::Anim
 {
 	void RegisterLua(Scripting::LuaManager& lua);
 
-	Rendering::Animator* GetAnimator(lua_State* L, int index);
-
 	int Lua_Anim_Play(lua_State* L);
 	int Lua_Anim_Blend(lua_State* L);
 	int Lua_Anim_SetBlendRatio(lua_State* L);

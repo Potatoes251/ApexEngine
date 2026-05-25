@@ -1,5 +1,6 @@
 #include "LuaFunction/AnimationLua.h"
 #include "LuaFunction/ObjectLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "Animator.h"
 
@@ -20,17 +21,9 @@ void Apex::Anim::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("Anim_Crossfade_Internal", Apex::Anim::Lua_Anim_Crossfade);
 }
 
-Animator* Apex::Anim::GetAnimator(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    Animator* animator = static_cast<Animator*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return animator;
-}
-
 int Apex::Anim::Lua_Anim_Play(lua_State* L)
 {
-    Animator* animator = GetAnimator(L, 1);
+    Animator* animator = Comp::GetComponent<Animator>(L, 1);
 
     if (!animator) 
     {
@@ -66,7 +59,7 @@ int Apex::Anim::Lua_Anim_Play(lua_State* L)
 
 int Apex::Anim::Lua_Anim_Blend(lua_State* L)
 {
-    Animator* animator = GetAnimator(L, 1);
+    Animator* animator = Comp::GetComponent<Animator>(L, 1);
 
     if (!animator)
     {
@@ -104,7 +97,7 @@ int Apex::Anim::Lua_Anim_Blend(lua_State* L)
 
 int Apex::Anim::Lua_Anim_SetBlendRatio(lua_State* L)
 {
-    Animator* animator = GetAnimator(L, 1);
+    Animator* animator = Comp::GetComponent<Animator>(L, 1);
 
     if (!animator)
     {
@@ -121,7 +114,7 @@ int Apex::Anim::Lua_Anim_SetBlendRatio(lua_State* L)
 
 int Apex::Anim::Lua_Anim_Crossfade(lua_State* L)
 {
-    Animator* animator = GetAnimator(L, 1);
+    Animator* animator = Comp::GetComponent<Animator>(L, 1);
 
     if (!animator)
     {

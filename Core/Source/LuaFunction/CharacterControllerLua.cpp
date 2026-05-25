@@ -1,6 +1,7 @@
 #include "LuaFunction/CharacterControllerLua.h"
 #include "LuaFunction/HierarchyFunc.h"
 #include "LuaFunction/Vector3Lua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "CharacterController.h"
 #include "AIController.h"
@@ -16,6 +17,8 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
 {
     lua.RegisterFunction("GetCharacterController_Internal", Apex::Controller::Lua_GetCharacterController);
     lua.RegisterFunction("GetAIController_Internal", Apex::Controller::Lua_GetAIController);
+    lua.RegisterFunction("CC_TP_Internal", Apex::Controller::Lua_CC_TP);
+    lua.RegisterFunction("CC_TPToTarget_Internal", Apex::Controller::Lua_CC_TPToTarget);
     lua.RegisterFunction("CC_Move_Internal", Apex::Controller::Lua_CC_Move);
     lua.RegisterFunction("CC_Jump_Internal", Apex::Controller::Lua_CC_Jump);
     lua.RegisterFunction("CC_GetVelocity_Internal", Apex::Controller::Lua_CC_GetVelocity);
@@ -25,25 +28,39 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("AIC_SetTarget_Internal", Apex::Controller::Lua_AIC_SetTarget);
 }
 
-CharacterController* Apex::Controller::GetCC(lua_State* L, int index)
+int Apex::Controller::Lua_CC_TP(lua_State* L)
 {
-    lua_getfield(L, index, "__object");
-    CharacterController* cc = static_cast<CharacterController*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return cc;
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    LuaVector3* pos = CheckVector3(L, 2);
+
+    cc->Teleport(pos->m_value);
+
+    return 0;
 }
 
-AIController* Apex::Controller::GetAIC(lua_State* L, int index)
+int Apex::Controller::Lua_CC_TPToTarget(lua_State* L)
 {
-    lua_getfield(L, index, "__object");
-    AIController* cc = static_cast<AIController*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return cc;
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    Object* obj = GetObject(L, 2);
+    if (!obj)
+        return 0;
+
+    cc->Teleport(obj->GetGlobalTransform());
+
+    return 0;
 }
 
 int Apex::Controller::Lua_CC_Move(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc)
         return 0;
@@ -57,7 +74,7 @@ int Apex::Controller::Lua_CC_Move(lua_State* L)
 
 int Apex::Controller::Lua_CC_Jump(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc)
         return 0;
@@ -69,7 +86,7 @@ int Apex::Controller::Lua_CC_Jump(lua_State* L)
 
 int Apex::Controller::Lua_CC_GetVelocity(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc) return 0;
 
@@ -80,7 +97,7 @@ int Apex::Controller::Lua_CC_GetVelocity(lua_State* L)
 
 int Apex::Controller::Lua_CC_GetVerticalVelocity(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc) return 0;
 
@@ -91,7 +108,7 @@ int Apex::Controller::Lua_CC_GetVerticalVelocity(lua_State* L)
 
 int Apex::Controller::Lua_CC_IsGrounded(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc) return 0;
 
@@ -102,7 +119,7 @@ int Apex::Controller::Lua_CC_IsGrounded(lua_State* L)
 
 int Apex::Controller::Lua_CC_IsInWater(lua_State* L)
 {
-    CharacterController* cc = GetCC(L, 1);
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
 
     if (!cc) return 0;
 
@@ -113,7 +130,7 @@ int Apex::Controller::Lua_CC_IsInWater(lua_State* L)
 
 int Apex::Controller::Lua_AIC_SetTarget(lua_State* L)
 {
-    AIController* AI = GetAIC(L, 1);
+    AIController* AI = Comp::GetComponent<AIController>(L, 1);
     if (!AI)
         return 0;
 

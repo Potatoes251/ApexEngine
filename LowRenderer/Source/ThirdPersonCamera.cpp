@@ -69,6 +69,12 @@ std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 	return var;
 }
 
+void ThirdPersonCamera::Teleport(LibMath::Vector3 pos)
+{
+	Camera::Teleport(pos);
+	m_target = pos;
+}
+
 void ThirdPersonCamera::OnLateUpdate(float deltatime_s)
 {
 	Object* owner = GetOwner();

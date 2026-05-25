@@ -64,6 +64,7 @@ namespace Apex::Rendering
 		void DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) override;
 		void SetUniformInt(RHIShaderHandle shader, const std::string_view& name, int value) override;
 		void SetUniformFloat(RHIShaderHandle shader, const std::string_view& name, float value) override;
+		void SetUniformFloatArray(RHIShaderHandle shader, const std::string_view& name, const float& value, int count) override;
 		void SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec) override;
 		void SetUniformVec4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector4& vec) override;
 		void SetUniformMat4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix) override;

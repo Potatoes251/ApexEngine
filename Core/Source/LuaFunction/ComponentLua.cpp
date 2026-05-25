@@ -9,14 +9,7 @@ using namespace Apex::Data;
 void Apex::Comp::RegisterLua(Scripting::LuaManager& lua)
 {
     lua.RegisterFunction("GetOwner_Internal", Apex::Comp::Lua_GetOwner);
-}
-
-Apex::Component* Apex::Comp::GetComponent(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    Component* cc = static_cast<Component*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return cc;
+    lua.RegisterFunction("SetEnabled_Internal", Apex::Comp::Lua_SetEnabled);
 }
 
 void Apex::Comp::PushLuaObject(lua_State* L, Object* obj)
@@ -46,10 +39,21 @@ void Apex::Comp::PushLuaObject(lua_State* L, Object* obj)
 
 int Apex::Comp::Lua_GetOwner(lua_State* L)
 {
-    Component* comp = GetComponent(L, 1);
+    Component* comp = GetComponent<Component>(L, 1);
     if (!comp) return 0;
 
     Object* owner = comp->GetOwner();
     PushLuaObject(L, owner);
     return 1;
+}
+
+int Apex::Comp::Lua_SetEnabled(lua_State* L)
+{
+    Component* comp = GetComponent<Component>(L, 1);
+    if (!comp) return 0;
+
+    bool enabled = lua_toboolean(L, 2);
+
+    comp->SetEnabled(enabled);
+    return 0;
 }

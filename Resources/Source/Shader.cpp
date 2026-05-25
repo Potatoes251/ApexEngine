@@ -52,6 +52,11 @@ void Shader::SetUniform(std::string_view const& name, float value)
 	m_rhi->SetUniformFloat(m_shader, name, value);
 }
 
+void Shader::SetUniform(std::string_view const& name, const float& value, int count)
+{
+	m_rhi->SetUniformFloatArray(m_shader, name, value, count);
+}
+
 void Shader::SetUniform(std::string_view const& name, LibMath::Vector3 const& value)
 {
 	m_rhi->SetUniformVec3(m_shader, name, value);

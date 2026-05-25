@@ -16,13 +16,13 @@ function Player:New()
     anim = nil,
     hud = nil,
     -- variables
-    coinCount = 0;
+    coinCount = 0,
     wasGrounded = false, 
     wasInWater = false, 
     accumulatedTime = 0,
     smoothBlend = 0,
     }
-    setmetatable(instance, { __index = Player })
+    setmetatable(instance, { __index = self })
     return instance
 end
 
@@ -35,8 +35,7 @@ function Player:Start()
 
     self.hud = Cast("HUDController", "HudController")
     if self.hud == nil then
-        print("[Player] WARNING: HudController not found. Make sure an object"
-              .. " named 'HUDManager' has HudController.lua attached.")
+        Log("HudController not found. Make sure an object named 'HUDController' has HudController.lua attached.")
     end
 end
 
@@ -95,7 +94,7 @@ function Player:ProcessInput(dt)
             moveDir = moveDir + Vector3.New(0, y, 0)
         end
 
-        self.cc:Move(moveDir)
+        self.cc:Move(moveDir:Normalized())
     end
 
     local speed     = self.cc:GetVelocity()
@@ -109,7 +108,6 @@ function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Coin") then
         self.coinCount = self.coinCount + 1
-
         if self.hud ~= nil then
             self.hud:AddScore(1)
         end
@@ -122,8 +120,12 @@ function Player:OnTriggerEnter(col)
     end
 end
 
-function Player:GetCoinCount()
-    return self.coinCount
+function Player:StopAnim()
+    self.anim:Play("Idle")
+end
+
+function Player:StartAnim()
+    self.anim:StartBlend("Idle", "Walking", 0, true)
 end
 
 return Player
