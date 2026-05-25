@@ -104,6 +104,9 @@ namespace Apex::Editor
             m_gui.get(),
             this
         );
+
+        LoadCameraSettings();
+
         m_viewport->SetHierarchy(m_hierarchy.get());
         m_hierarchy->SetViewport(m_viewport.get());
 
@@ -181,6 +184,17 @@ namespace Apex::Editor
                 }
             });
 
+        m_window->SetScrollCallback([&](double /*xoffset*/, double yoffset)
+            {
+                if (m_editorState != EditorState::Play
+                    && m_viewport->IsFocus()
+                    && InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right))
+                {
+                    m_viewport->GetCamera().ProcessScroll(yoffset);
+                    return;
+                }
+            });
+
         m_window->MakeContextCurrent();
 
         m_contentBrowser->SetOnAssetLoad([this](const AssetEntry& entry)
@@ -225,7 +239,7 @@ namespace Apex::Editor
                     break;
                 }
             });
-
+        
         return true;
     }
 
@@ -378,6 +392,8 @@ namespace Apex::Editor
 
     void Editor::Shutdown()
     {
+        SaveUserSettings();
+
         m_textureEditors.clear();
         m_meshViewers.clear();
         m_soundPlayers.clear();
@@ -879,19 +895,21 @@ namespace Apex::Editor
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
         }
 
-        // Scene order manifest
+        // Default save file
+        if (!scenePaths.empty())
         {
-            fs::path manifestPath = outputDir / "Assets" / "Scenes" / "build_scenes.json";
-            fs::create_directories(manifestPath.parent_path(), ec);
-            std::ofstream manifest(manifestPath);
-            manifest << "{\n  \"scenes\": [\n";
-            for (size_t i = 0; i < scenePaths.size(); ++i)
+            fs::path savePath = outputDir / "Saves/slot_0.sav";
+
+            fs::create_directories(savePath.parent_path(), ec);
+
+            std::ofstream saveFile(savePath);
+
+            if (saveFile.is_open())
             {
-                manifest << "    \"" << scenePaths[i] << "\"";
-                if (i + 1 < scenePaths.size()) manifest << ",";
-                manifest << "\n";
+                saveFile << "{\n";
+                saveFile << "    \"scene\": \"" << scenePaths[0] << "\"\n";
+                saveFile << "}\n";
             }
-            manifest << "  ]\n}\n";
         }
 
         // Collect all asset paths referenced by the selected scenes
@@ -1049,5 +1067,125 @@ namespace Apex::Editor
             m_componentsViewer->SetSelectedObject(nullptr);
         if (m_viewport)
             m_viewport->SelectObject(nullptr, false);
+    }
+
+    void Editor::LoadCameraSettings()
+    {
+        std::ifstream file(m_app->GetPrefsPath());
+
+        if (!file.is_open())
+            return;
+
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            if (line.starts_with("CameraPosition="))
+            {
+                size_t start = line.find('{');
+                size_t end = line.find('}');
+
+                if (start != std::string::npos && end != std::string::npos)
+                {
+                    std::string values = line.substr(start + 1, end - start - 1);
+
+                    float x, y, z;
+
+                    if (sscanf_s(values.c_str(), "%ff, %ff, %ff", &x, &y, &z) == 3)
+                        m_viewport->GetCamera().SetPosition({ x, y, z });
+                }
+            }
+
+            else if (line.starts_with("CameraSpeed="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+
+                    float speed;
+
+                    if (sscanf_s(value.c_str(), "%ff", &speed) == 1)
+                        m_viewport->GetCamera().SetSpeed(speed);
+                }
+            }
+
+            else if (line.starts_with("CameraYaw="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+                    float yaw;
+                    if (sscanf_s(value.c_str(), "%ff", &yaw) == 1)
+                        m_viewport->GetCamera().SetOrientation(
+                            m_viewport->GetCamera().GetPitch(), LibMath::Degree(yaw));
+                }
+            }
+            else if (line.starts_with("CameraPitch="))
+            {
+                size_t equal = line.find('=');
+                size_t semicolon = line.find(';');
+                if (equal != std::string::npos)
+                {
+                    std::string value = line.substr(equal + 1, semicolon - equal - 1);
+                    float pitch;
+                    if (sscanf_s(value.c_str(), "%ff", &pitch) == 1)
+                        m_viewport->GetCamera().SetOrientation(
+                            LibMath::Degree(pitch), m_viewport->GetCamera().GetYaw());
+                }
+            }
+        }
+    }
+
+    void Editor::SaveUserSettings()
+    {
+        std::filesystem::create_directories("Editor");
+
+        // Read existing file
+        std::vector<std::string> lines;
+        {
+            std::ifstream inputFile(m_app->GetPrefsPath());
+            std::string line;
+            while (std::getline(inputFile, line))
+                lines.push_back(line);
+        }
+
+        // Helper: update a line in-place, or append it if missing
+        auto upsert = [&](std::string_view key, std::string value, bool prepend = false)
+            {
+                for (auto& l : lines)
+                {
+                    if (l.starts_with(key))
+                    {
+                        l = std::string(key) + value;
+                        return;
+                    }
+                }
+                // Not found — insert
+                if (prepend)
+                    lines.insert(lines.begin(), std::string(key) + value);
+                else
+                    lines.push_back(std::string(key) + value);
+            };
+
+        const Camera& cam = m_viewport->GetCamera();
+        LibMath::Vector3 pos = cam.GetPosition();
+
+        upsert(m_app->GetLastSceneKey(), m_app->GetScenePath(), true);
+        upsert("CameraPosition=", "{"
+            + std::to_string(pos[0]) + "f, "
+            + std::to_string(pos[1]) + "f, "
+            + std::to_string(pos[2]) + "f};");
+        upsert("CameraSpeed=", std::to_string(cam.GetSpeed()) + "f;");
+        upsert("CameraYaw=", std::to_string(cam.GetYaw().raw()) + "f;");
+        upsert("CameraPitch=", std::to_string(cam.GetPitch().raw()) + "f;");
+
+        std::ofstream outputFile(m_app->GetPrefsPath(), std::ios::trunc);
+        for (const std::string& l : lines)
+            outputFile << l << '\n';
     }
 }

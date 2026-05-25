@@ -31,6 +31,8 @@ namespace Apex::Rendering
 
 		void OnLateUpdate(float /*deltatime_s*/) override;
 
+		void SetOrientation(LibMath::Degree pitch, LibMath::Degree yaw);
+
 	private:
 		void UpdateVectors();
 		void UpdateMatrices() override;

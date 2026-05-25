@@ -15,6 +15,9 @@
 #include "Hud.h"
 #include "EditorIcon.h"
 
+#include "WaypointGraph.h"
+#include "Waypoint.h"
+
 using namespace Apex::Data;
 
 using namespace Apex::Editor;
@@ -44,6 +47,9 @@ void Viewport::UpdateCamera(Windowing::IWindow* window)
 	if (!m_isFocus || m_editor->GetEditorState() == EditorState::Play) return;
 
 	InputSystem& input = InputSystem::Get();
+
+	// dont move while using shortcut
+	if (input.IsKeyDown(Key::Ctrl)) return;
 
 	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
 		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
@@ -215,7 +221,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_flags |= UseIdAsColor;
-	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags |= IgnoreMaterial;
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
@@ -460,7 +466,8 @@ void Viewport::DrawUI()
 	DrawPlayBar();
 	if (m_editor->GetEditorState() == EditorState::Edit)
 		DrawRightToolbar();
-	
+
+	DrawCameraSpeed();
 }
 
 void Viewport::DrawGrid()
@@ -519,6 +526,16 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_showBuildPopup = true;
 			m_gui->OpenPopup("Build Game");
 		}
+		if (m_gui->Button("GenerateNavGraph"))
+		{
+			Scene* scene = m_editor->GetApp()->GetScene();
+			std::filesystem::path path{ m_editor->GetApp()->GetScenePath() };
+			path.replace_extension(".nav");
+			std::vector<Pathfinding::NavGenVolume*> navVol = scene->GetComponents<Pathfinding::NavGenVolume>();
+			if (!navVol.empty())
+				scene->GetGraph()->GenerateGraph(path.string(), scene->GetPhysic(), navVol[0]);
+		}
+
 		m_gui->PopFont();
 		drawBar(1); // only Play
 		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
@@ -615,6 +632,66 @@ void Apex::Editor::Viewport::DrawRightToolbar()
 	curY += PAD * 5.f; 
 
 	DrawSnapButtons(BUTTON, PAD, rightX, curY, ROUND);
+}
+
+void Apex::Editor::Viewport::DrawCameraSpeed()
+{
+	if (!InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right) ||
+		m_editor->GetEditorState() == EditorState::Play)
+		return;
+
+	constexpr float PAD = 4.f;
+	constexpr float HEIGHT = 36.f;
+	constexpr float ROUND = HEIGHT * 0.5f;
+
+	float speed = m_camera.GetSpeed();
+
+	char buf[32];
+	snprintf(buf, sizeof(buf), "Speed: %.1f", speed);
+
+	// Position
+	LibMath::Vector2 pos =
+	{
+		m_panelPos[0] + 5.f,
+		m_panelPos[1] + 78.f
+	};
+
+	float backgroundWidth = 110.f;
+
+	// Add 10.f for every extra digit after the first.
+	// 0-9   -> 110.f
+	// 10-99 -> 120.f
+	// 100+  -> 130.f
+
+	float absSpeed = std::abs(speed);
+
+	while (absSpeed >= 10.f)
+	{
+		backgroundWidth += 10.f;
+		absSpeed /= 10.f;
+	}
+
+	// Background size
+	LibMath::Vector2 size =
+	{
+		backgroundWidth,
+		HEIGHT
+	};
+
+	// Draw pill background
+	DrawPillGroup(pos, size, ROUND);
+
+	// Draw text inside
+	m_gui->PushFont(FontID::Default);
+
+	m_gui->SetCursorPos({
+		pos[0] + PAD * 3.f,
+		pos[1] + PAD * 1.5f
+		});
+
+	m_gui->Text(buf);
+
+	m_gui->PopFont();
 }
 
 void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round)

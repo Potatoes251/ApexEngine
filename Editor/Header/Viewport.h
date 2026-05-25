@@ -76,6 +76,7 @@ namespace Apex::Editor
 
 		void				DrawPlayBar();
 		void				DrawRightToolbar();
+		void				DrawCameraSpeed();
 
 		void				DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round);
 

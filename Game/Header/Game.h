@@ -23,6 +23,10 @@ namespace Apex::Game
 
         void Render();
 
+        void SaveGame();
+        void SaveCurrentGame(int slot);
+        void LoadSavedGame(int slot);
+
         Apex::Windowing::IWindow* GetWindow() { return m_window.get(); }
 
 	private:

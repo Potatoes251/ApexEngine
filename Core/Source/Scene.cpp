@@ -15,6 +15,8 @@
 #include "Lighting/Lights.h"
 #include "CharacterController.h"
 
+#include "Waypoint.h"
+
 #include "Log.h"
 
 #include <fstream>
@@ -31,6 +33,8 @@ namespace Apex::Rendering
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
+		copy->m_graph = m_graph;
+		copy->m_shader = m_shader;
 
 		for (const auto& obj : m_objects)
 		{
@@ -258,9 +262,15 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
+		if (!passInfo.m_shader.IsReady())
+		{
+			if (!m_shader.IsReady()) return;
+			passInfo.m_shader = m_shader;
+		}
+		passInfo.m_shader->Use();
+
 		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())
 		{
-			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)
@@ -279,6 +289,7 @@ namespace Apex::Rendering
 				dr.AddBox(vol->GetOwner()->GetGlobalPosition(), {}, vol->GetHalfExtents());
 			}
 			m_physics.DrawColliders();
+			m_graph.DebugRender();
 		}
 	}
 

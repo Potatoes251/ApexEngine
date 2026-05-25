@@ -1,9 +1,19 @@
+local Vector3 = require("Vector3")
+
 local Object = {}
 
 function Object:New()
     local instance = {}
     setmetatable(instance, { __index = self })
     return instance
+end
+
+function Object:SetEnabled(enabled) -- enable/disable the script
+    SetEnabled_Internal(self, enabled)
+end
+
+function Object:GetPosition()
+    return Vector3.New(GetPosition_Internal(self))
 end
 
 function Object:AddChild(child)
@@ -32,6 +42,10 @@ end
 
 function Object:Destroy()
     return Destroy_Internal(self)
+end
+
+function Object:DestroyCollectible()
+    return DestroyCollectible_Internal(self)
 end
 
 return Object

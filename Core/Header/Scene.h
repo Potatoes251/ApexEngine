@@ -12,6 +12,8 @@
 
 #include "Skybox.h"
 
+#include "WaypointGraph.h"
+
 #include "Lighting/VisibleLights.h"
 
 #include "LibMath/Matrix/Matrix4.h"
@@ -59,10 +61,13 @@ namespace Apex::Rendering
 
 		Camera* GetMainCamera() const { return m_mainCamera; }
 		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
+		void	SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
+		Resources::ResourceHandle<Shader>	GetShader() const { return m_shader; }
 
 		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+		Pathfinding::WaypointGraph* GetGraph() { return &m_graph; }
 
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
@@ -71,8 +76,10 @@ namespace Apex::Rendering
 		void DestroyObject(Apex::Data::Object* obj);
 
 		Physic::PhysicSystem m_physics;
+		Pathfinding::WaypointGraph m_graph;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
+		Resources::ResourceHandle<Shader> m_shader;
 		std::unique_ptr<Skybox> m_skybox;
 
 		Camera* m_mainCamera = nullptr;

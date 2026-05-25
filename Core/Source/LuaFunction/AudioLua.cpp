@@ -1,4 +1,5 @@
 #include "LuaFunction/AudioLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "LuaFunction/Vector3Lua.h"
 
@@ -15,17 +16,9 @@ void Apex::Audio::RegisterLua(Scripting::LuaManager& lua)
 	lua.RegisterFunction("AudioComp_PlayAt_Internal", Apex::Audio::Lua_AudioComp_PlayAt);
 }
 
-Apex::Audio::AudioComponent* Apex::Audio::GetAudioComponent(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    AudioComponent* audio = static_cast<AudioComponent*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return audio;
-}
-
 int Apex::Audio::Lua_AudioComp_Play(lua_State* L)
 {
-    AudioComponent* comp = GetAudioComponent(L, 1);
+    AudioComponent* comp = Comp::GetComponent<AudioComponent>(L, 1);
 
     if (comp) comp->Play();
 
@@ -34,7 +27,7 @@ int Apex::Audio::Lua_AudioComp_Play(lua_State* L)
 
 int Apex::Audio::Lua_AudioComp_Play3D(lua_State* L)
 {
-    AudioComponent* comp = GetAudioComponent(L, 1);
+    AudioComponent* comp = Comp::GetComponent<AudioComponent>(L, 1);
 
     if (comp) comp->Play3D();
 
@@ -43,7 +36,7 @@ int Apex::Audio::Lua_AudioComp_Play3D(lua_State* L)
 
 int Apex::Audio::Lua_AudioComp_PlayAt(lua_State* L)
 {
-    AudioComponent* comp = GetAudioComponent(L, 1);
+    AudioComponent* comp = Comp::GetComponent<AudioComponent>(L, 1);
 
     Vector3::LuaVector3* dir = Vector3::CheckVector3(L, 2);
 

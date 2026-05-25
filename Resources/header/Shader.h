@@ -22,6 +22,7 @@ public:
 
 	void SetUniform(std::string_view const& name, int value);
 	void SetUniform(std::string_view const& name, float value);
+	void SetUniform(std::string_view const& name, const float& value, int count);
 	void SetUniform(std::string_view const& name, LibMath::Vector3 const& value);
 	void SetUniform(std::string_view const& name, LibMath::Matrix4 const& value);
 	void SetUniform(std::string_view const& name, LibMath::Matrix4 const& value, int count);

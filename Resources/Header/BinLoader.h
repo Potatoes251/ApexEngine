@@ -30,6 +30,16 @@ public:
 	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
 	bool Export(std::string path, Mesh const& mesh);
 
+	static inline void WriteString(std::ofstream& file, std::string const& str);
+	static inline void Write32Bits(std::ofstream& file, uint32_t const& val);
+
+	static inline bool ReadString(std::ifstream& file, std::string& str);
+	static inline bool Read32Bits(std::ifstream& file, uint32_t& val);
+
+	static constexpr bool IsBigEndian()
+	{
+		return std::endian::native == std::endian::big;
+	}
 private:
 	// read
 
@@ -40,9 +50,6 @@ private:
 	bool ReadAnimation(Mesh& mesh, std::filesystem::path const& path);
 	bool ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream& file);
 
-	inline bool ReadString(std::ifstream& file, std::string& str);
-	inline bool Read32Bits(std::ifstream& file, uint32_t& val);
-
 	// write
 
 	void WriteHeader(std::ofstream& file);
@@ -51,15 +58,6 @@ private:
 	void WriteBoneMap(Mesh const& mesh, std::ofstream& file);
 	bool WriteAnimations(Mesh const& mesh, std::filesystem::path const& path);
 	void WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::ofstream& file);
-
-	inline void WriteString(std::ofstream& file, std::string const& str);
-	inline void Write32Bits(std::ofstream& file, uint32_t const& val);
-
-
-	static constexpr bool IsBigEndian()
-	{
-		return std::endian::native == std::endian::big;
-	}
 };
 
 #endif // !BIN_LOADER

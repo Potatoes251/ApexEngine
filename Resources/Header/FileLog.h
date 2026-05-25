@@ -4,6 +4,7 @@
 #include "ISink.h"
 
 #include <fstream>
+#include <mutex>
 
 namespace Apex
 {
@@ -23,6 +24,7 @@ namespace Apex
 		static inline const std::string m_oldLogDir = "Logs/Archive";
 		static constexpr int MAX_LOGS = 20;
 
+		std::mutex m_logMutex;
 		std::ofstream m_currentLog;
 		std::ofstream m_latestLog;
 	};

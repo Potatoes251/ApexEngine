@@ -16,8 +16,8 @@ namespace Apex::Data
 	int Lua_HasTag(lua_State* L);
 	int Lua_GetTags(lua_State* L);
 	int Lua_Destroy(lua_State* L);
+	int Lua_DestroyCollectible(lua_State* L);
 	
 }
 
 #endif // !OBJECT_LUA
-

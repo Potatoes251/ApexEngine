@@ -84,8 +84,8 @@ void FirstPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 
 void FirstPersonCamera::ProcessScroll(double yoffset)
 {
-	m_fov -= LibMath::Degree((float)yoffset);
-	m_fov = LibMath::Degree(LibMath::clamp(m_fov.raw(), 1.f, 180.f));
+	m_speed *= (yoffset > 0) ? 1.1f : (1.f / 1.1f);
+	m_speed = LibMath::clamp(m_speed, 0.5f, m_maxSpeed);
 }
 
 void FirstPersonCamera::Serialize(std::ostream& out) const
@@ -99,4 +99,11 @@ void FirstPersonCamera::OnLateUpdate(float /*deltatime_s*/)
 	if (!owner) return;
 
 	SetPosition(owner->GetGlobalTransform().getPosition());
+}
+
+void FirstPersonCamera::SetOrientation(LibMath::Degree pitch, LibMath::Degree yaw)
+{
+	m_pitch = LibMath::Degree(LibMath::clamp(pitch.raw(), -89.f, 89.f));
+	m_yaw = yaw;
+	UpdateVectors();
 }

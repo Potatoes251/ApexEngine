@@ -71,7 +71,7 @@
       "CharacterController": {
         "enabled": true,
         "groundedDistance": 1.000000,
-        "speed": 1.000000,
+        "speed": 5.000000,
         "rotationSpeed": 1.000000,
         "density": 950.000000
       },
@@ -89,7 +89,7 @@
     }
   },
   {
-    "id": 4,
+    "id": 35,
     "parent": null,
     "name": "Painting",
     "position": [-5.307778,3.197713,8.522598],
@@ -117,7 +117,7 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
-          "targetScene": "",
+          "targetScene": "Assets/Scenes/level_1.level",
           "loadTime": 1.000000
         }
       }

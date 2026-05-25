@@ -57,6 +57,7 @@ Apex::Application::Application(IWindow* window, IGUI* gui)
 {
     assert(m_instance == nullptr && "Only one Application instance allowed");
     m_instance = this;
+    m_saveManager = std::make_unique<Save::SaveManager>("Saves/");
 
     InitLog();
     InitWindow(window);
@@ -95,6 +96,10 @@ void Apex::Application::InitWindow(IWindow* window)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
+
+            if (key == Key::O && down)
+                if (m_onSaveRequested)
+                    m_onSaveRequested();
         });
 }
 
@@ -157,17 +162,19 @@ void Apex::Application::LoadScene(bool isBuild, bool startScene)
 
         EnsureDefaultScene(scenePath);
     }
-
+    
     LoadScene(scenePath, startScene);
-
+    
     m_scenePath = scenePath;
 }
 
 void Apex::Application::LoadScene(const std::string& path, bool startScene)
 {
+    m_scenePath = path;
+
     // Reset scene
     m_scene = std::make_unique<Scene>();
-
+    
     // Skybox
     auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
@@ -179,6 +186,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
         "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     m_scene->SetSkybox(std::make_unique<Skybox>(cubemap, cube, shader));
+    m_scene->SetShader(m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag", true));
 
     // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
@@ -196,11 +204,9 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
         if (body && collider)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
-
+    
     if (startScene)
         m_scene->Start();
-    else
-        SaveLastScene(path);
 }
 
 void Apex::Application::Tick()
@@ -254,7 +260,7 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 
     m_lightManager->UploadToGpu(visibleLights);
     m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    m_shadowManager->BindShadowMaps();
+    m_shadowManager->BindShadowMaps(m_scene->GetShader());
 
     if (pass.m_target != RHI_INVALID)
     {
@@ -302,14 +308,6 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
     LOG_INFO("Created default scene at: {}", path);
 }
 
-void Apex::Application::SaveLastScene(const std::string& path)
-{
-    std::filesystem::create_directories("Editor");
-    std::ofstream file(m_prefsPath);
-    if (file.is_open())
-        file << m_lastSceneKey << path << "\n";
-}
-
 std::string Apex::Application::LoadLastScene() const
 {
     std::ifstream file(m_prefsPath);
@@ -324,26 +322,50 @@ std::string Apex::Application::LoadLastScene() const
 
 std::string Apex::Application::LoadBuildStartScene() const
 {
-    std::ifstream file(m_buildScenesPath);
-    if (!file.is_open()) return "";
+    std::ifstream file(m_saveFilePath);
+    if (!file.is_open())
+        return "";
 
-    std::string content((std::istreambuf_iterator<char>(file)),
+    std::string content(
+        (std::istreambuf_iterator<char>(file)),
         std::istreambuf_iterator<char>());
 
-    // Find "scenes" key
-    size_t scenesPos = content.find("\"scenes\"");
-    if (scenesPos == std::string::npos) return "";
+    size_t scenePos = content.find("\"scene\"");
+    if (scenePos == std::string::npos)
+        return "";
 
-    // Find the opening bracket of the array
-    size_t arrayStart = content.find('[', scenesPos);
-    if (arrayStart == std::string::npos) return "";
+    // Find ':' after "scene"
+    size_t colonPos = content.find(':', scenePos);
+    if (colonPos == std::string::npos)
+        return "";
 
-    // Find the first quoted string inside the array
-    size_t firstQuote = content.find('"', arrayStart + 1);
-    if (firstQuote == std::string::npos) return "";
+    // Find opening quote of value
+    size_t firstQuote = content.find('"', colonPos);
+    if (firstQuote == std::string::npos)
+        return "";
 
+    // Find closing quote
     size_t secondQuote = content.find('"', firstQuote + 1);
-    if (secondQuote == std::string::npos) return "";
+    if (secondQuote == std::string::npos)
+        return "";
 
-    return content.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+    return content.substr(firstQuote + 1,
+        secondQuote - firstQuote - 1);
+}
+
+void Apex::Application::AddCollectedObject(size_t id)
+{
+    // évite les doublons
+    if (std::find(
+        m_collectedObjects.begin(),
+        m_collectedObjects.end(),
+        id) == m_collectedObjects.end())
+    {
+        m_collectedObjects.push_back(id);
+    }
+}
+
+const std::vector<size_t>& Apex::Application::GetCollectedObjects() const
+{
+    return m_collectedObjects;
 }

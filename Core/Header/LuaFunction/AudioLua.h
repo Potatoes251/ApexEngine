@@ -12,8 +12,6 @@ namespace Apex::Audio
 
 	void RegisterLua(Scripting::LuaManager& lua);
 
-    AudioComponent* GetAudioComponent(lua_State* L, int index);
-
     int Lua_AudioComp_Play(lua_State* L);
     int Lua_AudioComp_Play3D(lua_State* L);
     int Lua_AudioComp_PlayAt(lua_State* L);
