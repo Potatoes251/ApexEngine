@@ -254,7 +254,7 @@ LibMath::Vector3 Viewport::GetAxis()
 
 	if (!m_localGizmo || !m_selectedObject) return axis;
 
-	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
+	return m_initialTransform.getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()

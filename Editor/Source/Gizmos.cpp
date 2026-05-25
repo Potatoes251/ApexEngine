@@ -537,7 +537,7 @@ void Gizmos::CreateThorus()
 
     for (int i = 0; i < ringSegment; ++i)
     {
-        for (int j = 0; j < ringSegment; ++j)
+        for (int j = 0; j < tubeSegment; ++j)
         {
             int a = i * (tubeSegment + 1) + j;
             int b = (i + 1) * (tubeSegment + 1) + j;
