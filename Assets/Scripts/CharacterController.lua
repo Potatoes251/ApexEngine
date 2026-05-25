@@ -54,22 +54,22 @@ end
 
 function CharacterController:AddImpulse(impulse)
     CC_AddImpulse_Internal(self, impulse)
-return
+end
 
 function CharacterController:SetVelocityX(x)
     CC_SetVelocityX_Internal(self, x)
-return
+end
 
 function CharacterController:SetVelocityY(y)
     CC_SetVelocityY_Internal(self, y)
-return
+end
 
 function CharacterController:SetVelocityZ(z)
     CC_SetVelocityZ_Internal(self, z)
-return
+end
 
 function CharacterController:SetVelocity(velocity)
     CC_SetVelocity_Internal(self, velocity)
-return
+end
 
 return CharacterController

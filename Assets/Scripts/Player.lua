@@ -22,9 +22,9 @@ function Player:New()
     smoothBlend = 0,
     jumpCombo = 0,
     jumpTimer = 0,
-    lungeUpwardForce = 3,
-    lungeForwardForce = 15,
-    groundPoundForce = 25
+    lungeUpwardForce = 0.2,
+    lungeForwardForce = 4,
+    groundPoundForce = 25,
     isGroundPounding = false,
     }
     setmetatable(instance, { __index = self })
@@ -55,7 +55,7 @@ function Player:FixedUpdate(dt)
     isInWater = self.cc:IsInWater()
 
     --jump
-    if (Input.IsKeyDown("Space") and isGrounded and not isInWater and not isGroundPounding) then
+    if (Input.IsKeyDown("Space") and isGrounded and not isInWater and not self.isGroundPounding) then
         if self.smoothBlend > 0.5 then
             self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
         else
@@ -85,19 +85,21 @@ function Player:FixedUpdate(dt)
     end
 
     --lunge
-    if (Input.IsKeyPressed("E") and not isGrounded and not isInWater and not isGroundPounding) then
+    if (Input.IsKeyDown("E") and not isGrounded and not isInWater and not self.isGroundPounding) then
         local forward = self.cam:GetFront()
         forward.y = 0
         forward = forward:Normalized()
+        forward.x = forward.x * self.lungeForwardForce
+        forward.z = forward.z * self.lungeForwardForce
 
-        self.cc:AddImpulse((forward * lungeForwardForce) + Vector3.New(0, lungeUpwardForce, 0))
+        self.cc:AddImpulse(forward + Vector3.New(0, self.lungeUpwardForce, 0))
     end
 
     --groundPound
-    if (Input.IsKeyPressed("Ctrl") and not isGrounded and not isInWater and not isGroundPounding) then
+    if (Input.IsKeyDown("Ctrl") and not isGrounded and not isInWater and not self.isGroundPounding) then
         self.isGroundPounding = true
         self.cc:SetVelocityX(0)
-        self.cc:SetVelocityY(-groundPoundForce)
+        self.cc:SetVelocityY(-self.groundPoundForce)
         self.cc:SetVelocityZ(0)
     end
 

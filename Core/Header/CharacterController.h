@@ -42,11 +42,11 @@ namespace Apex::Controller
 		void Teleport(LibMath::Transform const& newPos);
 		void Teleport(LibMath::Vector3 const& newPos);
 
-		void AddImpulse(LibMath::Vector3 const& impulse) { m_velocity += impulse; }
-		void SetVelocityX(float const& x) { m_velocity[0] = x; }
-		void SetVelocityY(float const& y) { m_velocity[1] = y; }
-		void SetVelocityZ(float const& z) { m_velocity[2] = z; }
-		void SetVelocity(LibMath::Vector3 const& newVelocity) { m_velocity = newVelocity; }
+		void AddImpulse(LibMath::Vector3 const& impulse) { m_moveInput += impulse; }
+		void SetVelocityX(float const& x) { m_moveInput[0] = x; }
+		void SetVelocityY(float const& y) { m_verticalVelocity = y; }
+		void SetVelocityZ(float const& z) { m_moveInput[2] = z; }
+		void SetVelocity(LibMath::Vector3 const& newVelocity) { m_moveInput = newVelocity; }
 
 		void Move(LibMath::Vector3 const& movement);
 		void Jump();
