@@ -37,7 +37,7 @@ function Player:New()
     invincibleTimer = 0,
     damageTimer = 0,
 
-    cointCount = 0,
+    coinCount = 0,
 
     }
     setmetatable(instance, { __index = self })
@@ -60,7 +60,6 @@ function Player:Start()
     self.spawnX = pos.x
     self.spawnY = pos.y
     self.spawnZ = pos.z
-    self.coinCount = 0
 end
 
 function Player:FixedUpdate(dt)
