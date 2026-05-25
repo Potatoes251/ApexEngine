@@ -27,7 +27,6 @@ namespace Apex::Editor
         void DrawPreviewAndHeader();
         void DrawTint();
         void DrawTextureList();
-        void DrawShaderSection();
         void SaveMaterial();
         void DrawTexture(Apex::Resources::ResourceHandle<Texture>* texture, int id);
         void DrawShaderPicker(std::string& out_shaderPath, bool& out_open, const std::string shaderType);
@@ -40,11 +39,7 @@ namespace Apex::Editor
         Apex::Resources::AssetPicker<Texture> m_texturePicker;
 
 		std::string m_computeShader;
-		std::string m_vertexShader;
-		std::string m_fragmentShader;
 
-		bool m_vertShadPickOpen = false;
-		bool m_fragShadPickOpen = false;
 		bool m_compShadPickOpen = false;
 		bool m_open = false;
 		bool m_wasReady = false;

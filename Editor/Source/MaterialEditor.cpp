@@ -14,8 +14,6 @@ void MaterialEditor::Open(std::string path)
 {
     m_open = true;
     m_wasReady = false;
-    m_vertexShader.clear();
-    m_fragmentShader.clear();
     m_currentMat = m_resourceManager->CreateAsync<Material>(path);
 }
 
@@ -23,8 +21,6 @@ void MaterialEditor::Close()
 {
     m_open = false;
     m_wasReady = false;
-    m_vertShadPickOpen = false;
-    m_fragShadPickOpen = false;
     m_currentMat = {};
 }
 
@@ -41,22 +37,9 @@ void MaterialEditor::Draw()
         return;
     }
     // first frame ready
-    if (!m_wasReady && m_currentMat->GetShader().IsReady())
+    if (!m_wasReady && m_currentMat->GetComputeShader().IsValid())
     {
-        std::string const& shaders = m_currentMat->GetShader()->GetPath();
-
-        if (!shaders.empty())
-        {
-            std::stringstream ss(shaders);
-
-            std::getline(ss, m_vertexShader, '|');
-            std::getline(ss, m_fragmentShader, '|');
-        }
-
-        if (m_currentMat->GetComputeShader().IsValid())
-        {
-            m_computeShader = m_currentMat->GetComputeShader()->GetPath();
-        }
+        m_computeShader = m_currentMat->GetComputeShader()->GetPath();
     }
 
     m_wasReady = true;
@@ -74,7 +57,8 @@ void MaterialEditor::Draw()
 
     DrawTint();
     DrawTextureList();
-    DrawShaderSection();
+    m_gui->Separator();
+    DrawShaderPicker(m_computeShader, m_compShadPickOpen, "Compute");
 
     m_texturePicker.Draw();
     m_gui->EndPanel();
@@ -137,20 +121,10 @@ void Apex::Editor::MaterialEditor::DrawTextureList()
         DrawTexture(&textures[i], i);
 }
 
-void Apex::Editor::MaterialEditor::DrawShaderSection()
-{
-    m_gui->Separator();
-    DrawShaderPicker(m_vertexShader, m_vertShadPickOpen, "Vertex");
-    DrawShaderPicker(m_fragmentShader, m_fragShadPickOpen, "Fragment");
-    DrawShaderPicker(m_computeShader, m_compShadPickOpen, "Compute");
-}
-
 void Apex::Editor::MaterialEditor::SaveMaterial()
 {
-    std::string shaderPath = m_vertexShader + '|' + m_fragmentShader;
-    if (!shaderPath.empty() && shaderPath != "|")
+    if (!m_computeShader.empty())
     {
-        m_currentMat->SetShader(m_resourceManager->CreateAsync<Shader>(shaderPath));
         m_currentMat->SetComputeShader(m_resourceManager->CreateAsync<ComputeShader>(m_computeShader));
     }
     m_currentMat->Save();

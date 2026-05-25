@@ -18,6 +18,7 @@
 #include "CharacterController.h"
 
 #include "Application.h"
+#include "Log.h"
 
 #include <fstream>
 #include <sstream>
@@ -32,16 +33,16 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
 {
     std::filesystem::path graphPath{ path };
     scene.GetGraph()->Load(graphPath.replace_extension(".nav").string());
-
+    
     std::ifstream file(path);
     assert(file && "Cannot open scene file");
-
+    
     std::stringstream buffer;
     buffer << file.rdbuf();
     std::string text = buffer.str();
 
     SerialParser parser(text);
-
+    
     parser.Expect('{');
 
     while (!parser.Peek('}'))
@@ -762,7 +763,7 @@ void SceneLoader::ParseAudioComponent(Data::Object* obj, SerialParser& parser)
 
     parser.ParseString();
     parser.Expect(':');
-    float channel = parser.ParseInt();
+    int channel = parser.ParseInt();
     parser.Expect(',');
 
     parser.ParseString();
@@ -792,6 +793,7 @@ void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser
     float genHeight = parser.ParseFloat();
 
     auto& comp = obj->AddComponent<Pathfinding::NavGenVolume>();
+    comp.SetEnabled(enabled);
     comp.m_genHeight = genHeight;
     comp.m_spacing = spacing;
 }

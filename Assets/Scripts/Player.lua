@@ -21,6 +21,7 @@ function Player:New()
     anim = nil,
     hud = nil,
     -- variables
+    coinCount = 0,
     wasGrounded = false, 
     wasInWater = false, 
     accumulatedTime = 0,
@@ -218,10 +219,12 @@ end
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Coin") then
+        self.coinCount = self.coinCount + 1
         if self.hud ~= nil then
             self:UpdateScore(1)
         end
-        obj:Destroy()
+
+        obj:DestroyCollectible()
     elseif obj:HasTag("Goomba") then
         if self.cc:GetVerticalVelocity() < 0 then
             obj:Destroy()

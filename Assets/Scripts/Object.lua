@@ -48,4 +48,8 @@ function Object:Destroy()
     return Destroy_Internal(self)
 end
 
+function Object:DestroyCollectible()
+    return DestroyCollectible_Internal(self)
+end
+
 return Object

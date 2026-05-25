@@ -512,6 +512,12 @@ namespace Apex::Rendering
 		glUniform1f(location, value);
 	}
 
+	void OpenGLRHI::SetUniformFloatArray(RHIShaderHandle shader, const std::string_view& name, const float& value, int count)
+	{
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
+		glUniform1fv(location, count, &value);
+	}
+
 	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec)
 	{
 		GLint location = glGetUniformLocation(GetShader(shader), name.data());

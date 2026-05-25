@@ -85,9 +85,6 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 		return;
 	}
 
-	std::vector<HitResult> hits;
-	HitResult hit;
-
 	LibMath::Vector3 remaining = displacement;
 	constexpr int MAX_ITERATIONS = 3;
 

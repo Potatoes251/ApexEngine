@@ -10,12 +10,13 @@ enum class ResourceState
     Failed      // couldn't be loaded
 };
 
+#include <atomic>
+//#include <string>
+
 #include "RHI.h"
 
-#include <atomic>
-
-//namespace Apex::Rendering { class IRHI; }
 namespace Apex::Resources { class ResourceManager; }
+//namespace Apex::Rendering { class IRHI; }
 
 class IResource
 {

@@ -2,6 +2,8 @@
 
 #include "Object.h"
 
+#include "Application.h"
+
 using namespace Apex::Data;
 
 
@@ -12,6 +14,7 @@ void Apex::Data::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("GetTags_Internal", Apex::Data::Lua_GetTags);
     lua.RegisterFunction("Destroy_Internal", Apex::Data::Lua_Destroy);
 	lua.RegisterFunction("GetName_Internal", Apex::Data::Lua_GetName);
+    lua.RegisterFunction("DestroyCollectible_Internal", Apex::Data::Lua_DestroyCollectible);
 }
 
 
@@ -84,6 +87,20 @@ int Apex::Data::Lua_Destroy(lua_State* L)
     Object* obj = GetObject(L, 1);
 
     if (!obj) return 0;
+
+    obj->Destroy();
+
+    return 0;
+}
+
+int Apex::Data::Lua_DestroyCollectible(lua_State* L)
+{
+    Object* obj = GetObject(L, 1);
+
+    if (!obj)
+        return 0;
+
+    Apex::Application::Get()->AddCollectedObject(obj->GetId());
 
     obj->Destroy();
 
