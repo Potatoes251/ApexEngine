@@ -30,11 +30,11 @@ public:
 	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
 	bool Export(std::string path, Mesh const& mesh);
 
-	static inline void WriteString(std::ofstream& file, std::string const& str);
-	static inline void Write32Bits(std::ofstream& file, uint32_t const& val);
+	static void WriteString(std::ofstream& file, std::string const& str);
+	static void Write32Bits(std::ofstream& file, uint32_t const& val);
 
-	static inline bool ReadString(std::ifstream& file, std::string& str);
-	static inline bool Read32Bits(std::ifstream& file, uint32_t& val);
+	static bool ReadString(std::ifstream& file, std::string& str);
+	static bool Read32Bits(std::ifstream& file, uint32_t& val);
 
 	static constexpr bool IsBigEndian()
 	{
