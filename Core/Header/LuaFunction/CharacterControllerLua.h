@@ -23,6 +23,12 @@ namespace Apex::Controller
 
 	int Lua_GetCharacterController(lua_State* L);
 	int Lua_GetAIController(lua_State* L);
+
+	int Lua_CC_AddImpulse(lua_State* L);
+	int Lua_CC_SetVelocityX(lua_State* L);
+	int Lua_CC_SetVelocityY(lua_State* L);
+	int Lua_CC_SetVelocityZ(lua_State* L);
+	int Lua_CC_SetVelocity(lua_State* L);
 }
 
 #endif // !CHARACTER_CONTROLLER_LUA

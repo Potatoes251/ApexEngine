@@ -20,6 +20,12 @@ function Player:New()
     wasInWater = false, 
     accumulatedTime = 0,
     smoothBlend = 0,
+    jumpCombo = 0,
+    jumpTimer = 0,
+    lungeUpwardForce = 3,
+    lungeForwardForce = 15,
+    groundPoundForce = 25
+    isGroundPounding = false,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -41,24 +47,62 @@ end
 function Player:FixedUpdate(dt)
     self:ProcessInput(dt)
 
+    self.jumpTimer = self.jumpTimer - dt
+
     self.anim:SetBlendRatio(self.smoothBlend)
 
     isGrounded = self.cc:IsGrounded()
     isInWater = self.cc:IsInWater()
 
-    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
+    --jump
+    if (Input.IsKeyDown("Space") and isGrounded and not isInWater and not isGroundPounding) then
         if self.smoothBlend > 0.5 then
             self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
         else
             self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
         end
-        self.cc:Jump()
+
+        if self.jumpTimer <= 0 then
+            self.jumpCombo = 0
+        end
+
+        self.jumpCombo = self.jumpCombo + 1
+        self.jumpTimer = 0.5
+
+        if self.jumpCombo == 1 then
+            self.cc:SetVelocityY(8)
+        elseif self.jumpCombo == 2 then
+            self.cc:SetVelocityY(11)
+        elseif self.jumpCombo == 3 then
+            self.cc:SetVelocityY(16)
+        end
     end
 
     if (not self.wasGrounded and isGrounded and not isInWater) or (self.wasInWater and not isInWater) then 
         self.anim:StartBlend("Idle", "Walking", 0, true)
     elseif not self.wasInWater and isInWater then
         self.anim:StartBlend("Idle", "Swimming", 0, true)
+    end
+
+    --lunge
+    if (Input.IsKeyPressed("E") and not isGrounded and not isInWater and not isGroundPounding) then
+        local forward = self.cam:GetFront()
+        forward.y = 0
+        forward = forward:Normalized()
+
+        self.cc:AddImpulse((forward * lungeForwardForce) + Vector3.New(0, lungeUpwardForce, 0))
+    end
+
+    --groundPound
+    if (Input.IsKeyPressed("Ctrl") and not isGrounded and not isInWater and not isGroundPounding) then
+        self.isGroundPounding = true
+        self.cc:SetVelocityX(0)
+        self.cc:SetVelocityY(-groundPoundForce)
+        self.cc:SetVelocityZ(0)
+    end
+
+    if (self.isGroundPounding and isGrounded) then
+        self.isGroundPounding = false
     end
 
     self.wasInWater = isInWater

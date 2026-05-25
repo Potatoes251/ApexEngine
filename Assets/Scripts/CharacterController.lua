@@ -52,4 +52,24 @@ function CharacterController:IsInWater()
     return CC_IsInWater_Internal(self)
 end
 
+function CharacterController:AddImpulse(impulse)
+    CC_AddImpulse_Internal(self, impulse)
+return
+
+function CharacterController:SetVelocityX(x)
+    CC_SetVelocityX_Internal(self, x)
+return
+
+function CharacterController:SetVelocityY(y)
+    CC_SetVelocityY_Internal(self, y)
+return
+
+function CharacterController:SetVelocityZ(z)
+    CC_SetVelocityZ_Internal(self, z)
+return
+
+function CharacterController:SetVelocity(velocity)
+    CC_SetVelocity_Internal(self, velocity)
+return
+
 return CharacterController
