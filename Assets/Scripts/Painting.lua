@@ -13,14 +13,14 @@ function Painting:New()
     audio = nil,
      -- variables
     accumulatedTime = 0,
-    loadTime = 1,
+    LoadTime = 1,
     startEffect = false,
-    targetScene = "",
+    TargetScene = "",
     }
 
     instance.__exposed = {
-        "targetScene",
-        "loadTime",
+        "TargetScene",
+        "LoadTime",
     }
 
     setmetatable(instance, { __index = self })
@@ -36,8 +36,8 @@ function Painting:Update(dt)
     if self.startEffect then
         self.accumulatedTime = self.accumulatedTime + dt
         self.mesh:SetUniform("uTime", self.accumulatedTime)
-        if self.accumulatedTime > self.loadTime then
-            LoadScene(self.targetScene)
+        if self.accumulatedTime > self.LoadTime then
+            LoadScene(self.TargetScene)
         end
 
     end
