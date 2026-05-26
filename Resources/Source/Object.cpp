@@ -197,10 +197,12 @@ void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 void Apex::Data::Object::SetName(std::string name)
 {
 	if (m_name != name)
+	{
 		UnregisterName(m_name);
-
-	m_name = name;
-	OnChanged();
+		RegisterName(name);
+		m_name = name;
+		OnChanged();
+	}
 }
 
 const Transform& Object::GetLocalTransform() const
@@ -424,8 +426,6 @@ std::string Object::GenerateUniqueName()
 
 		if (!m_usedNames.contains(candidate))
 			return candidate;
-
-		LOG_INFO_CAT("Object", candidate);
 
 		++index;
 	}
