@@ -119,7 +119,13 @@ namespace Apex::Data
 		static constexpr size_t INVALID_ID = std::numeric_limits<size_t>::max();
 
 	private:
+		static std::string GenerateUniqueName();
+
+		void RegisterName(const std::string& name);
+		void UnregisterName(const std::string& name);
+
 		static inline size_t m_nextId = 0;
+		static inline std::unordered_set<std::string> m_usedNames;
 
 		std::set<size_t> m_freeCompIds;
 		size_t m_nextCompId = 0;
