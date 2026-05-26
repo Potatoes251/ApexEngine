@@ -10,6 +10,7 @@ function BossFighter:New()
     -- component
     -- variables
     boss = nil,
+    player = nil,
     canAttack = false,
     attackTimer = 0,
     }
@@ -19,6 +20,7 @@ end
 
 function BossFighter:Start()
     self.boss = Cast("Bowser", "Bowser")
+    self.player = Cast("Player", "Player")
 end
 
 function BossFighter:Update(dt)
@@ -37,6 +39,8 @@ function BossFighter:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Tail") then
         self.canAttack = true
+    elseif obj:HasTag("Bowser") then
+        self.player:TakeDamage()
     end
 end
 

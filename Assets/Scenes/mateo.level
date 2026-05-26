@@ -286,9 +286,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [5.000000, 1.000000, 5.000000],
-        "isTrigger": true,
-        "material": null
+	"isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [5.000000, 1.000000, 5.000000]
       },
       "ScriptComponent": {
         "enabled": true,
