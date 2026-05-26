@@ -10,6 +10,8 @@ function BossFighter:New()
     -- component
     -- variables
     boss = nil,
+    canAttack = false,
+    attackTimer = 0,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -20,14 +22,28 @@ function BossFighter:Start()
 end
 
 function BossFighter:Update(dt)
+    if not self.canAttack then return end
 
+    self.attackTimer = self.attackTimer + dt
+
+    if Input.IsKeyDown("R") and self.attackTimer > 1 then
+        self:Attack()
+        self.attackTimer = 0
+        Log("Attack")
+    end
 end
 
 function BossFighter:OnTriggerEnter(col)
     local obj = col:GetOwner()
-    Log("vqfjknefjnfveqnvfrnivfsifvsdnjivdfs")
     if obj:HasTag("Tail") then
-        self:Attack()
+        self.canAttack = true
+    end
+end
+
+function BossFighter:OnTriggerExit(col)
+    local obj = col:GetOwner()
+    if obj:HasTag("Tail") then
+        self.canAttack = false
     end
 end
 

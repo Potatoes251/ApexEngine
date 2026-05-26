@@ -57,21 +57,6 @@ void Animator::SetFPS(float fps)
 	m_fps = fps;
 }
 
-void Animator::DrawSkeleton(std::vector<KeyFrame>& globalSkeleton)
-{
-	for (int bone = 0; bone < m_boneCount; ++bone)
-	{
-		int parent = m_mesh->m_bones[bone].m_parentIndex;
-		if (parent < 0)
-			continue;
-
-		LibMath::Vector3 a = GetPos(globalSkeleton[bone].m_matrix);
-		LibMath::Vector3 b = GetPos(globalSkeleton[parent].m_matrix);
-
-		DebugRenderer::Get().AddLine(a, b); // red lines
-	}
-}
-
 void Animator::OnUpdate(float deltaTime)
 {
 	switch (m_state)
@@ -558,7 +543,6 @@ void Animator::PlaySingleAnimation(float deltaTime)
 
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, animationSkeleton);
-	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
 	ApplyOffset(globalSkeleton);
 }
@@ -585,7 +569,6 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, interlopedSkeleton);
 
-	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
 	ApplyOffset(globalSkeleton);
 }
