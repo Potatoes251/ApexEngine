@@ -217,23 +217,26 @@ void Apex::Application::Tick()
         m_targetScene.clear();
     }
 
-    constexpr float fixedUpdateTime_s = 1.f / 60.f;
-
     m_deltaTime_s = m_window->GetDeltaTime();
 
-    m_scene->Update(m_deltaTime_s);
-
-    m_accumulator_s += m_deltaTime_s;
-
-    while (m_accumulator_s >= fixedUpdateTime_s)
+    if (m_running)
     {
-        m_scene->FixedUpdate(fixedUpdateTime_s);
-        m_accumulator_s -= fixedUpdateTime_s;
-    }
+        constexpr float fixedUpdateTime_s = 1.f / 60.f;
 
-    m_scene->LateUpdate(m_deltaTime_s);
-    // listener is the camera so it updates after the camera
-    UpdateAudioListener();
+        m_scene->Update(m_deltaTime_s);
+        m_accumulator_s += m_deltaTime_s;
+
+        while (m_accumulator_s >= fixedUpdateTime_s)
+        {
+            m_scene->FixedUpdate(fixedUpdateTime_s);
+            m_accumulator_s -= fixedUpdateTime_s;
+        }
+
+        m_scene->LateUpdate(m_deltaTime_s);
+
+        // listener is the camera so it updates after the camera
+        UpdateAudioListener();
+    }
 }
 
 void Apex::Application::UpdateAudioListener()
