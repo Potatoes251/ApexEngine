@@ -167,8 +167,11 @@ bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMat
 
 	if (!result) return false;
 
-	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
-	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
+	RigidBodyComponent* body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+
+	hit_out.m_objId = body->GetOwner()->GetId();
+	hit_out.m_bodyId = body->GetId();
+	hit_out.m_colliderId = static_cast<Collider*>(hit.block.shape->userData)->GetId();
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = ToLibVec(hit.block.position);
 	hit_out.m_normal = ToLibVec(hit.block.normal);
@@ -188,9 +191,12 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 	for (physx::PxU32 i = 0; i < hitBuffer.getNbTouches(); ++i)
 	{
 		const physx::PxRaycastHit& h = hitBuffer.getTouch(i);
+
+		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(h.actor->userData);
 		HitResult result;
-		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
-		result.m_collider = static_cast<Collider*>(h.shape->userData);
+		result.m_objId = body->GetOwner()->GetId();
+		result.m_bodyId = body->GetId();
+		result.m_colliderId = static_cast<Collider*>(h.shape->userData)->GetId();
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -234,9 +240,11 @@ bool PhysicSystem::Sweep(
 	}
 
 	if (!result) return false;
-	
-	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
-	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
+
+	RigidBodyComponent* body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_objId = body->GetOwner()->GetId();
+	hit_out.m_bodyId = body->GetId();
+	hit_out.m_colliderId = static_cast<Collider*>(hit.block.shape->userData)->GetId();
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = LibMath::Vector3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
 	hit_out.m_normal = LibMath::Vector3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
@@ -283,9 +291,12 @@ bool PhysicSystem::Sweep(
 	for (physx::PxU32 i = 0; i < sweepBuffer.getNbTouches(); ++i)
 	{
 		const physx::PxSweepHit& h = sweepBuffer.getTouch(i);
+
+		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(h.actor->userData);
 		HitResult result;
-		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
-		result.m_collider = static_cast<Collider*>(h.shape->userData);
+		result.m_objId = body->GetOwner()->GetId();
+		result.m_bodyId = body->GetId();
+		result.m_colliderId = static_cast<Collider*>(h.shape->userData)->GetId();
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);

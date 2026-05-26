@@ -32,8 +32,9 @@ namespace Apex::Physic
 
 	struct HitResult
 	{
-		Collider*			m_collider;
-		RigidBodyComponent* m_body;
+		size_t				m_objId;
+		size_t				m_colliderId;
+		size_t				m_bodyId;
 		LibMath::Vector3	m_position;
 		LibMath::Vector3	m_normal;
 		float				m_distance;

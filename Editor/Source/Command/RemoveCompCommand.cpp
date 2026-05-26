@@ -25,6 +25,5 @@ void RemoveCompCommand::Undo()
 {
 	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
 	std::unique_ptr<Component> clone = m_savedComp->Clone();
-	size_t id = target->AddComponentDirect(std::move(clone));
-	target->SetCompId(id, m_compId);
+	m_compId = target->AddComponentDirect(std::move(clone));
 }

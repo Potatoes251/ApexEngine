@@ -70,38 +70,6 @@ void Object::SetId(size_t id)
 		m_nextId = ++id;
 }
 
-void Object::SetCompId(size_t oldId, size_t newId)
-{
-	if (oldId == newId || newId == INVALID_ID) return;
-
-	Component* comp = GetComponent(oldId);
-
-	if (!comp) return;
-
-	if (oldId != INVALID_ID)
-		m_freeCompIds.insert(oldId);
-
-	comp->SetId(newId);
-	m_freeCompIds.erase(newId);
-
-	if (m_nextCompId <= newId)
-		m_nextCompId = ++newId;
-}
-
-void Object::SetCompId(Component* comp, size_t newId)
-{
-	if (!comp || newId == INVALID_ID) return;
-
-	if (comp->GetId() != INVALID_ID)
-		m_freeCompIds.insert(comp->GetId());
-
-	comp->SetId(newId);
-	m_freeCompIds.erase(newId);
-
-	if (m_nextCompId <= newId)
-		m_nextCompId = ++newId;
-}
-
 size_t Object::NewId()
 {
 	m_id = m_nextId++;
@@ -111,26 +79,6 @@ size_t Object::NewId()
 void Object::RemoveId()
 {
 	m_id = INVALID_ID;
-}
-
-void Object::RemoveCompId(size_t oldId)
-{
-	if (oldId == INVALID_ID) return;
-
-	Component* comp = GetComponent(oldId);
-
-	if (!comp) return;
-
-	m_freeCompIds.insert(comp->GetId());
-	comp->SetId(INVALID_ID);
-}
-
-void Object::RemoveCompId(Component* comp)
-{
-	if (!comp || comp->GetId() == INVALID_ID) return;
-
-	m_freeCompIds.insert(comp->GetId());
-	comp->SetId(INVALID_ID);
 }
 
 void Object::SetLocalTransform(const Transform& transform)
@@ -298,15 +246,7 @@ size_t Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	comp->m_owner = this;
 	m_components.push_back(std::move(comp));
 
-	if (m_freeCompIds.empty())
-	{
-		m_components.back()->SetId(m_nextCompId++);
-	}
-	else
-	{
-		m_components.back()->SetId(*m_freeCompIds.begin());
-		m_freeCompIds.erase(m_freeCompIds.begin());
-	}
+	m_components.back()->SetId(m_nextCompId++);
 
 	OnChanged();
 
@@ -344,8 +284,6 @@ void Object::RemoveComponent(Component* compToRemove, Physic::PhysicSystem* phys
 			if (rb && phys)
 				phys->RemoveActor(*rb);
 
-			m_freeCompIds.insert(compToRemove->GetId());
-
 			m_components.erase(m_components.begin() + i);
 
 			OnChanged();
@@ -367,8 +305,6 @@ void Object::RemoveComponent(size_t compId, Physic::PhysicSystem* phys)
 
 			if (rb && phys)
 				phys->RemoveActor(*rb);
-
-			m_freeCompIds.insert(compId);
 
 			m_components.erase(m_components.begin() + i);
 
