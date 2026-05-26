@@ -496,7 +496,6 @@ namespace Apex::HudBindings
                     if (lua_pcall(L, 0, 0, 0) != LUA_OK)
                     {
                         const char* err = lua_tostring(L, -1);
-                        printf("Lua error: %s\n", err);
                         lua_pop(L, 1);
                     }
                 };

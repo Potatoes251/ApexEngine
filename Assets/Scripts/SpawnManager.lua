@@ -10,7 +10,7 @@ end
 function SpawnManager:SetSpawnPoint(newSpawnPoint)
 
     if newSpawnPoint ~= nil then
-        spawnPosition = newSpawnPoint
+        self.spawnPosition = newSpawnPoint
     end
 end
 

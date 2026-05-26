@@ -7,10 +7,13 @@ function SpawnPoint:New(self)
     return instance
 end
 
-function SpawnPoint:OnTriggerEnter()	
-	local NewSpawnPoint = GetPosition_Internal(self)
-	if NewSpawnPoint ~= nil then
-		SpawnManager:SetSpawnPoint(NewSpawnPoint)	--Get the position
+function SpawnPoint:OnTriggerEnter(col)	
+	local obj = col:GetOwner()
+	if obj:HasTag('Player') then
+		local NewSpawnPoint = GetPosition_Internal(self)
+		if NewSpawnPoint ~= nil then
+			SpawnManager:SetSpawnPoint(NewSpawnPoint)	--Get the position
+		end
 	end
 end
 
