@@ -6,7 +6,7 @@
 #include "ResourceHandle.h"
 #include "ResourceManager.h"
 #include "Texture.h"
-#include "lua.h"
+#include <lua.hpp>
 
 #include <string>
 #include <vector>
