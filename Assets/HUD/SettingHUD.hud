@@ -1,0 +1,407 @@
+{
+  "widgets": [
+    {
+      "type": "Panel",
+      "name": "VolumePanel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.000000, 0.000000 ],
+      "size": [ 0.250000, 1.000000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 0.000000,
+      "colorBg": [ 0.784314, 0.117647, 0.117647, 0.392157 ],
+      "children": [
+        {
+          "type": "Text",
+          "name": "VolumeMainData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.060000 ],
+          "size": [ 0.050000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "100",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "VolumeMain",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.060000 ],
+          "size": [ 0.100000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Main volume:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "VolumeMusic",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.120000 ],
+          "size": [ 0.100000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Music volume:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "VolumeMusicData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.120000 ],
+          "size": [ 0.050000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "100",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "VolumeSoundEffectData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.180000 ],
+          "size": [ 0.050000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "100",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "VolumeSoundEffect",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.180000 ],
+          "size": [ 0.120000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Sound effect volume:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "Volume",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.000000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Volume:",
+          "fontSize": 50.000000
+          "hAlign": 0,
+          "vAlign": 0,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    },
+    {
+      "type": "Panel",
+      "name": "InputPanel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.250000, 0.000000 ],
+      "size": [ 0.250000, 1.000000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 0.000000,
+      "colorBg": [ 0.117647, 0.784314, 0.117647, 0.392157 ],
+      "children": [
+        {
+          "type": "Text",
+          "name": "Inputs",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.000000, 0.000000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Inputs:",
+          "fontSize": 50.000000
+          "hAlign": 0,
+          "vAlign": 0,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "ForwardInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.060000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Forward:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "ForwardInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.060000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "BackInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.120000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Back:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "BackInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.120000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "LeftInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.180000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Left:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "LeftInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.180000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "RightInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.240000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Right:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "RightInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.240000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "JumpInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.300000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Jump:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "JumpInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.300000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "SwimUpInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.360000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Swim up:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "SwimUpInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.360000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "SwimDownInput",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.420000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Swim down",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "SwimDownInputData",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.420000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "NONE",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    },
+    {
+      "type": "Panel",
+      "name": "GraphicPanel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.500000, 0.000000 ],
+      "size": [ 0.250000, 1.000000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 0.000000,
+      "colorBg": [ 0.117647, 0.117647, 0.784314, 0.392157 ],
+      "children": [
+        {
+          "type": "Text",
+          "name": "Graphic",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.000000, 0.000000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Graphic:",
+          "fontSize": 50.000000
+          "hAlign": 0,
+          "vAlign": 0,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Text",
+          "name": "Shadow",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.010000, 0.060000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "Shadow:",
+          "fontSize": 30.000000
+          "hAlign": 0,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "ShadowButton",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.750000, 0.060000 ],
+          "size": [ 0.150000, 0.050000 ],
+          "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+          "label": "NONE",
+          "fontSize": 20.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    },
+    {
+      "type": "Button",
+      "name": "ExitButton",
+      "anchor": "TopRight",
+      "visible": true,
+      "position": [ -0.050000, 0.000000 ],
+      "size": [ 0.050000, 0.050000 ],
+      "color": [ 1.000000, 0.196078, 0.196078, 1.000000 ],
+      "label": "EXIT",
+      "fontSize": 20.000000,
+      "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+      "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+      "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    }
+  ]
+}
