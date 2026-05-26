@@ -526,6 +526,7 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_showBuildPopup = true;
 			m_gui->OpenPopup("Build Game");
 		}
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 64.f }, { 187.f, BUTTON + PAD * 2.f }, ROUND);
 		if (m_gui->Button("GenerateNavGraph"))
 		{
 			Scene* scene = m_editor->GetApp()->GetScene();
@@ -653,7 +654,7 @@ void Apex::Editor::Viewport::DrawCameraSpeed()
 	LibMath::Vector2 pos =
 	{
 		m_panelPos[0] + 5.f,
-		m_panelPos[1] + 78.f
+		m_panelPos[1] + 105.f
 	};
 
 	float backgroundWidth = 110.f;
