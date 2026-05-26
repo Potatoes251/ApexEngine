@@ -144,10 +144,12 @@ void CharacterController::Serialize(std::ostream& out) const
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
-	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "Speed", ExposedVar::Float, &m_speed },
-			{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
-			{ "Density", ExposedVar::Float, &m_density },
+	return 
+	{	
+		{ "Distance to ground", ExposedVar::Float, &m_groundedDistance },
+		{ "Speed", ExposedVar::Float, &m_speed },
+		{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
+		{ "Density", ExposedVar::Float, &m_density },
 	};
 }
 
