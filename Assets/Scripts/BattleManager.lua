@@ -88,7 +88,6 @@ function Fight:OnBattleStart()
     self.playerScript.cc:TeleportToTarget(self.playerTargetPos)
     self.playerScript:SetEnabled(false)
     self.playerScript:StopAnim()
-    self.player:SetEnabled(true)
 
     self.player:OnBattleStart()
     self.enemy:OnBattleStart()
@@ -108,7 +107,6 @@ function Fight:OnBattleEnd()
     self.playerScript.cc:Teleport(self.oldPos)
     self.playerScript:SetEnabled(true)
     self.playerScript:StartAnim()
-    self.player:SetEnabled(false)
 end
 
 function Fight:StartPlayerTurn()

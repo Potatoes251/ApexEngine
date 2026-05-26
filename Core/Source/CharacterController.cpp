@@ -158,7 +158,8 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 	{
 		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
 		Collider* collider = dynamic_cast<Collider*>(obj->GetComponent(hit.m_colliderId));
-		if (hit.m_bodyId != m_body->GetId()
+		RigidBodyComponent* body = dynamic_cast<RigidBodyComponent*>(obj->GetComponent(hit.m_bodyId));
+		if (body != m_body
 			&& !collider->IsTrigger()
 			&& (!found || hit.m_distance < closest_out.m_distance))
 		{
