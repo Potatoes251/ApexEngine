@@ -89,38 +89,32 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
 {
     if (!m_mesh.IsReady() ||
         !m_material.IsReady() ||
-        !m_material->GetShader().IsReady() ||
         (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
-    ResourceHandle<Shader> currentShader;
 
-    if (passInfo.m_flags & IgnoreModelShader)
+    if (!(passInfo.m_flags & IgnoreMaterial))
     {
-        currentShader = passInfo.m_shader;
-        passInfo.m_shader->Use();
-    }
-    else
-    {
-        currentShader = m_material->GetShader();
-        m_material->Bind();
+        m_material->Bind(passInfo.m_shader);
     }
 
     Matrix4 model = GetOwner()->GetGlobalTransform();
 
-    currentShader->SetUniform("uModel", model);
+    passInfo.m_shader->SetUniform("uModel", model);
     if (passInfo.m_camera)
     {
-        currentShader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
-        currentShader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
+        passInfo.m_shader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
+        passInfo.m_shader->SetUniform("uView", passInfo.m_camera->GetViewMatrix());
+        passInfo.m_shader->SetUniform("uViewPos", passInfo.m_camera->GetPosition());
     }
 
     if (passInfo.m_flags & UseIdAsColor)
     {
+        size_t id = GetOwner()->GetId();
         LibMath::Vector3 color;
-        color[0] = (passInfo.m_id >> 16) & 0xFF; // highest byte
-        color[1] = (passInfo.m_id >> 8) & 0xFF;  // middle byte
-        color[2] = passInfo.m_id & 0xFF;         // lowest byte
-        currentShader->SetUniform("uColor", color / 255.f);
+        color[0] = (id >> 16) & 0xFF; // highest byte
+        color[1] = (id >> 8) & 0xFF;  // middle byte
+        color[2] = id & 0xFF;         // lowest byte
+        passInfo.m_shader->SetUniform("uColor", color / 255.f);
     }
 
     m_mesh->Draw(m_useSkinnedVAO);

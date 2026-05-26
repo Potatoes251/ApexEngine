@@ -16,6 +16,10 @@ function Object:GetPosition()
     return Vector3.New(GetPosition_Internal(self))
 end
 
+function Object:GetName()
+    return GetName_Internal(self)
+end
+
 function Object:AddChild(child)
     AddChild_Internal(self, child)
 end
@@ -42,6 +46,10 @@ end
 
 function Object:Destroy()
     return Destroy_Internal(self)
+end
+
+function Object:DestroyCollectible()
+    return DestroyCollectible_Internal(self)
 end
 
 return Object

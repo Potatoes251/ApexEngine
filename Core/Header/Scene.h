@@ -61,6 +61,8 @@ namespace Apex::Rendering
 
 		Camera* GetMainCamera() const { return m_mainCamera; }
 		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
+		void	SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
+		Resources::ResourceHandle<Shader>	GetShader() const { return m_shader; }
 
 		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
@@ -81,6 +83,7 @@ namespace Apex::Rendering
 		Pathfinding::WaypointGraph m_graph;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
+		Resources::ResourceHandle<Shader> m_shader;
 		std::unique_ptr<Skybox> m_skybox;
 
 		Camera* m_mainCamera = nullptr;

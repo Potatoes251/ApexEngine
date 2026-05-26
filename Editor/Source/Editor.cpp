@@ -893,19 +893,21 @@ namespace Apex::Editor
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
         }
 
-        // Scene order manifest
+        // Default save file
+        if (!scenePaths.empty())
         {
-            fs::path manifestPath = outputDir / "Assets" / "Scenes" / "build_scenes.json";
-            fs::create_directories(manifestPath.parent_path(), ec);
-            std::ofstream manifest(manifestPath);
-            manifest << "{\n  \"scenes\": [\n";
-            for (size_t i = 0; i < scenePaths.size(); ++i)
+            fs::path savePath = outputDir / "Saves/slot_0.sav";
+
+            fs::create_directories(savePath.parent_path(), ec);
+
+            std::ofstream saveFile(savePath);
+
+            if (saveFile.is_open())
             {
-                manifest << "    \"" << scenePaths[i] << "\"";
-                if (i + 1 < scenePaths.size()) manifest << ",";
-                manifest << "\n";
+                saveFile << "{\n";
+                saveFile << "    \"scene\": \"" << scenePaths[0] << "\"\n";
+                saveFile << "}\n";
             }
-            manifest << "  ]\n}\n";
         }
 
         // Collect all asset paths referenced by the selected scenes

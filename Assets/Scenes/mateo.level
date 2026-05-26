@@ -1,7 +1,7 @@
 {
 "objects": [
   {
-    "id": 118,
+    "id": 478,
     "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
@@ -30,7 +30,7 @@
     }
   },
   {
-    "id": 119,
+    "id": 479,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -46,7 +46,7 @@
     }
   },
   {
-    "id": 120,
+    "id": 480,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -63,7 +63,7 @@
     }
   },
   {
-    "id": 121,
+    "id": 481,
     "parent": null,
     "name": "Player",
     "position": [0.230901,1.694018,0.000000],
@@ -99,7 +99,7 @@
       "CharacterController": {
         "enabled": true,
         "groundedDistance": 0.800000,
-        "speed": 2.000000,
+        "speed": 4.000000,
         "rotationSpeed": 1.000000,
         "density": 950.000000
       },
@@ -117,7 +117,7 @@
     }
   },
   {
-    "id": 122,
+    "id": 482,
     "parent": null,
     "name": "Object6",
     "position": [3.011898,1.203338,0.000000],
@@ -133,7 +133,7 @@
     }
   },
   {
-    "id": 123,
+    "id": 483,
     "parent": null,
     "name": "Painting",
     "position": [-0.859334,3.197713,-2.798263],
@@ -163,14 +163,14 @@
         "enabled": true,
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
-          "targetScene": "",
-          "loadTime": 1.000000
+          "TargetScene": "",
+          "LoadTime": 1.000000
         }
       }
     }
   },
   {
-    "id": 124,
+    "id": 484,
     "parent": null,
     "name": "Water",
     "position": [-5.528850,2.636424,-1.838250],
@@ -195,7 +195,7 @@
     }
   },
   {
-    "id": 125,
+    "id": 485,
     "parent": null,
     "name": "WaterCurrent",
     "position": [15.311808,1.417259,-2.053998],
@@ -220,7 +220,7 @@
     }
   },
   {
-    "id": 126,
+    "id": 486,
     "parent": null,
     "name": "Goomba",
     "position": [1.610418,2.124156,0.000000],
@@ -241,7 +241,7 @@
       },
       "AIController": {
         "enabled": true,
-        "groundedDistance": 0.5,
+        "groundedDistance": 0.2,
         "speed": 1,
         "rotationSpeed": 5,
         "density": 980,
@@ -272,17 +272,32 @@
     }
   },
   {
-    "id": 136,
+    "id": 3926,
     "parent": null,
-    "name": "Object136",
-    "position": [0.000000,0.000000,0.000000],
+    "name": "FinishStar",
+    "position": [0.000000,0.000000,5.313788],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [100.000000,100.000000,100.000000],
+    "scale": [1.000000,1.000000,1.000000],
     "components": {
-      "NavGenVolume": {
+      "Rigidbody": {
         "enabled": true,
-        "spacing": 1.000000,
-        "genHeight": 1.000000
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [5.000000, 1.000000, 5.000000],
+        "isTrigger": true,
+        "material": null
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/FinishStar.lua",
+        "vars": {
+          "LoadTime": 1.000000,
+          "TargetScene": "Assets/Scenes/scene.level",
+          "ScoreValue": 100.000000
+        }
       }
     }
   }

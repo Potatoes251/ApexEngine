@@ -12,18 +12,14 @@
 using namespace Apex::Rendering;
 using namespace Apex::Resources;
 
-void Material::Bind()
+void Material::Bind(Resources::ResourceHandle<Shader> shader)
 {
-	if (!m_shader.IsReady()) return;
-
-	m_shader->Use();
-
 	for (auto& [name, value] : m_uniforms)
 	{
 		// call the overload of set uniform with the correct type of variant
 		std::visit([&](auto&& v)
 			{
-				m_shader->SetUniform(name, v);
+				shader->SetUniform(name, v);
 			}, value);
 	}
 
@@ -33,9 +29,9 @@ void Material::Bind()
 
 	if (m_textures.size() > 0)
 	{
-		m_shader->SetUniform("uUseTexture", 1);
+		shader->SetUniform("uUseTexture", 1);
 	}
-	m_shader->SetUniform("uTint", m_tint);
+	shader->SetUniform("uTint", m_tint);
 }
 
 void Material::BindCompute()
@@ -73,7 +69,6 @@ void Material::Save()
 		return;
 	}
 
-	const bool hasShader = m_shader.IsValid();
 	const bool hasComputeShader = m_computeShader.IsValid() && !m_computeShader->GetPath().empty();
 	const bool hasUniforms = m_uniforms.size() > 0;
 	const bool hasTextures = m_textures.size() > 0;
@@ -82,14 +77,8 @@ void Material::Save()
 
 	bool needsComma = false;
 
-	if (hasShader)
-	{
-		file << "\t\"shader\": \"" << m_shader->GetPath() << "\"";
-		needsComma = true;
-	}
 	if (hasComputeShader)
 	{
-		if (needsComma) file << ",\n";
 		file << "\t\"computeShader\": \"" << m_computeShader->GetPath() << "\"";
 		needsComma = true;
 	}
@@ -195,7 +184,7 @@ void Material::LoadFromFile()
 
 		if (category == "shader")
 		{
-			m_shader = m_rm->CreateAsync<Shader>(parser.ParseString());
+			parser.ParseString();
 		}
 		else if (category == "computeShader")
 		{

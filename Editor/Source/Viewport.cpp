@@ -221,7 +221,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_flags |= UseIdAsColor;
-	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags |= IgnoreMaterial;
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
@@ -526,6 +526,7 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_showBuildPopup = true;
 			m_gui->OpenPopup("Build Game");
 		}
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 64.f }, { 187.f, BUTTON + PAD * 2.f }, ROUND);
 		if (m_gui->Button("GenerateNavGraph"))
 		{
 			Scene* scene = m_editor->GetApp()->GetScene();
@@ -653,13 +654,28 @@ void Apex::Editor::Viewport::DrawCameraSpeed()
 	LibMath::Vector2 pos =
 	{
 		m_panelPos[0] + 5.f,
-		m_panelPos[1] + 78.f
+		m_panelPos[1] + 105.f
 	};
+
+	float backgroundWidth = 110.f;
+
+	// Add 10.f for every extra digit after the first.
+	// 0-9   -> 110.f
+	// 10-99 -> 120.f
+	// 100+  -> 130.f
+
+	float absSpeed = std::abs(speed);
+
+	while (absSpeed >= 10.f)
+	{
+		backgroundWidth += 10.f;
+		absSpeed /= 10.f;
+	}
 
 	// Background size
 	LibMath::Vector2 size =
 	{
-		speed < 10.f ? 110.f : 120.f ,
+		backgroundWidth,
 		HEIGHT
 	};
 
