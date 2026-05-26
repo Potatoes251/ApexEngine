@@ -35,6 +35,12 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
+Viewport::~Viewport()
+{
+	m_rhi->DeleteFrameBuffer(m_fbo);
+	m_rhi->DeleteTexture(m_textureFbo);
+}
+
 void Viewport::SelectObject(Data::Object* selected, bool send)
 {
 	m_selectedObject = selected;

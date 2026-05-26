@@ -29,7 +29,7 @@ void SetScriptPathCommand::Execute()
 
 	Scripting::ScriptComponent* script = dynamic_cast<Scripting::ScriptComponent*>(owner->GetComponent(m_compId));
 
-	if (!script) return;
+	assert(script != nullptr);
 
 	script->SetScript(m_newPath);
 }
@@ -40,7 +40,7 @@ void SetScriptPathCommand::Undo()
 
 	Scripting::ScriptComponent* script = dynamic_cast<Scripting::ScriptComponent*>(owner->GetComponent(m_compId));
 
-	if (!script) return;
+	assert(script != nullptr);
 
 	script->SetScript(m_oldPath);
 }

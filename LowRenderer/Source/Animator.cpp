@@ -2,8 +2,6 @@
 
 #include "Log.h"
 
-#include "../../Physic/Header/DebugRenderer.h"
-
 using namespace Apex::Rendering;
 
 using Apex::Component;
@@ -45,11 +43,6 @@ void Animator::SetMesh(ResourceHandle<Mesh> mesh)
 
 	m_boneCount = static_cast<int>(mesh->m_bones.size());
 	m_skeletonMatrix.resize(m_boneCount);
-
-	for (size_t i = 0; i < m_boneCount; i++)
-	{
-		m_skeletonMatrix[i] = m_mesh->m_bones[i].m_offsetMatrix;
-	}
 }
 
 void Animator::SetFPS(float fps)

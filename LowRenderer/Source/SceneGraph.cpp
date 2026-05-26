@@ -1,4 +1,4 @@
-#include "sceneGraph.h"
+#include "SceneGraph.h"
 #include "../../Resources/Header/Object.h"
 
 using namespace Apex::SceneGraph;

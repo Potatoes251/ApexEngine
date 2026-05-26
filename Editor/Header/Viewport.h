@@ -40,6 +40,7 @@ namespace Apex::Editor
 			Rendering::IRHI* rhi, UserInterface::IGUI* gui, Editor* editor);
 		Viewport(Viewport const&) = delete;
 		Viewport& operator=(Viewport const&) = delete;
+		~Viewport();
 
 		Rendering::FirstPersonCamera&  GetCamera() { return m_camera; }
 		void				SetHierarchy(Hierarchy* hierarchy) { m_hierarchy = hierarchy; }
