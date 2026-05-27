@@ -647,7 +647,7 @@
     "id": 4761,
     "parent": null,
     "name": "Goomba",
-    "position": [100.000000,1.110799,3.720859],
+    "position": [100.000000,1.634375,3.720859],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [0.010000,0.010000,0.010000],
     "components": {
@@ -840,10 +840,49 @@
     }
   },
   {
-    "id": 4766,
+    "id": 5188,
+    "parent": null,
+    "name": "Painting",
+    "position": [100.000000,2.360091,0.000000],
+    "rotation": [0.000000,0.750255,0.000000,-0.661150],
+    "scale": [0.276320,0.273651,0.276320],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "material": "Assets/Material.002.mat",
+        "castShadow": false 
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/FinishStar.lua",
+        "vars": {
+          "LoadTime": 1.000000,
+          "TargetScene": "Assets/Scenes/scene.level",
+          "ScoreValue": 100.000000
+        }
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5189,
     "parent": null,
     "name": "Coin",
-    "position": [93.757751,5.874397,1.861258],
+    "position": [96.052116,1.596640,-5.969030],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [0.270731,0.270731,0.270731],
     "components": {
@@ -876,18 +915,126 @@
     }
   },
   {
-    "id": 4767,
+    "id": 5190,
     "parent": null,
-    "name": "Painting",
-    "position": [100.000000,2.285035,0.000000],
-    "rotation": [0.000000,0.707107,0.000000,0.707107],
-    "scale": [1.000000,1.000000,1.000000],
+    "name": "Coin",
+    "position": [29.804852,-2.241251,12.528892],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5191,
+    "parent": null,
+    "name": "Coin",
+    "position": [29.804852,-4.752098,-0.394014],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5192,
+    "parent": null,
+    "name": "Coin",
+    "position": [29.804852,-1.803777,-12.874237],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5193,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-0.003097,7.689479],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.500000,2.500000,2.500000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
-        "material": "Assets/Material/Painting.mat",
-        "castShadow": false 
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
       },
       "Rigidbody": {
         "enabled": true,
@@ -900,14 +1047,89 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
+        "halfExtents": [2.500000, 2.500000, 2.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/DamageVolume.lua",
+        "vars": {
+          "Damage": 1.000000,
+          "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 5194,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-0.003097,-8.060320],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.500000,2.500000,2.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000, 2.500000, 2.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/DamageVolume.lua",
+        "vars": {
+          "Damage": 1.000000,
+          "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 5195,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-2.138443,0.243756],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.500000,1.500000,1.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "material": "Assets/Material/Red.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "halfExtents": [2.000000, 2.000000, 0.100000],
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
         "halfExtents": [2.000000,2.000000,0.100000]
       },
       "ScriptComponent": {
         "enabled": true,
-        "script": "Assets/Scripts/Painting.lua",
+        "script": "Assets/Scripts/DamageVolume.lua",
         "vars": {
-          "TargetScene": "Assets/Scenes/scene.level",
-          "LoadTime": 1.000000
+          "Damage": 1.000000,
+          "IsInstant": false
         }
       }
     }

@@ -13,7 +13,8 @@ Apex::Data::Object::Object()
 {
 	m_owner = std::make_shared<SceneNode>(this);
 	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
 }
 
 Apex::Data::Object::Object(size_t forcedId)
@@ -25,7 +26,8 @@ Apex::Data::Object::Object(size_t forcedId)
 	if (forcedId != INVALID_ID && m_nextId <= forcedId)
 		m_nextId = ++forcedId;
 
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
 }
 
 Object::Object(const Transform& localTransform, const Transform& globalTransform) :
@@ -33,7 +35,13 @@ Object::Object(const Transform& localTransform, const Transform& globalTransform
 {
 	m_owner = std::make_shared<SceneNode>(this);
 	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
+}
+
+Apex::Data::Object::~Object()
+{
+	UnregisterName(m_name);
 }
 
 std::unique_ptr<Object> Object::Clone()
@@ -128,8 +136,13 @@ void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 
 void Apex::Data::Object::SetName(std::string name)
 {
-	m_name = name;
-	OnChanged();
+	if (m_name != name)
+	{
+		UnregisterName(m_name);
+		RegisterName(name);
+		m_name = name;
+		OnChanged();
+	}
 }
 
 const Transform& Object::GetLocalTransform() const
@@ -323,4 +336,35 @@ void Object::OnChanged()
 {
 	if (m_onChanged)
 		m_onChanged();
+}
+
+std::string Object::GenerateUniqueName()
+{
+	constexpr const char* baseName = "Object";
+
+	// First object keeps plain "Object"
+	if (!m_usedNames.contains(baseName))
+		return baseName;
+
+	size_t index = 1;
+
+	while (true)
+	{
+		std::string candidate = std::string(baseName) + std::to_string(index);
+
+		if (!m_usedNames.contains(candidate))
+			return candidate;
+
+		++index;
+	}
+}
+
+void Object::RegisterName(const std::string& name)
+{
+	m_usedNames.insert(name);
+}
+
+void Object::UnregisterName(const std::string& name)
+{
+	m_usedNames.erase(name);
 }

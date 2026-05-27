@@ -519,5 +519,5 @@ void BinLoader::Write32Bits(std::ofstream& file, uint32_t const& val)
         writeVal = _byteswap_ulong(writeVal);
     }
 
-    file.write((char*)&val, sizeof(val));
+    file.write((char*)&writeVal, sizeof(writeVal));
 }

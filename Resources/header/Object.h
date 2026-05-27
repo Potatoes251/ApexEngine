@@ -35,6 +35,7 @@ namespace Apex::Data
 		Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform);
 		Object(const Object& other) = delete;
 		Object&	operator=(const Object& other) = delete;
+		~Object();
 
 		std::unique_ptr<Object>		Clone();
 
@@ -114,7 +115,13 @@ namespace Apex::Data
 		static constexpr size_t INVALID_ID = std::numeric_limits<size_t>::max();
 
 	private:
+		static std::string GenerateUniqueName();
+
+		void RegisterName(const std::string& name);
+		void UnregisterName(const std::string& name);
+
 		static inline size_t m_nextId = 0;
+		static inline std::unordered_set<std::string> m_usedNames;
 
 		size_t m_nextCompId = 0;
 
