@@ -10,7 +10,7 @@ using Apex::ExposedVar;
 void Animator::Serialize(std::ostream& out) const
 {
 	out << "        \"fps\": " << m_fps << ",\n";
-	out << "		\"Model\": \"" << m_model->GetPath() << "\"\n";
+	out << "		\"model\": \"" << m_model->GetPath() << "\"\n";
 }
 
 

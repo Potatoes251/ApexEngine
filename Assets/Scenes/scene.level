@@ -43,8 +43,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Player.mat",
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -83,7 +85,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/Player/Player.mesh"
+		"model": "Assets/Meshes/Player/Player.mesh"
       }
     }
   },
@@ -97,8 +99,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
-        "material": "Assets/Material/Painting.mat",
+        "model": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
+        "materials": [
+            ""
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -134,8 +138,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -164,8 +170,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
-        "material": "Assets/Material/Default.mat",
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {

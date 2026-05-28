@@ -37,6 +37,8 @@ public:
 	uint32_t GetIndexCount()  const { return m_indexCount; }
 	uint32_t GetVertexCount()  const { return m_vertexCount; }
 
+	std::string const& GetName() const { return m_name; }
+
 	int GetAnimationIdx(std::string const& name);
 
 	std::vector<Apex::Rendering::Vertex>	m_vertices;

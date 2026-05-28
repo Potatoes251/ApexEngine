@@ -11,12 +11,22 @@ using namespace Apex::Rendering;
 Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager* resourceManager)
 {
     m_model = resourceManager->CreateAsync<Model>("ApexAssets/Meshes/cube/cube.mesh");
-    m_material = resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
+    m_materials.push_back(resourceManager->CreateAsync<Material>("Assets/Material/Default.mat"));
+}
+
+void MeshRenderer::SetModel(Apex::Resources::ResourceHandle<Model> model)
+{ 
+    m_model = model;
 }
 
 void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
 {
     m_material = material;
+}
+
+void MeshRenderer::SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials)
+{
+    m_materials = materials;
 }
 
 ResourceHandle<Material> MeshRenderer::GetMaterial()
@@ -26,12 +36,26 @@ ResourceHandle<Material> MeshRenderer::GetMaterial()
 
 std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
 {
-    return
+    std::vector<ExposedVar> variables;
+
+    variables.push_back({ "Model", ExposedVar::Mesh, &m_model });
+
+    for (size_t i = 0; i < m_materials.size(); i++)
     {
-        { "Mesh", ExposedVar::Mesh, &m_model },
-        { "Material", ExposedVar::Material, &m_material },
-        { "Cast Shadow", ExposedVar::Bool, &m_castShadow }
-    };
+        std::string name = "Material" + std::to_string(i);
+
+        if (i < m_model->GetMeshes().size() && !m_model->GetMeshes()[i].GetName().empty())
+        {
+            name = m_model->GetMeshes()[i].GetName();
+        }
+
+        ResourceHandle<Material>& mat = m_materials[i];
+        variables.push_back({ name, ExposedVar::Material, &mat});
+    }
+
+    variables.push_back({ "Cast Shadow", ExposedVar::Bool, &m_castShadow });
+
+    return variables;
 }
 
 void MeshRenderer::ComputePass()
@@ -79,6 +103,9 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
 
+    if (m_materials.size() < m_model->GetMeshes().size())
+        m_materials.resize(m_model->GetMeshes().size());
+
     Matrix4 modelMatrix = GetOwner()->GetGlobalTransform();
 
     passInfo.m_shader->SetUniform("uModel", modelMatrix);
@@ -101,14 +128,14 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
 
     std::vector<Mesh> const& meshes = m_model->GetMeshes();
 
-    m_material->Bind(passInfo.m_shader);
+    //m_material->Bind(passInfo.m_shader);
 
     for (size_t i = 0; i < meshes.size(); i++)
     {
-        //if (i < m_materials.size() && m_materials[i].IsReady() && !(passInfo.m_flags & IgnoreMaterial))
-        //{
-        //    m_materials[i]->Bind(passInfo.m_shader);
-        //}
+        if (i < m_materials.size() && m_materials[i].IsReady() && !(passInfo.m_flags & IgnoreMaterial))
+        {
+            m_materials[i]->Bind(passInfo.m_shader);
+        }
 
         meshes[i].Draw(m_useSkinnedVAO);
     }
@@ -119,22 +146,19 @@ void MeshRenderer::Serialize(std::ostream& out) const
     if (m_model.IsValid() && !m_model->GetPath().empty())
         out << "        \"model\": \"" << m_model->GetPath() << "\",\n";
 
-    if (!m_materials.empty())
+    out << "        \"materials\": [\n";
+    for (size_t i = 0; i < m_materials.size(); ++i)
     {
-        out << "        \"materials\": [\n";
-        for (size_t i = 0; i < m_materials.size(); ++i)
-        {
-            if (m_materials[i].IsValid() && !m_materials[i]->GetPath().empty())
-                out << "            \"" << m_materials[i]->GetPath() << "\"";
-            else
-                out << "            \"\"";
-
-            if (i < m_materials.size() - 1)
-                out << ",";
-            out << "\n";
-        }
-        out << "        ],\n";
+        if (m_materials[i].IsValid() && !m_materials[i]->GetPath().empty())
+            out << "            \"" << m_materials[i]->GetPath() << "\"";
+        else
+            out << "            \"\"";
+    
+        if (i < m_materials.size() - 1)
+            out << ",";
+        out << "\n";
     }
+    out << "        ],\n";
 
     out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
 }

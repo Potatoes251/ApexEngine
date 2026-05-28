@@ -10,8 +10,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "BoxCollider": {
@@ -72,8 +74,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Player.mat",
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -112,7 +116,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/Player/Player.mesh"
+		"model": "Assets/Meshes/Player/Player.mesh"
       },
       "ScriptComponent": {
         "enabled": true,
@@ -141,8 +145,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Default.mat",
+        "model": "ApexAssets/Meshes/cube/cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
         "castShadow": false 
       }
     }
@@ -157,8 +163,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -193,8 +201,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -229,8 +239,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -265,8 +277,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -301,8 +315,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -331,8 +347,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "material": "Assets/Material/Goomba.mat",
+        "model": "Assets/Meshes/Goomba/Goomba.mesh",
+        "materials": [
+            "Assets/Material/Goomba.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -383,8 +401,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -413,8 +433,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -443,8 +465,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -473,8 +497,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -503,8 +529,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -533,8 +561,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -563,8 +593,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -593,8 +625,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -623,8 +657,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -653,8 +689,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "material": "Assets/Material/Goomba.mat",
+        "model": "Assets/Meshes/Goomba/Goomba.mesh",
+        "materials": [
+            "Assets/Material/Goomba.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -711,8 +749,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -747,8 +787,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -783,8 +825,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -819,8 +863,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -849,8 +895,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
-        "material": "Assets/Material.002.mat",
+        "model": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "materials": [
+            "Assets/Material.002.mat"
+        ],
         "castShadow": false 
       },
       "Rigidbody": {
@@ -894,8 +942,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -930,8 +980,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -966,8 +1018,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1002,8 +1056,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1032,8 +1088,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1047,7 +1105,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1069,8 +1127,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1084,7 +1144,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1106,8 +1166,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1143,8 +1205,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh",
-        "material": "Assets/Material/Bowser.mat",
+        "model": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh",
+        "materials": [
+            "Assets/Material/Bowser.mat"
+        ],
         "castShadow": false 
       },
       "Rigidbody": {
@@ -1186,7 +1250,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
+		"model": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
       }
     }
   },

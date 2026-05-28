@@ -40,7 +40,6 @@ namespace Apex::Rendering
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 		//before update
-		void SetMesh(ResourceHandle<Mesh> mesh);
 		void SetModel(ResourceHandle<Model> model);
 		void SetFPS(float fps);				//base fps = 30
 

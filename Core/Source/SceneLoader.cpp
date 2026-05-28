@@ -245,8 +245,23 @@ void SceneLoader::ParseMeshRenderer(Data::Object* obj, SerialParser& parser)
     std::string mesh = parser.ParseString();
     parser.Expect(',');
 
-    parser.ParseString(); parser.Expect(':');
-    std::string material = parser.ParseString();
+    parser.ParseString();
+    parser.Expect(':');
+    parser.Expect('[');
+
+    std::vector<ResourceHandle<Apex::Rendering::Material>> materials;
+
+    while (!parser.Peek(']'))
+    {
+        std::string material = parser.ParseString();
+
+        materials.push_back(GetMaterialHandle(material));
+
+        if (parser.Peek(','))
+            parser.Expect(',');
+    }
+
+    parser.Expect(']');
     parser.Expect(',');
 
     parser.ParseString(); parser.Expect(':');
@@ -256,7 +271,7 @@ void SceneLoader::ParseMeshRenderer(Data::Object* obj, SerialParser& parser)
     comp.SetEnabled(enabled);
 
     comp.SetModel(GetModelHandle(mesh));
-    comp.SetMaterial(GetMaterialHandle(material));
+    comp.SetMaterials(materials);
     comp.SetCastShadow(shadow);
 }
 

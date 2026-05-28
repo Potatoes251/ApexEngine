@@ -28,8 +28,9 @@ namespace Apex::Rendering
         MeshRenderer(MeshRenderer const&) = default;
         MeshRenderer& operator=(MeshRenderer const&) = default;
 
-        void SetModel(Apex::Resources::ResourceHandle<Model> model) { m_model = model; }
+        void SetModel(Apex::Resources::ResourceHandle<Model> model);
         void SetMaterial(Apex::Resources::ResourceHandle<Material> shader);
+        void SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
         Resources::ResourceHandle<Material> GetMaterial();
