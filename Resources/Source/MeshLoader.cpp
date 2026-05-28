@@ -18,16 +18,6 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
 
     LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
-
-    if (!sourcePath.empty()) path = sourcePath;
-
-    MeshImporter importer;
-    std::vector<MaterialImportData> mats;
-    if (importer.Import(path, mesh, mats))
-    {
-        binLoader.Export(path, mesh);
-        return;
-    }
 }
 
 static void WriteMaterialFile(const std::filesystem::path& fbxPath, const MaterialImportData& mat)
@@ -93,8 +83,7 @@ void MeshLoader::Import(std::string path)
             WriteMaterialFile(fbxPath, mat);
 
         if (!materials.empty())
-            LOG_INFO_CAT("Resource", "Extracted {} material(s) from {}",
-                materials.size(), path);
+            LOG_INFO_CAT("Resource", "Extracted {} material(s) from {}", materials.size(), path);
     }
 }
 

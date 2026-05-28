@@ -51,6 +51,15 @@ struct Animation
 	std::string							m_name;
 };
 
+class Model : public IResource
+{
+public:
+	std::vector<BoneInfo>	m_skeleton;
+	unordered_map<std::string, int>	m_boneMap;
+	std::vector<Animation>	m_animations;
+	std::vector<class Mesh>	m_meshes;
+};
+
 class Mesh : public IResource
 {
 public:
@@ -58,6 +67,8 @@ public:
 	Mesh(std::string path) : IResource(path) {}
 	Mesh(Mesh const&) = delete;
 	Mesh& operator=(Mesh const&) = delete;
+	Mesh(Mesh&& other) noexcept;
+	Mesh& operator=(Mesh&& other) noexcept;
 
 	~Mesh();
 
@@ -90,7 +101,6 @@ private:
 	friend class BinLoader;
 
  	unordered_map<std::string, int>	m_boneMap;
-	std::vector<std::string>		m_boneNames;
 
 	uint32_t	m_VAO = 0;
 	// VAO used with a compute shader

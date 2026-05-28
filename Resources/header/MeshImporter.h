@@ -27,23 +27,23 @@ public:
 
 	static void EnsureManager();
 
-	bool Import(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials);
+	bool Import(std::string const& path, Mesh& mesh, std::vector<MaterialImportData>& materials);
 
 private:
-	bool		ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials);
-	void		ProcessNode(FbxNode* node, Mesh& mesh);
+	bool		ImportFbx(std::string const& path, Model& model, std::vector<MaterialImportData>& materials);
+	void		ProcessNode(FbxNode* node, Model& model);
 	void		ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh);
-	void		ExtractBones(FbxMesh* fbxMesh, Mesh& mesh);
+	void		ExtractBones(FbxMesh* fbxMesh, Model& model, Mesh& mesh);
 	void		AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight);
 	void		BuildNodeMap(FbxNode* node, std::unordered_map<std::string, FbxNode*>& map);
-	void		ExtractAnimations(FbxScene* scene, Mesh& mesh);
+	void		ExtractAnimations(FbxScene* scene, Model& model);
 	FbxAMatrix	GetGeometryTransform(FbxNode* node);
 
 	void ExtractSceneMaterials(FbxScene* scene, const std::string& fbxDir, std::vector<MaterialImportData>& materials);
 	std::string ResolveTexturePath(FbxSurfaceMaterial* mat, const char* propName, const std::string& fbxDir);
 
 	void NormalizeVertexWeights(Apex::Rendering::Vertex& vertex);
-	void ResolveAndSortBones(FbxScene* scene, Mesh& mesh);
+	void ResolveAndSortBones(FbxScene* scene, Model& model);
 
 	static Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
 
@@ -51,6 +51,7 @@ private:
 	static inline std::mutex  s_mutex;
 
 	std::unordered_map<int, std::vector<int>> m_ctrlPointToVertices;
+	std::vector<std::string>		m_boneNames;
 };
 
 #endif // !MESH_IMPORTER
