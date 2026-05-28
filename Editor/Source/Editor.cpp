@@ -873,6 +873,7 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/nz.png",
             // Skybox mesh
             "ApexAssets/Meshes/cube.mesh",
+            // HUD
             "Assets/HUD/GameHUD.hud",
             "Assets/HUD/Fight.hud",
         };
@@ -924,6 +925,46 @@ namespace Apex::Editor
 
         for (const auto& scenePath : scenePaths)
             CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        fs::path hudDir = fs::current_path() / "Assets/HUD";
+
+        if (fs::exists(hudDir))
+        {
+            for (const auto& entry : fs::recursive_directory_iterator(hudDir))
+            {
+                if (!entry.is_regular_file())
+                    continue;
+
+                const auto& path = entry.path();
+
+                if (path.extension() == ".hud")
+                {
+                    std::ifstream file(path);
+
+                    std::string line;
+
+                    while (std::getline(file, line))
+                    {
+                        size_t texPos = line.find("\"texture\"");
+                        if (texPos == std::string::npos)
+                            continue;
+
+                        size_t firstQuote = line.find('"', texPos + 9);
+                        if (firstQuote == std::string::npos)
+                            continue;
+
+                        size_t secondQuote = line.find('"', firstQuote + 1);
+                        if (secondQuote == std::string::npos)
+                            continue;
+
+                        std::string texturePath =
+                            line.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+
+                        assetsToCopy.insert(texturePath);
+                    }
+                }
+            }
+        }
 
         for (const auto& matPath : matsToParse)
             assetsToCopy.insert(matPath);

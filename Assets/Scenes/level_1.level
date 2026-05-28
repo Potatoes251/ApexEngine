@@ -1117,7 +1117,6 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.000000, 2.000000, 0.100000],
         "isTrigger": true,
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
