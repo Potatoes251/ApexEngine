@@ -11,6 +11,7 @@
 
 #include <memory>
 
+using LibMath::Matrix4;
 using std::weak_ptr;
 using std::shared_ptr;
 using Apex::Resources::ResourceHandle;

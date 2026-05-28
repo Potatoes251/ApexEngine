@@ -27,7 +27,7 @@ public:
 
 	static void EnsureManager();
 
-	bool Import(std::string const& path, Mesh& mesh, std::vector<MaterialImportData>& materials);
+	bool Import(std::string const& path, Model& model, std::vector<MaterialImportData>& materials);
 
 private:
 	bool		ImportFbx(std::string const& path, Model& model, std::vector<MaterialImportData>& materials);
@@ -45,7 +45,7 @@ private:
 	void NormalizeVertexWeights(Apex::Rendering::Vertex& vertex);
 	void ResolveAndSortBones(FbxScene* scene, Model& model);
 
-	static Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
+	static LibMath::Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
 
 	static inline FbxManager* s_manager = nullptr;
 	static inline std::mutex  s_mutex;

@@ -6,6 +6,7 @@
 #include <bit>
 
 #include "Mesh.h"
+#include "Model.h"
 
 // to be increased after each modifictation to the bin loader
 constexpr int CURRENT_VERSION = 6;
@@ -28,7 +29,7 @@ public:
 	~BinLoader() = default;
 
 	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
-	bool Export(std::string path, Mesh const& mesh);
+	bool Export(std::string path, Model const& model);
 
 	static void WriteString(std::ofstream& file, std::string const& str);
 	static void Write32Bits(std::ofstream& file, uint32_t const& val);
@@ -58,10 +59,12 @@ private:
 	// write
 
 	void WriteHeader(std::ofstream& file);
+	void WriteSkeleton(Model const& model, std::ofstream& file);
+	void WriteBoneMap(Model const& model, std::ofstream& file);
+
 	void WriteVerticesIndices(Mesh const& mesh, std::ofstream& file);
-	void WriteBoneInfo(Mesh const& mesh, std::ofstream& file);
-	void WriteBoneMap(Mesh const& mesh, std::ofstream& file);
-	bool WriteAnimations(Mesh const& mesh, std::filesystem::path const& path);
+	
+	bool WriteAnimations(Model const& model, std::filesystem::path const& path);
 	void WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::ofstream& file);
 };
 

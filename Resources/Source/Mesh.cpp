@@ -37,7 +37,7 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
     if (this == &other)
         return *this;
 
-    // Release our current GPU resources before overwriting
+    // Release current GPU resources before overwriting
     if (m_VAO) m_rhi->DeleteVAO(m_VAO);
     if (m_VAOSkinned) m_rhi->DeleteVAO(m_VAOSkinned);
     if (m_EBO) m_rhi->DeleteBuffer(m_EBO);    
@@ -89,14 +89,7 @@ void Mesh::LoadFromFile()
 		return;
 	}
 
-	for (const auto& v : m_vertices)
-	{
-		for (int c = 0; c < 3; ++c)
-		{
-			if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
-			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
-		}
-	}
+    SetBounds();
 }
 
 void Mesh::UploadToGpu()
@@ -128,7 +121,7 @@ void Mesh::ClearVertices()
 	m_indices.shrink_to_fit();
 }
 
-void Mesh::BindForCompute()
+void Mesh::BindForCompute() const
 {
 	m_inputVertices.Bind();
 	m_outputVertices.Bind();
@@ -144,6 +137,23 @@ void Mesh::DrawLine() const
 {
 	m_rhi->BindVAO(m_VAO);
 	m_rhi->DrawLineArrays(m_vertexCount);
+}
+
+void Mesh::SetBounds()
+{
+    if (m_vertices.size() == 0) return;
+
+    m_boundsMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+    m_boundsMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+    
+    for (const auto& v : m_vertices)
+    {
+        for (int c = 0; c < 3; ++c)
+        {
+            if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
+            if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
+        }
+    }
 }
 
 int Mesh::GetAnimationIdx(std::string const& name)

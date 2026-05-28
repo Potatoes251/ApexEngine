@@ -16,6 +16,7 @@ public:
 	// regular loading use custom files
 
 	static void Load(std::string path, Mesh& mesh);
+	static void Load(std::string path, Model& model);
 	// force skip custom file and overwrite them
 	
 	static void Import(std::string path);

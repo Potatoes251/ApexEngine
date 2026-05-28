@@ -24,9 +24,8 @@ void MeshImporter::EnsureManager()
     }
 }
 
-bool MeshImporter::Import(std::string const& path, Mesh& mesh, std::vector<MaterialImportData>& materials)
+bool MeshImporter::Import(std::string const& path, Model& model, std::vector<MaterialImportData>& materials)
 {
-    Model model;
     LOG_INFO_CAT("Resource", "Start importing {}", path);
     if (ImportFbx(path, model, materials))
     {
@@ -469,7 +468,7 @@ void MeshImporter::ExtractAnimations(FbxScene* scene, Model& model)
                 for (auto& key : boneAnim.m_frames)
                 {
                     key.m_position = { 0,0,0 };
-                    key.m_rotation = Quaternion::identity();
+                    key.m_rotation = LibMath::Quaternion::identity();
                     key.m_scale = { 1,1,1 };
                 }
                 continue;
@@ -572,9 +571,9 @@ std::string MeshImporter::ResolveTexturePath(FbxSurfaceMaterial* mat, const char
     return {};
 }
 
-Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
+LibMath::Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
 {
-    Matrix4 result;
+    LibMath::Matrix4 result;
 
     for (int row = 0; row < 4; row++)
     {

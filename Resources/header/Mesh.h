@@ -6,59 +6,15 @@
 #include "RHI.h"
 #include "SSBO.h"
 
-#include "LibMath/Vector.h"
-#include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
-#include "LibMath/Quaternion.h"
 
+#include "Model.h"
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-using LibMath::Matrix4;
-using LibMath::Vector3;
-using LibMath::Quaternion;
 using std::unordered_map;
-
-struct BoneInfo
-{
-	Matrix4					m_offsetMatrix;
-	int32_t					m_parentIndex = -1;
-	std::vector<int32_t>	m_children;
-};
-
-struct KeyFrame
-{
-public:
-	//default local
-	Vector3		m_position;
-	Quaternion	m_rotation;
-	Vector3		m_scale;
-
-	//global
-	Matrix4		m_matrix;
-};
-
-struct SingleBoneAnimation
-{
-	std::vector<KeyFrame>	m_frames;
-};
-
-struct Animation
-{
-	std::vector<SingleBoneAnimation>	m_boneAnimations;
-	std::string							m_name;
-};
-
-class Model : public IResource
-{
-public:
-	std::vector<BoneInfo>	m_skeleton;
-	unordered_map<std::string, int>	m_boneMap;
-	std::vector<Animation>	m_animations;
-	std::vector<class Mesh>	m_meshes;
-};
 
 class Mesh : public IResource
 {
@@ -77,7 +33,7 @@ public:
 
 	void ClearVertices();
 
-	void BindForCompute();
+	void BindForCompute() const;
 
 	void Draw(bool skinned = false) const;
 	void DrawLine() const;
@@ -88,6 +44,8 @@ public:
 	// Axis-aligned bounding box - populated during UploadToGpu(), valid after IsReady()
 	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
 	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
+
+	void SetBounds();
 
 	int GetAnimationIdx(std::string const& name);
 

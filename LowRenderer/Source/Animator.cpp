@@ -269,7 +269,7 @@ int Animator::AddIKInstance(int endBoneIndex, int chainLength)
 	}
 
 	//create the IKInstace
-	IKInstance ikInstance = {true, endBoneIndex, chainLength, Vector3(0.f)};
+	IKInstance ikInstance = {true, endBoneIndex, chainLength, LibMath::Vector3(0.f)};
 	m_IKInstances.push_back(ikInstance);
 
 	//return the IKIstance index
@@ -394,13 +394,13 @@ void Animator::InterpoleSkeletons(
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
 		//position
-		interlopedSkeleton_out[bone].m_position = Vector3::lerp(skeletonA[bone].m_position, skeletonB[bone].m_position, t);
+		interlopedSkeleton_out[bone].m_position = LibMath::Vector3::lerp(skeletonA[bone].m_position, skeletonB[bone].m_position, t);
 
 		//rotation
-		interlopedSkeleton_out[bone].m_rotation = Quaternion::slerp(skeletonA[bone].m_rotation, skeletonB[bone].m_rotation, t);
+		interlopedSkeleton_out[bone].m_rotation = LibMath::Quaternion::slerp(skeletonA[bone].m_rotation, skeletonB[bone].m_rotation, t);
 
 		//scale
-		interlopedSkeleton_out[bone].m_scale = Vector3::lerp(skeletonA[bone].m_scale, skeletonB[bone].m_scale, t);
+		interlopedSkeleton_out[bone].m_scale = LibMath::Vector3::lerp(skeletonA[bone].m_scale, skeletonB[bone].m_scale, t);
 	}
 }
 

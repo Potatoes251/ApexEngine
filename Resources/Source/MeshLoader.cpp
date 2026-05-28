@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <cassert>
 
 void MeshLoader::Load(std::string path, Mesh& mesh)
 {
@@ -16,6 +17,19 @@ void MeshLoader::Load(std::string path, Mesh& mesh)
     BinLoader binLoader;
     std::string sourcePath;
     if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
+
+    LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
+}
+
+void MeshLoader::Load(std::string path, Model& model)
+{
+    std::filesystem::path filePath(path);
+    std::string extension = filePath.extension().string();
+
+    BinLoader binLoader;
+    std::string sourcePath;
+    assert(false && "Missing bin parser for model");
+    //if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
 
     LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
 }
@@ -68,14 +82,14 @@ static void WriteMaterialFile(const std::filesystem::path& fbxPath, const Materi
 
 void MeshLoader::Import(std::string path)
 {
-    Mesh mesh;
+    Model model;
     std::vector<MaterialImportData> materials;
     MeshImporter importer;
 
-    if (importer.Import(path, mesh, materials))
+    if (importer.Import(path, model, materials))
     {
         BinLoader binLoader;
-        binLoader.Export(path, mesh);
+        binLoader.Export(path, model);
 
         // Write a .mat file for each extracted material
         std::filesystem::path fbxPath(path);

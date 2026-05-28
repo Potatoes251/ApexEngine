@@ -48,7 +48,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
     return true;
 }
 
-bool BinLoader::Export(std::string path, Mesh const& mesh)
+bool BinLoader::Export(std::string path, Model const& model)
 {
     LOG_INFO_CAT("Resource", "Start exporting {} to bin", path.c_str());
     std::filesystem::path binaryPath = path;
@@ -73,12 +73,19 @@ bool BinLoader::Export(std::string path, Mesh const& mesh)
     }
 
     WriteHeader(file);
-    WriteString(file, path);
-    WriteVerticesIndices(mesh, file);
-    WriteBoneInfo(mesh, file);
-    WriteBoneMap(mesh, file);
+    WriteSkeleton(model, file);
+    WriteBoneMap(model, file);
 
-    if (mesh.m_animations.size() == 0) return true;
+    uint32_t meshCount = model.m_meshes.size();
+    Write32Bits(file, meshCount);
+
+    for (Mesh const& mesh : model.m_meshes)
+    {
+        WriteString(file, mesh.m_name);
+        WriteVerticesIndices(mesh, file);
+    }
+
+    if (model.m_animations.size() == 0) return true;
 
     folderPath /= "Animation";
     if (!std::filesystem::exists(folderPath)) 
@@ -86,7 +93,7 @@ bool BinLoader::Export(std::string path, Mesh const& mesh)
         std::filesystem::create_directory(folderPath);
     }
 
-    WriteAnimations(mesh, folderPath);
+    WriteAnimations(model, folderPath);
 
     return true;
 }
@@ -183,7 +190,7 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
 
     for (uint32_t i = 0; i < boneCount; i++)
     {
-        if (!file.read((char*)&bones[i].m_offsetMatrix, sizeof(Matrix4)))
+        if (!file.read((char*)&bones[i].m_offsetMatrix, sizeof(LibMath::Matrix4)))
             return false;
         
         // swap all byte if big endian
@@ -191,7 +198,7 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
         {
             uint32_t* data = reinterpret_cast<uint32_t*>(&bones[i].m_offsetMatrix[0][0]);
 
-            constexpr size_t totalU32 = sizeof(Matrix4) / 4;
+            constexpr size_t totalU32 = sizeof(LibMath::Matrix4) / 4;
 
             for (size_t j = 0; j < totalU32; j++)
             {
@@ -392,24 +399,24 @@ void BinLoader::WriteVerticesIndices(Mesh const& mesh, std::ofstream& file)
     }
 }
 
-void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
+void BinLoader::WriteSkeleton(Model const& model, std::ofstream& file)
 {
-    uint32_t boneCount = mesh.m_bones.size();
+    uint32_t boneCount = model.m_skeleton.size();
 
     Write32Bits(file, boneCount);
 
-    for (BoneInfo bone : mesh.m_bones)
+    for (BoneInfo bone : model.m_skeleton)
     {
         uint32_t* matrix = reinterpret_cast<uint32_t*>(&bone.m_offsetMatrix[0][0]);
         if (IsBigEndian())
         {
-            size_t size = sizeof(Matrix4) / 4;
+            size_t size = sizeof(LibMath::Matrix4) / 4;
             for (size_t i = 0; i < size; i++)
             {
                 matrix[i] = _byteswap_ulong(matrix[i]);
             }
         }
-        file.write((char*)matrix, sizeof(Matrix4));
+        file.write((char*)matrix, sizeof(LibMath::Matrix4));
 
         Write32Bits(file, *(reinterpret_cast<uint32_t*>(&bone.m_parentIndex)));
 
@@ -428,26 +435,26 @@ void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
     }
 }
 
-void BinLoader::WriteBoneMap(Mesh const& mesh, std::ofstream& file)
+void BinLoader::WriteBoneMap(Model const& model, std::ofstream& file)
 {
-    uint32_t count = mesh.m_boneMap.size();
+    uint32_t count = model.m_boneMap.size();
 
     Write32Bits(file, count);
 
-    for (auto const& [key, value] : mesh.m_boneMap)
+    for (auto const& [key, value] : model.m_boneMap)
     {
         WriteString(file, key);
         Write32Bits(file, value);
     }
 }
 
-bool BinLoader::WriteAnimations(Mesh const& mesh, std::filesystem::path const& path)
+bool BinLoader::WriteAnimations(Model const& model, std::filesystem::path const& path)
 {
-    size_t animCount = mesh.m_animations.size();
+    size_t animCount = model.m_animations.size();
 
     for (size_t i = 0; i < animCount; i++)
     {
-        Animation const& animation = mesh.m_animations[i];
+        Animation const& animation = model.m_animations[i];
 
         std::filesystem::path fileName = animation.m_name + ".anim";
 
