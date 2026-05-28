@@ -38,7 +38,7 @@ public:
 
 	static bool IsBigEndian()
 	{
-		union {
+		volatile union {
 			uint32_t i;
 			char c[4];
 		} val = { 0x01020304 };
