@@ -11,7 +11,15 @@ void Model::LoadFromFile()
 
 	for (Mesh& mesh : m_meshes)
 	{
-		mesh.SetBounds();
+		mesh.SetRhi(m_rhi);
+		for (const auto& v : mesh.m_vertices)
+		{
+			for (int c = 0; c < 3; ++c)
+			{
+				if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
+				if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
+			}
+		}
 	}
 }
 
@@ -21,4 +29,15 @@ void Model::UploadToGpu()
 	{
 		mesh.UploadToGpu();
 	}
+}
+
+int Model::GetAnimationIdx(std::string const& name)
+{
+	for (int i = 0; i < m_animations.size(); i++)
+	{
+		Animation const& anim = m_animations[i];
+		if (anim.m_name == name)
+			return i;
+	}
+	return -1;
 }

@@ -6,6 +6,7 @@
 
 #include "../../Resources/header/ComputeShader.h"
 #include "../../Resources/header/Mesh.h"
+#include "../../Resources/header/Model.h"
 #include "../../Resources/header/ResourceManager.h"
 #include "../../Resources/header/Component.h"
 
@@ -24,12 +25,12 @@ namespace Apex::Rendering
 	{
 	public:
 		Animator() = delete;
-		Animator(ResourceHandle<Mesh> mesh);
+		Animator(ResourceHandle<Model> model) : m_model(model) {}
 		~Animator() = default;
-		Animator(const Animator& other);
+		Animator(const Animator&) = default;
 		Animator& operator=(const Animator&) = default;
 
-		ResourceHandle<Mesh>	GetMesh() const { return m_mesh; }
+		ResourceHandle<Model>	GetModel() const { return m_model; }
 		void SetBlendRatio(float newRatio) { m_blendRatio = newRatio; }
 
 		//Component
@@ -40,6 +41,7 @@ namespace Apex::Rendering
 
 		//before update
 		void SetMesh(ResourceHandle<Mesh> mesh);
+		void SetModel(ResourceHandle<Model> model);
 		void SetFPS(float fps);				//base fps = 30
 
 		//during update
@@ -129,8 +131,8 @@ namespace Apex::Rendering
 		//speed
 		float					m_fps = 30.f;
 
-		//mesh infos
-		ResourceHandle<Mesh>	m_mesh;
+		//model infos
+		ResourceHandle<Model>	m_model;
 		int						m_boneCount = 0;
 		
 		//elapse times

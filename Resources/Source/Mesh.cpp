@@ -5,12 +5,8 @@
 using namespace Apex::Rendering;
 
 Mesh::Mesh(Mesh&& other) noexcept
-    : IResource(std::move(other)),
-    m_vertices(std::move(other.m_vertices)),
+    : m_vertices(std::move(other.m_vertices)),
     m_indices(std::move(other.m_indices)),
-    m_bones(std::move(other.m_bones)),
-    m_animations(std::move(other.m_animations)),
-    m_boneMap(std::move(other.m_boneMap)),
     m_VAO(other.m_VAO),
     m_VAOSkinned(other.m_VAOSkinned),
     m_VBO(other.m_VBO),
@@ -19,9 +15,7 @@ Mesh::Mesh(Mesh&& other) noexcept
     m_vertexCount(other.m_vertexCount),
     m_name(std::move(other.m_name)),
     m_inputVertices(std::move(other.m_inputVertices)),
-    m_outputVertices(std::move(other.m_outputVertices)),
-    m_boundsMin(other.m_boundsMin),
-    m_boundsMax(other.m_boundsMax)
+    m_outputVertices(std::move(other.m_outputVertices))
 {
     // Null out the source's GPU handles so its destructor doesn't delete them
     other.m_VAO = 0;
@@ -45,9 +39,6 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
 
     m_vertices = std::move(other.m_vertices);
     m_indices = std::move(other.m_indices);
-    m_bones = std::move(other.m_bones);
-    m_animations = std::move(other.m_animations);
-    m_boneMap = std::move(other.m_boneMap);
     m_name = std::move(other.m_name);
     m_inputVertices = std::move(other.m_inputVertices);
     m_outputVertices = std::move(other.m_outputVertices);
@@ -57,8 +48,6 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
     m_EBO = other.m_EBO;
     m_indexCount = other.m_indexCount;
     m_vertexCount = other.m_vertexCount;
-    m_boundsMin = other.m_boundsMin;
-    m_boundsMax = other.m_boundsMax;
 
     other.m_VAO = 0;
     other.m_VAOSkinned = 0;
@@ -76,20 +65,6 @@ Mesh::~Mesh()
     if (m_VAOSkinned) m_rhi->DeleteVAO(m_VAOSkinned);
     if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
     if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
-}
-
-void Mesh::LoadFromFile()
-{
-	MeshLoader loader;
-	loader.Load(m_path, *this);
-
-	if (m_vertices.empty())
-	{
-		SetState(ResourceState::Failed);
-		return;
-	}
-
-    SetBounds();
 }
 
 void Mesh::UploadToGpu()
@@ -137,32 +112,4 @@ void Mesh::DrawLine() const
 {
 	m_rhi->BindVAO(m_VAO);
 	m_rhi->DrawLineArrays(m_vertexCount);
-}
-
-void Mesh::SetBounds()
-{
-    if (m_vertices.size() == 0) return;
-
-    m_boundsMin = { FLT_MAX, FLT_MAX, FLT_MAX };
-    m_boundsMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-    
-    for (const auto& v : m_vertices)
-    {
-        for (int c = 0; c < 3; ++c)
-        {
-            if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
-            if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
-        }
-    }
-}
-
-int Mesh::GetAnimationIdx(std::string const& name)
-{
-	for (int i = 0; i < m_animations.size(); i++)
-	{
-		Animation const& anim = m_animations[i];
-		if (anim.m_name == name)
-			return i;
-	}
-	return -1;
 }

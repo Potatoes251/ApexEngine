@@ -3,6 +3,8 @@
 
 #include "IResource.h"
 
+#include "Mesh.h"
+
 #include "LibMath/Matrix/Matrix4.h"
 #include "LibMath/Vector/Vector3.h"
 #include "LibMath/Quaternion.h"
@@ -52,7 +54,15 @@ public:
 	void LoadFromFile() override;
 	void UploadToGpu() override;
 
-	std::vector<class Mesh> const& GetMeshes() { return m_meshes; }
+	// Axis-aligned bounding box - populated during LoadFromFile()
+	LibMath::Vector3 GetBoundsMin() const { return m_boundsMin; }
+	LibMath::Vector3 GetBoundsMax() const { return m_boundsMax; }
+
+	std::vector<Mesh> const& GetMeshes() { return m_meshes; }
+
+	int GetAnimationIdx(std::string const& name);
+
+	std::vector<Animation> const& GetAnimations() { return m_animations; }
 
 	std::vector<BoneInfo>	m_skeleton;
 	std::unordered_map<std::string, int>	m_boneMap;
@@ -61,7 +71,10 @@ private:
 	friend class BinLoader;
 
 	std::vector<Animation>	m_animations;
-	std::vector<class Mesh>	m_meshes;
+	std::vector<Mesh>	m_meshes;
+
+	LibMath::Vector3 m_boundsMin = { FLT_MAX,  FLT_MAX,  FLT_MAX };
+	LibMath::Vector3 m_boundsMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 };
 
 #endif // !MODEL

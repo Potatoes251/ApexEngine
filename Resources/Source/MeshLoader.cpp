@@ -2,6 +2,7 @@
 
 #include "BinLoader.h"
 #include "MeshImporter.h"
+#include "Model.h"
 
 #include "Log.H"
 
@@ -9,27 +10,13 @@
 #include <fstream>
 #include <cassert>
 
-void MeshLoader::Load(std::string path, Mesh& mesh)
+void MeshLoader::Load(std::string const& path, Model& model)
 {
     std::filesystem::path filePath(path);
     std::string extension = filePath.extension().string();
 
     BinLoader binLoader;
-    std::string sourcePath;
-    if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
-
-    LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
-}
-
-void MeshLoader::Load(std::string path, Model& model)
-{
-    std::filesystem::path filePath(path);
-    std::string extension = filePath.extension().string();
-
-    BinLoader binLoader;
-    std::string sourcePath;
-    assert(false && "Missing bin parser for model");
-    //if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
+    if (IsBinFile(extension) && binLoader.Load(path, model)) return;
 
     LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
 }
@@ -80,7 +67,7 @@ static void WriteMaterialFile(const std::filesystem::path& fbxPath, const Materi
     LOG_INFO_CAT("Resource", "Generated material file: {}", matPath.generic_string());
 }
 
-void MeshLoader::Import(std::string path)
+void MeshLoader::Import(std::string const& path)
 {
     Model model;
     std::vector<MaterialImportData> materials;

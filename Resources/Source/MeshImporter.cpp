@@ -2,6 +2,9 @@
 
 #include "Log.h"
 
+#include "Mesh.h"
+#include "Model.h"
+
 #include <fstream>
 #include <filesystem>
 #include <queue>
@@ -11,7 +14,7 @@ constexpr double ANIMATION_FPS = 30;
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
-// causes undefined behaviour and crashes.
+// causes undefined behavior and crashes.
 
 void MeshImporter::EnsureManager()
 {
@@ -544,7 +547,7 @@ std::string MeshImporter::ResolveTexturePath(FbxSurfaceMaterial* mat, const char
     std::string relPath = tex->GetRelativeFileName();
     std::string absPath = tex->GetFileName();
 
-    // Normalise path separators
+    // Normalize path separators
     for (auto& c : relPath) 
         if (c == '\\') 
             c = '/';

@@ -1,8 +1,6 @@
 #ifndef MESH_IMPORTER
 #define MESH_IMPORTER
 
-#include "Mesh.h"
-
 #include <string>
 #include <mutex>
 
@@ -10,6 +8,9 @@
 #include <fbxsdk.h>
 
 #include "BinLoader.h"
+
+class Mesh;
+class Model;
 
 struct MaterialImportData
 {

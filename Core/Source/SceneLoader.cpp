@@ -255,7 +255,7 @@ void SceneLoader::ParseMeshRenderer(Data::Object* obj, SerialParser& parser)
     auto& comp = obj->AddComponent<Apex::Rendering::MeshRenderer>();
     comp.SetEnabled(enabled);
 
-    comp.SetMesh(GetMeshHandle(mesh));
+    comp.SetModel(GetModelHandle(mesh));
     comp.SetMaterial(GetMaterialHandle(material));
     comp.SetCastShadow(shadow);
 }
@@ -313,7 +313,7 @@ void SceneLoader::ParseMeshCollider(Data::Object* obj, SerialParser& parser)
     parser.Expect(':');
     std::string type = parser.ParseString();
 
-    auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetMeshHandle(meshPath), StringToMeshColliderType(type), isTrigger);
+    auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(GetModelHandle(meshPath), StringToMeshColliderType(type), isTrigger);
     comp.SetEnabled(enabled);
     comp.SetStaticFriction(staticFriction);
     comp.SetDynamicFriction(dynamicFriction);
@@ -651,7 +651,7 @@ void SceneLoader::ParseAnimator(Data::Object* obj, SerialParser& parser)
     parser.ParseString(); parser.Expect(':');
     std::string meshPath = parser.ParseString();
 
-    Rendering::Animator& comp = obj->AddComponent<Rendering::Animator>(GetMeshHandle(meshPath));
+    Rendering::Animator& comp = obj->AddComponent<Rendering::Animator>(GetModelHandle(meshPath));
     comp.SetFPS(fps);
     comp.SetEnabled(enabled);
 }
@@ -834,9 +834,9 @@ Apex::Physic::MeshColliderType SceneLoader::StringToMeshColliderType(const std::
     return Apex::Physic::MeshColliderType::Convex; // fallback
 }
 
-Apex::Resources::ResourceHandle<Mesh> SceneLoader::GetMeshHandle(const std::string& path)
+Apex::Resources::ResourceHandle<Model> SceneLoader::GetModelHandle(const std::string& path)
 {
-    return m_resourceManager->CreateAsync<Mesh>(path);
+    return m_resourceManager->CreateAsync<Model>(path);
 }
 
 Apex::Resources::ResourceHandle<Texture> Apex::Serialization::SceneLoader::GetTextureHandle(const std::string& path)

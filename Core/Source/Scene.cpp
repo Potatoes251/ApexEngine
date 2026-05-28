@@ -251,9 +251,10 @@ namespace Apex::Rendering
 	{
 		if (!passInfo.m_shader.IsReady())
 		{
-			if (!m_shader.IsReady()) return;
 			passInfo.m_shader = m_shader;
 		}
+		if (!passInfo.m_shader.IsReady()) return;
+
 		passInfo.m_shader->Use();
 
 		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
+bool BinLoader::Load(std::string const& path, Model& model)
 {
     std::ifstream file(path, std::ios::binary);
 
@@ -26,29 +26,54 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     file.seekg(0, std::ios::beg);
 
-    if (!ReadHeader(file, sourcePath_out)
-        || !ReadVerticesIndices(mesh, file)
-        || !ReadBoneInfo(mesh, file)
-        || !ReadBoneMap(mesh, file))
-        return false;
+    uint32_t version;
+    if (!ReadHeader(file, version)) return false;
 
-    std::filesystem::path folderPath(path);
-    folderPath = folderPath.parent_path();
-    folderPath /= "Animation";
-    if (std::filesystem::exists(folderPath) && std::filesystem::is_directory(folderPath)) 
+    if (version == LEGACY_VERSION)
     {
-        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) 
-        {
-            if (entry.is_regular_file() && entry.path().extension() == ".anim")
-            {
-                ReadAnimation(mesh, entry);
-            }
-        }
+        if (!LoadLegacy(file, model)) return false;
+        if (!Export(path, model)) return false;
+        LoadAnimations(path, model);  // loading animations after avoid reexporting the animations
+        return true;
     }
+
+    ReadSkeleton(model, file);
+    ReadBoneMap(model, file);
+
+    uint32_t meshCount;
+
+    Read32Bits(file, meshCount);
+
+    for (int32_t i = 0; i < meshCount; i++)
+    {
+        model.m_meshes.emplace_back();
+        Mesh& mesh = model.m_meshes.back();
+
+        std::string name;
+        if (!ReadString(file, name)) return false;
+        if (!ReadVerticesIndices(mesh, file)) return false;
+    }
+
+    LoadAnimations(path, model);
+
     return true;
 }
 
-bool BinLoader::Export(std::string path, Model const& model)
+bool BinLoader::LoadLegacy(std::ifstream& file, Model& model)
+{
+    model.m_meshes.emplace_back();
+    Mesh& mesh = model.m_meshes.back();
+    mesh.m_name = "default";
+
+    if (!ReadVerticesIndices(mesh, file)
+        || !ReadSkeleton(model, file)
+        || !ReadBoneMap(model, file))
+        return false;
+
+    return true;
+}
+
+bool BinLoader::Export(std::string const& path, Model const& model)
 {
     LOG_INFO_CAT("Resource", "Start exporting {} to bin", path.c_str());
     std::filesystem::path binaryPath = path;
@@ -99,7 +124,7 @@ bool BinLoader::Export(std::string path, Model const& model)
 }
 
 
-bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
+bool BinLoader::ReadHeader(std::ifstream& file, uint32_t& version)
 {
     MeshHeader header;
 
@@ -107,18 +132,21 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
     if (!Read32Bits(file, header.m_version)) return false;
     if (!Read32Bits(file, header.m_vertexSize)) return false;
     if (!Read32Bits(file, header.m_keyframeSize)) return false;
-    if (!ReadString(file, sourcePath_out))
+    
+    if (header.m_version < 7) // remove at version 7
     {
-        sourcePath_out.clear();
-        return false;
+        std::string sourcePath;
+        if (!ReadString(file, sourcePath)) return false;
     }
+
+    version = header.m_version;
 
     if (header.m_magic != 0x4D455348)
     {
         LOG_ERROR_CAT("Resource", "Invalid file format");
         return false;
     }
-    if (header.m_version != CURRENT_VERSION)
+    if (header.m_version != CURRENT_VERSION && header.m_version != LEGACY_VERSION)
     {
         LOG_ERROR_CAT("Resource", "File needs to be updated (version was {})", header.m_version);
         return false;
@@ -126,7 +154,7 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
         || header.m_keyframeSize != sizeof(KeyFrame))
     {
-        LOG_ERROR_CAT("Resource", "Struct size doesnt match");
+        LOG_ERROR_CAT("Resource", "Struct size doesn't match");
         return false;
     }
 
@@ -180,7 +208,7 @@ bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
     return true;
 }
 
-bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
+bool BinLoader::ReadSkeleton(Model& model, std::ifstream& file)
 {
     uint32_t boneCount;
 
@@ -222,25 +250,25 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
         {
             uint32_t* data = reinterpret_cast<uint32_t*>(bones[i].m_children.data());
 
-            for (size_t j = 0; j < bones[j].m_children.size(); j++)
+            for (size_t j = 0; j < bones[i].m_children.size(); j++)
             {
                 data[j] = _byteswap_ulong(data[j]);
             }
         }
     }
 
-    mesh.m_bones = bones;
+    model.m_skeleton = bones;
 
     return true;
 }
 
-bool BinLoader::ReadBoneMap(Mesh& mesh, std::ifstream& file)
+bool BinLoader::ReadBoneMap(Model& model, std::ifstream& file)
 {
     uint32_t count;
 
     if (!Read32Bits(file, count)) return false;
 
-    mesh.m_boneMap.reserve(count);
+    model.m_boneMap.reserve(count);
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -250,13 +278,13 @@ bool BinLoader::ReadBoneMap(Mesh& mesh, std::ifstream& file)
         if (!ReadString(file, key)) return false;
         if (!Read32Bits(file, value)) return false;
 
-        mesh.m_boneMap.emplace(std::move(key), value);
+        model.m_boneMap.emplace(std::move(key), value);
     }
 
     return true;
 }
 
-bool BinLoader::ReadAnimation(Mesh& mesh, std::filesystem::path const& path)
+bool BinLoader::ReadAnimation(Model& model, std::filesystem::path const& path)
 {
     std::ifstream file(path, std::ios::binary);
 
@@ -281,7 +309,7 @@ bool BinLoader::ReadAnimation(Mesh& mesh, std::filesystem::path const& path)
         if (!ReadSingleBoneAnimation(animation.m_boneAnimations[j], file)) return false;
     }
 
-    mesh.m_animations.push_back(animation);
+    model.m_animations.push_back(animation);
 
     return true;
 }
@@ -308,6 +336,23 @@ bool BinLoader::ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream&
     }
 
     return true;
+}
+
+void BinLoader::LoadAnimations(std::string const& path, Model& model)
+{
+    std::filesystem::path folderPath(path);
+    folderPath = folderPath.parent_path();
+    folderPath /= "Animation";
+    if (std::filesystem::exists(folderPath) && std::filesystem::is_directory(folderPath))
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+        {
+            if (entry.is_regular_file() && entry.path().extension() == ".anim")
+            {
+                ReadAnimation(model, entry);
+            }
+        }
+    }
 }
 
 bool BinLoader::ReadString(std::ifstream& file, std::string& str)

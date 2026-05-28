@@ -10,13 +10,8 @@ using namespace Apex::Rendering;
 
 Apex::Rendering::MeshRenderer::MeshRenderer(ResourceManager* resourceManager)
 {
-    m_mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh");
+    m_model = resourceManager->CreateAsync<Model>("ApexAssets/Meshes/cube/cube.mesh");
     m_material = resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
-}
-
-void MeshRenderer::SetMesh(ResourceHandle<Mesh> mesh)
-{
-    m_mesh = mesh;
 }
 
 void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
@@ -24,12 +19,7 @@ void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
     m_material = material;
 }
 
-ResourceHandle<Mesh>& MeshRenderer::GetMesh()
-{
-    return m_mesh;
-}
-
-ResourceHandle<Material>& MeshRenderer::GetMaterial()
+ResourceHandle<Material> MeshRenderer::GetMaterial()
 {
     return m_material;
 }
@@ -38,68 +28,60 @@ std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
 {
     return
     {
-        { "Mesh", ExposedVar::Mesh, &m_mesh },
+        { "Mesh", ExposedVar::Mesh, &m_model },
         { "Material", ExposedVar::Material, &m_material },
         { "Cast Shadow", ExposedVar::Bool, &m_castShadow }
     };
 }
 
-std::unique_ptr<Apex::Component> Apex::Rendering::MeshRenderer::Clone()
-{
-    auto clone = std::make_unique<MeshRenderer>();
-
-    clone->m_mesh = m_mesh;
-    clone->m_material = m_material;
-    clone->m_castShadow = m_castShadow;
-
-    return clone;
-}
-
 void MeshRenderer::ComputePass()
 {
-    if (!m_mesh.IsReady() ||
-        !m_material.IsReady())
+    if (!m_model.IsReady())
         return;
 
-    ResourceHandle<ComputeShader> computeShader = m_material->GetComputeShader();
-
-    if (!computeShader.IsReady()) 
-    {
-        m_useSkinnedVAO = false;
-        return;
-    }
-    m_useSkinnedVAO = true;
-
-    m_material->BindCompute();
-
-    m_mesh->BindForCompute();
+    m_useSkinnedVAO = false;
 
     Data::Object* owner = GetOwner();
+    Animator* animator = nullptr;
     if (owner)
     {
-        Animator* animator = owner->GetComponent<Animator>();
-
-        if (animator) animator->SendSkeletonMatrixToGPU(computeShader);
+        animator = owner->GetComponent<Animator>();
     }
 
-    m_material->StartCompute(m_mesh->GetVertexCount());
+    std::vector<Mesh> const& meshes = m_model->GetMeshes();
+
+    for (size_t i = 0; i < meshes.size(); i++)
+    {
+        if (i >= m_materials.size()) break;
+
+        ResourceHandle<Material> material = m_materials[i];
+
+        if (!material.IsReady()) continue;
+        if (!material->GetComputeShader().IsReady()) continue;
+        
+        m_useSkinnedVAO = true;
+
+        material->BindCompute();
+
+        if (animator) 
+           animator->SendSkeletonMatrixToGPU(material->GetComputeShader());
+
+        Mesh const& mesh = meshes[i];
+
+        mesh.BindForCompute();
+        material->StartCompute(mesh.GetVertexCount());
+    }
 }
 
 void MeshRenderer::Render(RenderPassInfo passInfo)
 {
-    if (!m_mesh.IsReady() ||
-        !m_material.IsReady() ||
+    if (!m_model.IsReady() ||
         (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
 
-    if (!(passInfo.m_flags & IgnoreMaterial))
-    {
-        m_material->Bind(passInfo.m_shader);
-    }
+    Matrix4 modelMatrix = GetOwner()->GetGlobalTransform();
 
-    Matrix4 model = GetOwner()->GetGlobalTransform();
-
-    passInfo.m_shader->SetUniform("uModel", model);
+    passInfo.m_shader->SetUniform("uModel", modelMatrix);
     if (passInfo.m_camera)
     {
         passInfo.m_shader->SetUniform("uViewProj", passInfo.m_camera->GetViewProj());
@@ -117,16 +99,42 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
         passInfo.m_shader->SetUniform("uColor", color / 255.f);
     }
 
-    m_mesh->Draw(m_useSkinnedVAO);
+    std::vector<Mesh> const& meshes = m_model->GetMeshes();
+
+    m_material->Bind(passInfo.m_shader);
+
+    for (size_t i = 0; i < meshes.size(); i++)
+    {
+        //if (i < m_materials.size() && m_materials[i].IsReady() && !(passInfo.m_flags & IgnoreMaterial))
+        //{
+        //    m_materials[i]->Bind(passInfo.m_shader);
+        //}
+
+        meshes[i].Draw(m_useSkinnedVAO);
+    }
 }
 
 void MeshRenderer::Serialize(std::ostream& out) const
 {
-    if (m_mesh.IsValid() && !m_mesh->GetPath().empty())
-        out << "        \"mesh\": \"" << m_mesh->GetPath() << "\",\n";
+    if (m_model.IsValid() && !m_model->GetPath().empty())
+        out << "        \"model\": \"" << m_model->GetPath() << "\",\n";
 
-    if (m_material.IsValid() && !m_material->GetPath().empty())
-        out << "        \"material\": \"" << m_material->GetPath() << "\",\n";
+    if (!m_materials.empty())
+    {
+        out << "        \"materials\": [\n";
+        for (size_t i = 0; i < m_materials.size(); ++i)
+        {
+            if (m_materials[i].IsValid() && !m_materials[i]->GetPath().empty())
+                out << "            \"" << m_materials[i]->GetPath() << "\"";
+            else
+                out << "            \"\"";
+
+            if (i < m_materials.size() - 1)
+                out << ",";
+            out << "\n";
+        }
+        out << "        ],\n";
+    }
 
     out << "        \"castShadow\": " << (m_castShadow ? "true" : "false ") << "\n";
 }
