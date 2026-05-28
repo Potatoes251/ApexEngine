@@ -13,6 +13,8 @@ bool Game::Init()
 {
     if (!InitWindow()) return false;
 
+    m_saveSlotCount = m_app->GetSaveManager()->ListSlots().size();
+
     m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
     if (!m_gui) return false;
 
@@ -211,4 +213,33 @@ void Apex::Game::Game::LoadSavedGame()
     }
 
     LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", m_currentSaveSlot, data.scenePath);
+}
+
+void Apex::Game::Game::DeleteSaveSlot(int slot)
+{
+    auto* saveManager = m_app->GetSaveManager();
+
+    // 1. Delete the targeted slot file
+    std::filesystem::remove(saveManager->BuildPath(slot));
+
+    // 2. Shift all slots after it down by 1
+    for (int i = slot + 1; i < m_saveSlotCount; ++i)
+    {
+        std::filesystem::path oldPath = saveManager->BuildPath(i);
+        std::filesystem::path newPath = saveManager->BuildPath(i - 1);
+
+        if (std::filesystem::exists(oldPath))
+        {
+            std::filesystem::rename(oldPath, newPath);
+        }
+    }
+
+    // 3. Update slot count
+    --m_saveSlotCount;
+
+    // 4. Fix current slot if needed
+    if (m_currentSaveSlot == slot)
+        m_currentSaveSlot = -1;
+    else if (m_currentSaveSlot > slot)
+        --m_currentSaveSlot;
 }
