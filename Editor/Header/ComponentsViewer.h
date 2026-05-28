@@ -27,7 +27,6 @@ namespace Apex::Editor
 		ComponentsViewer(Apex::UserInterface::IGUI* gui,
 			Apex::Rendering::Scene* scene,
 			Apex::Resources::ResourceManager* resourceManager,
-			Apex::Physic::PhysicSystem* phys,
 			Apex::Scripting::LuaManager* lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
@@ -50,7 +49,6 @@ namespace Apex::Editor
 
 		bool DrawComponentEnum(ExposedVar var);
 		bool DrawComponent(std::string const& name, LibMath::Vector3& data);
-		bool DrawComponent(PhysicMaterial* mat);
 		bool DrawComponentColor3(ExposedVar var);
 		bool DrawComponentColor4(ExposedVar var);
 		void DrawComponent(std::string const& name, Resources::ResourceHandle<Mesh>* handle);
@@ -69,7 +67,6 @@ namespace Apex::Editor
 		Resources::AssetPicker<Rendering::Material> m_materialPicker;
 		Resources::AssetPicker<Texture> m_texturePicker;
 		Resources::ScriptPicker m_scriptPicker;
-		Physic::PhysicSystem* m_phys;
 		Scripting::LuaManager* m_luaManager;
 		ThumbnailRenderer* m_thumbnailRenderer = nullptr;
 

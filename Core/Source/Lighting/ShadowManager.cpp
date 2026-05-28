@@ -25,7 +25,7 @@ ShadowManager::ShadowManager(IRHI* rhi, Resources::ResourceHandle<Shader> dirSha
 
 	m_shadowMaps.push_back(shadow);
 
-	m_lightMatrixBuffer = rhi->CreateUniformBuffer(3, sizeof(LibMath::Matrix4) * 10);
+	m_lightMatrixBuffer = rhi->CreateUniformBuffer(3, sizeof(LibMath::Matrix4) * MAX_SHADOW_2D);
 }
 
 ShadowManager::~ShadowManager()
@@ -66,12 +66,12 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	pass.m_shader = m_dirShader;
 	m_dirShader->Use();
 
-	int csmCount = 0;
+	int shadowCount = 0;
 	for (DirectionalLightComponent* light : lights.m_directionalLights)
 	{
-		if (!light->IsCastingShadow() || !AcquireCascadedShadowMap(light, camera, csmCount)) continue;
+		if (!light->IsCastingShadow() || !AcquireCascadedShadowMap(light, camera, shadowCount)) continue;
 
-		CascadedShadowMap& shadow = m_cascadedShadowMaps[csmCount];
+		CascadedShadowMap& shadow = m_cascadedShadowMaps[shadowCount];
 
 		m_splitDepths = ComputeSplitDepths(camera->GetNear(), camera->GetFar(), 1);
 
@@ -89,9 +89,9 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 			scene->Render(pass);
 		}
 
-		csmCount++;
+		shadowCount++;
 	}
-	int shadowCount = 0;
+	shadowCount = 0;
 	for (SpotLightComponent* light : lights.m_spotLights)
 	{
 		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
@@ -183,7 +183,9 @@ void ShadowManager::BindShadowMaps(Resources::ResourceHandle<Shader> shader)
 
 bool ShadowManager::AcquireCascadedShadowMap(DirectionalLightComponent* light, Rendering::Camera* camera, int idx)
 {
-	if (idx < 0 || idx >= MAX_SHADOW_2D / CASCADE_COUNT) return false;
+	if (idx >= MAX_SHADOW_2D / CASCADE_COUNT) return false;
+
+	assert(idx >= 0 && idx <= m_cascadedShadowMaps.size());
 
 	if (idx < m_cascadedShadowMaps.size())
 	{
@@ -202,7 +204,9 @@ bool ShadowManager::AcquireCascadedShadowMap(DirectionalLightComponent* light, R
 
 bool ShadowManager::AcquireShadowMap(SpotLightComponent* light, Camera* camera, int idx)
 {
-	if (idx < 0 || idx >= MAX_SHADOW_2D) return false;
+	if (idx >= MAX_SHADOW_2D) return false;
+
+	assert(idx >= 0 && idx <= m_shadowMaps.size());
 
 	if (idx < m_shadowMaps.size())
 	{
@@ -223,7 +227,9 @@ bool ShadowManager::AcquireShadowMap(SpotLightComponent* light, Camera* camera, 
 
 bool ShadowManager::AcquireShadowCubeMap(PointLightComponent* light, int idx)
 {
-	if (idx < 0 || idx >= MAX_SHADOW_CUBE) return false;
+	if (idx >= MAX_SHADOW_CUBE) return false;
+
+	assert(idx >= 0 && idx <= m_shadowCubeMaps.size());
 
 	if (idx < m_shadowCubeMaps.size())
 	{

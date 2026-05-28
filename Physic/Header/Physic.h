@@ -7,8 +7,8 @@
 #include "LibMath/Quaternion.h"
 
 #include "Mesh.h"
+#include "ResourceHandle.h"
 
-#include "PhysicMaterial.h"
 #include "Collider.h"
 
 #include <vector>
@@ -17,7 +17,6 @@
 namespace Apex::Physic
 {
 	inline LibMath::Vector3 GRAVITY = { 0.f, -9.81f, 0.f };
-
 
 	class BoxCollider;
 	class MeshCollider;
@@ -33,8 +32,9 @@ namespace Apex::Physic
 
 	struct HitResult
 	{
-		Collider*			m_collider;
-		RigidBodyComponent* m_body;
+		size_t				m_objId;
+		size_t				m_colliderId;
+		size_t				m_bodyId;
 		LibMath::Vector3	m_position;
 		LibMath::Vector3	m_normal;
 		float				m_distance;
@@ -49,7 +49,6 @@ namespace Apex::Physic
 
 		~PhysicSystem();
 
-		PhysMatHandle	CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness);
 		void			CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 		void			RemoveActor(RigidBodyComponent const& rigidbody);
 
@@ -74,13 +73,13 @@ namespace Apex::Physic
 			SimulationCallback(PhysicSystem* system) : m_system(system) {}
 			~SimulationCallback() = default;
 
-			void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override;
-			void onWake(physx::PxActor** actors, physx::PxU32 count) override;
-			void onSleep(physx::PxActor** actors, physx::PxU32 count) override;
-			void onContact(physx::PxContactPairHeader const& pairHeader, physx::PxContactPair const* pairs, physx::PxU32 nbPairs) override;
+			void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override {}
+			void onWake(physx::PxActor** actors, physx::PxU32 count) override {}
+			void onSleep(physx::PxActor** actors, physx::PxU32 count) override {}
+			void onContact(physx::PxContactPairHeader const& pairHeader, physx::PxContactPair const* pairs, physx::PxU32 nbPairs) override {}
 			void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override;
 
-			void onAdvance(physx::PxRigidBody const* const* bodyBuffer, physx::PxTransform const* poseBuffer, physx::PxU32 const count) override;
+			void onAdvance(physx::PxRigidBody const* const* bodyBuffer, physx::PxTransform const* poseBuffer, physx::PxU32 const count) override {}
 
 		private:
 			PhysicSystem* m_system; // back-pointer to the wrapper
@@ -108,7 +107,7 @@ namespace Apex::Physic
 			physx::PxConvexMesh const* mesh, physx::PxTransform const& worldPose, LibMath::Vector3 const& scale) const;
 
 
-		physx::PxMaterial*	GetMaterial(Collider const& collider) const;
+		physx::PxMaterial*	GetMaterial(Collider const& collider);
 
 		physx::PxShape*		CreateShapeBox(BoxCollider const& box);
 		physx::PxShape*		CreateShapeCapsule(CapsuleCollider const& capsule);
@@ -133,9 +132,6 @@ namespace Apex::Physic
 		static inline PhysXContext		m_pxCtx;
 		static inline bool				m_isCtxInit = false;
 		static inline int				m_physicInstanceCount = 0;
-
-		std::unordered_map<std::string, Resources::ResourceEntry>
-										m_materialsMap;
 
 		std::vector<physx::PxMaterial*>	m_physxMaterials;
 		std::vector<PhysicActor>		m_rigidBodies;

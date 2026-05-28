@@ -148,7 +148,7 @@ bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
         return false;
 
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
 
@@ -157,7 +157,7 @@ bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
             data[i] = _byteswap_ulong(data[i]);
         }
 
-        // only works if vertices uses only 4 bytes types
+        static_assert(alignof(Apex::Rendering::Vertex) == 4);
         data = reinterpret_cast<uint32_t*>(vertices.data());
         size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
 
@@ -187,7 +187,7 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
             return false;
         
         // swap all byte if big endian
-        if constexpr (IsBigEndian())
+        if (IsBigEndian())
         {
             uint32_t* data = reinterpret_cast<uint32_t*>(&bones[i].m_offsetMatrix[0][0]);
 
@@ -211,7 +211,7 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
             return false;
 
         // swap all byte if big endian
-        if constexpr (IsBigEndian())
+        if (IsBigEndian())
         {
             uint32_t* data = reinterpret_cast<uint32_t*>(bones[i].m_children.data());
 
@@ -289,7 +289,7 @@ bool BinLoader::ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream&
 
     if (!file.read((char*)sba.m_frames.data(), count * sizeof(KeyFrame))) return false;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         uint32_t* data = reinterpret_cast<uint32_t*>(sba.m_frames.data());
         size_t totalU32 = (sba.m_frames.size() * sizeof(KeyFrame)) / 4;
@@ -320,7 +320,7 @@ bool BinLoader::Read32Bits(std::ifstream& file, uint32_t& val)
 {
     if (!file.read((char*)&val, 4)) return false;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         val = _byteswap_ulong(val);
     }
@@ -338,7 +338,7 @@ void BinLoader::WriteHeader(std::ofstream& file)
     header.m_vertexSize = sizeof(Apex::Rendering::Vertex);
     header.m_keyframeSize = sizeof(KeyFrame);
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         header.m_magic = _byteswap_ulong(header.m_magic);
         header.m_version = _byteswap_ulong(header.m_version);
@@ -360,7 +360,7 @@ void BinLoader::WriteVerticesIndices(Mesh const& mesh, std::ofstream& file)
 
     // Data
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         std::vector<Apex::Rendering::Vertex> vertices = mesh.m_vertices;
         std::vector<uint32_t> indices = mesh.m_indices;
@@ -401,7 +401,7 @@ void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
     for (BoneInfo bone : mesh.m_bones)
     {
         uint32_t* matrix = reinterpret_cast<uint32_t*>(&bone.m_offsetMatrix[0][0]);
-        if constexpr (IsBigEndian())
+        if (IsBigEndian())
         {
             size_t size = sizeof(Matrix4) / 4;
             for (size_t i = 0; i < size; i++)
@@ -417,7 +417,7 @@ void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
         Write32Bits(file, nbChild);
 
         int32_t* data = bone.m_children.data();
-        if constexpr (IsBigEndian())
+        if (IsBigEndian())
         {
             for (size_t i = 0; i < bone.m_children.size(); i++)
             {
@@ -480,7 +480,7 @@ void BinLoader::WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::of
 
     // Data
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         std::vector<KeyFrame> frames = sba.m_frames;
 
@@ -514,7 +514,7 @@ void BinLoader::Write32Bits(std::ofstream& file, uint32_t const& val)
 {
     uint32_t writeVal = val;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         writeVal = _byteswap_ulong(writeVal);
     }

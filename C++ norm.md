@@ -58,5 +58,4 @@
 * "using namespace" keyword is prohibited if namespace is from c++ standard or an external library (including LibMath)
 * Only one class per header/cpp pair (can still have several nested class, Struct, Enum)
 * Only one instruction per line allowed excepted break; in switch (ex: a++; b++; -> prohibited)
-* No variable assignement in if statement conditions
 

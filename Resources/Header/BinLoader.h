@@ -36,9 +36,14 @@ public:
 	static bool ReadString(std::ifstream& file, std::string& str);
 	static bool Read32Bits(std::ifstream& file, uint32_t& val);
 
-	static constexpr bool IsBigEndian()
+	static bool IsBigEndian()
 	{
-		return std::endian::native == std::endian::big;
+		volatile union {
+			uint32_t i;
+			char c[4];
+		} val = { 0x01020304 };
+
+		return val.c[0] == 1;
 	}
 private:
 	// read

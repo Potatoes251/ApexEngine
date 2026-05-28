@@ -30,6 +30,15 @@ end
 function Fighter:SetHuD(hud, barName)
     self.hud = hud
     self.barName = barName
+
+    HUD_SetButtonCallBack(self.hud, "AttackButton", 
+    function() 
+    self:Attack()
+    end)
+    HUD_SetButtonCallBack(self.hud, "FleeButton", 
+    function() 
+    self:Flee()
+    end)
 end
 
 function Fighter:OnBattleStart()
@@ -39,16 +48,6 @@ end
 
 function Fighter:Start()
     self:SetEnabled(false)
-end
-
-function Fighter:Update(dt)
-    if self.isMyTurn  then
-        if Input.IsKeyDown("P") then
-            self:Attack()
-        elseif Input.IsKeyDown("O") then
-            self:Flee()
-        end
-    end
 end
 
 function Fighter:TakeDamage(damage)

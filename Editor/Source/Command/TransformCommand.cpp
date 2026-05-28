@@ -17,7 +17,8 @@ Apex::CtrlZ::TransformCommand::TransformCommand(Data::Object* target, LibMath::T
 void Apex::CtrlZ::TransformCommand::Execute()
 {
 	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
-	if (!target) return;
+
+	assert(target != nullptr);
 
 	if (m_global)
 		target->SetGlobalTransform(m_newTransform);
@@ -28,7 +29,8 @@ void Apex::CtrlZ::TransformCommand::Execute()
 void Apex::CtrlZ::TransformCommand::Undo()
 {
 	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
-	if (!target) return;
+
+	assert(target != nullptr);
 
 	if (m_global)
 		target->SetGlobalTransform(m_oldTransform);

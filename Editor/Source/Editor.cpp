@@ -80,12 +80,10 @@ namespace Apex::Editor
         m_console = std::make_unique<Console>(m_gui.get());
         LogSystem::AddSink(m_console.get());
 
-        // All panels use m_editScene
         m_componentsViewer = std::make_unique<ComponentsViewer>(
             m_gui.get(),
             app.GetScene(),
             m_app->GetResourceManager(),
-            app.GetScene()->GetPhysic(),
             m_app->GetLuaManager()
         );
 
@@ -876,6 +874,7 @@ namespace Apex::Editor
             // Skybox mesh
             "ApexAssets/Meshes/cube.mesh",
             "Assets/HUD/GameHUD.hud",
+            "Assets/HUD/Fight.hud",
         };
 
         for (const char* assetPath : s_engineAssets)
@@ -891,6 +890,11 @@ namespace Apex::Editor
         {
             fs::path src = fs::current_path() / scenePath;
             fs::path dst = outputDir / scenePath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+
+            src = (fs::current_path() / scenePath).replace_extension(".nav");
+            dst = (outputDir / scenePath).replace_extension(".nav");
             fs::create_directories(dst.parent_path(), ec);
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
         }

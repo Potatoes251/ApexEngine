@@ -7,12 +7,6 @@
 
 #include "InputSystem.h"
 
-// ============================================================
-// Window.h — Public windowing interface 
-// GLFW is NEVER referenced here. This is the only header
-// the rest of the engine should include.
-// ============================================================
-
 using CloseCallback = std::function<void()>;
 
 namespace Apex::Windowing
@@ -71,7 +65,7 @@ namespace Apex::Windowing
 		virtual void* NativeHandle() const = 0;
 
 		// External drag-and-drop — fires when files are dropped onto the window
-		// from the OS file explorer. Works on Windows, macOS, and Linux via GLFW.
+		// from the OS file explorer.
 		virtual void SetExternalDropCallback(ExternalDropCallback callback) = 0;
 
 		// Opens a native OS file picker dialog parented to this window.
@@ -86,7 +80,7 @@ namespace Apex::Windowing
 	};
 
 	// ── Factory ───────────────────────────────────────────────────
-	// shareContext: pass another IWindow* to share its GL context.
+	// shareContext: pass another IWindow* to share its context.
 	// Required so the editor window can use the same GL objects as the game.
 	IWindow* CreateWindow(const std::string& title, int width, int height, IWindow* shareContext = nullptr);
 
@@ -94,7 +88,7 @@ namespace Apex::Windowing
 	// This is a global operation, not tied to any specific window.
 	void PollAllEvents();
 
-	// Convenience: make a window's GL context current on the calling thread.
+	// Convenience: make a window's context current on the calling thread.
 	// Use this in main.cpp to switch between game and editor windows.
 	void MakeContextCurrent(IWindow& window);
 
