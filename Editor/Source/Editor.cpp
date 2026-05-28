@@ -886,32 +886,6 @@ namespace Apex::Editor
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
         }
 
-        // Selected scene files
-        for (const auto& scenePath : scenePaths)
-        {
-            fs::path src = fs::current_path() / scenePath;
-            fs::path dst = outputDir / scenePath;
-            fs::create_directories(dst.parent_path(), ec);
-            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
-        }
-
-        // Default save file
-        if (!scenePaths.empty())
-        {
-            fs::path savePath = outputDir / "Saves/slot_0.sav";
-
-            fs::create_directories(savePath.parent_path(), ec);
-
-            std::ofstream saveFile(savePath);
-
-            if (saveFile.is_open())
-            {
-                saveFile << "{\n";
-                saveFile << "    \"scene\": \"" << scenePaths[0] << "\"\n";
-                saveFile << "}\n";
-            }
-        }
-
         // Collect all asset paths referenced by the selected scenes
         // by parsing their JSON directly — no dependency on what
         // the editor happened to load in this session.

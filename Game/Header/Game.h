@@ -24,8 +24,11 @@ namespace Apex::Game
         void Render();
 
         void SaveGame();
-        void SaveCurrentGame(int slot);
-        void LoadSavedGame(int slot);
+        void SaveCurrentGame();
+        void LoadSavedGame();
+
+        void SetCurrentSaveSlot(int slot) { m_currentSaveSlot = slot; }
+        int GetCurrentSaveSlot() const { return m_currentSaveSlot; }
 
         Apex::Windowing::IWindow* GetWindow() { return m_window.get(); }
 
@@ -33,6 +36,8 @@ namespace Apex::Game
         std::unique_ptr<Apex::Application>          m_app;
         std::unique_ptr<Apex::Windowing::IWindow>	m_window;
         std::unique_ptr<Apex::UserInterface::IGUI>	m_gui;
+
+        int m_currentSaveSlot = 0;
 	};
 }
 
