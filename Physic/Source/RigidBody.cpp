@@ -49,7 +49,6 @@ std::vector<ExposedVar> RigidBodyComponent::GetExposedVariables()
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();
-	m_pendingForces.shrink_to_fit();
 }
 
 void RigidBodyComponent::SetTransform(LibMath::Transform trans)
@@ -80,8 +79,6 @@ void RigidBodyComponent::SetScale(LibMath::Vector3 scale)
 
 void RigidBodyComponent::Serialize(std::ostream& out) const
 {
-	out << "      \"RigidBody\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"type\": \"";
 
 	switch (m_bodyType)
@@ -93,5 +90,4 @@ void RigidBodyComponent::Serialize(std::ostream& out) const
 
 	out << "\",\n";
 	out << "        \"mass\": " << m_mass << "\n";
-	out << "      }";
 }

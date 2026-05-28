@@ -32,7 +32,12 @@ namespace Apex::UserInterface
         Count           //Has to be at the end
     };
 
-    enum class MouseButton { Left, Right, Middle };
+    enum class MouseButton 
+    { 
+        Left, 
+        Right, 
+        Middle 
+    };
 
     // Tree node flags
     enum class TreeNodeFlags : uint32_t 
@@ -90,8 +95,6 @@ namespace Apex::UserInterface
 		virtual	~IGUI() = default;
 
         // Lifecycle
-        virtual void Initialize() = 0;
-        virtual void Shutdown() = 0;
         virtual void LoadFonts() = 0;
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
@@ -262,8 +265,15 @@ namespace Apex::UserInterface
         virtual void BeginModalBlock(const std::string& name) = 0;
         virtual void EndModalBlock() = 0;
 
+        virtual void BeginDisabled(bool disabled = true) = 0;
+        virtual void EndDisabled() = 0;
+
         virtual void Dummy(LibMath::Vector2 size) = 0;
 	private:
+
+        // Lifecycle
+        virtual void Initialize() = 0;
+        virtual void Shutdown() = 0;
 	};
 
     IGUI* CreateGUI(void* nativeWindow);

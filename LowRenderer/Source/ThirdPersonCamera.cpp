@@ -54,12 +54,9 @@ void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 
 void ThirdPersonCamera::Serialize(std::ostream& out) const
 {
-	out << "      \"ThirdPersonCamera\": {\n";
-	out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
 	out << "        \"isMain\": " << (m_isMain ? "true" : "false") << ",\n";
 	out << "        \"distance\": " << m_distance << ",\n";
 	out << "        \"speed\": " << m_speed << "\n";
-	out << "      }";
 }
 
 std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
@@ -70,6 +67,12 @@ std::vector<Apex::ExposedVar> ThirdPersonCamera::GetExposedVariables()
 	var.push_back({ "Follow Speed" , Apex::ExposedVar::Float, &m_speed });
 
 	return var;
+}
+
+void ThirdPersonCamera::Teleport(LibMath::Vector3 pos)
+{
+	Camera::Teleport(pos);
+	m_target = pos;
 }
 
 void ThirdPersonCamera::OnLateUpdate(float deltatime_s)

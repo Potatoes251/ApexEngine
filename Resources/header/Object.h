@@ -6,14 +6,24 @@
 
 #include "Component.h"
 #include "SceneGraph.h"
-#include "../../Physic/Header/Physic.h"
 
 #include <unordered_set>
 #include <vector>
 #include <memory>
 #include <utility>
-#include <functional>	
+#include <functional>
 #include <set>
+
+#ifdef _WIN32
+#undef min
+#undef max
+#endif
+
+namespace Apex::Physic
+{
+	class PhysicSystem;
+	class Collider;
+}
 
 namespace Apex::Data
 {
@@ -31,21 +41,17 @@ namespace Apex::Data
 
 		size_t			GetId() const { return m_id; }
 		void			SetId(size_t id);
-		void			SetCompId(size_t oldId, size_t newId);
-		void			SetCompId(Component* comp, size_t newId);
 		size_t			NewId();
 		// set id to INVALID_ID
 		void			RemoveId();
-		void			RemoveCompId(size_t oldId);
-		void			RemoveCompId(Component* comp);
 
-		std::string&	GetName() { return m_name; }
+		std::string const&	GetName() const { return m_name; }
 		void			SetName(std::string name);
 
 		const	LibMath::Transform&		GetLocalTransform() const;
-		const	LibMath::Transform&		GetGlobalTransform();
+		const	LibMath::Transform&		GetGlobalTransform() const;
 
-		void		UpdateGlobalTransform();
+		void		UpdateGlobalTransform() const;
 
 		void		SetLocalTransform(const LibMath::Transform& transform);
 		void		SetLocalPosition(const LibMath::Vector3& position);
@@ -58,10 +64,11 @@ namespace Apex::Data
 
 		void		SetGlobalTransform(const LibMath::Transform& transform);
 
-		const LibMath::Vector3&		GetGlobalPosition() const { return m_globalTransform.getPosition(); }
-		const LibMath::Quaternion&	GetGlobalRotation() const { return m_globalTransform.getRotation(); }
-		const LibMath::Vector3&		GetGlobalScale() const { return m_globalTransform.getScale(); }
+		const LibMath::Vector3&		GetGlobalPosition() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();return m_globalTransform.getPosition(); }
+		const LibMath::Quaternion&	GetGlobalRotation() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform(); return m_globalTransform.getRotation(); }
+		const LibMath::Vector3&		GetGlobalScale() const { if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();return m_globalTransform.getScale(); }
 
+		Object*		GetParent() const;
 
 		void		Start();
 		void		FixedUpdate(float deltaTime_s);
@@ -85,74 +92,22 @@ namespace Apex::Data
 		size_t AddComponentDirect(std::unique_ptr<Apex::Component> comp);
 
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
-		{
-			std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
-
-			component->m_owner = this;
-
-			T& ref = *component;
-			m_components.push_back(std::move(component));
-
-			if (m_freeCompIds.empty())
-			{
-				m_components.back()->SetId(m_nextCompId++);
-			}
-			else
-			{
-				m_components.back()->SetId(*m_freeCompIds.begin());
-				m_freeCompIds.erase(m_freeCompIds.begin());
-			}
-
-			OnChanged();
-
-			return ref;
-		}
+		T& AddComponent(Args&&... args);
 
 		template<typename T>
-		T* GetComponent()
-		{
-			for (auto& comp : m_components)
-			{
-				T* casted = dynamic_cast<T*>(comp.get());
-
-				if (casted)
-					return casted;
-			}
-
-			return nullptr;
-		}
+		T* GetComponent();
 
 		template<typename T>
-		std::vector<T*> GetComponentsByType()
-		{
-			std::vector<T*> comps;
+		std::vector<T*> GetComponentsByType();
 
-			for (auto& comp : m_components)
-			{
-				T* casted = dynamic_cast<T*>(comp.get());
-
-				if (casted)
-					comps.push_back(casted);
-			}
-
-			return comps;
-		}
-
-		std::vector<Component*> GetComponents() const
-		{
-			std::vector<Component*> comps;
-			for (auto& c : m_components)
-				comps.push_back(c.get());
-			return comps;
-		}
+		std::vector<Component*> GetComponents() const;
 
 		Component* GetComponent(size_t id);
 
 		void RemoveComponent(Component* compToRemove, Apex::Physic::PhysicSystem* phys = nullptr);
 		void RemoveComponent(size_t compId, Apex::Physic::PhysicSystem* phys = nullptr);
 
-		shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
+		std::shared_ptr<Apex::SceneGraph::SceneNode> GetNode() const { return m_owner; }
 
 		void OnChanged();
 		void SetOnChangedCallback(std::function<void()> callback);
@@ -160,17 +115,21 @@ namespace Apex::Data
 		static constexpr size_t INVALID_ID = std::numeric_limits<size_t>::max();
 
 	private:
-		static inline size_t m_nextId = 0;
-		static inline std::set<size_t> m_freeIds;
+		static std::string GenerateUniqueName();
 
-		std::set<size_t> m_freeCompIds;
+		void RegisterName(const std::string& name);
+		void UnregisterName(const std::string& name);
+
+		static inline size_t m_nextId = 0;
+		static inline std::unordered_set<std::string> m_usedNames;
+
 		size_t m_nextCompId = 0;
 
 		size_t			m_id;
 		std::string		m_name;
 
 		LibMath::Transform				m_localTransform;
-		LibMath::Transform				m_globalTransform;
+		mutable LibMath::Transform		m_globalTransform;
 
 		std::function<void()>			m_onChanged;
 
@@ -182,6 +141,54 @@ namespace Apex::Data
 
 		bool m_pendingDestroy = false;
 	};
+
+
+	template<typename T, typename... Args>
+	T& Object::AddComponent(Args&&... args)
+	{
+		std::unique_ptr<T> component = std::make_unique<T>(std::forward<Args>(args)...);
+
+		component->m_owner = this;
+
+		T& ref = *component;
+		m_components.push_back(std::move(component));
+
+		m_components.back()->SetId(m_nextCompId++);
+
+		OnChanged();
+
+		return ref;
+		}
+
+	template<typename T>
+	T* Object::GetComponent()
+	{
+		for (auto& comp : m_components)
+		{
+			T* casted = dynamic_cast<T*>(comp.get());
+
+			if (casted)
+				return casted;
+		}
+
+		return nullptr;
+	}
+
+	template<typename T>
+	std::vector<T*> Object::GetComponentsByType()
+	{
+		std::vector<T*> comps;
+
+		for (auto& comp : m_components)
+		{
+			T* casted = dynamic_cast<T*>(comp.get());
+
+			if (casted)
+				comps.push_back(casted);
+		}
+
+		return comps;
+	}
 }
 
 #endif // !OBJECT

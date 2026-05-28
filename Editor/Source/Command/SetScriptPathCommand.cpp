@@ -3,12 +3,12 @@
 
 #include "ScriptComponent.h"
 #include "Object.h"
-#include "Scene.h"
+#include "Application.h"
 
 using namespace Apex::CtrlZ;
 
-SetScriptPathCommand::SetScriptPathCommand(Rendering::Scene* scene, Scripting::ScriptComponent* script, std::string oldPath, std::string newPath)
-	:m_scene(scene), m_oldPath(oldPath), m_newPath(newPath)
+SetScriptPathCommand::SetScriptPathCommand(Scripting::ScriptComponent* script, std::string oldPath, std::string newPath)
+	:m_oldPath(oldPath), m_newPath(newPath)
 {
 	if (script)
 	{
@@ -25,22 +25,22 @@ SetScriptPathCommand::SetScriptPathCommand(Rendering::Scene* scene, Scripting::S
 
 void SetScriptPathCommand::Execute()
 {
-	Data::Object* owner = m_scene->GetObjectWithId(m_objectId);
+	Data::Object* owner = Application::Get()->GetScene()->GetObjectWithId(m_objectId);
 
 	Scripting::ScriptComponent* script = dynamic_cast<Scripting::ScriptComponent*>(owner->GetComponent(m_compId));
 
-	if (!script) return;
+	assert(script != nullptr);
 
 	script->SetScript(m_newPath);
 }
 
 void SetScriptPathCommand::Undo()
 {
-	Data::Object* owner = m_scene->GetObjectWithId(m_objectId);
+	Data::Object* owner = Application::Get()->GetScene()->GetObjectWithId(m_objectId);
 
 	Scripting::ScriptComponent* script = dynamic_cast<Scripting::ScriptComponent*>(owner->GetComponent(m_compId));
 
-	if (!script) return;
+	assert(script != nullptr);
 
 	script->SetScript(m_oldPath);
 }

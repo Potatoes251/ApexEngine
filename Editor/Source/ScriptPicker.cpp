@@ -18,13 +18,11 @@ void ScriptPicker::Open(Rendering::Scene* scene, Apex::Scripting::ScriptComponen
     m_isOpen = true;
 }
 
-static std::string DrawScriptGrid(IGUI& gui, int cols)
+static std::string DrawScriptGrid(IGUI* gui, int cols)
 {
-    constexpr float THUMB = Apex::Resources::PICKER_THUMB;
-
     uint32_t scriptIcon = Apex::Editor::EditorIcon::Get("ApexAssets/Icons/script.png");
 
-    gui.BeginChildPanel("##sp_grid", 0.f, -30.f, false);
+    gui->BeginChildPanel("##sp_grid", 0.f, -30.f, false);
 
     int col = 0;
     try
@@ -37,15 +35,15 @@ static std::string DrawScriptGrid(IGUI& gui, int cols)
             std::string path = entry.path().generic_string();
 
             if (col > 0 && col % cols != 0)
-                gui.SameLine(0.f, Apex::Resources::PICKER_SPACING);
+                gui->SameLine(0.f, Apex::Resources::PICKER_SPACING);
 
-            gui.PushID(path.c_str());
+            gui->PushID(path.c_str());
             bool picked = DrawPickerCell(gui, path, scriptIcon);
-            gui.PopID();
+            gui->PopID();
 
             if (picked)
             {
-                gui.EndChildPanel();
+                gui->EndChildPanel();
                 return path;
             }
             col++;
@@ -53,10 +51,10 @@ static std::string DrawScriptGrid(IGUI& gui, int cols)
     }
     catch (std::exception& e)
     {
-        gui.Text(std::string("Error: ") + e.what());
+        gui->Text(std::string("Error: ") + e.what());
     }
 
-    gui.EndChildPanel();
+    gui->EndChildPanel();
     return {};
 }
 
@@ -70,8 +68,7 @@ static void CommitScriptSelection(
     if (scene)
     {
         Apex::CtrlZ::CommandManager::Get().Execute(
-            std::make_unique<Apex::CtrlZ::SetScriptPathCommand>(
-                scene, target, target->GetScriptPath(), newPath));
+            std::make_unique<Apex::CtrlZ::SetScriptPathCommand>(target, target->GetScriptPath(), newPath));
     }
     else
     {
@@ -89,10 +86,10 @@ void ScriptPicker::Draw()
         return;
     }
 
-    m_gui.BeginModalBlock("Select Script");
-    m_gui.BeginPanel("Select Script", &m_isOpen, false, true);
+    m_gui->BeginModalBlock("Select Script");
+    m_gui->BeginPanel("Select Script", &m_isOpen, false, true);
 
-    int cols = PickerColumnCount(m_gui.GetAvailableSize()[0]);
+    int cols = PickerColumnCount(m_gui->GetAvailableSize()[0]);
 
     std::string picked = DrawScriptGrid(m_gui, cols);
     if (!picked.empty() && m_target)
@@ -100,11 +97,11 @@ void ScriptPicker::Draw()
         CommitScriptSelection(m_target, m_scene, picked);
         m_newScript = true;
         m_isOpen = false;
-        m_gui.EndPanel();
-        m_gui.EndModalBlock();
+        m_gui->EndPanel();
+        m_gui->EndModalBlock();
         return;
     }
 
-    m_gui.EndPanel();
-    m_gui.EndModalBlock();
+    m_gui->EndPanel();
+    m_gui->EndModalBlock();
 }

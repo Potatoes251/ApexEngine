@@ -1,13 +1,11 @@
 #include "Command/TransformCommand.h"
 
 #include "Object.h"
-#include "Scene.h"
+#include "Application.h"
 
-Apex::CtrlZ::TransformCommand::TransformCommand(Rendering::Scene* scene, Data::Object* target, LibMath::Transform trans, bool global)
+Apex::CtrlZ::TransformCommand::TransformCommand(Data::Object* target, LibMath::Transform trans, bool global)
 	: m_newTransform(trans), m_global(global)
 {
-	m_scene = scene;
-
 	m_targetId = target->GetId();
 
 	if (global)
@@ -18,8 +16,9 @@ Apex::CtrlZ::TransformCommand::TransformCommand(Rendering::Scene* scene, Data::O
 
 void Apex::CtrlZ::TransformCommand::Execute()
 {
-	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
-	if (!target) return;
+	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
+
+	assert(target != nullptr);
 
 	if (m_global)
 		target->SetGlobalTransform(m_newTransform);
@@ -29,8 +28,9 @@ void Apex::CtrlZ::TransformCommand::Execute()
 
 void Apex::CtrlZ::TransformCommand::Undo()
 {
-	Data::Object* target = m_scene->GetObjectWithId(m_targetId);
-	if (!target) return;
+	Data::Object* target = Application::Get()->GetScene()->GetObjectWithId(m_targetId);
+
+	assert(target != nullptr);
 
 	if (m_global)
 		target->SetGlobalTransform(m_oldTransform);

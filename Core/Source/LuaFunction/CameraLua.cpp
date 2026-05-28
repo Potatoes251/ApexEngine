@@ -1,4 +1,5 @@
 #include "LuaFunction/CameraLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "Camera.h"
 #include "Object.h"
@@ -12,17 +13,9 @@ void Apex::Camera::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("Camera_GetUp_Internal", Apex::Camera::Lua_Camera_GetUp);
 }
 
-Apex::Rendering::Camera* Apex::Camera::GetCamera(lua_State* L, int index)
-{
-    lua_getfield(L, index, "__object");
-    Rendering::Camera* camera = static_cast<Rendering::Camera*>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-    return camera;
-}
-
 int Apex::Camera::Lua_Camera_GetForward(lua_State* L)
 {
-	Rendering::Camera* camera = GetCamera(L, 1);
+	Rendering::Camera* camera = Comp::GetComponent<Rendering::Camera>(L, 1);
 
     if (!camera) return 0;
 
@@ -33,7 +26,7 @@ int Apex::Camera::Lua_Camera_GetForward(lua_State* L)
 
 int Apex::Camera::Lua_Camera_GetRight(lua_State* L)
 {
-    Rendering::Camera* camera = GetCamera(L, 1);
+    Rendering::Camera* camera = Comp::GetComponent<Rendering::Camera>(L, 1);
 
     if (!camera) return 0;
 
@@ -44,7 +37,7 @@ int Apex::Camera::Lua_Camera_GetRight(lua_State* L)
 
 int Apex::Camera::Lua_Camera_GetUp(lua_State* L)
 {
-    Rendering::Camera* camera = GetCamera(L, 1);
+    Rendering::Camera* camera = Comp::GetComponent<Rendering::Camera>(L, 1);
 
     if (!camera) return 0;
 
@@ -62,12 +55,12 @@ int Apex::Camera::Lua_GetCamera(lua_State* L)
     if (!obj)
         return 0;
 
-    Rendering::Camera* cc = obj->GetComponent<Rendering::Camera>();
-    if (!cc)
+    Rendering::Camera* cam = obj->GetComponent<Rendering::Camera>();
+    if (!cam)
         return 0;
 
     // push component as userdata
-    lua_pushlightuserdata(L, cc);
+    lua_pushlightuserdata(L, cam);
 
     return 1;
 }

@@ -17,11 +17,6 @@ namespace Apex::Lighting
 		void UploadToGpu(VisibleLights const& lights);
 
 	private:
-
-		static inline constexpr size_t m_maxPointLights = 10;
-		static inline constexpr size_t m_maxSpotLights = 10;
-		static inline constexpr size_t m_maxDirectionalLights = 10;
-
 		Rendering::IRHI* m_rhi;
 
 		Rendering::RHIUniformBufferHandle m_pointLightBuffer;

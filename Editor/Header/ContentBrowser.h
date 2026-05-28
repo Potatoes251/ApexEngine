@@ -7,8 +7,11 @@
 // ============================================================
 
 #include "UI.h"
+
 #include "Window.h"
+
 #include "RHI.h"
+
 #include "ResourceManager.h"
 
 #include "ThumbnailRenderer.h"
@@ -18,16 +21,16 @@
 #include <filesystem>
 #include <functional>
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 
 namespace Apex::Editor
 {
 	// Asset type 
-	enum class AssetType { Mesh, Texture, Sound, Level, Script, Hud, Folder, Unknown };
+	enum class AssetType { Mesh, Texture, Sound, Level, Script, Hud, Material, Folder, Unknown };
 
 	struct AssetEntry
 	{
-		fs::path m_path;
+		Fs::path m_path;
 		AssetType m_type = AssetType::Unknown;
 		bool m_isFolder = false;
 		uint32_t  m_thumbnailTextureID = 0;
@@ -41,11 +44,11 @@ namespace Apex::Editor
 	public:
 		// gui      - IGUI reference owned by the Application.
 		// rootPath - assets root directory (e.g. "Assets/").
-		explicit ContentBrowser(Apex::UserInterface::IGUI& gui, 
-								Apex::Windowing::IWindow& window, 
-								const fs::path& rootPath,
-								Apex::Rendering::IRHI& rhi,
-								Apex::Resources::ResourceManager& resourceManager);
+		explicit ContentBrowser(Apex::UserInterface::IGUI& gui,
+			Apex::Windowing::IWindow& window,
+			const Fs::path& rootPath,
+			Apex::Rendering::IRHI& rhi,
+			Apex::Resources::ResourceManager& resourceManager);
 		~ContentBrowser() = default;
 		ContentBrowser(const ContentBrowser&) = delete;
 		ContentBrowser& operator=(const ContentBrowser&) = delete;
@@ -66,24 +69,36 @@ namespace Apex::Editor
 		// Force a re-scan of the current folder (call after import / delete).
 		void Refresh();
 
+		// Returns true when the Content Browser panel (or its grid child) has focus.
+		bool IsFocused() const { return m_isFocused; }
+
+		// Returns the currently selected file path (empty if nothing selected).
+		Fs::path GetSelectedPath() const { return m_selectedPath; }
+
+		// Paste a previously copied file into the current folder.
+		void PasteFile(const Fs::path& sourcePath);
+
+		// Duplicate the currently selected file in-place (Ctrl+D).
+		void DuplicateSelected();
+
 		// Copy external files/folders into the currently open folder.
 		// Called by the OS drop callback registered in Editor::InitPanels.
-		void ImportFiles(std::vector<fs::path> sources, const fs::path& destDir = {});
+		void ImportFiles(std::vector<Fs::path> const& sources, const Fs::path& destDir = {});
 
 		// The folder currently hovered in the tree, grid, or breadcrumb.
 		// Empty when no folder is hovered. Reset every frame.
 		// Used by the OS drop callback to route drops to a specific folder.
-		fs::path GetExternalDropDest(float mouseX, float mouseY) const;
+		Fs::path GetExternalDropDest(float mouseX, float mouseY) const;
 
 	private:
 		// Layout helpers 
 		void DrawToolbar();
 		void DrawBreadcrumb();
-		void DrawFolderTree(const fs::path& dir);
-		void DrawFolderTreeEntry(const fs::directory_entry& entry);
-		bool DrawTreeNode(const fs::path& path, bool isRenaming);
-		void HandleTreeNodeInput(const fs::path& path, bool isRenaming);
-		Apex::UserInterface::TreeNodeFlags BuildTreeNodeFlags(const fs::path& path) const;
+		void DrawFolderTree(const Fs::path& dir);
+		void DrawFolderTreeEntry(const Fs::directory_entry& entry);
+		bool DrawTreeNode(const Fs::path& path, bool isRenaming);
+		void HandleTreeNodeInput(const Fs::path& path, bool isRenaming);
+		Apex::UserInterface::TreeNodeFlags BuildTreeNodeFlags(const Fs::path& path) const;
 		void DrawAssetGrid();
 		void DrawAddPopup();
 		void DrawTile(const AssetEntry& entry);
@@ -94,52 +109,55 @@ namespace Apex::Editor
 		void DrawEntryContextMenu(const AssetEntry& entry);
 		void DrawGridContextMenu();
 		void DrawRenameInline(const AssetEntry& entry, LibMath::Vector2 pos);
-		void DrawBreadcrumbPart(const fs::path& accumulated, const std::string& label, int idx);
+		void DrawBreadcrumbPart(const Fs::path& accumulated, const std::string& label, int idx);
 		void DrawTreeNodeRename();
 
 		// Internal navigation / scanning 
-		void NavigateTo(const fs::path& dir);
+		void NavigateTo(const Fs::path& dir);
 		void ScanCurrentDirectory();
 		void ScanSearch(const std::string& filter);
-		void MoveEntry(const fs::path& from, const fs::path& toDirectory);
+		void MoveEntry(const Fs::path& from, const Fs::path& toDirectory);
 		void OnAddButtonClicked();
 		void DeleteSelected();
 		void DuplicateEntry(const AssetEntry& entry);
-		void RevealInExplorer(const fs::path& path);
-		void BeginRename(const fs::path& path);
+		void RevealInExplorer(const Fs::path& path);
+		void BeginRename(const Fs::path& path);
 		void CommitRename();
 		void CreateFolder();
-		void CreateAssetFile(const fs::path& dir, const std::string& name, const std::string& ext, const std::string& content);
+		void CreateAssetFile(const Fs::path& dir, const std::string& name, const std::string& ext, const std::string& content);
 
 		// Static helpers
 		static AssetType   ClassifyExtension(const std::string& ext);
 		static const char* TypeLabel(AssetType type);
 		static uint32_t    TypeColor(AssetType type);   // returns PackColor value
-		static AssetEntry  ClassifyEntry(const fs::directory_entry& entry);
+		static AssetEntry  ClassifyEntry(const Fs::directory_entry& entry);
 		static const char* IconPathForType(AssetType type);
 		static void		   PopulateThumbnailsForList(std::vector<AssetEntry>& entries, ThumbnailRenderer& thumbnails);
+		static bool		   IsPathInsideProject(const Fs::path& projectRoot, const Fs::path& path);
 
 		// State
-		Apex::UserInterface::IGUI&			m_gui;
-		Apex::Windowing::IWindow&			m_window;
-		Apex::Resources::ResourceManager&	m_resourceManager;
+		Apex::UserInterface::IGUI& m_gui;
+		Apex::Windowing::IWindow& m_window;
+		Apex::Resources::ResourceManager& m_resourceManager;
 		ThumbnailRenderer					m_thumbnails;
-		fs::path							m_rootPath;
-		fs::path							m_currentPath;
+		Fs::path							m_rootPath;
+		Fs::path							m_currentPath;
 		std::vector<AssetEntry>				m_entries;
 		std::vector<AssetEntry>				m_searchEntries;
 		char								m_lastSearch[256] = {};
 
 		char   m_searchBuffer[256] = {};
+		bool   m_pendingRefresh = false;
 		int    m_tileSize = 120;
 		bool   m_showTree = true;
+		bool   m_isFocused = false;
 
-		fs::path             m_selectedPath;
-		fs::path             m_pendingNavigate;
+		Fs::path             m_selectedPath;
+		Fs::path             m_pendingNavigate;
 		OnAssetLoadCallback  m_onLoad;
 
 		// Rename state - active when m_renamingPath is non-empty
-		fs::path m_renamingPath;
+		Fs::path m_renamingPath;
 		char     m_renameBuffer[256] = {};
 		bool     m_renameFocusPending = false;
 
@@ -149,7 +167,7 @@ namespace Apex::Editor
 
 		struct BreadcrumbRect
 		{
-			fs::path m_path;
+			Fs::path m_path;
 			float m_x, m_y, m_width, m_height;
 		};
 		std::vector<BreadcrumbRect> m_breadcrumbRects;
@@ -158,8 +176,8 @@ namespace Apex::Editor
 		// m_hoveredDestThisFrame: set by hovered items each frame, cleared at start of Draw().
 		// m_externalDropDest: sticky - only updated when something is hovered, persists
 		//                     across frames so the OS drop callback can read it.
-		fs::path m_hoveredDestThisFrame;
-		fs::path m_externalDropDest;
+		Fs::path m_hoveredDestThisFrame;
+		Fs::path m_externalDropDest;
 	};
 }
 #endif

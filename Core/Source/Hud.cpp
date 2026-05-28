@@ -1,5 +1,6 @@
 #include "Hud.h"
 #include "SerializationParser.h"
+#include "InputSystem.h"
 
 #include "Log.h"
 
@@ -7,6 +8,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+
+using Apex::Input::InputSystem;
 
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
@@ -141,6 +144,20 @@ void UIButton::Draw(const UIDrawContext& context) const
 
     if (context.m_isEditor && context.m_selected)
         context.m_drawList->DrawRect(pos, max, 0xFF44AAFF, 4.f, 1.5f);
+
+    InputSystem&    input = InputSystem::Get();
+    Vector2         inputPos = input.GetMousePos();
+
+    if (input.IsMouseButtonDown(Input::MouseButton::Left) &&
+        inputPos[0] >= pos[0] &&
+        inputPos[0] <= max[0] &&
+        inputPos[1] >= pos[1] &&
+        inputPos[1] <= max[1] &&
+        m_onClick &&
+        m_visible)                      //maybe to change for a system that allows HUDs to be closed and it's elements be invisible. 
+    {
+        m_onClick();
+    }
 }
 
 void UIProgressBar::Draw(const UIDrawContext& context) const
@@ -505,7 +522,7 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
 }
 
 
-bool UICanvas::Save(const fs::path& path) const
+bool UICanvas::Save(const Fs::path& path) const
 {
     std::ofstream file(path);
     if (!file) return false;
@@ -525,7 +542,7 @@ bool UICanvas::Save(const fs::path& path) const
     return true;
 }
 
-bool UICanvas::Load(const fs::path& path, ResourceManager& rm)
+bool UICanvas::Load(const Fs::path& path, ResourceManager& rm)
 {
     std::ifstream file(path);
     if (!file) return false;
@@ -559,18 +576,17 @@ UIManager::UIManager(IGUI* gui, ResourceManager* resourceManager, Apex::Renderin
 {
 }
 
-void UIManager::ScanHUDs(const fs::path& assetsRoot)
+void UIManager::ScanHUDs(const Fs::path& assetsRoot)
 {
     m_registry.clear();
-    std::error_code error;
-    for (const auto& e : fs::recursive_directory_iterator(assetsRoot, error))
+    for (const auto& element : Fs::recursive_directory_iterator(assetsRoot))
     {
-        if (e.is_regular_file() && e.path().extension() == ".hud")
+        if (element.is_regular_file() && element.path().extension() == ".hud")
         {
-            std::string name = e.path().stem().string();
-            m_registry[name] = e.path();
+            std::string name = element.path().stem().string();
+            m_registry[name] = element.path();
 
-            LOG_INFO("[HUD] Registered HUD: {} -> {}", name, e.path().string());
+            LOG_INFO_CAT("HUD", "Registered HUD: {} -> {}", name, element.path().string());
         }
     }
 }
@@ -587,10 +603,10 @@ int UIManager::CreateHUD(const std::string& name)
     if (it == m_registry.end())
     {
         // Try loading directly as a path relative to Assets/
-        fs::path direct = fs::path("Assets") / (name + ".hud");
-        if (!fs::exists(direct))
+        Fs::path direct = Fs::path("Assets") / (name + ".hud");
+        if (!Fs::exists(direct))
         {
-            LOG_ERROR("[HUD] CreateHUD: '{}' not found", name);
+            LOG_ERROR_CAT("HUD", "CreateHUD: '{}' not found", name);
             return 0;
         }
         m_registry[name] = direct;
@@ -603,13 +619,12 @@ int UIManager::CreateHUD(const std::string& name)
 
     if (!m_resourceManager || !inst->m_canvas.Load(it->second, *m_resourceManager))
     {
-        LOG_ERROR("[HUD] CreateHUD: failed to load '{}'", it->second.string());
+        LOG_ERROR_CAT("HUD", "CreateHUD: failed to load '{}'", it->second.string());
         return 0;
     }
 
     m_instances.push_back(std::move(inst));
     int handle = static_cast<int>(m_instances.size());
-    LOG_ERROR("[HUD] CreateHUD: '{}' -> handle ", name, handle);
     return handle;
 }
 
@@ -652,7 +667,7 @@ HUDInstance* UIManager::GetInstance(int handle)
 const HUDInstance* UIManager::GetInstance(int handle) const
 {
     if (handle < 1 || handle > static_cast<int>(m_instances.size())) return nullptr;
-    return m_instances[static_cast<size_t>(handle) - 1].get();
+    return m_instances[static_cast<size_t>(handle) - 1].get();  
 }
 
 void UIManager::RenderHUD(IDrawList* drawList, LibMath::Vector2 viewportPos, LibMath::Vector2 viewportSize)

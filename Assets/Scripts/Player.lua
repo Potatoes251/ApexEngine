@@ -1,28 +1,133 @@
 local CharacterController = require("CharacterController")
+local Animator = require("Animator")
 local Collider = require("Collider")
 local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
+local Vector3 = require("Vector3")
+
+local KILL_Z             = -50.0   -- Y below this triggers death
+local RESPAWN_INVINCIBLE = 2.5     -- seconds of invincibility after respawn
+local DEATH_FREEZE_TIME  = 0.8     -- brief freeze before respawn teleport
+local DAMAGE_COOLDOWN    = 0.5     -- min seconds between damage hits
 
 local Player = Object:New()
 
 function Player:New()
-    local instance = { cc = nil, cam = nil, coinCount = 0 }
+    local instance = { 
+     -- component
+    cc = nil, 
+    cam = nil, 
+    anim = nil,
+    hud = nil,
+    -- variables
+    coinCount = 0,
+    wasGrounded = false, 
+    wasInWater = false, 
+    accumulatedTime = 0,
+    smoothBlend = 0,
+
+    spawnX = 0,
+    spawnY = 0,
+    spawnZ = 0,
+
+    isDead = false,
+    isGameOver = false,
+    deathTimer = 0,
+    invincibleTimer = 0,
+    damageTimer = 0,
+
+    coinCount = 0,
+
+    }
     setmetatable(instance, { __index = self })
     return instance
 end
 
 function Player:Start()
     self.cc = CharacterController.Get(self)
+    self.anim = Animator.Get(self)
     self.cam = Camera.Get(self)
     self:AddTag("Player")
+    self.anim:StartBlend("Idle", "Walking", 0, true)
+
+    self.hud = Cast("HUDController", "HudController")
+    if self.hud == nil then
+        Log("HudController not found. Make sure an object named 'HUDController' has HudController.lua attached.")
+    end
+
+    local pos = self:GetPosition()
+    self.spawnX = pos.x
+    self.spawnY = pos.y
+    self.spawnZ = pos.z
 end
 
-function Player:Update(dt)
+function Player:FixedUpdate(dt)
+    if self.isGameOver then return end
+
+    if self.isDead then
+        self.deathTimer = self.deathTimer - dt
+        if self.deathTimer <= 0 then
+            self:DoRespawn()
+        end
+        return
+    end
+
+    local pos = self:GetPosition()
+    if pos.y < KILL_Z then
+        self:TakeDamage(8)  -- insta-kill if we fall off the level
+        return
+    end
+
+    if self.invincibleTimer > 0 then
+        self.invincibleTimer = self.invincibleTimer - dt
+    end
+
+    if self.damageTimer > 0 then
+        self.damageTimer = self.damageTimer - dt
+    end
+
+    self:ProcessInput(dt)
+
+    self.anim:SetBlendRatio(self.smoothBlend)
+
+    isGrounded = self.cc:IsGrounded()
+    isInWater = self.cc:IsInWater()
+
+    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
+        if self.smoothBlend > 0.5 then
+            self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
+        else
+            self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
+        end
+        self.cc:Jump()
+    end
+
+    if (not self.wasGrounded and isGrounded and not isInWater) or (self.wasInWater and not isInWater) then 
+        self.anim:StartBlend("Idle", "Walking", 0, true)
+    elseif not self.wasInWater and isInWater then
+        self.anim:StartBlend("Idle", "Swimming", 0, true)
+    end
+
+    self.wasInWater = isInWater
+    self.wasGrounded = isGrounded
+end
+
+function Player:ProcessInput(dt)
     local x = Input.GetAxis("Horizontal")
     local z = Input.GetAxis("Vertical")
 
-    if x ~= 0 or z ~= 0 then
+    local y = 0
+    if Input.IsKeyDown("Space") then
+        y = 1
+    end
+    if Input.IsKeyDown("Ctrl") then
+        y = y - 1
+    end
+
+    local inWater = self.cc:IsInWater()
+
+    if x ~= 0 or z ~= 0 or (y ~= 0 and inWater) then
         local forward = self.cam:GetFront()
         local right   = self.cam:GetRight()
         forward.y = 0
@@ -32,20 +137,118 @@ function Player:Update(dt)
         right   = right:Normalized()
         local moveDir = (right * x) + (forward * z)
 
-        self.cc:Move(moveDir)
+        if inWater then
+            moveDir = moveDir + Vector3.New(0, y, 0)
+        end
+
+        self.cc:Move(moveDir:Normalized())
     end
 
-    if (Input.IsKeyDown("Space")) then
-        self.cc:Jump()
+    local speed     = self.cc:GetVelocity()
+    local walkSpeed = 2.0
+    local targetBlend = math.min(speed / walkSpeed, 1)
+    
+    self.smoothBlend = self.smoothBlend + (targetBlend - self.smoothBlend) * math.min(5.0 * dt, 1)
+end
+
+function Player:TakeDamage(amount)
+    if self.isDead or self.isGameOver then return end
+    if self.invincibleTimer > 0       then return end
+    if self.damageTimer > 0           then return end
+ 
+    amount = amount or 1
+    self.damageTimer = DAMAGE_COOLDOWN
+ 
+    if self.hud ~= nil then
+        local died = self.hud:TakeDamage(amount)
+        if died then
+            if self.hud:GetLives() <= 0 then
+                self:GameOver()
+            else
+                self:Die()
+            end
+        end
+    else
+        self:Die()
     end
+end
+ 
+function Player:Heal(amount)
+    if self.hud ~= nil then self.hud:Heal(amount) end
+end
+
+function Player:Die()
+    if self.isDead or self.isGameOver then return end
+ 
+    self.isDead     = true
+    self.deathTimer = DEATH_FREEZE_TIME
+ 
+    if self.hud ~= nil then
+        HUD_SetVisible(self.hud.hud, "DeadPanel", true)
+    end
+end
+ 
+function Player:DoRespawn()
+    self.isDead          = false
+    self.invincibleTimer = RESPAWN_INVINCIBLE
+    self.damageTimer     = 0
+ 
+    -- Teleport back to spawn
+    self.cc:Teleport(Vector3.New(self.spawnX, self.spawnY, self.spawnZ))
+ 
+    if self.anim then
+        self.anim:StartBlend("Idle", "Walking", 0, true)
+    end
+ 
+    if self.hud ~= nil then
+        HUD_SetVisible(self.hud.hud, "DeadPanel", false)
+    end
+end
+ 
+function Player:GameOver()
+    self.isGameOver = true
+    self.isDead     = false
+end
+
+function Player:UpdateScore(amount)
+    self.coinCount = self.coinCount + amount
+    self.hud:AddScore(amount)
 end
 
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
-    if (obj:HasTag("Coin")) then
+    if obj:HasTag("Coin") then
         self.coinCount = self.coinCount + 1
-        obj:Destroy()
+        if self.hud ~= nil then
+            self:UpdateScore(1)
+        end
+
+        obj:DestroyCollectible()
+    elseif obj:HasTag("Goomba") then
+        if self.cc:GetVerticalVelocity() < 0 then
+            obj:Destroy()
+        else
+            self:TakeDamage(1)
+        end
     end
 end
+
+function Player:StopAnim()
+    self.anim:Play("Idle")
+end
+
+function Player:StartAnim()
+    self.anim:StartBlend("Idle", "Walking", 0, true)
+end
+
+function Player:SetSpawnPoint(x, y, z)
+    self.spawnX = x
+    self.spawnY = y
+    self.spawnZ = z
+end
+ 
+function Player:GetCoinCount()  return self.coinCount  end
+function Player:IsAlive()       return not self.isDead and not self.isGameOver end
+function Player:IsInvincible()  return self.invincibleTimer > 0 end
 
 return Player

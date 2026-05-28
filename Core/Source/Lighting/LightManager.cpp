@@ -16,7 +16,7 @@ LightManager::LightManager(Rendering::IRHI* rhi)
 {
 	m_rhi = rhi;
 
-	assert(m_rhi != nullptr && "Lights cannot work withput the rhi");
+	assert(m_rhi != nullptr && "Lights cannot work without the rhi");
 
 	m_pointLightBuffer = rhi->CreateUniformBuffer(0, sizeof(GPUPointLightBuffer));
 	m_directionalLightBuffer = rhi->CreateUniformBuffer(1, sizeof(GPUDirectionalLightBuffer));
@@ -36,7 +36,7 @@ LightManager::~LightManager()
 void LightManager::UploadToGpu(VisibleLights const& lights)
 {
 	GPUPointLightBuffer bufferP;
-	bufferP.m_count[0] = (float)std::min(lights.m_pointLights.size(), m_maxPointLights);
+	bufferP.m_count[0] = (float)std::min(lights.m_pointLights.size(), MAX_POINT_LIGHTS);
 	for (int i = 0; i < bufferP.m_count[0]; i++)
 	{
 		PointLightComponent* light = lights.m_pointLights[i];
@@ -45,7 +45,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 	m_rhi->BindUniformBuffer(m_pointLightBuffer, sizeof(GPUPointLightBuffer), &bufferP);
 
 	GPUSpotLightBuffer bufferS;
-	bufferS.m_count[0] = (float)std::min(lights.m_spotLights.size(), m_maxSpotLights);
+	bufferS.m_count[0] = (float)std::min(lights.m_spotLights.size(), MAX_DIR_LIGHTS);
 	for (int i = 0; i < bufferS.m_count[0]; i++)
 	{
 		SpotLightComponent* light = lights.m_spotLights[i];
@@ -54,7 +54,7 @@ void LightManager::UploadToGpu(VisibleLights const& lights)
 	m_rhi->BindUniformBuffer(m_spotLightBuffer, sizeof(GPUSpotLightBuffer), &bufferS);
 
 	GPUDirectionalLightBuffer bufferD;
-	bufferD.m_count[0] = (float)std::min(lights.m_directionalLights.size(), m_maxDirectionalLights);
+	bufferD.m_count[0] = (float)std::min(lights.m_directionalLights.size(), MAX_SPOT_LIGHTS);
 	for (int i = 0; i < bufferD.m_count[0]; i++)
 	{
 		DirectionalLightComponent* light = lights.m_directionalLights[i];

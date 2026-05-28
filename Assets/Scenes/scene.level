@@ -1,84 +1,7 @@
 {
-"materials": [
-
-],
 "objects": [
   {
-    "id": 0,
-    "parent": null,
-    "name": "Player",
-    "position": [-2.689153,1.073233,-0.486195],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.000000,1.000000,1.000000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/padoru/padoru.mesh",
-        "texture": "Assets/Textures/padoru.png",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-        "castShadow": true
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Kinematic",
-        "mass": 1.000000
-      },
-      "CapsuleCollider": {
-        "enabled": true,
-        "halfHeight": 0.250000,
-        "radius": 0.200000,
-        "isTrigger": false,
-        "material": null
-      },
-      "CharacterController": {
-        "enabled": true,
-        "groundedDistance": 0.450000,
-        "speed": 1.000000
-      },
-      "ThirdPersonCamera": {
-        "enabled": true,
-        "isMain": true,
-        "distance": 6.176000,
-        "speed": 2.500000
-      },
-      "ScriptComponent": {
-        "enabled": true,
-        "script": "Assets/Scripts/Player.lua",
-        "vars": {
-        }
-      }
-    }
-  },
-  {
-    "id": 1,
-    "parent": null,
-    "name": "Platform",
-    "position": [1.000000,0.000000,0.000000],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [20.000000,1.000000,20.000000],
-    "components": {
-      "MeshRenderer": {
-        "enabled": true,
-        "mesh": "Assets/Meshes/cube/cube.mesh",
-        "texture": "Assets/Textures/Potatoes.jpg",
-        "shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
-        "castShadow": true
-      },
-      "BoxCollider": {
-        "enabled": true,
-        "halfExtents": [10.000000, 0.500000, 10.000000],
-        "isTrigger": false,
-        "material": null
-      },
-      "RigidBody": {
-        "enabled": true,
-        "type": "Static",
-        "mass": 1.000000
-      }
-    }
-  },
-  {
-    "id": 2,
+    "id": 32,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -94,11 +17,11 @@
     }
   },
   {
-    "id": 19,
+    "id": 33,
     "parent": null,
     "name": "Light",
-    "position": [-1.000000,5.000000,0.000000],
-    "rotation": [0.341454,0.286514,-0.685736,0.575400],
+    "position": [-1.000000,2.000000,0.000000],
+    "rotation": [0.383022,0.321394,-0.663414,0.556670],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
       "DirectionalLight": {
@@ -107,6 +30,162 @@
         "intensity": 0.883000,
         "shadowDistance": 25.000000,
         "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 34,
+    "parent": null,
+    "name": "Player",
+    "position": [7.597365,1.694018,24.275558],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/Player/Player.mesh",
+        "material": "Assets/Material/Player.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 5.000000,
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"Mesh": "Assets/Meshes/Player/Player.mesh"
+      }
+    }
+  },
+  {
+    "id": 35,
+    "parent": null,
+    "name": "Painting",
+    "position": [-5.307778,3.197713,8.522598],
+    "rotation": [0.000000,0.382683,0.000000,0.923880],
+    "scale": [2.213460,2.213460,2.213460],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
+        "material": "Assets/Material/Painting.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.000000,2.000000,0.100000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Painting.lua",
+        "vars": {
+          "TargetScene": "Assets/Scenes/level_1.level",
+          "LoadTime": 1.000000
+        }
+      }
+    }
+  },
+  {
+    "id": 36,
+    "parent": null,
+    "name": "Map",
+    "position": [0.000000,-25.644464,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
+        "material": "Assets/Material/Main_Map.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
+        "type": "Triangle"
+      }
+    }
+  },
+  {
+    "id": 37,
+    "parent": null,
+    "name": "Cube",
+    "position": [6.517717,1.297301,21.513992],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "material": "Assets/Material/Default.mat",
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [0.500000,0.500000,0.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
       }
     }
   }

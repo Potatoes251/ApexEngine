@@ -17,10 +17,10 @@ namespace LibMath
 
 		~Transform() = default;
 
-		Quaternion	getRotation() const { return m_rotation; }
-		Vector3		getPosition() const { return m_position; }
-		Vector3		getScale() const { return m_scale; }
-		Vector3		getForward() const;	
+		Quaternion const&	getRotation() const { return m_rotation; }
+		Vector3	const&		getPosition() const { return m_position; }
+		Vector3	const&		getScale() const { return m_scale; }
+		Vector3				getForward() const;	
 
 		Vector3		getEulerRotation() const;
 		void		setEulerRotation(Vector3 euler);
@@ -29,6 +29,8 @@ namespace LibMath
 		void	setRotation(Quaternion rotation) { m_rotation = rotation; }
 		void	setPosition(Vector3 position) { m_position = position; }
 		void	setScale(Vector3 scale) { m_scale = scale; }
+
+		Transform inversed() const;
 
 		operator Matrix4() const;
 

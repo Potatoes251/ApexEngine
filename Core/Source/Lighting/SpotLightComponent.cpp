@@ -13,38 +13,12 @@ SpotLightComponent::SpotLightComponent(LibMath::Vector3 color, float intensity, 
     m_outerCutoff = outerCutoff;
 }
 
-SpotLightComponent::SpotLightComponent(SpotLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-    m_innerCutoff = other.m_innerCutoff;
-    m_outerCutoff = other.m_outerCutoff;
-}
-
-SpotLightComponent& SpotLightComponent::operator=(SpotLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-    m_innerCutoff = other.m_innerCutoff;
-    m_outerCutoff = other.m_outerCutoff;
-
-    return *this;
-}
-
 void SpotLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"SpotLight\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-    out << "        \"color\": ["
-        << m_color[0] << ", "
-        << m_color[1] << ", "
-        << m_color[2] << "],\n";
+    out << "        \"color\": " << m_color << ",\n";
     out << "        \"intensity\": " << m_intensity << ",\n";
     out << "        \"innerCutOff\": " << m_innerCutoff << ",\n";
     out << "        \"outerCutOff\": " << m_outerCutoff << "\n";
-
-    out << "      }";
 }
 
 std::vector<ExposedVar> SpotLightComponent::GetExposedVariables()

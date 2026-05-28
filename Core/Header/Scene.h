@@ -12,6 +12,8 @@
 
 #include "Skybox.h"
 
+#include "WaypointGraph.h"
+
 #include "Lighting/VisibleLights.h"
 
 #include "LibMath/Matrix/Matrix4.h"
@@ -29,53 +31,82 @@ namespace Apex::Rendering
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		std::unique_ptr<Scene> Clone();
+		std::unique_ptr<Scene> Clone() const;
 
-		void SetSkybox(std::unique_ptr<Skybox>& skybox) { m_skybox = std::move(skybox); }
+		void SetSkybox(std::unique_ptr<Skybox> skybox) { m_skybox = std::move(skybox); }
 
-		Lighting::VisibleLights GetVisibleLights();
+		Lighting::VisibleLights GetVisibleLights() const;
 
 		Data::Object* CreateObject();
 		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
 		void AddObject(std::unique_ptr<Data::Object> obj);
 		void DestroyObject(size_t objId);
 
-		void MarkDirty();
-		void ClearDirty() { m_isDirty = false; }
+		void MarkDirty() const;
+		void ClearDirty() const { m_isDirty = false; }
 		bool IsDirty() const { return m_isDirty; }
 
 		void Start();
 		void Update(float deltaTime_s);
 		void LateUpdate(float deltaTime_s);
 		void FixedUpdate(float deltaTime_s);
+		void ComputePass(RenderPassInfo passInfo);
 		void Render(RenderPassInfo passInfo);
 		
+		template<typename T>
+		std::vector<T*> GetComponents();
+
 		Data::Object* GetObjectWithId(size_t id);
 		Data::Object* GetObjectAt(size_t idx) { return idx < m_objects.size() ? m_objects[idx].get() : nullptr; }
 
 		Camera* GetMainCamera() const { return m_mainCamera; }
 		void	SetMainCamera(Camera* camera) { m_mainCamera = camera; }
+		void	SetShader(Resources::ResourceHandle<Shader> shader) { m_shader = shader; }
+		Resources::ResourceHandle<Shader>	GetShader() const { return m_shader; }
 
 		void InsertBefore(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		void InsertAfter(Apex::Data::Object* dragged, Apex::Data::Object* target);
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
+		Pathfinding::WaypointGraph* GetGraph() { return &m_graph; }
 
 		void Save(const std::string& path);
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
+		// clone helpers
+		void CloneObjects(std::unique_ptr<Scene>& copy) const;
+		void ReparentObjects(std::unique_ptr<Scene>& copy) const;
+
 		void DestroyPendingObject();
 		void DestroyObject(Apex::Data::Object* obj);
 
 		Physic::PhysicSystem m_physics;
+		Pathfinding::WaypointGraph m_graph;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
+		Resources::ResourceHandle<Shader> m_shader;
 		std::unique_ptr<Skybox> m_skybox;
 
 		Camera* m_mainCamera = nullptr;
 
 		std::function<void()> m_onMarkedDirty;
-		bool m_isDirty = false;
+		mutable bool m_isDirty = false;
 	};
+
+	template<typename T>
+	std::vector<T*> Scene::GetComponents()
+	{
+		std::vector<T*> comps;
+
+		for (auto& obj : m_objects)
+		{
+			auto objComp = obj->GetComponentsByType<T>();
+			if (objComp.empty())
+				continue;
+			comps.insert(comps.end(), objComp.begin(), objComp.end());
+		}
+
+		return comps;
+	}
 }
 
 #endif

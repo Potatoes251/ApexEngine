@@ -157,6 +157,18 @@ LibMath::Radian& LibMath::Radian::operator-=(Radian other)
 	return *this;
 }
 
+LibMath::Radian& LibMath::Radian::operator+=(float val)
+{
+	m_value += val;
+	return *this;
+}
+
+LibMath::Radian& LibMath::Radian::operator-=(float val)
+{
+	m_value -= val;
+	return *this;
+}
+
 LibMath::Radian& LibMath::Radian::operator*=(float val)
 {
 	m_value *= val;

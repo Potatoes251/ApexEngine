@@ -12,35 +12,11 @@ PointLightComponent::PointLightComponent(LibMath::Vector3 color, float intensity
     m_radius = radius;
 }
 
-PointLightComponent::PointLightComponent(PointLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-    m_radius = other.m_radius;
-}
-
-PointLightComponent& PointLightComponent::operator=(PointLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-    m_radius = other.m_radius;
-
-    return *this;
-}
-
 void PointLightComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"PointLight\": {\n";
-
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
-    out << "        \"color\": ["
-        << m_color[0] << ", "
-        << m_color[1] << ", "
-        << m_color[2] << "],\n";
+    out << "        \"color\": " << m_color << ",\n";
     out << "        \"intensity\": " << m_intensity << ",\n";
     out << "        \"radius\": " << m_radius << "\n";
-
-    out << "      }";
 }
 
 std::vector<ExposedVar> PointLightComponent::GetExposedVariables()
@@ -74,12 +50,12 @@ std::vector<LibMath::Matrix4> PointLightComponent::GetViewMatrix(Rendering::Came
 
     LibMath::Vector3 position = GetOwner()->GetGlobalTransform().getPosition();
 
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::right(), LibMath::Vector3::down()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::left(), LibMath::Vector3::down()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::right(), LibMath::Vector3::up()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::left(), LibMath::Vector3::up()));
     matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::up(), LibMath::Vector3::front()));
     matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::down(), LibMath::Vector3::back()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::front(), LibMath::Vector3::down()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::back(), LibMath::Vector3::down()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::front(), LibMath::Vector3::up()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::back(), LibMath::Vector3::up()));
 
     return matrices;
 }

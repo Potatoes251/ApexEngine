@@ -1,0 +1,8 @@
+{
+	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+	"computeShader": "ApexAssets/Shaders/SkinningComp.glsl",
+	"tint": [1, 1, 1],
+	"textures": [
+		"Assets/Textures/model6.png"
+	]
+}

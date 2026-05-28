@@ -48,7 +48,7 @@ namespace Apex::Windowing
         }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_window = glfwCreateWindow(width, height, title.c_str(), nullptr, shareContext);
@@ -130,7 +130,7 @@ namespace Apex::Windowing
             glfwSetCursor(m_window, m_crosshairCursor);
     }
 
-    void GLFWWindow::ResetCursor()
+    void GLFWWindow::ResetCursorShape()
     {
         glfwSetCursor(m_window, nullptr);  // nullptr restores the default arrow
     }
@@ -219,7 +219,7 @@ namespace Apex::Windowing
         ofn.lpstrFile = buffer.data();
         ofn.nMaxFile = BUFFER;
         ofn.lpstrTitle = L"Export Texture";
-        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0\0";
+        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0";
         ofn.nFilterIndex = 1;
         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_EXPLORER;
 

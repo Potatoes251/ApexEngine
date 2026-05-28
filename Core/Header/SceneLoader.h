@@ -1,14 +1,17 @@
 #ifndef SCENE_LOADER
 #define SCENE_LOADER
 
-#include "SerializationParser.h"
 #include "Rigidbody.h"
 #include "MeshCollider.h"
+#include "Physic.h"
+
+#include "SerializationParser.h"
+#include "Material.h"
+#include "LuaManager.h"
+
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
-#include "Physic.h"
-#include "LuaManager.h"
 
 #include <string>
 #include <vector>
@@ -24,9 +27,9 @@ namespace Apex::Serialization
     class SceneLoader
     {
     public:
-        SceneLoader(Resources::ResourceManager& resMgr, 
-            Apex::Physic::PhysicSystem& physics, 
-            Apex::Scripting::LuaManager& luaManager) 
+        SceneLoader(Resources::ResourceManager* resMgr, 
+            Apex::Physic::PhysicSystem* physics, 
+            Apex::Scripting::LuaManager* luaManager) 
             : m_resourceManager(resMgr), m_physics(physics), 
             m_luaManager(luaManager) {}
 
@@ -36,6 +39,26 @@ namespace Apex::Serialization
 
         Data::Object* ParseObject(Apex::Rendering::Scene& scene, Apex::Serialization::SerialParser& parser);
         void ParseComponents(Data::Object* obj, Apex::Serialization::SerialParser& parser);
+
+        void ParseMeshRenderer(Data::Object* obj, SerialParser& parser);
+        void ParseRigidBody(Data::Object* obj, SerialParser& parser);
+        void ParseMeshCollider(Data::Object* obj, SerialParser& parser);
+        void ParseBoxCollider(Data::Object* obj, SerialParser& parser);
+        void ParseCapsuleCollider(Data::Object* obj, SerialParser& parser);
+        void ParseDirectionalLight(Data::Object* obj, SerialParser& parser);
+        void ParseSpotLight(Data::Object* obj, SerialParser& parser);
+        void ParsePointLight(Data::Object* obj, SerialParser& parser);
+        void ParseCharacterController(Data::Object* obj, SerialParser& parser);
+        void ParseAIController(Data::Object* obj, SerialParser& parser);
+        void ParseThirdPersonCamera(Data::Object* obj, SerialParser& parser);
+        void ParseFirstPersonCamera(Data::Object* obj, SerialParser& parser);
+        void ParseScriptComponent(Data::Object* obj, SerialParser& parser);
+        void ParseAnimator(Data::Object* obj, SerialParser& parser);
+        void ParseWaterVolume(Data::Object* obj, SerialParser& parser);
+        void ParseViewComponent(Data::Object* obj, SerialParser& parser);
+        void ParseAudioComponent(Data::Object* obj, SerialParser& parser);
+        void ParseWaypointComponent(Data::Object* obj, SerialParser& parser);
+
         void ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser);
         void ParseMaterials(SerialParser& parser);
 
@@ -44,12 +67,12 @@ namespace Apex::Serialization
 
         Apex::Resources::ResourceHandle<Mesh> GetMeshHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Texture> GetTextureHandle(const std::string& path);
+        Apex::Resources::ResourceHandle<Rendering::Material> GetMaterialHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);
 
-        Apex::Resources::ResourceManager& m_resourceManager;
-        Apex::Physic::PhysicSystem& m_physics;
-        std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
-        Apex::Scripting::LuaManager& m_luaManager;
+        Apex::Resources::ResourceManager* m_resourceManager;
+        Apex::Physic::PhysicSystem* m_physics;
+        Apex::Scripting::LuaManager* m_luaManager;
 
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;
         std::vector<std::pair<size_t, size_t>> parentLinks;

@@ -15,6 +15,9 @@
 #include "Hud.h"
 #include "EditorIcon.h"
 
+#include "WaypointGraph.h"
+#include "Waypoint.h"
+
 using namespace Apex::Data;
 
 using namespace Apex::Editor;
@@ -32,6 +35,12 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
+Viewport::~Viewport()
+{
+	m_rhi->DeleteFrameBuffer(m_fbo);
+	m_rhi->DeleteTexture(m_textureFbo);
+}
+
 void Viewport::SelectObject(Data::Object* selected, bool send)
 {
 	m_selectedObject = selected;
@@ -41,9 +50,12 @@ void Viewport::SelectObject(Data::Object* selected, bool send)
 
 void Viewport::UpdateCamera(Windowing::IWindow* window)
 {
-	if (!m_isFocus) return;
+	if (!m_isFocus || m_editor->GetEditorState() == EditorState::Play) return;
 
 	InputSystem& input = InputSystem::Get();
+
+	// dont move while using shortcut
+	if (input.IsKeyDown(Key::Ctrl)) return;
 
 	m_camera.ProcessKeyboard(input.IsKeyDown(Key::W), input.IsKeyDown(Key::S), 
 		input.IsKeyDown(Key::A), input.IsKeyDown(Key::D), 
@@ -103,8 +115,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 	{
 		if (m_isTranslationSnapping) Snap(movementVec);
 		newTransform.setPosition(m_initialTransform.getPosition() + movementVec);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Rotation:
@@ -122,8 +133,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		LibMath::Quaternion deltaAngle(LibMath::Radian(angle), axis);
 
 		newTransform.setRotation(deltaAngle * m_initialTransform.getRotation());
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	case GizmoMode::Scale:
@@ -139,8 +149,7 @@ void Viewport::OnMouseMove(double mouseX, double mouseY)
 		newScale = LibMath::Vector3(std::max(newScale[0], 0.01f), std::max(newScale[1], 0.01f), std::max(newScale[2], 0.01f));
 
 		newTransform.setScale(newScale);
-		CommandManager::Get().Execute(
-			std::make_unique<TransformCommand>(m_editor->GetApp()->GetScene(), m_selectedObject, newTransform, false));
+		CommandManager::Get().Execute(std::make_unique<TransformCommand>(m_selectedObject, newTransform, false));
 		break;
 	}
 	default:
@@ -207,7 +216,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 				m_startingPoint = center + GetAxis() * ((m_startingPoint - center).dot(GetAxis()));
 			}
 
-			m_rhi->UnBindFrameBuffer();
+			m_rhi->UnBindFrameBuffer(m_width, m_height);
 			return;
 		}
 	}
@@ -218,7 +227,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_flags |= UseIdAsColor;
-	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags |= IgnoreMaterial;
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
@@ -226,9 +235,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
 
-	SelectObject(m_editor->GetApp()->GetScene()->GetObjectAt(GetMousePixelInFbo(mousePos[0], mousePos[1])));
+	SelectObject(m_editor->GetApp()->GetScene()->GetObjectWithId(GetMousePixelInFbo(mousePos[0], mousePos[1])));
 
-	m_rhi->UnBindFrameBuffer();
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
 }
 
 LibMath::Vector3 Viewport::GetAxis()
@@ -236,13 +245,13 @@ LibMath::Vector3 Viewport::GetAxis()
 	LibMath::Vector3 axis;
 	switch (m_selectedAxis)
 	{
-	case Axis::X:		
+	case Axis::X:
 		axis = { 1, 0, 0 };	
 		break;
-	case Axis::Y:		
+	case Axis::Y:
 		axis = { 0, 1, 0 };	
 		break;
-	case Axis::Z:		
+	case Axis::Z:
 		axis = { 0, 0, 1 };	
 		break;
 	case Axis::None:	return { 0, 0, 0 };
@@ -251,7 +260,7 @@ LibMath::Vector3 Viewport::GetAxis()
 
 	if (!m_localGizmo || !m_selectedObject) return axis;
 
-	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
+	return m_initialTransform.getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()
@@ -382,6 +391,8 @@ void Viewport::Draw()
 
 	if (m_editor->GetEditorState() == EditorState::Play)
 		pass.m_camera = m_editor->GetApp()->GetScene()->GetMainCamera();
+	else
+		pass.m_flags &= ~PerformCompute;
 	if (!pass.m_camera)
 		pass.m_camera = &m_camera;
 
@@ -410,7 +421,7 @@ void Viewport::Draw()
 	m_panelPos = m_gui->GetPanelPos();
 	m_panelSize = m_gui->GetPanelSize();
 
-	m_editor->GetApp()->Render(pass);
+	m_editor->GetApp()->Render(m_gui, pass);
 	if (m_editor->GetEditorState() == EditorState::Edit)
 	{
 		if (m_showGrid) DrawGrid();
@@ -420,6 +431,7 @@ void Viewport::Draw()
 		LibMath::Matrix4 proj = m_camera.GetProjection();
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
 	}
+	m_rhi->UnBindFrameBuffer(m_width, m_height);
 
 	float panelRatio = m_panelSize[0] / m_panelSize[1];
 	LibMath::Vector2 drawSize;
@@ -446,10 +458,11 @@ void Viewport::Draw()
 		auto* uiManager = m_editor->GetApp()->GetUI();
 		if (uiManager)
 			uiManager->RenderHUD(m_gui->GetDrawList(), m_panelPos + offset, drawSize);
-			
 	}
 
 	DrawUI();
+
+	DrawBuildPopup();
 
 	m_gui->EndPanel();
 }
@@ -459,6 +472,8 @@ void Viewport::DrawUI()
 	DrawPlayBar();
 	if (m_editor->GetEditorState() == EditorState::Edit)
 		DrawRightToolbar();
+
+	DrawCameraSpeed();
 }
 
 void Viewport::DrawGrid()
@@ -497,6 +512,38 @@ void Apex::Editor::Viewport::DrawPlayBar()
 
 	if (state == EditorState::Edit)
 	{
+		m_gui->PushFont(FontID::Default);
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 27.5f }, { 125.f, BUTTON + PAD * 2.f }, ROUND);
+		if (m_gui->Button("Build Game"))
+		{
+			// Scan for .level files once when the popup opens
+			m_buildScenes.clear();
+			namespace fs = std::filesystem;
+			for (auto& entry : fs::recursive_directory_iterator("Assets/"))
+			{
+				if (entry.path().extension() == ".level")
+				{
+					BuildSceneEntry sceneEntry;
+					sceneEntry.path = entry.path().generic_string();
+					sceneEntry.selected = true;
+					m_buildScenes.push_back(std::move(sceneEntry));
+				}
+			}
+			m_showBuildPopup = true;
+			m_gui->OpenPopup("Build Game");
+		}
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 64.f }, { 187.f, BUTTON + PAD * 2.f }, ROUND);
+		if (m_gui->Button("GenerateNavGraph"))
+		{
+			Scene* scene = m_editor->GetApp()->GetScene();
+			std::filesystem::path path{ m_editor->GetApp()->GetScenePath() };
+			path.replace_extension(".nav");
+			std::vector<Pathfinding::NavGenVolume*> navVol = scene->GetComponents<Pathfinding::NavGenVolume>();
+			if (!navVol.empty())
+				scene->GetGraph()->GenerateGraph(path.string(), scene->GetPhysic(), navVol[0]);
+		}
+
+		m_gui->PopFont();
 		drawBar(1); // only Play
 		if (IconButton("ApexAssets/Icons/play.png", ">", { BUTTON, BUTTON }, false, Apex::UserInterface::Color(0.0f, 1.0f, 0.0f, 1.0f)))
 			m_editor->SetEditorState(EditorState::Play);
@@ -594,6 +641,66 @@ void Apex::Editor::Viewport::DrawRightToolbar()
 	DrawSnapButtons(BUTTON, PAD, rightX, curY, ROUND);
 }
 
+void Apex::Editor::Viewport::DrawCameraSpeed()
+{
+	if (!InputSystem::Get().IsMouseButtonDown(Input::MouseButton::Right) ||
+		m_editor->GetEditorState() == EditorState::Play)
+		return;
+
+	constexpr float PAD = 4.f;
+	constexpr float HEIGHT = 36.f;
+	constexpr float ROUND = HEIGHT * 0.5f;
+
+	float speed = m_camera.GetSpeed();
+
+	char buf[32];
+	snprintf(buf, sizeof(buf), "Speed: %.1f", speed);
+
+	// Position
+	LibMath::Vector2 pos =
+	{
+		m_panelPos[0] + 5.f,
+		m_panelPos[1] + 105.f
+	};
+
+	float backgroundWidth = 110.f;
+
+	// Add 10.f for every extra digit after the first.
+	// 0-9   -> 110.f
+	// 10-99 -> 120.f
+	// 100+  -> 130.f
+
+	float absSpeed = std::abs(speed);
+
+	while (absSpeed >= 10.f)
+	{
+		backgroundWidth += 10.f;
+		absSpeed /= 10.f;
+	}
+
+	// Background size
+	LibMath::Vector2 size =
+	{
+		backgroundWidth,
+		HEIGHT
+	};
+
+	// Draw pill background
+	DrawPillGroup(pos, size, ROUND);
+
+	// Draw text inside
+	m_gui->PushFont(FontID::Default);
+
+	m_gui->SetCursorPos({
+		pos[0] + PAD * 3.f,
+		pos[1] + PAD * 1.5f
+		});
+
+	m_gui->Text(buf);
+
+	m_gui->PopFont();
+}
+
 void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad, float rightX, float& curY, const float round)
 {
 	float SNAP_BUTTON_WIDTH = button;
@@ -674,4 +781,78 @@ bool Apex::Editor::Viewport::IconButton(const char* iconPath, const char* fallba
 		m_gui->PopColor();
 
 	return clicked;
+}
+
+void Viewport::DrawBuildPopup()
+{
+	if (!m_showBuildPopup) return;
+
+	m_gui->PushFont(FontID::Default);
+	if (!m_gui->BeginPopupModal("Build Game", { 500.f, 0.f }))
+		return;
+
+	m_gui->Text("Select scenes to include in the build.");
+	m_gui->Text("The first checked scene will be loaded on startup.");
+	m_gui->Separator();
+
+	for (int i = 0; i < (int)m_buildScenes.size(); ++i)
+	{
+		auto& entry = m_buildScenes[i];
+
+		// Checkbox
+		m_gui->Checkbox(("##sel" + std::to_string(i)).c_str(), &entry.selected);
+		m_gui->SameLine();
+
+		// Path label (just the filename for readability, full path as tooltip)
+		std::string filename = std::filesystem::path(entry.path).filename().string();
+		m_gui->Text(filename + "  (" + entry.path + ")");
+
+		// Reorder buttons
+		m_gui->SameLine();
+		m_gui->PushID(i);
+		if (i > 0 && m_gui->Button("^"))
+			std::swap(m_buildScenes[i], m_buildScenes[i - 1]);
+		m_gui->SameLine();
+		if (i < (int)m_buildScenes.size() - 1 && m_gui->Button("v"))
+			std::swap(m_buildScenes[i], m_buildScenes[i + 1]);
+		m_gui->PopID();
+	}
+
+	if (m_buildScenes.empty())
+		m_gui->Text("(No .level files found under Assets/)");
+
+	m_gui->Separator();
+
+	bool anySelected = false;
+	for (auto& entry : m_buildScenes)
+	{
+		if (entry.selected) 
+		{ 
+			anySelected = true; 
+			break; 
+		}
+	}
+
+	if (!anySelected) m_gui->BeginDisabled();
+	if (m_gui->Button("Build"))
+	{
+		std::vector<std::string> selected;
+		for (auto& e : m_buildScenes)
+			if (e.selected) selected.push_back(e.path);
+
+		m_editor->Build(selected);
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+	if (!anySelected) m_gui->EndDisabled();
+
+	m_gui->SameLine();
+
+	if (m_gui->Button("Cancel"))
+	{
+		m_showBuildPopup = false;
+		m_gui->CloseCurrentPopup();
+	}
+	m_gui->PopFont();
+	m_gui->EndPopup();
 }

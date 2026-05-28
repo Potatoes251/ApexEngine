@@ -1,8 +1,6 @@
 #ifndef IRESOURCE
 #define IRESOURCE
 
-#include "RHI.h"
-
 enum class ResourceState
 {
     Unloaded,
@@ -11,6 +9,14 @@ enum class ResourceState
     Uploaded,   // GPU ready
     Failed      // couldn't be loaded
 };
+
+#include <atomic>
+//#include <string>
+
+#include "RHI.h"
+
+namespace Apex::Resources { class ResourceManager; }
+//namespace Apex::Rendering { class IRHI; }
 
 class IResource
 {
@@ -28,12 +34,14 @@ public:
     ResourceState   GetState() const { return m_state; }
     void            SetState(ResourceState state) { m_state = state; }
     void            SetRhi(Apex::Rendering::IRHI* rhi) { m_rhi = rhi; }
+    void            SetResourceManager(Apex::Resources::ResourceManager* rm) { m_rm = rm; }
 
 protected:
     std::string m_path;
     Apex::Rendering::IRHI* m_rhi = nullptr;
+    Apex::Resources::ResourceManager* m_rm = nullptr;
 private:
-    ResourceState   m_state = ResourceState::Unloaded;
+    std::atomic<ResourceState>   m_state = ResourceState::Unloaded;
 };
 
 #endif // !IRESOURCE

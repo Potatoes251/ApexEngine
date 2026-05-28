@@ -37,7 +37,6 @@ void CommandManager::StartBatch()
 {
 	if (m_batching)
 	{
-		LOG_WARNING("StartBatch called twice without EndBatch");
 		return;
 	}
 
@@ -49,7 +48,6 @@ void CommandManager::EndBatch()
 {
 	if (!m_batching)
 	{
-		LOG_WARNING("EndBatch called without StartBatch");
 		return;
 	}
 
@@ -90,8 +88,5 @@ void CommandManager::Redo()
 
 	m_undoStack.push_back(std::move(cmd));
 
-	if (m_undoStack.size() > MAX_SIZE)
-	{
-		m_undoStack.pop_front();
-	}
+	m_undoStack.pop_front();
 }

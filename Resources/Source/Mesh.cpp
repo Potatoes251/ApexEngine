@@ -6,9 +6,7 @@ using namespace Apex::Rendering;
 
 Mesh::~Mesh()
 {
-	if (!m_rhi) return;
 	if (m_VAO) m_rhi->DeleteVAO(m_VAO);
-	if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
 	if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
 }
 
@@ -16,6 +14,12 @@ void Mesh::LoadFromFile()
 {
 	MeshLoader loader;
 	loader.Load(m_path, *this);
+
+	if (m_vertices.empty())
+	{
+		SetState(ResourceState::Failed);
+		return;
+	}
 
 	for (const auto& v : m_vertices)
 	{
@@ -29,21 +33,22 @@ void Mesh::LoadFromFile()
 
 void Mesh::UploadToGpu()
 {
-	if (m_vertices.empty())
-	{
-		SetState(ResourceState::Failed);
-		return;
-	}
-
 	m_vertexCount = static_cast<uint32_t>(m_vertices.size());
 	m_indexCount = static_cast<uint32_t>(m_indices.size());
 
+	m_inputVertices = Ssbo(m_rhi, m_vertices.data(), m_vertexCount * sizeof(Vertex), 0);
+	m_outputVertices = Ssbo(m_rhi, nullptr, m_vertexCount * sizeof(Vertex), 1);
+
 	m_VAO = m_rhi->CreateVAO();
 	m_rhi->BindVAO(m_VAO);
-
 	m_VBO = m_rhi->CreateBuffer(BufferType::Vertex, m_vertices.data(), m_vertexCount * sizeof(Vertex));
-	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indexCount * sizeof(int));
+	m_EBO = m_rhi->CreateBuffer(BufferType::Index, m_indices.data(), m_indexCount * sizeof(uint32_t));
+	m_rhi->SetupVertexLayout();
 
+	m_VAOSkinned = m_rhi->CreateVAO();
+	m_rhi->BindVAO(m_VAOSkinned);
+	m_rhi->BindBuffer(m_outputVertices.GetId(), BufferType::Vertex);
+	m_rhi->BindBuffer(m_EBO, BufferType::Index);
 	m_rhi->SetupVertexLayout();
 }
 
@@ -55,14 +60,31 @@ void Mesh::ClearVertices()
 	m_indices.shrink_to_fit();
 }
 
-void Mesh::Draw() const
+void Mesh::BindForCompute()
 {
-	m_rhi->BindVAO(m_VAO);
+	m_inputVertices.Bind();
+	m_outputVertices.Bind();
+}
+
+void Mesh::Draw(bool skinned) const
+{
+	m_rhi->BindVAO(skinned ? m_VAOSkinned : m_VAO);
 	m_rhi->DrawIndexed(m_indexCount);
 }
 
-void Mesh::DrawLineLoop() const
+void Mesh::DrawLine() const
 {
 	m_rhi->BindVAO(m_VAO);
-	m_rhi->DrawLineLoop(m_vertexCount);
+	m_rhi->DrawLineArrays(m_vertexCount);
+}
+
+int Mesh::GetAnimationIdx(std::string const& name)
+{
+	for (int i = 0; i < m_animations.size(); i++)
+	{
+		Animation const& anim = m_animations[i];
+		if (anim.m_name == name)
+			return i;
+	}
+	return -1;
 }

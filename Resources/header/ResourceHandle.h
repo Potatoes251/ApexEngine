@@ -18,6 +18,7 @@ namespace Apex::Resources
 		std::unique_ptr<IResource>	m_resource = nullptr;
 		std::atomic<int>			m_refCount = 0;
 		bool						m_persistent = false;
+		float						m_timeSinceUnused = 0.f;
 	};	
 	
 	template <typename T>
@@ -55,11 +56,6 @@ namespace Apex::Resources
 				return;
 
 			m_resourceEntry->m_refCount.fetch_sub(1);
-
-			if (m_resourceEntry->m_refCount.load() == 0 && !m_resourceEntry->m_persistent)
-			{
-				m_resourceEntry->m_resource.reset();
-			}
 		}
 
 		bool IsValid() const

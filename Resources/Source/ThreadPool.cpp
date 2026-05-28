@@ -4,6 +4,8 @@ using namespace Apex::Core;
 
 ThreadPool::ThreadPool(int nbThreads)
 {
+	nbThreads = std::max(nbThreads, 1);
+
 	for (int i = 0; i < nbThreads; i++)
 	{
 		m_threads.emplace_back(&ThreadPool::WorkerLoop, this);
@@ -19,6 +21,12 @@ ThreadPool::~ThreadPool()
 	{
 		thread.join();
 	}
+}
+
+ThreadPool& ThreadPool::Get()
+{
+	static ThreadPool instance;
+	return instance;
 }
 
 void ThreadPool::WorkerLoop()

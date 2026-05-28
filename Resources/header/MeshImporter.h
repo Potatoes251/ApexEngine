@@ -11,6 +11,14 @@
 
 #include "BinLoader.h"
 
+struct MaterialImportData
+{
+	std::string m_name;             // FBX material name becomes "<name>.mat"
+	std::string m_diffusePath;      // albedo / diffuse texture
+	std::string m_normalPath;       // normal map
+	std::string m_specularPath;     // specular / roughness map
+};
+
 class MeshImporter
 {
 public:
@@ -19,20 +27,25 @@ public:
 
 	static void EnsureManager();
 
-	bool Import(std::string path, Mesh& mesh);
+	bool Import(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials);
 
 private:
-	bool ImportFbx(std::string path, Mesh& mesh);
-	void ProcessNode(FbxNode* node, Mesh& mesh);
-	void ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh);
-	void				ExtractBones(FbxMesh* fbxMesh, Mesh& mesh);
-	void				AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight);
-	void				ExtractAnimations(FbxScene* scene, Mesh& mesh);
-	const std::string&	GetBoneNameFromIndex(const Mesh& mesh, int index);
-	FbxAMatrix			GetGeometryTransform(FbxNode* node);
+	bool		ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials);
+	void		ProcessNode(FbxNode* node, Mesh& mesh);
+	void		ProcessMesh(FbxMesh* fbxMesh, Mesh& mesh);
+	void		ExtractBones(FbxMesh* fbxMesh, Mesh& mesh);
+	void		AddBoneWeight(Mesh& mesh, int vertexID, int boneID, float weight);
+	void		BuildNodeMap(FbxNode* node, std::unordered_map<std::string, FbxNode*>& map);
+	void		ExtractAnimations(FbxScene* scene, Mesh& mesh);
+	FbxAMatrix	GetGeometryTransform(FbxNode* node);
 
-	Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
+	void ExtractSceneMaterials(FbxScene* scene, const std::string& fbxDir, std::vector<MaterialImportData>& materials);
+	std::string ResolveTexturePath(FbxSurfaceMaterial* mat, const char* propName, const std::string& fbxDir);
 
+	void NormalizeVertexWeights(Apex::Rendering::Vertex& vertex);
+	void ResolveAndSortBones(FbxScene* scene, Mesh& mesh);
+
+	static Matrix4	ConvertFBXMatrix(const FbxAMatrix& mat);
 
 	static inline FbxManager* s_manager = nullptr;
 	static inline std::mutex  s_mutex;

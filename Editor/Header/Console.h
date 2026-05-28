@@ -4,6 +4,8 @@
 #include "ISink.h"
 
 #include <vector>
+#include <mutex>
+
 
 #include "UI.h"
 
@@ -35,6 +37,8 @@ namespace Apex
 		static std::string ToLower(std::string str);
 
 		char m_searchBuffer[256] = {};
+
+		std::mutex m_logMutex;
 
 		std::vector<LogEntry> m_logs;
 		std::vector<LogEntry> m_collapsedLogs;

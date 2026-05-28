@@ -6,10 +6,7 @@
 #include <cassert>
 
 #include "Rigidbody.h"
-#include "Collider.h"
-#include "BoxCollider.h"
-#include "CapsuleCollider.h"
-#include "MeshCollider.h"
+#include "Colliders.h"
 #include "Mesh.h"
 #include "Shader.h"
 
@@ -49,6 +46,16 @@ PhysicSystem::PhysicSystem() : m_simCallback(this)
 
 		m_pxCtx.m_dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 
+		if (!m_pxCtx.m_dispatcher)
+		{
+			LOG_ERROR("PhysX dispatcher creation failed.");
+			m_pxCtx.m_physics->release();
+			m_pxCtx.m_physics = nullptr;
+			m_pxCtx.m_foundation->release();
+			m_pxCtx.m_foundation = nullptr;
+			return;
+		}
+
 		m_isCtxInit = true;
 	}
 	physx::PxSceneDesc sceneDesc(scale);
@@ -78,27 +85,8 @@ PhysicSystem::~PhysicSystem()
 		if (m_pxCtx.m_foundation)  m_pxCtx.m_foundation->release();
 		m_pxCtx.m_physics = nullptr;
 		m_pxCtx.m_foundation = nullptr;
+		m_pxCtx.m_dispatcher = nullptr;
 	}
-}
-
-PhysMatHandle PhysicSystem::CreateMaterial(std::string const& name, float staticFriction, float dynamicFriction, float bounciness)
-{
-	auto [it, inserted] = m_materialsMap.try_emplace(name, nullptr);
-	ResourceEntry* entry = &it->second;
-
-	// If already existing, do not create again
-	if (!inserted) return PhysMatHandle(entry);
-
-	entry->m_resource = std::make_unique<PhysicMaterial>(staticFriction, dynamicFriction, bounciness);
-	PhysMatHandle handle(entry);
-
-	handle->SetName(name);
-	handle->SetState(ResourceState::Uploaded);
-	handle->SetId(m_physxMaterials.size());
-
-	m_physxMaterials.push_back(m_pxCtx.m_physics->createMaterial(staticFriction, dynamicFriction, bounciness));
-
-	return handle;
 }
 
 void PhysicSystem::CreateActor(Collider const& collider, RigidBodyComponent& rigidBody)
@@ -172,11 +160,6 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 	}
 }
 
-const std::unordered_map<std::string, ResourceEntry>& PhysicSystem::GetMaterials() const
-{
-	return m_materialsMap;
-}
-
 bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
 {
 	physx::PxRaycastBuffer hit;
@@ -184,8 +167,11 @@ bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMat
 
 	if (!result) return false;
 
-	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
-	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
+	RigidBodyComponent* body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+
+	hit_out.m_objId = body->GetOwner()->GetId();
+	hit_out.m_bodyId = body->GetId();
+	hit_out.m_colliderId = static_cast<Collider*>(hit.block.shape->userData)->GetId();
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = ToLibVec(hit.block.position);
 	hit_out.m_normal = ToLibVec(hit.block.normal);
@@ -205,9 +191,12 @@ bool Apex::Physic::PhysicSystem::Raycast(std::vector<HitResult>& hit_out, LibMat
 	for (physx::PxU32 i = 0; i < hitBuffer.getNbTouches(); ++i)
 	{
 		const physx::PxRaycastHit& h = hitBuffer.getTouch(i);
+
+		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(h.actor->userData);
 		HitResult result;
-		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
-		result.m_collider = static_cast<Collider*>(h.shape->userData);
+		result.m_objId = body->GetOwner()->GetId();
+		result.m_bodyId = body->GetId();
+		result.m_colliderId = static_cast<Collider*>(h.shape->userData)->GetId();
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -251,9 +240,11 @@ bool PhysicSystem::Sweep(
 	}
 
 	if (!result) return false;
-	
-	hit_out.m_body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
-	hit_out.m_collider = static_cast<Collider*>(hit.block.shape->userData);
+
+	RigidBodyComponent* body = static_cast<RigidBodyComponent*>(hit.block.actor->userData);
+	hit_out.m_objId = body->GetOwner()->GetId();
+	hit_out.m_bodyId = body->GetId();
+	hit_out.m_colliderId = static_cast<Collider*>(hit.block.shape->userData)->GetId();
 	hit_out.m_distance = hit.block.distance;
 	hit_out.m_position = LibMath::Vector3(hit.block.position.x, hit.block.position.y, hit.block.position.z);
 	hit_out.m_normal = LibMath::Vector3(hit.block.normal.x, hit.block.normal.y, hit.block.normal.z);
@@ -300,9 +291,12 @@ bool PhysicSystem::Sweep(
 	for (physx::PxU32 i = 0; i < sweepBuffer.getNbTouches(); ++i)
 	{
 		const physx::PxSweepHit& h = sweepBuffer.getTouch(i);
+
+		RigidBodyComponent* body = static_cast<RigidBodyComponent*>(h.actor->userData);
 		HitResult result;
-		result.m_body = static_cast<RigidBodyComponent*>(h.actor->userData);
-		result.m_collider = static_cast<Collider*>(h.shape->userData);
+		result.m_objId = body->GetOwner()->GetId();
+		result.m_bodyId = body->GetId();
+		result.m_colliderId = static_cast<Collider*>(h.shape->userData)->GetId();
 		result.m_distance = h.distance;
 		result.m_position = ToLibVec(h.position);
 		result.m_normal = ToLibVec(h.normal);
@@ -459,20 +453,15 @@ void PhysicSystem::DrawConvexMeshCollider(
 	}
 }
 
-physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& collider) const
+physx::PxMaterial* Apex::Physic::PhysicSystem::GetMaterial(Collider const& collider)
 {
-	physx::PxMaterial* material = m_defaultMaterial;
+	size_t id = collider.GetMatId();
 
-	PhysMatHandle matHandle = collider.GetMaterial();
+	if (id < m_physxMaterials.size() && m_physxMaterials[id]) return m_physxMaterials[id];
 
-	if (matHandle.IsValid())
-	{
-		size_t id = matHandle->GetId();
-		assert(id < m_physxMaterials.size() && "Invalid PhysicMaterial id");
-
-		if (m_physxMaterials[id]) material = m_physxMaterials[id];
-	}
-	return material;
+	m_physxMaterials.push_back(m_pxCtx.m_physics->createMaterial(collider.GetStaticFriction(), collider.GetDynamicFriction(), collider.GetBounciness()));
+	
+	return m_physxMaterials.back();
 }
 
 physx::PxShape* PhysicSystem::CreateShapeBox(BoxCollider const& box)
@@ -506,7 +495,6 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 	case MeshColliderType::Triangle:
 		if (rigidBody.GetType() != BodyType::Static)
 		{
-			assert(false && "Triangle mesh can only be static");
 			return nullptr;
 		}
 		{
@@ -607,11 +595,26 @@ void PhysicSystem::CreateActorKinematic(physx::PxShape* shape, RigidBodyComponen
 
 	body->userData = &rigidBody;
 
-	PhysicActor actor;
-	actor.m_actor = body;
-	actor.m_owner = &rigidBody;
+	PhysicActor actor{
+		.m_actor = body,
+		.m_owner = &rigidBody, 
+	};
 
 	m_rigidBodies.push_back(actor);
+}
+
+void PhysicSystem::EditorSync()
+{
+	for (PhysicActor& actor : m_rigidBodies)
+	{
+		if (!actor.m_actor) continue;
+
+		physx::PxTransform pose(
+			ToPxVec(actor.m_owner->GetPosition()),
+			ToPxQuat(actor.m_owner->GetRotation()));
+
+		actor.m_actor->setGlobalPose(pose, true);
+	}
 }
 
 void PhysicSystem::SyncToPhysx()
@@ -623,7 +626,7 @@ void PhysicSystem::SyncToPhysx()
 		case BodyType::Kinematic:
 		{
 			physx::PxRigidDynamic* body = actor.m_actor->is<physx::PxRigidDynamic>();
-
+			if (!body) continue;
 			physx::PxTransform target(ToPxVec(actor.m_owner->GetPosition()), ToPxQuat(actor.m_owner->GetRotation()));
 
 			body->setKinematicTarget(target);
@@ -713,11 +716,11 @@ physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceH
 {
 	physx::PxTriangleMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
 	meshDesc.points.stride = sizeof(::Vertex);
 	meshDesc.points.data = mesh->m_vertices.data();
 
-	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->m_indices.size() / 3);
+	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->GetVertexCount() / 3);
 	meshDesc.triangles.stride = sizeof(int) * 3;
 	meshDesc.triangles.data = mesh->m_indices.data();
 
@@ -741,7 +744,7 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 {
 	physx::PxConvexMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->m_vertices.size());
+	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
 	meshDesc.points.stride = sizeof(::Vertex);
 	meshDesc.points.data = mesh->m_vertices.data();
 
@@ -766,22 +769,6 @@ physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandl
 
 
 // SimulationCallback
-
-void PhysicSystem::SimulationCallback::onConstraintBreak(physx::PxConstraintInfo* /*constraints*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onWake(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onSleep(physx::PxActor** /*actors*/, physx::PxU32 /*count*/)
-{
-}
-
-void PhysicSystem::SimulationCallback::onContact(physx::PxContactPairHeader const& /*pairHeader*/, physx::PxContactPair const* /*pairs*/, physx::PxU32 /*nbPairs*/)
-{
-}
 
 void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 {
@@ -811,8 +798,4 @@ void PhysicSystem::SimulationCallback::onTrigger(physx::PxTriggerPair* pairs, ph
 			break;
 		}
 	}
-}
-
-void PhysicSystem::SimulationCallback::onAdvance(physx::PxRigidBody const* const* /*bodyBuffer*/, physx::PxTransform const* /*poseBuffer*/, physx::PxU32 const /*count*/)
-{
 }

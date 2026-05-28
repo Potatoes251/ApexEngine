@@ -1,7 +1,7 @@
 #ifndef SERIALIZATION_PARSER
 #define SERIALIZATION_PARSER
 
-#include "LibMath/Vector/Vector3.h"
+#include "LibMath/Vector.h"
 #include "LibMath/Quaternion.h"
 
 #include <optional>
@@ -16,9 +16,6 @@ namespace Apex::Serialization
 
         SerialParser(const std::string& text);
 
-        const std::string& GetText() const;
-        const size_t Getindex() const;
-
         void SkipWhitespace();
         void Expect(char c);
 
@@ -28,6 +25,7 @@ namespace Apex::Serialization
         bool ParseBool();
 
         LibMath::Vector3 ParseVector3();
+        LibMath::Vector4 ParseVector4();
         LibMath::Quaternion ParseQuaternion();
         char PeekChar();
 
@@ -35,7 +33,6 @@ namespace Apex::Serialization
         bool Peek(char c);
 
     private:
-
         const std::string& m_text;
         size_t m_index;
     };

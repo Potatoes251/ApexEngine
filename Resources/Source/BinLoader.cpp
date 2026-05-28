@@ -11,7 +11,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open bin file : {}", path);
+        LOG_ERROR_CAT("Resource", "Failed to open bin file : {}", path);
         return false;
     }
 
@@ -20,7 +20,7 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
 
     if (size == 0)
     {
-        LOG_ERROR("File is empty : {}", path);
+        LOG_ERROR_CAT("Resource", "File is empty : {}", path);
         return false;
     }
 
@@ -45,53 +45,30 @@ bool BinLoader::Load(std::string path, Mesh& mesh, std::string& sourcePath_out)
             }
         }
     }
-
-    return true;
-}
-
-bool BinLoader::Load(std::string path, Animation& animation)
-{
-    std::ifstream file(path, std::ios::binary);
-
-    if (!file.is_open())
-    {
-        LOG_ERROR("Failed to open file '{}' for reading", path);
-        return false;
-    }
-
-    animation.m_name = path;
-
-    uint32_t count;
-
-    if (!Read32Bits(file, count)) return false;
-
-    animation.m_boneAnimations.resize(count);
-
-    for (size_t j = 0; j < count; j++)
-    {
-        if (!ReadSingleBoneAnimation(animation.m_boneAnimations[j], file)) return false;
-    }
-
     return true;
 }
 
 bool BinLoader::Export(std::string path, Mesh const& mesh)
 {
+    LOG_INFO_CAT("Resource", "Start exporting {} to bin", path.c_str());
     std::filesystem::path binaryPath = path;
     binaryPath.replace_extension(".mesh");
     std::filesystem::path folderPath = binaryPath.parent_path();
-    folderPath /= binaryPath.stem();
 
-    if (!std::filesystem::exists(folderPath))
+    if (folderPath.filename() != binaryPath.stem())
     {
-        std::filesystem::create_directory(folderPath);
+        folderPath /= binaryPath.stem();
+        if (!std::filesystem::exists(folderPath))
+        {
+            std::filesystem::create_directory(folderPath);
+        }
     }
 
     std::ofstream file(folderPath / binaryPath.filename(), std::ios::binary);
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open file '{}' for writing", path);
+        LOG_ERROR_CAT("Resource", "Failed to open file '{}' for writing", path);
         return false;
     }
 
@@ -123,7 +100,6 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
     if (!Read32Bits(file, header.m_version)) return false;
     if (!Read32Bits(file, header.m_vertexSize)) return false;
     if (!Read32Bits(file, header.m_keyframeSize)) return false;
-    if (!Read32Bits(file, header.m_boneinfoSize)) return false;
     if (!ReadString(file, sourcePath_out))
     {
         sourcePath_out.clear();
@@ -132,23 +108,22 @@ bool BinLoader::ReadHeader(std::ifstream& file, std::string& sourcePath_out)
 
     if (header.m_magic != 0x4D455348)
     {
-        LOG_ERROR("Invalid file format");
+        LOG_ERROR_CAT("Resource", "Invalid file format");
         return false;
     }
     if (header.m_version != CURRENT_VERSION)
     {
-        LOG_WARNING("File needs to be updated (version was {})", header.m_version);
+        LOG_ERROR_CAT("Resource", "File needs to be updated (version was {})", header.m_version);
         return false;
     }
     if (header.m_vertexSize != sizeof(Apex::Rendering::Vertex)
-        || header.m_keyframeSize != sizeof(KeyFrame)
-        || header.m_boneinfoSize != sizeof(BoneInfo))
+        || header.m_keyframeSize != sizeof(KeyFrame))
     {
-        LOG_WARNING("Struct size doesnt match");
+        LOG_ERROR_CAT("Resource", "Struct size doesnt match");
         return false;
     }
 
-    return false;
+    return true;
 }
 
 bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
@@ -173,16 +148,16 @@ bool BinLoader::ReadVerticesIndices(Mesh& mesh, std::ifstream& file)
         return false;
 
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         uint32_t* data = reinterpret_cast<uint32_t*>(indices.data());
 
-        for (size_t i = 0; i < indices.size(); i++)
+        for (uint32_t i = 0; i < indexCount; i++)
         {
             data[i] = _byteswap_ulong(data[i]);
         }
 
-        // only works if vertices uses only 4 bytes types
+        static_assert(alignof(Apex::Rendering::Vertex) == 4);
         data = reinterpret_cast<uint32_t*>(vertices.data());
         size_t totalU32 = (vertices.size() * sizeof(Apex::Rendering::Vertex)) / 4;
 
@@ -206,18 +181,44 @@ bool BinLoader::ReadBoneInfo(Mesh& mesh, std::ifstream& file)
 
     std::vector<BoneInfo> bones(boneCount);
 
-    if (!file.read((char*)bones.data(), boneCount * sizeof(BoneInfo)))
-        return false;
-
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    for (uint32_t i = 0; i < boneCount; i++)
     {
-        uint32_t* data = reinterpret_cast<uint32_t*>(bones.data());
-        size_t totalU32 = (bones.size() * sizeof(BoneInfo)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
+        if (!file.read((char*)&bones[i].m_offsetMatrix, sizeof(Matrix4)))
+            return false;
+        
+        // swap all byte if big endian
+        if (IsBigEndian())
         {
-            data[i] = _byteswap_ulong(data[i]);
+            uint32_t* data = reinterpret_cast<uint32_t*>(&bones[i].m_offsetMatrix[0][0]);
+
+            constexpr size_t totalU32 = sizeof(Matrix4) / 4;
+
+            for (size_t j = 0; j < totalU32; j++)
+            {
+                data[j] = _byteswap_ulong(data[j]);
+            }
+        }
+
+        if (!Read32Bits(file, *reinterpret_cast<uint32_t*>(&bones[i].m_parentIndex)))
+            return false;
+
+        uint32_t nbChild;
+        if (!Read32Bits(file, nbChild))
+            return false;
+
+        bones[i].m_children.resize(nbChild);
+        if (!file.read((char*)bones[i].m_children.data(), nbChild * sizeof(uint32_t)))
+            return false;
+
+        // swap all byte if big endian
+        if (IsBigEndian())
+        {
+            uint32_t* data = reinterpret_cast<uint32_t*>(bones[i].m_children.data());
+
+            for (size_t j = 0; j < bones[j].m_children.size(); j++)
+            {
+                data[j] = _byteswap_ulong(data[j]);
+            }
         }
     }
 
@@ -254,7 +255,7 @@ bool BinLoader::ReadAnimation(Mesh& mesh, std::filesystem::path const& path)
 
     if (!file.is_open())
     {
-        LOG_ERROR("Failed to open file '{}' for reading", path.string());
+        LOG_ERROR_CAT("Resource", "Failed to open file '{}' for reading", path.string());
         return false;
     }
 
@@ -288,7 +289,7 @@ bool BinLoader::ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream&
 
     if (!file.read((char*)sba.m_frames.data(), count * sizeof(KeyFrame))) return false;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         uint32_t* data = reinterpret_cast<uint32_t*>(sba.m_frames.data());
         size_t totalU32 = (sba.m_frames.size() * sizeof(KeyFrame)) / 4;
@@ -319,7 +320,7 @@ bool BinLoader::Read32Bits(std::ifstream& file, uint32_t& val)
 {
     if (!file.read((char*)&val, 4)) return false;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         val = _byteswap_ulong(val);
     }
@@ -336,15 +337,13 @@ void BinLoader::WriteHeader(std::ofstream& file)
     header.m_version = CURRENT_VERSION;
     header.m_vertexSize = sizeof(Apex::Rendering::Vertex);
     header.m_keyframeSize = sizeof(KeyFrame);
-    header.m_boneinfoSize = sizeof(BoneInfo);
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         header.m_magic = _byteswap_ulong(header.m_magic);
         header.m_version = _byteswap_ulong(header.m_version);
         header.m_vertexSize = _byteswap_ulong(header.m_vertexSize);
         header.m_keyframeSize = _byteswap_ulong(header.m_keyframeSize);
-        header.m_boneinfoSize = _byteswap_ulong(header.m_boneinfoSize);
     }
 
     file.write((char*)&header, sizeof(header));
@@ -361,7 +360,7 @@ void BinLoader::WriteVerticesIndices(Mesh const& mesh, std::ofstream& file)
 
     // Data
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         std::vector<Apex::Rendering::Vertex> vertices = mesh.m_vertices;
         std::vector<uint32_t> indices = mesh.m_indices;
@@ -399,26 +398,33 @@ void BinLoader::WriteBoneInfo(Mesh const& mesh, std::ofstream& file)
 
     Write32Bits(file, boneCount);
 
-    // Data
-    // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    for (BoneInfo bone : mesh.m_bones)
     {
-        std::vector<BoneInfo> bones = mesh.m_bones;
-
-        // only works if bones uses only 4 bytes types
-        uint32_t* data = reinterpret_cast<uint32_t*>(bones.data());
-        size_t totalU32 = (bones.size() * sizeof(BoneInfo)) / 4;
-
-        for (size_t i = 0; i < totalU32; i++)
+        uint32_t* matrix = reinterpret_cast<uint32_t*>(&bone.m_offsetMatrix[0][0]);
+        if (IsBigEndian())
         {
-            data[i] = _byteswap_ulong(data[i]);
+            size_t size = sizeof(Matrix4) / 4;
+            for (size_t i = 0; i < size; i++)
+            {
+                matrix[i] = _byteswap_ulong(matrix[i]);
+            }
         }
+        file.write((char*)matrix, sizeof(Matrix4));
 
-        file.write((char*)data, boneCount * sizeof(BoneInfo));
-    }
-    else
-    {
-        file.write((char*)mesh.m_bones.data(), boneCount * sizeof(BoneInfo));
+        Write32Bits(file, *(reinterpret_cast<uint32_t*>(&bone.m_parentIndex)));
+
+        uint32_t nbChild = bone.m_children.size();
+        Write32Bits(file, nbChild);
+
+        int32_t* data = bone.m_children.data();
+        if (IsBigEndian())
+        {
+            for (size_t i = 0; i < bone.m_children.size(); i++)
+            {
+                data[i] = _byteswap_ulong(data[i]);
+            }
+        }
+        file.write((char*)data, bone.m_children.size() * 4);
     }
 }
 
@@ -449,7 +455,7 @@ bool BinLoader::WriteAnimations(Mesh const& mesh, std::filesystem::path const& p
 
         if (!file.is_open())
         {
-            LOG_ERROR("Failed to open file '{}' for writing", path.string());
+            LOG_ERROR_CAT("Resource", "Failed to open file '{}' for writing", path.string());
             return false;
         }
 
@@ -474,7 +480,7 @@ void BinLoader::WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::of
 
     // Data
     // swap all byte if big endian
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         std::vector<KeyFrame> frames = sba.m_frames;
 
@@ -508,10 +514,10 @@ void BinLoader::Write32Bits(std::ofstream& file, uint32_t const& val)
 {
     uint32_t writeVal = val;
 
-    if constexpr (IsBigEndian())
+    if (IsBigEndian())
     {
         writeVal = _byteswap_ulong(writeVal);
     }
 
-    file.write((char*)&val, sizeof(val));
+    file.write((char*)&writeVal, sizeof(writeVal));
 }

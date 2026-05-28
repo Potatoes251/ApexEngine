@@ -1,0 +1,7 @@
+{
+	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+	"tint": [1, 1, 1],
+	"textures": [
+		"Assets/Textures/Potatoes.jpg"
+	]
+}

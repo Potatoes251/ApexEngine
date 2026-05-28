@@ -1,7 +1,5 @@
 #include "FileLog.h"
 
-#include "Log.h"
-
 #include <iomanip>
 #include <ctime>
 #include <sstream>
@@ -26,6 +24,7 @@ Apex::FileLog::~FileLog()
 
 void Apex::FileLog::Add(LogEntry entry)
 {
+	std::lock_guard<std::mutex> lock(m_logMutex);
 	m_currentLog << '[' << entry.m_category << ']';
 	m_latestLog << '[' << entry.m_category << ']';
 

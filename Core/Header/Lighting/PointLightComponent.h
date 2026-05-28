@@ -11,8 +11,6 @@ namespace Apex::Lighting
 		PointLightComponent() = default;
 		PointLightComponent(LibMath::Vector3 color, float intensity, float radius);
 		~PointLightComponent() = default;
-		PointLightComponent(PointLightComponent const& other);
-		PointLightComponent& operator=(PointLightComponent const& other);
 
 		std::unique_ptr<Component> Clone() override { return std::make_unique<PointLightComponent>(*this); }
 

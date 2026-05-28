@@ -6,6 +6,7 @@
 #include "ResourceHandle.h"
 #include "ResourceManager.h"
 #include "Texture.h"
+#include <lua.hpp>
 
 #include <string>
 #include <vector>
@@ -16,7 +17,7 @@
 using Apex::Resources::ResourceHandle;
 using Apex::Resources::ResourceManager;
 
-namespace fs = std::filesystem;
+namespace Fs = std::filesystem;
 
 namespace Apex::UserInterface
 {
@@ -121,6 +122,10 @@ namespace Apex::UserInterface
         UIColor     m_colorHover = { 0.8f, 0.8f, 0.8f, 1.f };
         UIColor     m_colorPressed = { 0.6f, 0.6f, 0.6f, 1.f };
 
+        //LUA
+        lua_State*  m_luaState;
+        int         m_luaFuncRef = LUA_NOREF;
+
         std::function<void()> m_onClick;
     };
 
@@ -169,8 +174,8 @@ namespace Apex::UserInterface
         void Draw(const UIDrawContext& context) const;
         void PrepareForRender(Apex::Rendering::IRHI* rhi);
 
-        bool Save(const fs::path& path) const;
-        bool Load(const fs::path& path, ResourceManager& resourceManager);
+        bool Save(const Fs::path& path) const;
+        bool Load(const Fs::path& path, ResourceManager& resourceManager);
 
     private:
         std::vector<std::unique_ptr<UIElement>> m_elements;
@@ -198,7 +203,7 @@ namespace Apex::UserInterface
         // Multi-HUD API (used by Lua scripts)
         // Scan Assets/ for all .hud files and register their names.
         // Called once when entering Play.
-        void ScanHUDs(const fs::path& assetsRoot = "Assets/");
+        void ScanHUDs(const Fs::path& assetsRoot = "Assets/");
 
         // Create (load) a HUD by name (filename stem, e.g. "GameHUD").
         // Returns a handle >= 1 on success, 0 on failure.
@@ -231,7 +236,7 @@ namespace Apex::UserInterface
         Apex::Rendering::IRHI* m_rhi = nullptr;
 
         std::vector<std::unique_ptr<HUDInstance>> m_instances;
-        std::unordered_map<std::string, fs::path>  m_registry;
+        std::unordered_map<std::string, Fs::path>  m_registry;
     };
 }
 

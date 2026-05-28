@@ -4,10 +4,11 @@
 #include "Scene.h"
 #include "Object.h"
 
+#include "Log.h"
+
 #include "Command/RemoveObjectCommand.h"
 #include "Command/AddObjectCommand.h"
 #include "CommandManager.h"
-
 
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
@@ -16,10 +17,11 @@ using namespace Apex::Rendering;
 using namespace Apex::Data;
 using namespace Apex::Windowing;
 using namespace Apex::CtrlZ;
+using namespace Apex::Resources;
 
 Hierarchy::Hierarchy(IGUI& gui,
-    Scene* scene, ComponentsViewer* compViewer, IWindow& window)
-    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_window(window)
+    Scene* scene, ComponentsViewer* compViewer, IWindow& window, ResourceManager* resourceManager)
+    : m_gui(gui), m_scene(scene), m_componentsViewer(compViewer), m_window(window), m_resourceManager(resourceManager)
 {
 }
 
@@ -28,6 +30,8 @@ void Hierarchy::Draw()
     m_gui.PushFont(FontID::Default);
 
     m_gui.BeginPanel("Hierarchy");
+
+    m_isFocused = m_gui.IsPanelFocused();
 
     if (m_gui.Button(" + Add "))
         m_gui.OpenPopup("AddObject");
@@ -47,6 +51,34 @@ void Hierarchy::Draw()
                 {
                     DestroyObject(objId);
                 }));
+        }
+
+        if (m_gui.MenuItem("Cube"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Cube/Cube.mesh");
+            comp.SetMesh(mesh);
+            auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
+            comp.SetMaterial(mat);
+            obj->SetName("Cube");
+
+            SelectObject(obj);
+        }
+
+        if (m_gui.MenuItem("Sphere"))
+        {
+            Object* obj = m_scene->CreateObject();
+            auto& comp = obj->AddComponent<MeshRenderer>();
+
+            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
+            comp.SetMesh(mesh);
+            auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
+            comp.SetMaterial(mat);
+            obj->SetName("Sphere");
+
+            SelectObject(obj);
         }
         m_gui.EndPopup();
     }
@@ -110,21 +142,19 @@ void Hierarchy::SelectObject(Apex::Data::Object* selected, bool send)
     if (send && m_viewport)
         m_viewport->SelectObject(selected, false);
 
-    if (selected && m_componentsViewer)
+    if (m_componentsViewer)
         m_componentsViewer->SetSelectedObject(selected);
-
-    if (!selected)
-        m_componentsViewer->SetSelectedObject(nullptr);
 }
 
 void Apex::Editor::Hierarchy::ClearSelection()
 {
     SelectObject(nullptr);
-	m_pendingClone = nullptr;
+    m_pendingClone = nullptr;
     m_pendingDelete = nullptr;
     m_pendingParent = nullptr;
     m_pendingReparent = nullptr;
-	m_pendingTarget = nullptr;
+    m_pendingTarget = nullptr;
+    m_renaming = nullptr;
 }
 
 void Hierarchy::DrawNode(SceneNode* node)
@@ -411,10 +441,8 @@ void Hierarchy::DrawInsertLine(float y)
 
 Object* Hierarchy::DuplicateObject(Object* original)
 {
-    if (!original) return nullptr;
-
     std::unique_ptr<Object> clone = original->Clone();
-    size_t id = clone->NewId();
+    size_t id = clone->GetId();
     m_scene->AddObject(std::move(clone));
 
     return m_scene->GetObjectWithId(id);
@@ -422,11 +450,27 @@ Object* Hierarchy::DuplicateObject(Object* original)
 
 void Hierarchy::DestroyObject(size_t objId)
 {
+    SelectObject(nullptr);
     Data::Object* obj = m_scene->GetObjectWithId(objId);
 
     if (m_selected == obj)
         SelectObject(nullptr);
-    obj->Destroy();
 
     m_scene->DestroyObject(objId);
+}
+
+// Ctrl+D — duplicate the currently selected object (same as context-menu Duplicate).
+void Hierarchy::DuplicateSelected()
+{
+    if (!m_selected) return;
+    m_pendingClone = m_selected;
+}
+
+// Ctrl+V — paste a previously copied object into the scene as a new duplicate.
+// Source is the object that was selected at Ctrl+C time.
+void Hierarchy::PasteObject(Data::Object* source)
+{
+    if (!source) return;
+    Object* clone = DuplicateObject(source);
+    SelectObject(clone);
 }

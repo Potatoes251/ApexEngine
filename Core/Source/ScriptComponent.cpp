@@ -19,7 +19,7 @@ std::unique_ptr<Apex::Component> ScriptComponent::Clone()
 
 void ScriptComponent::SetScript(const std::string& path)
 {
-    if ((m_scriptPath == path && m_instanceRef != LUA_REFNIL))
+    if (m_scriptPath == path && m_instanceRef != LUA_REFNIL)
         return;
 
     m_scriptPath = path;
@@ -30,10 +30,10 @@ void ScriptComponent::SetScript(const std::string& path)
         return;
     }
 
-    m_scriptRef = m_lua.LoadScript(path);
-    m_instanceRef = m_lua.CreateScriptInstance(m_scriptRef);
+    m_scriptRef = m_lua->LoadScript(path);
+    m_instanceRef = m_lua->CreateScriptInstance(m_scriptRef);
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
     // push light userdata to Object*
@@ -42,13 +42,19 @@ void ScriptComponent::SetScript(const std::string& path)
     // instance.__object = pointer
     lua_setfield(L, -2, "__object");
 
+    lua_pushlightuserdata(L, static_cast<Component*>(this));
+    lua_setfield(L, -2, "__component");
+
     // pop instance
     lua_pop(L, 1);
 }
 
 void Apex::Scripting::ScriptComponent::SetObjectPtr()
 {
-    lua_State* L = m_lua.GetState();
+    if (m_instanceRef == LUA_REFNIL)
+        return;
+
+    lua_State* L = m_lua->GetState();
 
     // Push instance
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef);
@@ -70,7 +76,7 @@ std::vector<ExposedVar> ScriptComponent::GetExposedVariables()
     if (m_instanceRef == LUA_NOREF || m_instanceRef == LUA_REFNIL)
         return vars;
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef);
 
@@ -151,7 +157,7 @@ void ScriptComponent::SetVariable(const std::string& name, ExposedVar& var)
     if (m_instanceRef == LUA_REFNIL)
         return;
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
@@ -181,7 +187,7 @@ void ScriptComponent::SetVariable(const std::string& name, float var)
     if (m_instanceRef == LUA_REFNIL)
         return;
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
@@ -197,7 +203,7 @@ void ScriptComponent::SetVariable(const std::string& name, bool var)
     if (m_instanceRef == LUA_REFNIL)
         return;
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
@@ -213,7 +219,7 @@ void Apex::Scripting::ScriptComponent::SetVariable(const std::string& name, std:
     if (m_instanceRef == LUA_REFNIL)
         return;
 
-    lua_State* L = m_lua.GetState();
+    lua_State* L = m_lua->GetState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_instanceRef); // push instance
 
@@ -228,33 +234,39 @@ void ScriptComponent::OnStart()
 {
     SetObjectPtr();
     if (m_instanceRef != LUA_REFNIL)
-        m_lua.CallFunction(m_instanceRef, "Start");
+        m_lua->CallFunction(m_instanceRef, "Start");
 }
 
 void ScriptComponent::OnUpdate(float deltaTime)
 {
     if (m_instanceRef != LUA_REFNIL)
     {
-        m_lua.CallFunction(m_instanceRef, "Update", deltaTime);
+        m_lua->CallFunction(m_instanceRef, "Update", deltaTime);
+    }
+}
+
+void ScriptComponent::OnFixedUpdate(float deltaTime)
+{
+    if (m_instanceRef != LUA_REFNIL)
+    {
+        m_lua->CallFunction(m_instanceRef, "FixedUpdate", deltaTime);
     }
 }
 
 void ScriptComponent::OnTriggerEnter(Physic::Collider* other)
 {
     if (m_instanceRef != LUA_REFNIL)
-        m_lua.CallFunction(m_instanceRef, "OnTriggerEnter", other);
+        m_lua->CallFunction(m_instanceRef, "OnTriggerEnter", other);
 }
 
 void ScriptComponent::OnTriggerExit(Physic::Collider* other)
 {
     if (m_instanceRef != LUA_REFNIL)
-        m_lua.CallFunction(m_instanceRef, "OnTriggerExit", other);
+        m_lua->CallFunction(m_instanceRef, "OnTriggerExit", other);
 }
 
 void ScriptComponent::Serialize(std::ostream& out) const
 {
-    out << "      \"ScriptComponent\": {\n";
-    out << "        \"enabled\": " << (IsEnabled() ? "true" : "false") << ",\n";
     out << "        \"script\": \"" << m_scriptPath << "\",\n";
 
     auto vars = const_cast<ScriptComponent*>(this)->GetExposedVariables();
@@ -289,5 +301,4 @@ void ScriptComponent::Serialize(std::ostream& out) const
     }
 
     out << "        }\n";
-    out << "      }";
 }

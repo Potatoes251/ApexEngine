@@ -4,27 +4,11 @@ using namespace Apex::Serialization;
 using namespace LibMath;
 
 SerialParser::SerialParser(const std::string& text)
-    : m_text(text), m_index(0)
-{
-}
-
-const std::string& Apex::Serialization::SerialParser::GetText() const
-{
-    return m_text;
-}
-
-const size_t Apex::Serialization::SerialParser::Getindex() const
-{
-    return m_index;
-}
+    : m_text(text), m_index(0) {}
 
 void SerialParser::SkipWhitespace()
 {
-    while (m_index < m_text.size() &&
-        (m_text[m_index] == ' ' ||
-            m_text[m_index] == '\n' ||
-            m_text[m_index] == '\t' ||
-            m_text[m_index] == '\r'))
+    while (m_index < m_text.size() && std::isspace(m_text[m_index]))
     {
         m_index++;
     }
@@ -131,6 +115,26 @@ Vector3 SerialParser::ParseVector3()
     Expect(']');
 
     return { x,y,z };
+}
+
+Vector4 SerialParser::ParseVector4()
+{
+    Expect('[');
+
+    float x = ParseFloat();
+    Expect(',');
+
+    float y = ParseFloat();
+    Expect(',');
+
+    float z = ParseFloat();
+    Expect(',');
+
+    float w = ParseFloat();
+
+    Expect(']');
+
+    return { x,y,z,w };
 }
 
 Quaternion SerialParser::ParseQuaternion()

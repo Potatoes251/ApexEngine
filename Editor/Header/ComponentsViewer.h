@@ -13,7 +13,9 @@
 #include "EditorIcon.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "Material.h"
 #include "ResourceManager.h"
+#include "ResourceHandle.h"
 #include "Physic.h"
 #include "LuaManager.h"
 
@@ -22,11 +24,10 @@ namespace Apex::Editor
 	class ComponentsViewer
 	{
 	public:
-		ComponentsViewer(Apex::UserInterface::IGUI& gui,
+		ComponentsViewer(Apex::UserInterface::IGUI* gui,
 			Apex::Rendering::Scene* scene,
-			Apex::Resources::ResourceManager& resourceManager,
-			Apex::Physic::PhysicSystem& phys,
-			Apex::Scripting::LuaManager& lua);
+			Apex::Resources::ResourceManager* resourceManager,
+			Apex::Scripting::LuaManager* lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
 		void SetScene(Apex::Rendering::Scene* scene) { m_scene = scene; }
@@ -47,25 +48,26 @@ namespace Apex::Editor
 		void DrawVar(ExposedVar& var, Apex::Data::Object* obj, Apex::Component* comp);
 
 		bool DrawComponentEnum(ExposedVar var);
-		bool DrawComponentVector3(ExposedVar var);
-		bool DrawComponentPhysMaterial(ExposedVar var);
+		bool DrawComponent(std::string const& name, LibMath::Vector3& data);
 		bool DrawComponentColor3(ExposedVar var);
 		bool DrawComponentColor4(ExposedVar var);
-		void DrawComponentMesh(ExposedVar var);
-		void DrawComponentTexture(ExposedVar var);
+		void DrawComponent(std::string const& name, Resources::ResourceHandle<Mesh>* handle);
+		void DrawComponent(std::string const& name, Resources::ResourceHandle<Rendering::Material>* material);
+		void DrawComponent(std::string const& name, Resources::ResourceHandle<Texture>* handle);
 
-		uint32_t ResolveTexturePreview(Apex::Resources::ResourceHandle<Texture>* handle) const;
+		uint32_t ResolveTexturePreview(Resources::ResourceHandle<Texture>* handle) const;
 		uint32_t ResolveMeshPreview(const std::string& path) const;
+		uint32_t ResolveMaterialPreview(const std::string& path) const;
 		void     DrawAssetPreview(uint32_t texID, const std::string& fallbackLabel, float size = 64.f);
 
-		Apex::UserInterface::IGUI& m_gui;
-		Apex::Rendering::Scene* m_scene = nullptr;
-		Apex::Resources::ResourceManager& m_resourceManager;
-		Apex::Resources::AssetPicker<Mesh> m_meshPicker;
-		Apex::Resources::AssetPicker<Texture> m_texturePicker;
-		Apex::Resources::ScriptPicker m_scriptPicker;
-		Apex::Physic::PhysicSystem& m_phys;
-		Apex::Scripting::LuaManager& m_luaManager;
+		UserInterface::IGUI* m_gui;
+		Rendering::Scene* m_scene = nullptr;
+		Resources::ResourceManager* m_resourceManager;
+		Resources::AssetPicker<Mesh> m_meshPicker;
+		Resources::AssetPicker<Rendering::Material> m_materialPicker;
+		Resources::AssetPicker<Texture> m_texturePicker;
+		Resources::ScriptPicker m_scriptPicker;
+		Scripting::LuaManager* m_luaManager;
 		ThumbnailRenderer* m_thumbnailRenderer = nullptr;
 
 		Apex::Data::Object* m_selectedObj = nullptr;
