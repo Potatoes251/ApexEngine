@@ -8,6 +8,7 @@ end
 
 function MenuHUD:Resume()
     if self.hud == 0 then return end
+    UnpauseScene(self.hud)
     HideHUD(self.hud)
 end
 
@@ -22,11 +23,20 @@ function MenuHUD:GetToSettingMenu( ... )
     --TODO: show 'Setting' HUD
 end
 
-function MainMenuHUD:Start()
-    self.hud = CreateHUD("MainMenuHUD")
+function MenuHUD:Start()
+    self.hud = CreateHUD("MenuHUD")
     if self.hud == 0 then return end
 
-    HUD_SetButtonCallBack(self.hud, "TODO", Resume)
-    HUD_SetButtonCallBack(self.hud, "TODO", Quit)
-    HUD_SetButtonCallBack(self.hud, "TODO", GetToSettingMenu)
+    HUD_SetButtonCallBack(self.hud, "ContinueButton", Resume)
+    HUD_SetButtonCallBack(self.hud, "QuitButton", Quit)
+    HUD_SetButtonCallBack(self.hud, "SettingButton", GetToSettingMenu)
 end
+
+function MenuHUD:Open()
+    if self.hud ~= 0 then
+        PauseScene(self.hud)
+        ShowHUD(self.hud)
+    end
+end
+
+return MenuHUD

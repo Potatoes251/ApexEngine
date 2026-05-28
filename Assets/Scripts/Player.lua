@@ -5,6 +5,7 @@ local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
 local Vector3 = require("Vector3")
+local HUDMenu = require("HUDMenu")
 
 local KILL_Z             = -50.0   -- Y below this triggers death
 local RESPAWN_INVINCIBLE = 2.5     -- seconds of invincibility after respawn
@@ -60,6 +61,9 @@ function Player:Start()
     self.spawnX = pos.x
     self.spawnY = pos.y
     self.spawnZ = pos.z
+
+    self.menu = HUDMenu:New()
+    self.menu:Start()
 end
 
 function Player:FixedUpdate(dt)
@@ -111,6 +115,10 @@ function Player:FixedUpdate(dt)
 
     self.wasInWater = isInWater
     self.wasGrounded = isGrounded
+
+    if Input.IsKeyDown("I") then
+        self.menu:Open()
+    end
 end
 
 function Player:ProcessInput(dt)
