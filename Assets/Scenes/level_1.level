@@ -1263,7 +1263,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"model": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
+		"model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh"
       }
     }
   },
