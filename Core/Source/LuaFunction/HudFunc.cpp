@@ -500,6 +500,8 @@ namespace Apex::HudBindings
                     }
                 };
         }
+
+        return 0;
     }
 
     int Lua_HUD_PressButton(lua_State* L)

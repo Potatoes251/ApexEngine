@@ -6,7 +6,6 @@
 
 namespace Apex::CtrlZ
 {
-	// careful uses raw ptr
 	template<typename T>
 	class SetValCommand : public ICommand
 	{

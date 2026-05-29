@@ -56,12 +56,10 @@ static constexpr uint32_t COL_PROJECTILE = 0xFF4DB6AC; // turquoise
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
-	ResourceManager* resourceManager, 
-	PhysicSystem* phys, LuaManager* lua)
+	ResourceManager* resourceManager, LuaManager* lua)
 	: m_gui(gui), m_scene(scene), m_resourceManager(resourceManager), 
 	m_meshPicker(gui, m_resourceManager), m_texturePicker(gui, m_resourceManager), 
-	m_materialPicker(gui, m_resourceManager), 
-	m_phys(phys), m_luaManager(lua), m_scriptPicker(gui)
+	m_materialPicker(gui, m_resourceManager), m_luaManager(lua), m_scriptPicker(gui)
 {
 }
 
@@ -182,7 +180,7 @@ void ComponentsViewer::Draw()
 							m_selectedObj->GetComponent<MeshRenderer>()->GetMesh(),
 							MeshColliderType::Convex, false);
 
-						m_phys->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
 						return comp.GetId();
 					}));
 			}
@@ -193,7 +191,7 @@ void ComponentsViewer::Draw()
 					{
 						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
 
-						m_phys->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
 						return comp.GetId();
 					}));
 			}
@@ -203,7 +201,7 @@ void ComponentsViewer::Draw()
 					[this](Object* obj)
 					{
 						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
-						m_phys->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
 						return comp.GetId();
 					}));
 			}
@@ -329,7 +327,7 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
-					Component* comp = &obj->AddComponent<ViewComponent>(m_phys, 10.f, 1.5f, 1.f, 10, 10);
+					Component* comp = &obj->AddComponent<ViewComponent>(m_scene->GetPhysic(), 10.f, 1.5f, 1.f, 10, 10);
 					return comp->GetId();
 				}));
 		}
@@ -664,16 +662,6 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			}
 			break;
 		}
-		case ExposedVar::PhysMaterial:
-		{
-			PhysicMaterial oldVal = *(PhysicMaterial*)var.data;
-			if (DrawComponent((PhysicMaterial*)var.data))
-			{
-				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<PhysicMaterial>>(var, obj, comp, oldVal, *(PhysicMaterial*)var.data));
-			}
-			break;
-		}
 		case ExposedVar::Mesh:
 			DrawComponent(var.name, (ResourceHandle<Mesh>*)var.data);
 			break;
@@ -734,27 +722,6 @@ bool Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, LibM
 		return true;
 	}
 	return false;
-}
-
-bool Apex::Editor::ComponentsViewer::DrawComponent(PhysicMaterial* mat)
-{
-	bool changed = false;
-	auto row = [&](const char* label, const char* id, float& val, float mn, float mx)
-		{
-			m_gui->AlignTextToFramePadding();
-			m_gui->Text(label);
-			m_gui->SameLine(LABEL_WIDTH);
-			m_gui->SetNextItemWidth(-1.f);
-			changed |= m_gui->InputFloat(id, &val);
-		};
-
-	row("Static Friction", "##sf", mat->MutStaticFriction(), 0.f, 1.f);
-	row("Dynamic Friction", "##df", mat->MutDynamicFriction(), 0.f, 1.f);
-	row("Bounciness", "##bo", mat->MutBounciness(), 0.f, 1.f);
-
-	m_changed |= changed;
-
-	return changed;
 }
 
 bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)

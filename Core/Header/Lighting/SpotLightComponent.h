@@ -12,8 +12,6 @@ namespace Apex::Lighting
 		SpotLightComponent() = default;
 		SpotLightComponent(LibMath::Vector3 color, float intensity, float innerCutoff, float outerCutoff);
 		~SpotLightComponent() = default;
-		SpotLightComponent(SpotLightComponent const& other);
-		SpotLightComponent& operator=(SpotLightComponent const& other);
 
 		std::unique_ptr<Component> Clone() override { return std::make_unique<SpotLightComponent>(*this); }
 

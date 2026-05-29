@@ -141,7 +141,6 @@ void DebugRenderer::DrawLines(LibMath::Matrix4 viewProj)
 
 	// Clear for next frame
 	m_lines.clear();
-	m_lines.shrink_to_fit();
 }
 
 
@@ -149,6 +148,6 @@ DebugRenderer::DebugRenderer(Apex::Resources::ResourceHandle<Shader> shader, IRH
 {
 	m_vao = m_rhi->CreateVAO();
 	m_rhi->BindVAO(m_vao);
-	m_vbo = m_rhi->CreateBuffer(BufferType::Vertex, m_lines.data(), sizeof(LibMath::Vector3) * 250'000, false);
+	m_vbo = m_rhi->CreateBuffer(BufferType::Vertex, m_lines.data(), sizeof(LibMath::Vector3) * 500'000, false);
 	m_rhi->SetupVector3Layout();
 }

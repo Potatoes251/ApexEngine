@@ -35,6 +35,12 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
+Viewport::~Viewport()
+{
+	m_rhi->DeleteFrameBuffer(m_fbo);
+	m_rhi->DeleteTexture(m_textureFbo);
+}
+
 void Viewport::SelectObject(Data::Object* selected, bool send)
 {
 	m_selectedObject = selected;
@@ -254,7 +260,7 @@ LibMath::Vector3 Viewport::GetAxis()
 
 	if (!m_localGizmo || !m_selectedObject) return axis;
 
-	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
+	return m_initialTransform.getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()

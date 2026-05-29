@@ -45,10 +45,10 @@ namespace Apex::Physic
 
 		BodyType					GetType() const { return m_bodyType; }
 		float						GetMass() const { return m_mass; }
-		LibMath::Transform			GetTransform() const{ return GetOwner()->GetLocalTransform(); }
-		LibMath::Quaternion			GetRotation() const { return GetOwner()->GetLocalTransform().getRotation(); }
-		LibMath::Vector3			GetPosition() const { return GetOwner()->GetLocalTransform().getPosition(); }
-		LibMath::Vector3			GetScale() const { return GetOwner()->GetLocalTransform().getScale(); }
+		LibMath::Transform			GetTransform() const{ return GetOwner()->GetGlobalTransform(); }
+		LibMath::Quaternion			GetRotation() const { return GetOwner()->GetGlobalTransform().getRotation(); }
+		LibMath::Vector3			GetPosition() const { return GetOwner()->GetGlobalTransform().getPosition(); }
+		LibMath::Vector3			GetScale() const { return GetOwner()->GetGlobalTransform().getScale(); }
 		std::vector<Force> const&	GetForces() const { return m_pendingForces; }
 		// must be called in fixed update
 		// force is ignored on a body that is not Dynamic
