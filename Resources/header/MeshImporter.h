@@ -18,6 +18,7 @@ struct MaterialImportData
 	std::string m_diffusePath;      // albedo / diffuse texture
 	std::string m_normalPath;       // normal map
 	std::string m_specularPath;     // specular / roughness map
+	LibMath::Vector3 m_tint = { 1, 1, 1};
 };
 
 class MeshImporter

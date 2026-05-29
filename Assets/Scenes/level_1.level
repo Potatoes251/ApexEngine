@@ -1205,11 +1205,24 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "model": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh",
+        "model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh",
         "materials": [
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/Bowser_copy.mat",
             "Assets/Material/Bowser.mat"
         ],
-        "castShadow": false 
+        "castShadow": true
       },
       "Rigidbody": {
         "enabled": true,

@@ -538,7 +538,16 @@ void MeshImporter::ExtractSceneMaterials(FbxScene* scene, const std::string& fbx
         if (data.m_diffusePath.empty())
             data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuseFactor, fbxDir);
 
-        if (!data.m_diffusePath.empty() || !data.m_normalPath.empty() || !data.m_specularPath.empty())
+        if (data.m_diffusePath.empty())
+        {
+            if (fbxMat->GetClassId().Is(FbxSurfaceLambert::ClassId))
+            {
+                FbxDouble3 c = static_cast<FbxSurfaceLambert*>(fbxMat)->Diffuse.Get();
+                data.m_tint = { (float)c[0], (float)c[1], (float)c[2] };
+            }
+        }
+
+        if (!data.m_diffusePath.empty() || !data.m_normalPath.empty() || !data.m_specularPath.empty() && data.m_tint == LibMath::Vector3{ 1, 1, 1 })
             materials.push_back(std::move(data));
     }
 }
