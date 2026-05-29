@@ -54,7 +54,7 @@ bool MeshImporter::ImportFbx(std::string const& path, Model& model, std::vector<
 
     if (!importer->Initialize(path.c_str(), -1, s_manager->GetIOSettings()))
     {
-        //mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         importer->Destroy();
         scene->Destroy();
         return false;
@@ -62,7 +62,7 @@ bool MeshImporter::ImportFbx(std::string const& path, Model& model, std::vector<
 
     if (!importer->Import(scene))
     {
-        //mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         importer->Destroy();
         scene->Destroy();
         return false;
@@ -78,7 +78,7 @@ bool MeshImporter::ImportFbx(std::string const& path, Model& model, std::vector<
     FbxNode* root = scene->GetRootNode();
     if (!root)
     {
-        //mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         scene->Destroy();
         return false;
     }
@@ -105,7 +105,18 @@ bool MeshImporter::ImportFbx(std::string const& path, Model& model, std::vector<
 
     m_ctrlPointToVertices.clear();
 
+    std::unordered_map<std::string, int> nameCounts;
+    for (Mesh& mesh : model.m_meshes)
+    {
+        int& count = nameCounts[mesh.m_name];
+        if (count > 0)
+            mesh.m_name = mesh.m_name + " (" + std::to_string(count) + ")";
+        count++;
+    }
+
     scene->Destroy();
+
+    model.SetState(ResourceState::Loaded);
 
     return true;
 }

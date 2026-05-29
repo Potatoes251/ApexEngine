@@ -161,7 +161,6 @@ void Material::WriteProperties(std::ofstream& file_out)
 
 void Material::LoadFromFile()
 {
-	LOG_INFO_CAT("Resource", "Start loading \"{}\"", m_path);
 	std::ifstream file(m_path);
 	if (!file)
 	{
@@ -207,6 +206,8 @@ void Material::LoadFromFile()
 			parser.Expect(',');
 	}
 	parser.Expect('}');
+
+	SetState(ResourceState::Loaded);
 }
 
 void Material::ParseProperties(Serialization::SerialParser& parser)

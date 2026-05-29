@@ -38,9 +38,9 @@ public:
     }
     virtual ~IResource() = default;
     // load on the CPU
-    virtual void LoadFromFile() {}
+    virtual void LoadFromFile() { m_state = ResourceState::Loaded; }
     // Perform GPU part
-    virtual void UploadToGpu() {}
+    virtual void UploadToGpu() { m_state = ResourceState::Uploaded; }
 
     const std::string& GetPath() const { return m_path; }
 

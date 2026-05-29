@@ -35,6 +35,7 @@ void Shader::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
+	SetState(ResourceState::Uploaded);
 }
 
 void Shader::Use() const

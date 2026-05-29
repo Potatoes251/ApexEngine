@@ -22,6 +22,8 @@ void Texture::LoadFromFile()
 
 	m_imageData.assign(data, data + (m_width * m_height * m_channels));
 	stbi_image_free(data);
+
+    SetState(ResourceState::Loaded);
 }
 
 void Texture::UploadToGpu()
@@ -37,6 +39,7 @@ void Texture::UploadToGpu()
 
     m_imageData.clear();
     m_imageData.shrink_to_fit();
+    SetState(ResourceState::Uploaded);
 }
 
 void Texture::Bind(uint32_t slot)

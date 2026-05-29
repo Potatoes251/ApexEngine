@@ -49,8 +49,7 @@ bool BinLoader::Load(std::string const& path, Model& model)
         model.m_meshes.emplace_back();
         Mesh& mesh = model.m_meshes.back();
 
-        std::string name;
-        if (!ReadString(file, name)) return false;
+        if (!ReadString(file, mesh.m_name)) return false;
         if (!ReadVerticesIndices(mesh, file)) return false;
     }
 

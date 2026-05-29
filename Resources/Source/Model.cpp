@@ -21,6 +21,8 @@ void Model::LoadFromFile()
 			}
 		}
 	}
+
+	SetState(ResourceState::Loaded);
 }
 
 void Model::UploadToGpu()
@@ -29,6 +31,7 @@ void Model::UploadToGpu()
 	{
 		mesh.UploadToGpu();
 	}
+	SetState(ResourceState::Uploaded);
 }
 
 int Model::GetAnimationIdx(std::string const& name)
