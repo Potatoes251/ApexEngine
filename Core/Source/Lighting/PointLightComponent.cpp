@@ -36,7 +36,7 @@ void PointLightComponent::FillGpuData(void* data_out)
 
     data->m_color = { m_color, 0 };
     data->m_param = { m_intensity, (float)m_shadowIdx, m_radius, m_farShadow };
-    data->m_position = { GetOwner()->GetGlobalTransform().getForward(), 0 };
+    data->m_position = { GetOwner()->GetGlobalTransform().getPosition(), 0 };
 }
 
 LibMath::Matrix4 PointLightComponent::GetProjMatrix() const
@@ -50,12 +50,12 @@ std::vector<LibMath::Matrix4> PointLightComponent::GetViewMatrix(Rendering::Came
 
     LibMath::Vector3 position = GetOwner()->GetGlobalTransform().getPosition();
 
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::right(), LibMath::Vector3::up()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::left(), LibMath::Vector3::up()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::right(), LibMath::Vector3::down()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::left(), LibMath::Vector3::down()));
     matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::up(), LibMath::Vector3::front()));
     matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::down(), LibMath::Vector3::back()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::front(), LibMath::Vector3::up()));
-    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::back(), LibMath::Vector3::up()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::front(), LibMath::Vector3::down()));
+    matrices.push_back(LibMath::Matrix4::lookAt(position, position + LibMath::Vector3::back(), LibMath::Vector3::down()));
 
     return matrices;
 }
