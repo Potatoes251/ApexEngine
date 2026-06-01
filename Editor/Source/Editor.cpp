@@ -874,7 +874,7 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/pz.png",
             "ApexAssets/Textures/Skybox/nz.png",
             // Skybox mesh
-            "ApexAssets/Meshes/cube.mesh",
+            "ApexAssets/Meshes/cube/cube.mesh",
             "Assets/HUD/GameHUD.hud",
         };
 
@@ -894,6 +894,15 @@ namespace Apex::Editor
 
         for (const auto& scenePath : scenePaths)
             CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        // Copy scene files themselves
+        for (const auto& scenePath : scenePaths)
+        {
+            fs::path src = fs::current_path() / scenePath;
+            fs::path dst = outputDir / scenePath;
+            fs::create_directories(dst.parent_path(), ec);
+            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+        }
 
         for (const auto& matPath : matsToParse)
             assetsToCopy.insert(matPath);
@@ -936,6 +945,32 @@ namespace Apex::Editor
                         LOG_ERROR_CAT("Build", "Could not copy Animation folder for {}: {}",
                             assetPath.c_str(), ec.message().c_str());
                 }
+            }
+        }
+
+        // Write build_scenes.json into the build output
+        {
+            fs::path jsonDst = outputDir / "Assets/build_scenes.json";
+            fs::create_directories(jsonDst.parent_path(), ec);
+
+            std::ofstream json(jsonDst);
+            if (json.is_open())
+            {
+                json << "{\n    \"scenes\": [\n";
+                for (size_t i = 0; i < scenePaths.size(); ++i)
+                {
+                    std::string path = scenePaths[i];
+                    std::replace(path.begin(), path.end(), '\\', '/');
+                    json << "        \"" << path << "\"";
+                    if (i + 1 < scenePaths.size()) json << ",";
+                    json << "\n";
+                }
+                json << "    ]\n}\n";
+                LOG_INFO_CAT("Build", "build_scenes.json written ({} scene(s))", scenePaths.size());
+            }
+            else
+            {
+                LOG_ERROR_CAT("Build", "Failed to write build_scenes.json");
             }
         }
 

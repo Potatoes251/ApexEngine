@@ -13,12 +13,12 @@ bool Game::Init()
 {
     if (!InitWindow()) return false;
 
-    m_saveSlotCount = m_app->GetSaveManager()->ListSlots().size();
-
     m_gui = std::unique_ptr<IGUI>(CreateGUI(m_window->NativeHandle()));
     if (!m_gui) return false;
 
     m_app = std::make_unique<Apex::Application>(m_window.get(), m_gui.get());
+
+    m_saveSlotCount = m_app->GetSaveManager()->ListSlots().size();
 
     m_app->SetSaveRequestedCallback([this]()
         {
