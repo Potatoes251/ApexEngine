@@ -181,7 +181,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
         "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
 
-    auto cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
+    auto cube = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/cube/cube.mesh", true);
     auto shader = m_resourceManager->CreateAsync<Shader>(
         "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
@@ -250,6 +250,8 @@ void Apex::Application::UpdateAudioListener()
 void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
+
+    if (!pass.m_rhi) pass.m_rhi = m_rhi.get();
 
     m_scene->ComputePass(pass);
 
@@ -353,7 +355,6 @@ std::string Apex::Application::LoadBuildStartScene() const
 
 void Apex::Application::AddCollectedObject(size_t id)
 {
-    // évite les doublons
     if (std::find(
         m_collectedObjects.begin(),
         m_collectedObjects.end(),

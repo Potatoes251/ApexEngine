@@ -134,8 +134,8 @@ namespace Apex::Resources
 
 		resource->LoadFromFile();
 
-		resource->SetState(ResourceState::Loaded);
-		AddToGpuQueue(resource);
+		if (resource->GetState() == ResourceState::Loaded)
+			AddToGpuQueue(resource);
 	}
 
 	template<typename T>

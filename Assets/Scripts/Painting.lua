@@ -10,7 +10,6 @@ function Painting:New()
     local instance = { 
      -- component
     mesh = nil,
-    audio = nil,
      -- variables
     accumulatedTime = 0,
     LoadTime = 1,
@@ -29,8 +28,8 @@ end
 
 function Painting:Start()
     self.mesh = Mesh.Get(self)
-    self.audio = AudioComponent.Get(self)
     self.mesh:SetUniform("uTime", 0)
+    self.accumulatedTime = 0
 end
 
 function Painting:Update(dt)
@@ -47,9 +46,6 @@ function Painting:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if not self.startEffect and obj:HasTag("Player") then
         self.startEffect = true
-        if self.audio ~= nil then
-            self.audio:Play()
-        end
     end
 end
 

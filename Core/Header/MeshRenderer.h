@@ -13,6 +13,7 @@
 #include "Object.h"
 
 #include "Mesh.h"
+#include "Model.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Material.h"
@@ -24,18 +25,21 @@ namespace Apex::Rendering
     public:
         MeshRenderer() = default;
         MeshRenderer(Apex::Resources::ResourceManager* resourceManager);
+        MeshRenderer(MeshRenderer const&) = default;
+        MeshRenderer& operator=(MeshRenderer const&) = default;
 
-        void SetMesh(Apex::Resources::ResourceHandle<Mesh> mesh);
+        void SetModel(Apex::Resources::ResourceHandle<Model> model);
         void SetMaterial(Apex::Resources::ResourceHandle<Material> shader);
+        void SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
-        Apex::Resources::ResourceHandle<Mesh>& GetMesh();
-        Apex::Resources::ResourceHandle<Material>& GetMaterial();
+        Resources::ResourceHandle<Model> GetModel() { return m_model; }
+        std::vector<Resources::ResourceHandle<Material>> const& GetMaterials() { return m_materials; }
 
         const char* GetTypeName() const override { return "MeshRenderer"; };
         std::vector<ExposedVar> GetExposedVariables() override;
 
-        std::unique_ptr<Apex::Component> Clone() override;
+        std::unique_ptr<Apex::Component> Clone() override { return std::make_unique<MeshRenderer>(*this); }
 
         void ComputePass();
         void Render(RenderPassInfo passInfo);
@@ -44,8 +48,9 @@ namespace Apex::Rendering
 
         void SetSkinned(bool enabled) { m_useSkinnedVAO = enabled; }
     private:
-        Apex::Resources::ResourceHandle<Mesh> m_mesh;
-        Apex::Resources::ResourceHandle<Material> m_material;
+        Resources::ResourceHandle<Material> m_material;
+        Resources::ResourceHandle<Model> m_model;
+        std::vector<Resources::ResourceHandle<Material>> m_materials;
         bool m_castShadow = true;
         bool m_useSkinnedVAO = false;
     };

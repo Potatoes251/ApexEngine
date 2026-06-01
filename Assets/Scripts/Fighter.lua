@@ -61,7 +61,7 @@ function Fighter:TakeDamage(damage)
 end
 
 function Fighter:Attack()
-    if self.hp <= 0 then return end
+    if self.hp <= 0 or not self.isMyTurn then return end
 
     self.isMyTurn = false
     if self.opponent ~= nil then
@@ -73,7 +73,7 @@ function Fighter:Attack()
 end
 
 function Fighter:Flee()
-    if self.hp <= 0 then return end
+    if self.hp <= 0 or not self.isMyTurn then return end
     
     if self.battleManager ~= nil then
         self.battleManager:OnBattleEnd()

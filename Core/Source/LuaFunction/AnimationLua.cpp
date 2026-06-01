@@ -39,7 +39,7 @@ int Apex::Anim::Lua_Anim_Play(lua_State* L)
         return 0;
     }
 
-    int idx = animator->GetMesh()->GetAnimationIdx(animName);
+    int idx = animator->GetModel()->GetAnimationIdx(animName);
 
     if (idx == -1) 
     {
@@ -70,14 +70,14 @@ int Apex::Anim::Lua_Anim_Blend(lua_State* L)
     const char* animAName = luaL_checkstring(L, 2);
     const char* animBName = luaL_checkstring(L, 3);
 
-    int idxA = animator->GetMesh()->GetAnimationIdx(animAName);
+    int idxA = animator->GetModel()->GetAnimationIdx(animAName);
     if (idxA == -1)
     {
         LOG_WARNING_CAT("Animation", "Animation \"{}\" not found", animAName);
         return 0;
     }
     
-    int idxB = animator->GetMesh()->GetAnimationIdx(animBName);
+    int idxB = animator->GetModel()->GetAnimationIdx(animBName);
     if (idxB == -1)
     {
         LOG_WARNING_CAT("Animation", "Animation \"{}\" not found", animBName);
@@ -125,14 +125,14 @@ int Apex::Anim::Lua_Anim_Crossfade(lua_State* L)
     const char* animAName = luaL_checkstring(L, 2);
     const char* animBName = luaL_checkstring(L, 3);
 
-    int idxA = animator->GetMesh()->GetAnimationIdx(animAName);
+    int idxA = animator->GetModel()->GetAnimationIdx(animAName);
     if (idxA == -1)
     {
         LOG_WARNING_CAT("Animation", "Animation \"{}\" not found", animAName);
         return 0;
     }
 
-    int idxB = animator->GetMesh()->GetAnimationIdx(animBName);
+    int idxB = animator->GetModel()->GetAnimationIdx(animBName);
     if (idxB == -1)
     {
         LOG_WARNING_CAT("Animation", "Animation \"{}\" not found", animBName);

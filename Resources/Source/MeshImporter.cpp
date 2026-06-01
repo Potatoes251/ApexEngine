@@ -2,6 +2,9 @@
 
 #include "Log.h"
 
+#include "Mesh.h"
+#include "Model.h"
+
 #include <fstream>
 #include <filesystem>
 #include <queue>
@@ -11,7 +14,7 @@ constexpr double ANIMATION_FPS = 30;
 // ── Singleton FbxManager ──────────────────────────────────────
 // FBX SDK allows exactly one FbxManager per process.
 // Creating multiple managers (e.g. one per async import thread)
-// causes undefined behaviour and crashes.
+// causes undefined behavior and crashes.
 
 void MeshImporter::EnsureManager()
 {
@@ -24,22 +27,21 @@ void MeshImporter::EnsureManager()
     }
 }
 
-bool MeshImporter::Import(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials)
+bool MeshImporter::Import(std::string const& path, Model& model, std::vector<MaterialImportData>& materials)
 {
     LOG_INFO_CAT("Resource", "Start importing {}", path);
-    if (ImportFbx(path, mesh, materials))
+    if (ImportFbx(path, model, materials))
     {
         LOG_INFO_CAT("Resource", "Successfully imported {}", path);
         return true;
     }
     // eventually load another way
 
-
     LOG_ERROR_CAT("Resource", "Fail to import \"{}\"", path);
     return false;
 }
 
-bool MeshImporter::ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialImportData>& materials)
+bool MeshImporter::ImportFbx(std::string const& path, Model& model, std::vector<MaterialImportData>& materials)
 {
     // Serialize all FBX operations — the SDK is not thread-safe.
     std::lock_guard<std::mutex> lock(s_mutex);
@@ -52,7 +54,7 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialI
 
     if (!importer->Initialize(path.c_str(), -1, s_manager->GetIOSettings()))
     {
-        mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         importer->Destroy();
         scene->Destroy();
         return false;
@@ -60,7 +62,7 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialI
 
     if (!importer->Import(scene))
     {
-        mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         importer->Destroy();
         scene->Destroy();
         return false;
@@ -76,36 +78,50 @@ bool MeshImporter::ImportFbx(std::string path, Mesh& mesh, std::vector<MaterialI
     FbxNode* root = scene->GetRootNode();
     if (!root)
     {
-        mesh.SetState(ResourceState::Failed);
+        model.SetState(ResourceState::Failed);
         scene->Destroy();
         return false;
     }
 
     for (int i = 0; i < root->GetChildCount(); ++i)
     {
-        ProcessNode(root->GetChild(i), mesh);
+        ProcessNode(root->GetChild(i), model);
     }
 
-    ResolveAndSortBones(scene, mesh);
-
-    for (auto& vertex : mesh.m_vertices)
+    ResolveAndSortBones(scene, model);
+    
+    for (Mesh& mesh : model.m_meshes)
     {
-        NormalizeVertexWeights(vertex);
+        for (auto& vertex : mesh.m_vertices)
+        {
+            NormalizeVertexWeights(vertex);
+        }
     }
 
-    ExtractAnimations(scene, mesh);
+    ExtractAnimations(scene, model);
 
     std::string fbxDir = std::filesystem::path(path).parent_path().generic_string();
     ExtractSceneMaterials(scene, fbxDir, materials);
 
     m_ctrlPointToVertices.clear();
 
+    std::unordered_map<std::string, int> nameCounts;
+    for (Mesh& mesh : model.m_meshes)
+    {
+        int& count = nameCounts[mesh.m_name];
+        if (count > 0)
+            mesh.m_name = mesh.m_name + " (" + std::to_string(count) + ")";
+        count++;
+    }
+
     scene->Destroy();
+
+    model.SetState(ResourceState::Loaded);
 
     return true;
 }
 
-void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)
+void MeshImporter::ProcessNode(FbxNode* node, Model& model)
 {
     if (!node)
         return;
@@ -115,13 +131,18 @@ void MeshImporter::ProcessNode(FbxNode* node, Mesh& mesh)
     if (fbxMesh)
     {
         m_ctrlPointToVertices.clear();
+
+        model.m_meshes.emplace_back();
+        Mesh& mesh = model.m_meshes.back();
+        mesh.m_name = node->GetName();
+
         ProcessMesh(fbxMesh, mesh);
-        ExtractBones(fbxMesh, mesh);
+        ExtractBones(fbxMesh, model, mesh);
     }
 
     for (int i = 0; i < node->GetChildCount(); ++i)
     {
-        ProcessNode(node->GetChild(i), mesh);
+        ProcessNode(node->GetChild(i), model);
     }
 }
 
@@ -188,16 +209,16 @@ void MeshImporter::NormalizeVertexWeights(Apex::Rendering::Vertex& vertex)
     }
 }
 
-void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
+void MeshImporter::ResolveAndSortBones(FbxScene* scene, Model& model)
 {
     // Build a full scene node map
     std::unordered_map<std::string, FbxNode*> nodeMap;
     BuildNodeMap(scene->GetRootNode(), nodeMap);
 
-    const int boneCount = static_cast<int>(mesh.m_bones.size());
+    const int boneCount = static_cast<int>(model.m_skeleton.size());
 
     // Second pass: resolve every bone's parent now that all are registered
-    for (auto& bone : mesh.m_bones)
+    for (auto& bone : model.m_skeleton)
     {
         bone.m_parentIndex = -1;
         bone.m_children.clear();
@@ -205,24 +226,24 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
 
     for (int i = 0; i < boneCount; ++i)
     {
-        auto nodeIt = nodeMap.find(mesh.m_boneNames[i]);
+        auto nodeIt = nodeMap.find(m_boneNames[i]);
         if (nodeIt == nodeMap.end()) continue;
 
         FbxNode* parent = nodeIt->second->GetParent();
         if (!parent) continue;
 
-        auto parentIt = mesh.m_boneMap.find(parent->GetName());
-        if (parentIt == mesh.m_boneMap.end()) continue;
+        auto parentIt = model.m_boneMap.find(parent->GetName());
+        if (parentIt == model.m_boneMap.end()) continue;
 
         int parentIdx = parentIt->second;
-        mesh.m_bones[i].m_parentIndex = parentIdx;
-        mesh.m_bones[parentIdx].m_children.push_back(i);
+        model.m_skeleton[i].m_parentIndex = parentIdx;
+        model.m_skeleton[parentIdx].m_children.push_back(i);
     }
 
     // Topological sort so every parent precedes its children
     std::vector<int> inDegree(boneCount, 0);
     for (int i = 0; i < boneCount; ++i)
-        if (mesh.m_bones[i].m_parentIndex != -1)
+        if (model.m_skeleton[i].m_parentIndex != -1)
             ++inDegree[i];
 
     std::queue<int> queue;
@@ -238,7 +259,7 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
         int cur = queue.front(); queue.pop();
         sortedOrder.push_back(cur);
 
-        for (int child : mesh.m_bones[cur].m_children)
+        for (int child : model.m_skeleton[cur].m_children)
             if (--inDegree[child] == 0)
                 queue.push(child);
     }
@@ -255,8 +276,8 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
     for (int oldIdx = 0; oldIdx < boneCount; ++oldIdx)
     {
         int newIdx = remap[oldIdx];
-        sortedBones[newIdx] = mesh.m_bones[oldIdx];
-        sortedNames[newIdx] = mesh.m_boneNames[oldIdx];
+        sortedBones[newIdx] = model.m_skeleton[oldIdx];
+        sortedNames[newIdx] = m_boneNames[oldIdx];
     }
 
     for (auto& bone : sortedBones)
@@ -268,22 +289,25 @@ void MeshImporter::ResolveAndSortBones(FbxScene* scene, Mesh& mesh)
             child = remap[child];
     }
 
-    mesh.m_bones = std::move(sortedBones);
-    mesh.m_boneNames = std::move(sortedNames);
+    model.m_skeleton = std::move(sortedBones);
+    m_boneNames = std::move(sortedNames);
 
     // Rebuild boneMap to reflect new indices
-    mesh.m_boneMap.clear();
+    model.m_boneMap.clear();
     for (int i = 0; i < boneCount; ++i)
-        mesh.m_boneMap[mesh.m_boneNames[i]] = i;
+        model.m_boneMap[m_boneNames[i]] = i;
 
-    // Remap bone IDs in every vertex
-    for (auto& vertex : mesh.m_vertices)
-        for (int i = 0; i < 4; ++i)
-            if (vertex.m_weights[i] > 0.0f)
-                vertex.m_boneIDs[i] = remap[vertex.m_boneIDs[i]];
+    for (Mesh& mesh : model.m_meshes)
+    {
+        // Remap bone IDs in every vertex
+        for (auto& vertex : mesh.m_vertices)
+            for (int i = 0; i < 4; ++i)
+                if (vertex.m_weights[i] > 0.0f)
+                    vertex.m_boneIDs[i] = remap[vertex.m_boneIDs[i]];
+    }
 }
 
-void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
+void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Model& model, Mesh& mesh)
 {
     int skinCount = fbxMesh->GetDeformerCount(FbxDeformer::eSkin);
 
@@ -304,12 +328,12 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
 
             int boneIndex = 0;
 
-            if (mesh.m_boneMap.find(boneName) == mesh.m_boneMap.end())
+            if (model.m_boneMap.find(boneName) == model.m_boneMap.end())
             {
-                boneIndex = static_cast<int>(mesh.m_bones.size());
+                boneIndex = static_cast<int>(model.m_skeleton.size());
 
-                mesh.m_boneMap[boneName] = boneIndex;
-                mesh.m_boneNames.push_back(boneName);
+                model.m_boneMap[boneName] = boneIndex;
+                m_boneNames.push_back(boneName);
 
                 BoneInfo boneInfo;
 
@@ -332,11 +356,11 @@ void MeshImporter::ExtractBones(FbxMesh* fbxMesh, Mesh& mesh)
 
                 boneInfo.m_offsetMatrix = ConvertFBXMatrix(m_offsetMatrix);
 
-                mesh.m_bones.push_back(boneInfo);
+                model.m_skeleton.push_back(boneInfo);
             }
             else
             {
-                boneIndex = mesh.m_boneMap[boneName];
+                boneIndex = model.m_boneMap[boneName];
             }
 
             int*    controlPointIndices = cluster->GetControlPointIndices();
@@ -402,7 +426,7 @@ void MeshImporter::BuildNodeMap(FbxNode* node, std::unordered_map<std::string, F
     }
 }
 
-void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
+void MeshImporter::ExtractAnimations(FbxScene* scene, Model& model)
 {
     constexpr double FPS = ANIMATION_FPS;
 
@@ -415,8 +439,8 @@ void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
     std::unordered_map<std::string, FbxNode*> nodeMap;
     BuildNodeMap(root, nodeMap);
 
-    mesh.m_animations.clear();
-    mesh.m_animations.resize(animStackCount);
+    model.m_animations.clear();
+    model.m_animations.resize(animStackCount);
 
     for (int animIndex = 0; animIndex < animStackCount; ++animIndex)
     {
@@ -434,15 +458,15 @@ void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
 
         if (frameCount <= 0) continue;
 
-        Animation& anim = mesh.m_animations[animIndex];
+        Animation& anim = model.m_animations[animIndex];
         anim.m_name = stack->GetName();
 
-        const int boneCount = static_cast<int>(mesh.m_bones.size());
+        const int boneCount = static_cast<int>(model.m_skeleton.size());
         anim.m_boneAnimations.resize(boneCount);
 
         for (int bone = 0; bone < boneCount; ++bone)
         {
-            const std::string& boneName = mesh.m_boneNames[bone];
+            const std::string& boneName = m_boneNames[bone];
 
             auto& boneAnim = anim.m_boneAnimations[bone];
             boneAnim.m_frames.resize(frameCount);
@@ -458,7 +482,7 @@ void MeshImporter::ExtractAnimations(FbxScene* scene, Mesh& mesh)
                 for (auto& key : boneAnim.m_frames)
                 {
                     key.m_position = { 0,0,0 };
-                    key.m_rotation = Quaternion::identity();
+                    key.m_rotation = LibMath::Quaternion::identity();
                     key.m_scale = { 1,1,1 };
                 }
                 continue;
@@ -514,7 +538,16 @@ void MeshImporter::ExtractSceneMaterials(FbxScene* scene, const std::string& fbx
         if (data.m_diffusePath.empty())
             data.m_diffusePath = ResolveTexturePath(fbxMat, FbxSurfaceMaterial::sDiffuseFactor, fbxDir);
 
-        if (!data.m_diffusePath.empty() || !data.m_normalPath.empty() || !data.m_specularPath.empty())
+        if (data.m_diffusePath.empty())
+        {
+            if (fbxMat->GetClassId().Is(FbxSurfaceLambert::ClassId))
+            {
+                FbxDouble3 c = static_cast<FbxSurfaceLambert*>(fbxMat)->Diffuse.Get();
+                data.m_tint = { (float)c[0], (float)c[1], (float)c[2] };
+            }
+        }
+
+        if (!data.m_diffusePath.empty() || !data.m_normalPath.empty() || !data.m_specularPath.empty() && data.m_tint == LibMath::Vector3{ 1, 1, 1 })
             materials.push_back(std::move(data));
     }
 }
@@ -534,7 +567,7 @@ std::string MeshImporter::ResolveTexturePath(FbxSurfaceMaterial* mat, const char
     std::string relPath = tex->GetRelativeFileName();
     std::string absPath = tex->GetFileName();
 
-    // Normalise path separators
+    // Normalize path separators
     for (auto& c : relPath) 
         if (c == '\\') 
             c = '/';
@@ -561,9 +594,9 @@ std::string MeshImporter::ResolveTexturePath(FbxSurfaceMaterial* mat, const char
     return {};
 }
 
-Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
+LibMath::Matrix4 MeshImporter::ConvertFBXMatrix(const FbxAMatrix& mat)
 {
-    Matrix4 result;
+    LibMath::Matrix4 result;
 
     for (int row = 0; row < 4; row++)
     {

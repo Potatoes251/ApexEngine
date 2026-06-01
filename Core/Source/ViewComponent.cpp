@@ -51,13 +51,13 @@ void ViewComponent::OnFixedUpdate(float fixedDeltaTime_s)
 {
 	m_Hits.clear();
 
-	Vector3 origin = GetOwner()->GetGlobalPosition();
-	Quaternion rotation = GetOwner()->GetGlobalRotation();
+	LibMath::Vector3 origin = GetOwner()->GetGlobalPosition();
+	LibMath::Quaternion rotation = GetOwner()->GetGlobalRotation();
 
 	//Raycasts
-	for (const Vector3& localDir : m_localDirections)
+	for (const LibMath::Vector3& localDir : m_localDirections)
 	{
-		Vector3 worldDir = rotation.rotate(localDir);
+		LibMath::Vector3 worldDir = rotation.rotate(localDir);
 		CastRay(origin, worldDir);
 	}
 }
@@ -81,7 +81,7 @@ void ViewComponent::OnStart()
 			float tx = (m_horizontalRays > 1) ? (float)x / (m_horizontalRays - 1) : 0.5f;
 			float yaw = -halfH + tx * m_horizontalFov;
 
-			Vector3 dir;
+			LibMath::Vector3 dir;
 			dir[0] = std::tan(yaw);
 			dir[1] = std::tan(pitch);
 			dir[2] = 1.0f;
@@ -134,7 +134,7 @@ float ViewComponent::GetShortestDistanceWithTag(std::string const& tag) const
 	return minDist == FLT_MAX ? -1.f : minDist;
 }
 
-void ViewComponent::CastRay(const Vector3& origin, const Vector3& dir)
+void ViewComponent::CastRay(const LibMath::Vector3& origin, const LibMath::Vector3& dir)
 {
 	std::vector<HitResult> hits;
 

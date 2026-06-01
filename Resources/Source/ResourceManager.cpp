@@ -21,13 +21,8 @@ void ResourceManager::ProcessGpuUploads()
 			resource = m_gpuUploadQueue.front();
 			m_gpuUploadQueue.pop();
 		}
-
-		if (resource.IsFailed()) continue;
 		
 		resource->UploadToGpu();
-		if (resource.IsFailed()) continue;
-
-		resource->SetState(ResourceState::Uploaded);
 	}
 }
 

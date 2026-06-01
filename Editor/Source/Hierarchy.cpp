@@ -10,6 +10,8 @@
 #include "Command/AddObjectCommand.h"
 #include "CommandManager.h"
 
+#include "Application.h"
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
@@ -27,6 +29,7 @@ Hierarchy::Hierarchy(IGUI& gui,
 
 void Hierarchy::Draw()
 {
+    m_scene = Application::Get()->GetScene();
     m_gui.PushFont(FontID::Default);
 
     m_gui.BeginPanel("Hierarchy");
@@ -58,8 +61,8 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             auto& comp = obj->AddComponent<MeshRenderer>();
 
-            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Cube/Cube.mesh");
-            comp.SetMesh(mesh);
+            auto mesh = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Cube/Cube.mesh");
+            comp.SetModel(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
             comp.SetMaterial(mat);
             obj->SetName("Cube");
@@ -72,8 +75,8 @@ void Hierarchy::Draw()
             Object* obj = m_scene->CreateObject();
             auto& comp = obj->AddComponent<MeshRenderer>();
 
-            auto mesh = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
-            comp.SetMesh(mesh);
+            auto mesh = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Sphere/Sphere.mesh");
+            comp.SetModel(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
             comp.SetMaterial(mat);
             obj->SetName("Sphere");

@@ -16,6 +16,8 @@ namespace Apex::Audio
 
 		~AudioComponent();
 
+		void OnStart() override;
+
 		void Play();
 		void Play3D();
 		void PlayAt(LibMath::Vector3 pos);

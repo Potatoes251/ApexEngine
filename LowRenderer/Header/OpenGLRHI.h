@@ -21,6 +21,8 @@ namespace Apex::Rendering
 		void SetClearColor(float r, float g, float b, float a = 1.f) override;
 		void Clear() override;
 		void ClearDepth() override;
+		void SetCullingFace(bool front) override;
+		void SetCullingEnabled(bool enabled) override;
 
 		RHIVAOHandle	CreateVAO() override;
 		void			BindVAO(RHIVAOHandle vao) override;

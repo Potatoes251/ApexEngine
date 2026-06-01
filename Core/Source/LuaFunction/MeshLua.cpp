@@ -26,7 +26,7 @@ int Apex::Mezh::Lua_SetUniform(lua_State* L)
         return 0;
     }
 
-    Resources::ResourceHandle<Material> const& mat = mesh->GetMaterial();
+    Resources::ResourceHandle<Material> mat = mesh->GetMaterials()[0];
 
     if (!mat.IsValid())
     {
