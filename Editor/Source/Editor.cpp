@@ -669,6 +669,63 @@ namespace Apex::Editor
         }
     }
 
+    void Editor::CollectHudDependencies(
+        const std::string& scriptPath,
+        std::unordered_set<std::string>& outHuds)
+    {
+        std::ifstream file(Fs::current_path() / scriptPath);
+
+        if (!file.is_open())
+            return;
+
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            auto commentPos = line.find("--");
+            if (commentPos != std::string::npos)
+                line = line.substr(0, commentPos);
+
+            size_t pos = 0;
+
+            while ((pos = line.find("CreateHUD", pos)) != std::string::npos)
+            {
+                pos += strlen("CreateHUD");
+
+                while (pos < line.size() && std::isspace(line[pos]))
+                    ++pos;
+
+                if (pos >= line.size() || line[pos] != '(')
+                    continue;
+
+                ++pos;
+
+                while (pos < line.size() && std::isspace(line[pos]))
+                    ++pos;
+
+                if (pos >= line.size())
+                    continue;
+
+                if (line[pos] != '"' && line[pos] != '\'')
+                    continue;
+
+                char quote = line[pos++];
+
+                size_t start = pos;
+
+                while (pos < line.size() && line[pos] != quote)
+                    ++pos;
+
+                if (pos >= line.size())
+                    continue;
+
+                std::string hudName = line.substr(start, pos - start);
+
+                outHuds.insert("Assets/HUD/" + hudName + ".hud");
+            }
+        }
+    }
+
     void Editor::CollectAssetsFromMats(const std::string& matPath,
         std::unordered_set<std::string>& outAssets)
     {
@@ -853,9 +910,6 @@ namespace Apex::Editor
         // these are never referenced in scene files so must be listed explicitly.
         static const char* s_engineAssets[] =
         {
-            // DebugRenderer (InitRendering)
-            "ApexAssets/Shaders/LineVert.glsl",
-            "ApexAssets/Shaders/LineFrag.glsl",
             // Shadow system (InitLighting)
             "ApexAssets/Shaders/DirShadowVert.glsl",
             "ApexAssets/Shaders/DirShadowFrag.glsl",
@@ -873,9 +927,6 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/nz.png",
             // Skybox mesh
             "ApexAssets/Meshes/cube.mesh",
-            // HUD
-            "Assets/HUD/GameHUD.hud",
-            "Assets/HUD/Fight.hud",
         };
 
         for (const char* assetPath : s_engineAssets)
@@ -925,6 +976,16 @@ namespace Apex::Editor
 
         for (const auto& scenePath : scenePaths)
             CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        std::unordered_set<std::string> hudDeps;
+
+        for (const auto& assetPath : assetsToCopy)
+        {
+            if (assetPath.ends_with(".lua"))
+                CollectHudDependencies(assetPath, hudDeps);
+        }
+
+        assetsToCopy.merge(hudDeps);
 
         fs::path hudDir = fs::current_path() / "Assets/HUD";
 

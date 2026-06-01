@@ -93,6 +93,9 @@ namespace Apex::Editor
 		void CollectLuaDependencies(const std::string& scriptPath,
 			std::unordered_set<std::string>& out,
 			std::unordered_set<std::string>& visited);
+		void CollectHudDependencies(
+			const std::string& scriptPath,
+			std::unordered_set<std::string>& outHuds);
 		void CollectAssetsFromMats(const std::string& matPath,
 			std::unordered_set<std::string>& outAssets);
 
