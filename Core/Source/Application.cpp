@@ -299,8 +299,6 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
 
     // Minimal valid .level file
     file << "{\n";
-    file << "\"materials\": [\n";
-    file << "],\n";
     file << "\"objects\": [\n";
     file << "]\n";
     file << "}";

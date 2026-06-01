@@ -49,7 +49,6 @@ std::vector<ExposedVar> RigidBodyComponent::GetExposedVariables()
 void RigidBodyComponent::ResetForces()
 {
 	m_pendingForces.clear();
-	m_pendingForces.shrink_to_fit();
 }
 
 void RigidBodyComponent::SetTransform(LibMath::Transform trans)

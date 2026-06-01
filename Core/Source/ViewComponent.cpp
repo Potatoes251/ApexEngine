@@ -95,7 +95,8 @@ bool ViewComponent::SeesTag(std::string const& tag) const
 {
 	for (HitResult const& hit : m_Hits)
 	{
-		if (hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag))
+		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+		if (obj && obj->HasTag(tag))
 			return true;
 	}
 	return false;
@@ -107,11 +108,12 @@ Apex::Data::Object* ViewComponent::GetClosestWithTag(std::string const& tag) con
 	Object* closest = nullptr;
 	for (HitResult const& hit : m_Hits)
 	{
-		bool hasTag = hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag);
+		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+		bool hasTag = obj && obj->HasTag(tag);
 		if (hasTag && hit.m_distance <= minDist)
 		{
 			minDist = hit.m_distance;
-			closest = hit.m_collider->GetOwner();
+			closest = obj;
 		}
 	}
 	return closest;
@@ -122,7 +124,8 @@ float ViewComponent::GetShortestDistanceWithTag(std::string const& tag) const
 	float minDist = FLT_MAX;
 	for (HitResult const& hit : m_Hits)
 	{
-		bool hasTag = hit.m_collider && hit.m_collider->GetOwner() && hit.m_collider->GetOwner()->HasTag(tag);
+		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+		bool hasTag = obj && obj->HasTag(tag);
 		if (hasTag && hit.m_distance < minDist)
 		{
 			minDist = hit.m_distance;
@@ -139,7 +142,8 @@ void ViewComponent::CastRay(const Vector3& origin, const Vector3& dir)
 	{
 		for (HitResult& hit : hits)
 		{
-			if (hit.m_collider && hit.m_collider->GetOwner() != GetOwner())
+			Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+			if (obj && obj != GetOwner())
 				m_Hits.push_back(hit);
 		}
 	}

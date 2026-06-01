@@ -29,7 +29,6 @@ namespace Apex::Rendering
 		Animator& operator=(const Animator&) = default;
 
 		ResourceHandle<Mesh>	GetMesh() const { return m_mesh; }
-		void DrawSkeleton(std::vector<KeyFrame>& globalSkeleton);
 		void SetBlendRatio(float newRatio) { m_blendRatio = newRatio; }
 
 		//Component
@@ -48,13 +47,13 @@ namespace Apex::Rendering
 		void Stop();
 
 		//Animations
-		void PlayRepeat(int animationIndex);															//Play_single_animation
-		void PlayRepeatInterpolated(int animationIndex);												//Play_single_animation_interpolated
-		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//Play_cross_fade_animation
-		void PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime);	//Play_cross_fade_animation_interpolated
-		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//Play_blend_space_animation
-		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//Play_blend_space_animation_interpolated
-		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//Play_layer_blend_space_animation
+		void PlayRepeat(int animationIndex);															//PlaySingleAnim
+		void PlayRepeatInterpolated(int animationIndex);												//PlaySingleAnimInterpolated
+		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//PlayCrossFadeAnim
+		void PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime);	//PlayCrossFadeAnimInterpolated
+		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//PlayBlendSpaceAnim
+		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//PlayBlendSpaceAnimInterpolated
+		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//PlayLayerBlendSpaceAnim
 
 		//IK
 		int  AddIKInstance(int endBoneIndex, int chainLength);	//chainLength don't include endBone

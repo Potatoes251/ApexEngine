@@ -12,8 +12,6 @@ namespace Apex::Lighting
 		DirectionalLightComponent(LibMath::Vector3 color, float intensity, float shadowDistance, float shadowExtent) 
 			: LightComponent(color, intensity), m_shadowDistance(shadowDistance), m_shadowExtents(shadowExtent) {}
 		~DirectionalLightComponent() = default;
-		DirectionalLightComponent(DirectionalLightComponent const&);
-		DirectionalLightComponent& operator=(DirectionalLightComponent const& other);
 
 		std::unique_ptr<Component> Clone() override { return std::make_unique<DirectionalLightComponent>(*this); }
 

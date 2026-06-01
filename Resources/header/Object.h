@@ -41,15 +41,11 @@ namespace Apex::Data
 
 		size_t			GetId() const { return m_id; }
 		void			SetId(size_t id);
-		void			SetCompId(size_t oldId, size_t newId);
-		void			SetCompId(Component* comp, size_t newId);
 		size_t			NewId();
 		// set id to INVALID_ID
 		void			RemoveId();
-		void			RemoveCompId(size_t oldId);
-		void			RemoveCompId(Component* comp);
 
-		std::string&	GetName() { return m_name; }
+		std::string const&	GetName() const { return m_name; }
 		void			SetName(std::string name);
 
 		const	LibMath::Transform&		GetLocalTransform() const;
@@ -127,7 +123,6 @@ namespace Apex::Data
 		static inline size_t m_nextId = 0;
 		static inline std::unordered_set<std::string> m_usedNames;
 
-		std::set<size_t> m_freeCompIds;
 		size_t m_nextCompId = 0;
 
 		size_t			m_id;
@@ -158,15 +153,7 @@ namespace Apex::Data
 		T& ref = *component;
 		m_components.push_back(std::move(component));
 
-		if (m_freeCompIds.empty())
-		{
-			m_components.back()->SetId(m_nextCompId++);
-		}
-		else
-		{
-			m_components.back()->SetId(*m_freeCompIds.begin());
-			m_freeCompIds.erase(m_freeCompIds.begin());
-		}
+		m_components.back()->SetId(m_nextCompId++);
 
 		OnChanged();
 

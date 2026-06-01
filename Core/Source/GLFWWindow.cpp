@@ -219,7 +219,7 @@ namespace Apex::Windowing
         ofn.lpstrFile = buffer.data();
         ofn.nMaxFile = BUFFER;
         ofn.lpstrTitle = L"Export Texture";
-        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0\0";
+        ofn.lpstrFilter = L"PNG Image\0*.png\0JPEG Image\0*.jpg\0HDR Image\0*.hdr\0All Files\0*.*\0";
         ofn.nFilterIndex = 1;
         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_EXPLORER;
 

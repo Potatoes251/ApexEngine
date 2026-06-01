@@ -72,7 +72,6 @@ namespace Apex::Serialization
 
         Apex::Resources::ResourceManager* m_resourceManager;
         Apex::Physic::PhysicSystem* m_physics;
-        std::unordered_map<size_t, Apex::Physic::PhysMatHandle> m_materials;
         Apex::Scripting::LuaManager* m_luaManager;
 
         std::unordered_map<size_t, Apex::Data::Object*> objectsById;

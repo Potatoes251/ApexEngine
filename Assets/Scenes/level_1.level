@@ -1,10 +1,7 @@
 {
-"materials": [
-
-],
 "objects": [
   {
-    "id": 5163,
+    "id": 4741,
     "parent": null,
     "name": "Platform",
     "position": [1.000000,0.000000,0.000000],
@@ -19,9 +16,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [20.000000, 1.025000, 20.000000],
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [20.000000,1.025000,20.000000]
       },
       "Rigidbody": {
         "enabled": true,
@@ -31,7 +30,7 @@
     }
   },
   {
-    "id": 5164,
+    "id": 4742,
     "parent": null,
     "name": "HUDController",
     "position": [0.000000,0.000000,0.000000],
@@ -47,7 +46,7 @@
     }
   },
   {
-    "id": 5165,
+    "id": 4743,
     "parent": null,
     "name": "Light",
     "position": [-1.000000,2.000000,0.000000],
@@ -64,7 +63,7 @@
     }
   },
   {
-    "id": 5166,
+    "id": 4744,
     "parent": null,
     "name": "Player",
     "position": [0.534259,2.021664,4.421952],
@@ -84,10 +83,12 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "halfHeight": 0.750000,
-        "radius": 0.200000,
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
       },
       "ScriptComponent": {
         "enabled": true,
@@ -112,11 +113,17 @@
         "enabled": true,
         "fps": 30.000000,
 		"Mesh": "Assets/Meshes/Player/Player.mesh"
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/BossFighter.lua",
+        "vars": {
+        }
       }
     }
   },
   {
-    "id": 5167,
+    "id": 4745,
     "parent": null,
     "name": "WaterCurrent",
     "position": [30.861206,-3.806236,0.080175],
@@ -141,7 +148,7 @@
     }
   },
   {
-    "id": 5168,
+    "id": 4746,
     "parent": null,
     "name": "Platform",
     "position": [48.398689,0.000000,0.000000],
@@ -161,15 +168,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5169,
+    "id": 4747,
     "parent": null,
     "name": "Coin",
     "position": [8.580971,1.596644,-3.946078],
@@ -195,15 +204,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5170,
+    "id": 4748,
     "parent": null,
     "name": "Coin",
     "position": [13.138493,1.596644,1.085545],
@@ -229,15 +240,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5171,
+    "id": 4749,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,-8.131828],
@@ -263,15 +276,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5172,
+    "id": 4750,
     "parent": null,
     "name": "Coin",
     "position": [48.000000,1.596643,10.051377],
@@ -297,18 +312,20 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5173,
+    "id": 4751,
     "parent": null,
     "name": "Goomba",
-    "position": [0.232368,2.388972,0.000000],
+    "position": [6.741025,1.578444,-6.828671],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [0.010000,0.010000,0.010000],
     "components": {
@@ -347,15 +364,17 @@
       },
       "CapsuleCollider": {
         "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
         "halfHeight": 0.250000,
-        "radius": 0.200000,
-        "isTrigger": true,
-        "material": null
+        "radius": 0.200000
       }
     }
   },
   {
-    "id": 5174,
+    "id": 4752,
     "parent": null,
     "name": "PoolWall",
     "position": [30.581680,-3.773233,18.222446],
@@ -375,15 +394,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5175,
+    "id": 4753,
     "parent": null,
     "name": "PoolWall",
     "position": [30.961494,-3.718727,-17.883265],
@@ -403,15 +424,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5176,
+    "id": 4754,
     "parent": null,
     "name": "PoolWall",
     "position": [20.143110,-3.990068,-0.149099],
@@ -431,15 +454,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5177,
+    "id": 4755,
     "parent": null,
     "name": "PoolWall",
     "position": [39.734138,-3.990068,-0.149099],
@@ -459,15 +484,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5178,
+    "id": 4756,
     "parent": null,
     "name": "PoolWall",
     "position": [29.979202,-7.835294,-0.149099],
@@ -487,15 +514,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5179,
+    "id": 4757,
     "parent": null,
     "name": "Platform",
     "position": [62.219765,0.000002,0.771967],
@@ -515,15 +544,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5180,
+    "id": 4758,
     "parent": null,
     "name": "Platform",
     "position": [73.371742,0.000002,10.000000],
@@ -543,15 +574,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5181,
+    "id": 4759,
     "parent": null,
     "name": "Platform",
     "position": [84.500000,0.000002,0.771967],
@@ -571,15 +604,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5182,
+    "id": 4760,
     "parent": null,
     "name": "Platform",
     "position": [96.838928,0.000002,0.809082],
@@ -599,15 +634,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "type": "Convex",
         "isTrigger": false,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5183,
+    "id": 4761,
     "parent": null,
     "name": "Goomba",
     "position": [100.000000,1.634375,3.720859],
@@ -649,15 +686,17 @@
       },
       "CapsuleCollider": {
         "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
         "halfHeight": 0.250000,
-        "radius": 0.200000,
-        "isTrigger": true,
-        "material": null
+        "radius": 0.200000
       }
     }
   },
   {
-    "id": 5184,
+    "id": 4762,
     "parent": null,
     "name": "Coin",
     "position": [61.975533,1.596642,0.901356],
@@ -683,15 +722,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5185,
+    "id": 4763,
     "parent": null,
     "name": "Coin",
     "position": [73.292206,1.596640,10.540983],
@@ -717,15 +758,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5186,
+    "id": 4764,
     "parent": null,
     "name": "Coin",
     "position": [84.224602,1.596640,0.824762],
@@ -751,15 +794,17 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
   {
-    "id": 5187,
+    "id": 4765,
     "parent": null,
     "name": "Coin",
     "position": [96.052116,1.596640,6.135586],
@@ -785,10 +830,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -822,10 +869,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -856,10 +905,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -890,10 +941,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -924,10 +977,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -958,10 +1013,12 @@
       },
       "MeshCollider": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "type": "Convex",
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
       }
     }
   },
@@ -986,9 +1043,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.500000, 2.500000, 2.500000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000, 2.500000, 2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1021,9 +1080,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.500000, 2.500000, 2.500000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000, 2.500000, 2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1056,9 +1117,11 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [1.500000, 1.500000, 1.500000],
         "isTrigger": true,
-        "material": null
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.000000,2.000000,0.100000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1066,6 +1129,92 @@
         "vars": {
           "Damage": 1.000000,
           "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 4768,
+    "parent": null,
+    "name": "Bowser",
+    "position": [2.157224,4.363768,-2.606731],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.050000,0.050000,0.050000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh",
+        "material": "Assets/Material/Bowser.mat",
+        "castShadow": false 
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.500000,
+        "radius": 1.000000
+      },
+      "AIController": {
+        "enabled": true,
+        "groundedDistance": 0.5,
+        "speed": 5,
+        "rotationSpeed": 5,
+        "density": 980,
+"arrivalThreshold" :0.500000
+      },
+      "ViewComponent": {
+        "enabled": true,
+        "range": 10.000000,
+		"horizontalFov": 1.500000,
+		"verticalFov": 1.000000,
+		"horizontalRays": 10,
+		"verticalRays": 10
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Bowser.lua",
+        "vars": {
+        }
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"Mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
+      }
+    }
+  },
+  {
+    "id": 4770,
+    "parent": 4768,
+    "name": "Tail",
+    "position": [0.000000,-20.000000,-30.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [1.000000,1.000000,1.000000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Tail.lua",
+        "vars": {
         }
       }
     }

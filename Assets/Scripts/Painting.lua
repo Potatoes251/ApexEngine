@@ -30,6 +30,7 @@ end
 function Painting:Start()
     self.mesh = Mesh.Get(self)
     self.audio = AudioComponent.Get(self)
+    self.mesh:SetUniform("uTime", 0)
 end
 
 function Painting:Update(dt)
@@ -39,7 +40,6 @@ function Painting:Update(dt)
         if self.accumulatedTime > self.LoadTime then
             LoadScene(self.TargetScene)
         end
-
     end
 end
 

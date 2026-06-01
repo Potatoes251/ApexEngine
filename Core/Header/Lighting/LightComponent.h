@@ -19,8 +19,8 @@ namespace Apex::Lighting
 		LightComponent() = default;
 		LightComponent(LibMath::Vector3 color, float intensity);
 		virtual ~LightComponent() = default;
-		LightComponent(LightComponent const&) = delete;
-		LightComponent& operator=(LightComponent const&) = delete;
+		LightComponent(LightComponent const&) = default;
+		LightComponent& operator=(LightComponent const&) = default;
 
 		virtual std::vector<ExposedVar> GetExposedVariables() override;
 

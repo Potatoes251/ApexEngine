@@ -7,20 +7,6 @@
 using namespace Apex;
 using namespace Apex::Lighting;
 
-DirectionalLightComponent::DirectionalLightComponent(DirectionalLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-}
-
-DirectionalLightComponent& DirectionalLightComponent::operator=(DirectionalLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-
-    return *this;
-}
-
 void DirectionalLightComponent::Serialize(std::ostream& out) const
 {
     out << "        \"color\": ["
