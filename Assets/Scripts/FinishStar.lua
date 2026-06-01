@@ -1,9 +1,11 @@
 local Object = require("Object")
+local AudioComponent = require("AudioComp")
  
 local FinishStar = Object:New()
  
 function FinishStar:New(self)
     local inst = {
+     audio = nil,
 
      LoadTime = 1,
      TargetScene = "",
@@ -24,6 +26,7 @@ end
  
 function FinishStar:Start()
     self:AddTag("FinishStar")
+    self.audio = AudioComponent.Get(self)
 end
  
 function FinishStar:Update(dt)
@@ -41,6 +44,7 @@ function FinishStar:OnTriggerEnter(col)
     
     local player = Cast(obj:GetName(), "Player")
     if player == nil then return end
+    self.audio:Play()
     player:UpdateScore(self.ScoreValue)
     self.start = true
 end

@@ -29,11 +29,6 @@ void MeshRenderer::SetMaterials(std::vector<Apex::Resources::ResourceHandle<Mate
     m_materials = materials;
 }
 
-ResourceHandle<Material> MeshRenderer::GetMaterial()
-{
-    return m_material;
-}
-
 std::vector<ExposedVar> MeshRenderer::GetExposedVariables()
 {
     std::vector<ExposedVar> variables;

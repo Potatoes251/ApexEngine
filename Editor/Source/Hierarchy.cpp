@@ -10,6 +10,8 @@
 #include "Command/AddObjectCommand.h"
 #include "CommandManager.h"
 
+#include "Application.h"
+
 using namespace Apex::Editor;
 using namespace Apex::SceneGraph;
 using namespace Apex::UserInterface;
@@ -27,6 +29,7 @@ Hierarchy::Hierarchy(IGUI& gui,
 
 void Hierarchy::Draw()
 {
+    m_scene = Application::Get()->GetScene();
     m_gui.PushFont(FontID::Default);
 
     m_gui.BeginPanel("Hierarchy");

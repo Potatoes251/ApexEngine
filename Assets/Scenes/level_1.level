@@ -123,6 +123,13 @@
         "script": "Assets/Scripts/BossFighter.lua",
         "vars": {
         }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets\Sounds\marioDeathSound.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
       }
     }
   },
@@ -382,7 +389,7 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "isTrigger": false,
+        "isTrigger": true,
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
@@ -899,7 +906,7 @@
         "materials": [
             "Assets/Material.002.mat"
         ],
-        "castShadow": false 
+        "castShadow": true
       },
       "Rigidbody": {
         "enabled": true,
@@ -923,6 +930,13 @@
         "bounciness": 0.000000,
         "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
         "type": "Convex"
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/StarCollectSound.mp3",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
       }
     }
   },
@@ -1183,7 +1197,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.000000,2.000000,0.100000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1199,7 +1213,7 @@
     "id": 4768,
     "parent": null,
     "name": "Bowser",
-    "position": [2.157224,4.363768,-2.606731],
+    "position": [47.923370,2.543560,-2.606731],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [0.050000,0.050000,0.050000],
     "components": {
@@ -1291,6 +1305,29 @@
       "ScriptComponent": {
         "enabled": true,
         "script": "Assets/Scripts/Tail.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 5198,
+    "parent": null,
+    "name": "Music",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets\Sounds\Level1music.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/MusicPlayer.lua",
         "vars": {
         }
       }

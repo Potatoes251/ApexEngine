@@ -33,9 +33,8 @@ namespace Apex::Rendering
         void SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
-        Resources::ResourceHandle<Material> GetMaterial();
         Resources::ResourceHandle<Model> GetModel() { return m_model; }
-        std::vector<Resources::ResourceHandle<Material>> GetMaterials() { return m_materials; }
+        std::vector<Resources::ResourceHandle<Material>> const& GetMaterials() { return m_materials; }
 
         const char* GetTypeName() const override { return "MeshRenderer"; };
         std::vector<ExposedVar> GetExposedVariables() override;
