@@ -57,8 +57,6 @@ function SettingMenuHUD:Start()
     self.hud = CreateHUD("SettingHUD")
     if self.hud == 0 then return end
 
-    PauseScene(self.hud)
-
     HUD_SetButtonCallBack(self.hud, "ExitButton"
     function()
     self:ExitHUD()
@@ -115,3 +113,12 @@ function SettingMenuHUD:Start()
     self:ToggleShadow() 
     end)
 end
+
+function SettingMenuHUD:Open()
+    if self.hud ~= 0 then
+        PauseScene(self.hud)
+        ShowHUD(self.hud)
+    end
+end
+
+return SettingMenuHUD
