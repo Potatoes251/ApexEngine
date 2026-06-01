@@ -904,7 +904,7 @@
         "enabled": true,
         "model": "Assets/estrellitaaa/estrellitaaa.mesh",
         "materials": [
-            "Assets/Material.002.mat"
+            "Assets/Material/Material.002.mat"
         ],
         "castShadow": true
       },

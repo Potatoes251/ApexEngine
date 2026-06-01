@@ -322,7 +322,7 @@ std::string Apex::Application::LoadLastScene() const
 
 std::string Apex::Application::LoadBuildStartScene() const
 {
-    std::ifstream file(m_saveFilePath);
+    std::ifstream file(m_buildScenesPath);
     if (!file.is_open())
         return "";
 
@@ -330,27 +330,24 @@ std::string Apex::Application::LoadBuildStartScene() const
         (std::istreambuf_iterator<char>(file)),
         std::istreambuf_iterator<char>());
 
-    size_t scenePos = content.find("\"scene\"");
+    // Expects: { "scenes": [ "Assets/Scenes/scene.level", ... ] }
+    size_t scenePos = content.find("\"scenes\"");
     if (scenePos == std::string::npos)
         return "";
 
-    // Find ':' after "scene"
-    size_t colonPos = content.find(':', scenePos);
-    if (colonPos == std::string::npos)
+    size_t arrayOpen = content.find('[', scenePos);
+    if (arrayOpen == std::string::npos)
         return "";
 
-    // Find opening quote of value
-    size_t firstQuote = content.find('"', colonPos);
+    size_t firstQuote = content.find('"', arrayOpen + 1);
     if (firstQuote == std::string::npos)
         return "";
 
-    // Find closing quote
     size_t secondQuote = content.find('"', firstQuote + 1);
     if (secondQuote == std::string::npos)
         return "";
 
-    return content.substr(firstQuote + 1,
-        secondQuote - firstQuote - 1);
+    return content.substr(firstQuote + 1, secondQuote - firstQuote - 1);
 }
 
 void Apex::Application::AddCollectedObject(size_t id)

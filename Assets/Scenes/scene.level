@@ -159,29 +159,6 @@
         "type": "Triangle"
       }
     }
-  },
-  {
-    "id": 37,
-    "parent": null,
-    "name": "Cube",
-    "position": [6.517717,-1.226404,17.245037],
-    "rotation": [0.000000,0.000000,0.000000,1.000000],
-    "scale": [1.000000,1.000000,1.000000],
-    "components": {
-      "AudioComponent": {
-        "enabled": true,
-        "sound": "Assets/Sounds/calmPiano.ogg",
-        "volume": 1.000000,
-        "channel": 1,
-        "loop": 1
-      },
-      "ScriptComponent": {
-        "enabled": true,
-        "script": "Assets/Scripts/MusicPlayer.lua",
-        "vars": {
-        }
-      }
-    }
   }
 ]
 }
