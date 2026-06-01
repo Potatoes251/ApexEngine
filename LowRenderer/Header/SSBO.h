@@ -18,6 +18,9 @@ namespace Apex::Rendering
 		Ssbo(Ssbo&& other) noexcept
 			: m_rhi(other.m_rhi), m_size(other.m_size), m_binding(other.m_binding), m_buffer(other.m_buffer)
 		{
+			other.m_rhi = nullptr;
+			other.m_size = 0;
+			other.m_binding = 0;
 			other.m_buffer = 0;
 		}
 
@@ -31,6 +34,10 @@ namespace Apex::Rendering
 				m_size = other.m_size;
 				m_binding = other.m_binding;
 				m_buffer = other.m_buffer;
+
+				other.m_rhi = nullptr;
+				other.m_size = 0;
+				other.m_binding = 0;
 				other.m_buffer = 0;
 			}
 			return *this;

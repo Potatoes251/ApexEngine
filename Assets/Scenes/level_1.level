@@ -10,8 +10,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "BoxCollider": {
@@ -72,8 +74,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Player.mat",
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -112,13 +116,20 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/Player/Player.mesh"
+		"model": "Assets/Meshes/Player/Player.mesh"
       },
       "ScriptComponent": {
         "enabled": true,
         "script": "Assets/Scripts/BossFighter.lua",
         "vars": {
         }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets\Sounds\marioDeathSound.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
       }
     }
   },
@@ -141,8 +152,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/Default.mat",
+        "model": "ApexAssets/Meshes/cube/cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
         "castShadow": false 
       }
     }
@@ -157,8 +170,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -193,8 +208,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -229,8 +246,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -265,8 +284,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -301,8 +322,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -331,8 +354,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "material": "Assets/Material/Goomba.mat",
+        "model": "Assets/Meshes/Goomba/Goomba.mesh",
+        "materials": [
+            "Assets/Material/Goomba.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -364,7 +389,7 @@
       },
       "CapsuleCollider": {
         "enabled": true,
-        "isTrigger": false,
+        "isTrigger": true,
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
@@ -383,8 +408,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -413,8 +440,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -443,8 +472,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -473,8 +504,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -503,8 +536,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -533,8 +568,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -563,8 +600,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -593,8 +632,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -623,8 +664,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
-        "material": "Assets/Material/Main_Map.mat",
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -653,8 +696,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Goomba/Goomba.mesh",
-        "material": "Assets/Material/Goomba.mat",
+        "model": "Assets/Meshes/Goomba/Goomba.mesh",
+        "materials": [
+            "Assets/Material/Goomba.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -711,8 +756,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -747,8 +794,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -783,8 +832,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -819,8 +870,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -849,9 +902,11 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
-        "material": "Assets/Material.002.mat",
-        "castShadow": false 
+        "model": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "materials": [
+            "Assets/Material/Material.002.mat"
+        ],
+        "castShadow": true
       },
       "Rigidbody": {
         "enabled": true,
@@ -875,6 +930,13 @@
         "bounciness": 0.000000,
         "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
         "type": "Convex"
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/StarCollectSound.mp3",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
       }
     }
   },
@@ -894,8 +956,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -930,8 +994,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -966,8 +1032,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1002,8 +1070,10 @@
       },
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1032,8 +1102,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1047,7 +1119,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1069,8 +1141,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1084,7 +1158,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1106,8 +1180,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
-        "material": "Assets/Material/Red.mat",
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -1121,7 +1197,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.000000,2.000000,0.100000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1137,15 +1213,30 @@
     "id": 4768,
     "parent": null,
     "name": "Bowser",
-    "position": [2.157224,4.363768,-2.606731],
+    "position": [47.923370,2.543560,-2.606731],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [0.050000,0.050000,0.050000],
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh",
-        "material": "Assets/Material/Bowser.mat",
-        "castShadow": false 
+        "model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh",
+        "materials": [
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat"
+        ],
+        "castShadow": true
       },
       "Rigidbody": {
         "enabled": true,
@@ -1186,7 +1277,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/bowser ssbw 3d/bowser ssbw 3d.mesh"
+		"model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh"
       }
     }
   },
@@ -1214,6 +1305,29 @@
       "ScriptComponent": {
         "enabled": true,
         "script": "Assets/Scripts/Tail.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 5198,
+    "parent": null,
+    "name": "Music",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets\Sounds\Level1music.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/MusicPlayer.lua",
         "vars": {
         }
       }

@@ -89,6 +89,7 @@ float ShadowCalculation(DirLight light)
 {
 	int shadowIdx = int(light.param.y);
 	int cascadeIdx = SelectCascade(shadowIdx);
+	int localCascade = cascadeIdx - shadowIdx;
     vec3 projCoords = FragPosLightSpace[cascadeIdx].xyz / FragPosLightSpace[cascadeIdx].w;
     projCoords = projCoords * 0.5 + 0.5;
 
@@ -99,10 +100,6 @@ float ShadowCalculation(DirLight light)
     float currentDepth  = projCoords.z;
 
 	float texelSize = 1.0 / textureSize(shadowMap[cascadeIdx], 0).x;
-	
-	// fix acne
-	float bias = 0;
-	//bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
 
 	// make shadow smoother
 	float shadow = 0.0;
@@ -111,12 +108,10 @@ float ShadowCalculation(DirLight light)
 	    for(int y = -1; y <= 1; ++y)
 	    {
 	        float pcfDepth = texture(shadowMap[cascadeIdx], projCoords.xy + vec2(x, y) * texelSize).r; 
-	        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+	        shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
 	    }    
 	}
 	shadow /= 9.0;
-
-	//shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     return shadow;
 }

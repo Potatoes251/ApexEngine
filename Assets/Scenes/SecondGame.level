@@ -27,8 +27,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Player.mat",
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -67,7 +69,7 @@
       "Animator": {
         "enabled": true,
         "fps": 30.000000,
-		"Mesh": "Assets/Meshes/Player/Player.mesh"
+		"model": "Assets/Meshes/Player/Player.mesh"
       },
       "ScriptComponent": {
         "enabled": true,
@@ -93,8 +95,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/Cube/Cube.mesh",
-        "material": "Assets/Material/Green.mat",
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Green.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -122,8 +126,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "ApexAssets/Meshes/cube/cube.mesh",
-        "material": "Assets/Material/DarkGreen.mat",
+        "model": "ApexAssets/Meshes/cube/cube.mesh",
+        "materials": [
+            "Assets/Material/DarkGreen.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -151,8 +157,40 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Stage0/Stage0.mesh",
-        "material": "Assets/Meshes/beach-battle-arenastage/textures/arena_center.mat",
+        "model": "Assets/Meshes/Stage0/Stage0.mesh",
+        "materials": [
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_center.mat",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_sand.mat",
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_center.mat"
+        ],
         "castShadow": true
       },
       "Rigidbody": {
@@ -197,8 +235,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/Player/Player.mesh",
-        "material": "Assets/Material/Player.mat",
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
         "castShadow": true
       }
     }

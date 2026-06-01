@@ -58,6 +58,7 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 {
 	m_rhi->BindFrameBuffer(m_shadowFbo, SHADOW_WIDTH, SHADOW_HEIGHT);
 	m_rhi->SetDepthTest(true);
+	m_rhi->SetCullingFace(true);
 
 	RenderPassInfo pass;
 	pass.m_flags |= ShadowPass;

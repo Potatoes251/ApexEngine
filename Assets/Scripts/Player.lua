@@ -5,10 +5,12 @@ local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
 local Vector3 = require("Vector3")
+local AudioComponent = require("AudioComp")
+local HUDMenu = require("HUDMenu")
 
 local KILL_Z             = -50.0   -- Y below this triggers death
 local RESPAWN_INVINCIBLE = 2.5     -- seconds of invincibility after respawn
-local DEATH_FREEZE_TIME  = 0.8     -- brief freeze before respawn teleport
+local DEATH_FREEZE_TIME  = 5.2     -- brief freeze before respawn teleport
 local DAMAGE_COOLDOWN    = 0.5     -- min seconds between damage hits
 
 local Player = Object:New()
@@ -19,6 +21,7 @@ function Player:New()
     cc = nil, 
     cam = nil, 
     anim = nil,
+    audio = nil,
     hud = nil,
     -- variables
     coinCount = 0,
@@ -48,6 +51,7 @@ function Player:Start()
     self.cc = CharacterController.Get(self)
     self.anim = Animator.Get(self)
     self.cam = Camera.Get(self)
+    self.audio = AudioComponent.Get(self)
     self:AddTag("Player")
     self.anim:StartBlend("Idle", "Walking", 0, true)
 
@@ -60,6 +64,9 @@ function Player:Start()
     self.spawnX = pos.x
     self.spawnY = pos.y
     self.spawnZ = pos.z
+
+    self.menu = HUDMenu:New()
+    self.menu:Start()
 end
 
 function Player:FixedUpdate(dt)
@@ -111,6 +118,10 @@ function Player:FixedUpdate(dt)
 
     self.wasInWater = isInWater
     self.wasGrounded = isGrounded
+
+    if Input.IsKeyDown("I") then
+        self.menu:Open()
+    end
 end
 
 function Player:ProcessInput(dt)
@@ -183,6 +194,10 @@ function Player:Die()
     self.isDead     = true
     self.deathTimer = DEATH_FREEZE_TIME
  
+    if self.audio ~= nil then
+        self.audio:Play()
+    end
+
     if self.hud ~= nil then
         HUD_SetVisible(self.hud.hud, "DeadPanel", true)
     end

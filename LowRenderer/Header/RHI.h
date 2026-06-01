@@ -54,6 +54,8 @@ namespace Apex::Rendering
 		virtual void SetClearColor(float r, float g, float b, float a = 1.f) = 0;
 		virtual void Clear() = 0;
 		virtual void ClearDepth() = 0;
+		virtual void SetCullingFace(bool front) = 0;
+		virtual void SetCullingEnabled(bool enabled) = 0;
 
 		// VAO
 		virtual RHIVAOHandle	CreateVAO() = 0;

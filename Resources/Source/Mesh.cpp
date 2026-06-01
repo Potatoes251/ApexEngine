@@ -4,31 +4,67 @@
 
 using namespace Apex::Rendering;
 
-Mesh::~Mesh()
+Mesh::Mesh(Mesh&& other) noexcept
+    : m_vertices(std::move(other.m_vertices)),
+    m_indices(std::move(other.m_indices)),
+    m_VAO(other.m_VAO),
+    m_VAOSkinned(other.m_VAOSkinned),
+    m_VBO(other.m_VBO),
+    m_EBO(other.m_EBO),
+    m_indexCount(other.m_indexCount),
+    m_vertexCount(other.m_vertexCount),
+    m_name(std::move(other.m_name)),
+    m_inputVertices(std::move(other.m_inputVertices)),
+    m_outputVertices(std::move(other.m_outputVertices))
 {
-	if (m_VAO) m_rhi->DeleteVAO(m_VAO);
-	if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
+    // Null out the source's GPU handles so its destructor doesn't delete them
+    other.m_VAO = 0;
+    other.m_VAOSkinned = 0;
+    other.m_VBO = 0;
+    other.m_EBO = 0;
+    other.m_indexCount = 0;
+    other.m_vertexCount = 0;
 }
 
-void Mesh::LoadFromFile()
+Mesh& Mesh::operator=(Mesh&& other) noexcept
 {
-	MeshLoader loader;
-	loader.Load(m_path, *this);
+    if (this == &other)
+        return *this;
 
-	if (m_vertices.empty())
-	{
-		SetState(ResourceState::Failed);
-		return;
-	}
+    // Release current GPU resources before overwriting
+    if (m_VAO) m_rhi->DeleteVAO(m_VAO);
+    if (m_VAOSkinned) m_rhi->DeleteVAO(m_VAOSkinned);
+    if (m_EBO) m_rhi->DeleteBuffer(m_EBO);    
+    if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
 
-	for (const auto& v : m_vertices)
-	{
-		for (int c = 0; c < 3; ++c)
-		{
-			if (v.m_position[c] < m_boundsMin[c]) m_boundsMin[c] = v.m_position[c];
-			if (v.m_position[c] > m_boundsMax[c]) m_boundsMax[c] = v.m_position[c];
-		}
-	}
+    m_vertices = std::move(other.m_vertices);
+    m_indices = std::move(other.m_indices);
+    m_name = std::move(other.m_name);
+    m_inputVertices = std::move(other.m_inputVertices);
+    m_outputVertices = std::move(other.m_outputVertices);
+    m_VAO = other.m_VAO;
+    m_VAOSkinned = other.m_VAOSkinned;
+    m_VBO = other.m_VBO;
+    m_EBO = other.m_EBO;
+    m_indexCount = other.m_indexCount;
+    m_vertexCount = other.m_vertexCount;
+
+    other.m_VAO = 0;
+    other.m_VAOSkinned = 0;
+    other.m_VBO = 0;
+    other.m_EBO = 0;
+    other.m_indexCount = 0;
+    other.m_vertexCount = 0;
+
+    return *this;
+}
+
+Mesh::~Mesh()
+{
+    if (m_VAO) m_rhi->DeleteVAO(m_VAO);
+    if (m_VAOSkinned) m_rhi->DeleteVAO(m_VAOSkinned);
+    if (m_EBO) m_rhi->DeleteBuffer(m_EBO);
+    if (m_VBO) m_rhi->DeleteBuffer(m_VBO);
 }
 
 void Mesh::UploadToGpu()
@@ -60,7 +96,7 @@ void Mesh::ClearVertices()
 	m_indices.shrink_to_fit();
 }
 
-void Mesh::BindForCompute()
+void Mesh::BindForCompute() const
 {
 	m_inputVertices.Bind();
 	m_outputVertices.Bind();
@@ -76,15 +112,4 @@ void Mesh::DrawLine() const
 {
 	m_rhi->BindVAO(m_VAO);
 	m_rhi->DrawLineArrays(m_vertexCount);
-}
-
-int Mesh::GetAnimationIdx(std::string const& name)
-{
-	for (int i = 0; i < m_animations.size(); i++)
-	{
-		Animation const& anim = m_animations[i];
-		if (anim.m_name == name)
-			return i;
-	}
-	return -1;
 }
