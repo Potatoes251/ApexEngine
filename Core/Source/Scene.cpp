@@ -257,6 +257,8 @@ namespace Apex::Rendering
 
 		passInfo.m_shader->Use();
 
+		if (passInfo.m_rhi) passInfo.m_rhi->SetCullingFace(false);
+
 		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())
 		{
 			renderer->Render(passInfo);
@@ -267,6 +269,7 @@ namespace Apex::Rendering
 			view[3][0] = 0;
 			view[3][1] = 0;
 			view[3][2] = 0;
+			if (passInfo.m_rhi) passInfo.m_rhi->SetCullingFace(true);
 			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
 		}
 		if (passInfo.m_flags & ShowCollider)

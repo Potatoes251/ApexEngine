@@ -193,7 +193,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjection();
+	m_rhi->SetCullingEnabled(false);
 	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true, m_localGizmo);
+	m_rhi->SetCullingEnabled(true);
 
 	int id = GetMousePixelInFbo(mousePos[0], mousePos[1]);
 
@@ -231,6 +233,7 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
+	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
@@ -386,6 +389,7 @@ void Viewport::Draw()
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_target = m_fbo;
+	pass.m_rhi = m_rhi;
 	if (m_showColliders)
 		pass.m_flags |= ShowCollider;
 
@@ -429,7 +433,9 @@ void Viewport::Draw()
 
 		LibMath::Matrix4 view = m_camera.GetViewMatrix();
 		LibMath::Matrix4 proj = m_camera.GetProjection();
+		m_rhi->SetCullingEnabled(false);
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
+		m_rhi->SetCullingEnabled(true);
 	}
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
 

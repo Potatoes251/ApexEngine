@@ -251,6 +251,8 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
 
+    if (!pass.m_rhi) pass.m_rhi = m_rhi.get();
+
     m_scene->ComputePass(pass);
 
     if (pass.m_flags & PerformCompute)

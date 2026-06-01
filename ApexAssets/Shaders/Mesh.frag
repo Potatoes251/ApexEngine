@@ -89,6 +89,7 @@ float ShadowCalculation(DirLight light)
 {
 	int shadowIdx = int(light.param.y);
 	int cascadeIdx = SelectCascade(shadowIdx);
+	int localCascade = cascadeIdx - shadowIdx;
     vec3 projCoords = FragPosLightSpace[cascadeIdx].xyz / FragPosLightSpace[cascadeIdx].w;
     projCoords = projCoords * 0.5 + 0.5;
 
@@ -102,7 +103,11 @@ float ShadowCalculation(DirLight light)
 	
 	// fix acne
 	float bias = 0;
-	//bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
+	//bias = max(0.0005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.0005);
+	float cascadeScale = cascadeSplits[localCascade] / 2048;
+	float baseBias = 0.0005 * cascadeScale;
+    float NdotL        = dot(normalize(vNormal), -light.dir.xyz);
+    //bias         = max(baseBias * (1.0 - NdotL), baseBias);
 
 	// make shadow smoother
 	float shadow = 0.0;

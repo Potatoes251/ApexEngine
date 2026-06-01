@@ -101,7 +101,7 @@
         "enabled": true,
         "model": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
         "materials": [
-            ""
+            "Assets/Material/Painting.mat"
         ],
         "castShadow": true
       },
@@ -164,34 +164,20 @@
     "id": 37,
     "parent": null,
     "name": "Cube",
-    "position": [6.517717,1.297301,21.513992],
+    "position": [6.517717,-1.226404,17.245037],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
-      "MeshRenderer": {
+      "AudioComponent": {
         "enabled": true,
-        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
-        "materials": [
-            "Assets/Material/Default.mat"
-        ],
-        "castShadow": true
-      },
-      "Rigidbody": {
-        "enabled": true,
-        "type": "Static",
-        "mass": 1.000000
-      },
-      "BoxCollider": {
-        "enabled": true,
-        "isTrigger": true,
-        "staticFriction": 0.500000,
-        "dynamicFriction": 0.500000,
-        "bounciness": 0.000000,
-        "halfExtents": [0.500000,0.500000,0.500000]
+        "sound": "Assets/Sounds/calmPiano.ogg",
+        "volume": 1.000000,
+        "channel": 1,
+        "loop": 1
       },
       "ScriptComponent": {
         "enabled": true,
-        "script": "Assets/Scripts/Coin.lua",
+        "script": "Assets/Scripts/MusicPlayer.lua",
         "vars": {
         }
       }
