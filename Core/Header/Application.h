@@ -141,7 +141,7 @@ namespace Apex
 
         static inline Application* m_instance = nullptr;
         
-        static constexpr const char* m_saveFilePath = "Saves/slot_0.sav";
+        static constexpr const char* m_buildScenesPath = "Assets/build_scenes.json";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";
         static constexpr const char* m_lastSceneKey = "LastScene=";
 	};

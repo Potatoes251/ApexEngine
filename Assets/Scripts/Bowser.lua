@@ -40,4 +40,11 @@ function Bowser:TakeDamage()
     end
 end
 
+function Bowser:OnTriggerEnter(col)
+    local obj = col:GetOwner()
+    if obj:HasTag("Projectile") then
+        self:TakeDamage()
+    end
+end
+
 return Bowser

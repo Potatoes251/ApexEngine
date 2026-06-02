@@ -94,6 +94,22 @@ namespace Apex::Rendering
 		return ptr;
 	}
 
+	Object* Scene::CreateObjectRunTime()
+	{
+		auto obj = std::make_unique<Object>();
+		Object* ptr = obj.get();
+
+		obj->SetOnChangedCallback([this]()
+			{
+				MarkDirty();
+			});
+
+		m_createdObjects.push_back(std::move(obj));
+		MarkDirty();
+
+		return ptr;
+	}
+
 	const std::vector<std::unique_ptr<Object>>& Scene::GetObjects() const
 	{
 		return m_objects;
@@ -217,6 +233,12 @@ namespace Apex::Rendering
 		{
 			obj->LateUpdate(deltaTime_s);
 		}
+
+		for (auto& obj : m_createdObjects)
+		{
+			m_objects.push_back(std::move(obj));
+		}
+		m_createdObjects.clear();
 
 		DestroyPendingObject();
 	}

@@ -5,6 +5,8 @@ local Camera = require("Camera")
 local Object = require("Object")
 local Input = require("Input")
 local Vector3 = require("Vector3")
+local SpawnManager = require("SpawnManager")
+local Projectile = require("Projectile")
 local AudioComponent = require("AudioComp")
 local HUDMenu = require("HUDMenu")
 
@@ -39,6 +41,7 @@ function Player:New()
     deathTimer = 0,
     invincibleTimer = 0,
     damageTimer = 0,
+    canFire = false,
 
     coinCount = 0,
 
@@ -160,6 +163,12 @@ function Player:ProcessInput(dt)
     local targetBlend = math.min(speed / walkSpeed, 1)
     
     self.smoothBlend = self.smoothBlend + (targetBlend - self.smoothBlend) * math.min(5.0 * dt, 1)
+
+    local canFireDown = Input.IsKeyDown("Q")
+    if canFireDown and not self.canFire then
+        self:ThrowFireball()
+    end
+    self.canFire = canFireDown
 end
 
 function Player:TakeDamage(amount)
@@ -195,6 +204,7 @@ function Player:Die()
     self.deathTimer = DEATH_FREEZE_TIME
  
     if self.audio ~= nil then
+        self.audio:SetSound("Assets/Sounds/marioDeathSound.ogg")
         self.audio:Play()
     end
 
@@ -207,9 +217,16 @@ function Player:DoRespawn()
     self.isDead          = false
     self.invincibleTimer = RESPAWN_INVINCIBLE
     self.damageTimer     = 0
+
+    local checkpoint = SpawnManager:GetSpawnPoint()
+    local targetSpawn = Vector3.New(self.spawnX, self.spawnY, self.spawnZ)
  
+    if checkpoint ~= nil then
+        targetSpawn = checkpoint
+    end
+
     -- Teleport back to spawn
-    self.cc:Teleport(Vector3.New(self.spawnX, self.spawnY, self.spawnZ))
+    self.cc:Teleport(targetSpawn)
  
     if self.anim then
         self.anim:StartBlend("Idle", "Walking", 0, true)
@@ -233,6 +250,8 @@ end
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Coin") then
+        self.audio:SetSound("Assets/Sounds/Coin.wav")
+        self.audio:Play()
         self.coinCount = self.coinCount + 1
         if self.hud ~= nil then
             self:UpdateScore(1)
@@ -260,6 +279,31 @@ function Player:SetSpawnPoint(x, y, z)
     self.spawnX = x
     self.spawnY = y
     self.spawnZ = z
+end
+
+function Player:ThrowFireball()
+    local fireball = Object.CreateSphere("Fireball_Projectile")
+
+    self.audio:SetSound("Assets/Sounds/Fireball.wav")
+    self.audio:Play()
+    
+    if fireball then
+        fireball:AddTag("Projectile")
+
+        local pos = self:GetPosition() + self:GetForward() * 1.25 + Vector3.New(0, 0.5, 0)
+        fireball:SetPosition(pos.x, pos.y, pos.z)
+        fireball:SetScale(0.5, 0.5, 0.5)
+        
+        fireball:AddComponent("RigidBodyComponent") 
+        fireball:AddComponent("MeshColliderComponent") 
+        fireball:AddComponent("ProjectileComponent")
+
+        local projLogic = Projectile.Get(fireball)
+        if projLogic then
+            local launchDir = self:GetForward()
+            projLogic:Setup(launchDir, 20.0, 3.0)
+        end
+    end
 end
  
 function Player:GetCoinCount()  return self.coinCount  end

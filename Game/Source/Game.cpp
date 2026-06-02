@@ -18,6 +18,8 @@ bool Game::Init()
 
     m_app = std::make_unique<Apex::Application>(m_window.get(), m_gui.get());
 
+    m_saveSlotCount = m_app->GetSaveManager()->ListSlots().size();
+
     m_app->SetSaveRequestedCallback([this]()
         {
             SaveGame();
@@ -33,10 +35,10 @@ bool Game::Init()
     }
 
     // Try to resume from slot 0; fall back to a fresh scene start
-    auto optData = m_app->GetSaveManager()->Load(0);
-    if (optData)
+    auto slots = m_app->GetSaveManager()->ListSlots();
+    if (!slots.empty())
     {
-        LoadSavedGame(0);
+        LoadSavedGame(); // load the lowest-index existing slot
     }
     else
     {
@@ -97,10 +99,10 @@ void Game::Render()
 
 void Apex::Game::Game::SaveGame()
 {
-    SaveCurrentGame(0);
+    SaveCurrentGame();
 }
 
-void Apex::Game::Game::SaveCurrentGame(int slot)
+void Apex::Game::Game::SaveCurrentGame()
 {
     using namespace Apex::Save;
 
@@ -118,7 +120,7 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
 
     // Start from the existing save data so we don't lose previously collected items
     SaveData data;
-    auto existingData = m_app->GetSaveManager()->Load(slot);
+    auto existingData = m_app->GetSaveManager()->Load(m_currentSaveSlot);
     if (existingData)
         data = *existingData;
 
@@ -155,17 +157,17 @@ void Apex::Game::Game::SaveCurrentGame(int slot)
             data.collectedItems.push_back({ id });
     }
 
-    m_app->GetSaveManager()->Save(data, slot);
+    m_app->GetSaveManager()->Save(data, m_currentSaveSlot);
 }
 
-void Apex::Game::Game::LoadSavedGame(int slot)
+void Apex::Game::Game::LoadSavedGame()
 {
     using namespace Apex::Save;
 
-    auto optData = m_app->GetSaveManager()->Load(slot);
+    auto optData = m_app->GetSaveManager()->Load(m_currentSaveSlot);
     if (!optData)
     {
-        LOG_WARNING("LoadSavedGame – no data in slot {}", slot);
+        LOG_WARNING("LoadSavedGame – no data in slot {}", m_currentSaveSlot);
         return;
     }
 
@@ -210,5 +212,34 @@ void Apex::Game::Game::LoadSavedGame(int slot)
         break;
     }
 
-    LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", slot, data.scenePath);
+    LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", m_currentSaveSlot, data.scenePath);
+}
+
+void Apex::Game::Game::DeleteSaveSlot(int slot)
+{
+    auto* saveManager = m_app->GetSaveManager();
+
+    // 1. Delete the targeted slot file
+    std::filesystem::remove(saveManager->BuildPath(slot));
+
+    // 2. Shift all slots after it down by 1
+    for (int i = slot + 1; i < m_saveSlotCount; ++i)
+    {
+        std::filesystem::path oldPath = saveManager->BuildPath(i);
+        std::filesystem::path newPath = saveManager->BuildPath(i - 1);
+
+        if (std::filesystem::exists(oldPath))
+        {
+            std::filesystem::rename(oldPath, newPath);
+        }
+    }
+
+    // 3. Update slot count
+    --m_saveSlotCount;
+
+    // 4. Fix current slot if needed
+    if (m_currentSaveSlot == slot)
+        m_currentSaveSlot = -1;
+    else if (m_currentSaveSlot > slot)
+        --m_currentSaveSlot;
 }

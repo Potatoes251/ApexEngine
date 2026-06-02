@@ -29,7 +29,6 @@ namespace Apex::Rendering
         MeshRenderer& operator=(MeshRenderer const&) = default;
 
         void SetModel(Apex::Resources::ResourceHandle<Model> model);
-        void SetMaterial(Apex::Resources::ResourceHandle<Material> shader);
         void SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials);
         void SetCastShadow(bool enabled) { m_castShadow = enabled; }
 
@@ -48,7 +47,6 @@ namespace Apex::Rendering
 
         void SetSkinned(bool enabled) { m_useSkinnedVAO = enabled; }
     private:
-        Resources::ResourceHandle<Material> m_material;
         Resources::ResourceHandle<Model> m_model;
         std::vector<Resources::ResourceHandle<Material>> m_materials;
         bool m_castShadow = true;
