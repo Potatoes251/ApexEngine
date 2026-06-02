@@ -111,10 +111,6 @@ int Apex::Comp::Lua_AddComponent(lua_State* L)
 			physicSystem->CreateActor(comp, *obj->GetComponent<Apex::Physic::RigidBodyComponent>());
 		}
     }
-    else if (strcmp(compType, "MeshRendererComponent") == 0)
-    {
-        obj->AddComponent<Apex::Rendering::MeshRenderer>(resourceManager);
-    }
 	else if (strcmp(compType, "AudioComponent") == 0)
 	{
 		obj->AddComponent<Apex::Audio::AudioComponent>(nullptr);
