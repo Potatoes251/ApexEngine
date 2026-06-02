@@ -204,6 +204,7 @@ function Player:Die()
     self.deathTimer = DEATH_FREEZE_TIME
  
     if self.audio ~= nil then
+        self.audio:SetSound("Assets/Sounds/marioDeathSound.ogg")
         self.audio:Play()
     end
 
@@ -249,6 +250,8 @@ end
 function Player:OnTriggerEnter(col)
     local obj = col:GetOwner()
     if obj:HasTag("Coin") then
+        self.audio:SetSound("Assets/Sounds/Coin.wav")
+        self.audio:Play()
         self.coinCount = self.coinCount + 1
         if self.hud ~= nil then
             self:UpdateScore(1)
@@ -280,6 +283,9 @@ end
 
 function Player:ThrowFireball()
     local fireball = Object.CreateSphere("Fireball_Projectile")
+
+    self.audio:SetSound("Assets/Sounds/Fireball.wav")
+    self.audio:Play()
     
     if fireball then
         fireball:AddTag("Projectile")

@@ -312,7 +312,7 @@ void ComponentsViewer::Draw()
 		}
 
 		m_gui->Separator();
-		if (m_gui->MenuItem("Sound"))
+		if (m_gui->MenuItem("Audio Component"))
 		{
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)

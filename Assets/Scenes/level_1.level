@@ -126,7 +126,7 @@
       },
       "AudioComponent": {
         "enabled": true,
-        "sound": "Assets\Sounds\marioDeathSound.ogg",
+        "sound": "",
         "volume": 1.000000,
         "channel": 0,
         "loop": 0
@@ -154,7 +154,7 @@
         "enabled": true,
         "model": "ApexAssets/Meshes/cube/cube.mesh",
         "materials": [
-            "Assets/Material/Default.mat"
+            "Assets/Material/Water.mat"
         ],
         "castShadow": false 
       }
@@ -902,8 +902,10 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/Meshes/star/star.mesh",
-        "material": "Assets/Material/star.mat",
+        "model": "Assets/Meshes/star/star.mesh",
+        "materials": [
+            "Assets/Material/star.mat"
+        ],
         "castShadow": false 
       },
       "Rigidbody": {
@@ -1320,8 +1322,8 @@
         "enabled": true,
         "sound": "Assets\Sounds\Level1music.ogg",
         "volume": 1.000000,
-        "channel": 0,
-        "loop": 0
+        "channel": 1,
+        "loop": 1
       },
       "ScriptComponent": {
         "enabled": true,

@@ -64,7 +64,7 @@ void Hierarchy::Draw()
             auto mesh = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Cube/Cube.mesh");
             comp.SetModel(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
-            comp.SetMaterial(mat);
+            comp.SetMaterials({ mat });
             obj->SetName("Cube");
 
             SelectObject(obj);
@@ -78,7 +78,7 @@ void Hierarchy::Draw()
             auto mesh = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Sphere/Sphere.mesh");
             comp.SetModel(mesh);
             auto mat = m_resourceManager->CreateAsync<Material>("Assets/Material/Default.mat");
-            comp.SetMaterial(mat);
+            comp.SetMaterials({ mat });
             obj->SetName("Sphere");
 
             SelectObject(obj);

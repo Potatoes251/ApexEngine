@@ -162,10 +162,10 @@ int Apex::Data::Lua_CreateCube(lua_State* L)
 
     auto& comp = newObj->AddComponent<Apex::Rendering::MeshRenderer>();
 
-    auto mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Cube/Cube.mesh");
-    comp.SetMesh(mesh);
+    auto mesh = resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Cube/Cube.mesh");
+    comp.SetModel(mesh);
     auto mat = resourceManager->CreateAsync<Apex::Rendering::Material>("Assets/Material/Default.mat");
-    comp.SetMaterial(mat);
+    comp.SetMaterials({ mat });
 
     if (name)
     {
@@ -198,10 +198,10 @@ int Apex::Data::Lua_CreateSphere(lua_State* L)
 	Apex::Resources::ResourceManager* resourceManager = app ? app->GetResourceManager() : nullptr;
 
 	auto& comp = newObj->AddComponent<Apex::Rendering::MeshRenderer>();
-	auto mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
-	comp.SetMesh(mesh);
+	auto mesh = resourceManager->CreateAsync<Model>("ApexAssets/Meshes/Sphere/Sphere.mesh");
+	comp.SetModel(mesh);
 	auto mat = resourceManager->CreateAsync<Apex::Rendering::Material>("Assets/Material/Default.mat");
-	comp.SetMaterial(mat);
+    comp.SetMaterials({ mat });
 
 	if (name)
 	{

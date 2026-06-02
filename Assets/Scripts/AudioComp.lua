@@ -34,4 +34,24 @@ function AudioComponent:PlayAt(pos)
     return AudioComp_PlayAt_Internal(self, pos)
 end
 
+function AudioComponent:Stop()
+    AudioComp_Stop_Internal(self)
+end
+
+function AudioComponent:SetVolume(vol)
+    AudioComp_SetVolume_Internal(self, vol)
+end
+
+function AudioComponent:SetSound(soundName)
+    AudioComp_SetSound_Internal(self, soundName)
+end
+
+function AudioComponent:SetChannel(channel)
+    AudioComp_SetChannel_Internal(self, channel)
+end
+
+function AudioComponent:SetLoop(loop)
+    AudioComp_SetLoop_Internal(self, loop)
+end
+
 return AudioComponent

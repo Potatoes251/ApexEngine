@@ -5,6 +5,7 @@
 #include "Object.h"
 
 #include "ProjectileComponent.h"
+#include "AudioComponent.h"
 #include "RigidBody.h"
 #include "Colliders.h"
 #include "MeshRenderer.h"
@@ -106,7 +107,7 @@ int Apex::Comp::Lua_AddComponent(lua_State* L)
         Apex::Rendering::MeshRenderer* meshRenderer = obj->GetComponent<Apex::Rendering::MeshRenderer>();
 		if (meshRenderer)
 		{
-            auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(meshRenderer->GetMesh(), Apex::Physic::MeshColliderType::Convex, true);
+            auto& comp = obj->AddComponent<Apex::Physic::MeshCollider>(meshRenderer->GetModel(), Apex::Physic::MeshColliderType::Convex, false);
 			physicSystem->CreateActor(comp, *obj->GetComponent<Apex::Physic::RigidBodyComponent>());
 		}
     }
@@ -114,6 +115,10 @@ int Apex::Comp::Lua_AddComponent(lua_State* L)
     {
         obj->AddComponent<Apex::Rendering::MeshRenderer>(resourceManager);
     }
+	else if (strcmp(compType, "AudioComponent") == 0)
+	{
+		obj->AddComponent<Apex::Audio::AudioComponent>(nullptr);
+	}
 
     return 0;
 }
