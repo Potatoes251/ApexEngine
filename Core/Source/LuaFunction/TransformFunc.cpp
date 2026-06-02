@@ -1,10 +1,12 @@
 #include "LuaFunction/TransformFunc.h"
 #include "Object.h"
+#include "Log.h"
 
 namespace Apex::Transform
 {
     void RegisterLua(Scripting::LuaManager& lua)
     {
+		lua.RegisterFunction("GetForward_Internal", Lua_GetForward);
         lua.RegisterFunction("GetPosition_Internal", Lua_GetPosition);
         lua.RegisterFunction("GetRotation_Internal", Lua_GetRotation);
         lua.RegisterFunction("GetScale_Internal", Lua_GetScale);
@@ -12,6 +14,21 @@ namespace Apex::Transform
         lua.RegisterFunction("SetPosition_Internal", Lua_SetPosition);
         lua.RegisterFunction("SetScale_Internal", Lua_SetScale);
     }
+
+	int Lua_GetForward(lua_State* L)
+	{
+		lua_getfield(L, 1, "__object");
+		auto* obj = static_cast<Apex::Data::Object*>(lua_touserdata(L, -1));
+		lua_pop(L, 1);
+
+		if (!obj) return 0;
+
+		auto forward = obj->GetLocalTransform().getForward();
+		lua_pushnumber(L, forward[0]);
+		lua_pushnumber(L, forward[1]);
+		lua_pushnumber(L, forward[2]);
+		return 3; // Returning 3 values: x, y, z
+	}
 
     int Lua_GetPosition(lua_State* L)
     {

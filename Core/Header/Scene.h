@@ -38,6 +38,7 @@ namespace Apex::Rendering
 		Lighting::VisibleLights GetVisibleLights() const;
 
 		Data::Object* CreateObject();
+		Data::Object* CreateObjectRunTime();
 		const std::vector<std::unique_ptr<Data::Object>>& GetObjects() const;
 		void AddObject(std::unique_ptr<Data::Object> obj);
 		void DestroyObject(size_t objId);
@@ -83,6 +84,7 @@ namespace Apex::Rendering
 		Pathfinding::WaypointGraph m_graph;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
+		std::vector<std::unique_ptr<Apex::Data::Object>> m_createdObjects;
 		Resources::ResourceHandle<Shader> m_shader;
 		std::unique_ptr<Skybox> m_skybox;
 

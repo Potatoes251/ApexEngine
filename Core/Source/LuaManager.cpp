@@ -76,6 +76,7 @@ void Apex::Scripting::LuaManager::RegisterFunctions()
     Apex::Transform::RegisterLua(*this);
     Apex::Controller::RegisterLua(*this);
     Apex::Perception::RegisterLua(*this);
+	Apex::Gameplay::RegisterLua(*this);
 }
 
 int Apex::Scripting::LuaManager::CreateScriptInstance(int scriptRef)

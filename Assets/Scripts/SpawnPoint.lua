@@ -1,4 +1,6 @@
 local SpawnManager = require("SpawnManager")
+local Object = require("Object")
+
 local SpawnPoint = {}
 SpawnPoint.__index = SpawnPoint
 
@@ -10,9 +12,9 @@ end
 function SpawnPoint:OnTriggerEnter(col)	
 	local obj = col:GetOwner()
 	if obj:HasTag('Player') then
-		local NewSpawnPoint = GetPosition_Internal(self)
+		local NewSpawnPoint = self:GetPosition()
 		if NewSpawnPoint ~= nil then
-			SpawnManager:SetSpawnPoint(NewSpawnPoint)	--Get the position
+			SpawnManager:SetSpawnPoint(NewSpawnPoint)
 		end
 	end
 end

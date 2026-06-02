@@ -16,6 +16,7 @@
 #include "ThirdPersonCamera.h"
 #include "FirstPersonCamera.h"
 #include "CharacterController.h"
+#include "ProjectileComponent.h"
 
 #include "Application.h"
 #include "Log.h"
@@ -225,6 +226,10 @@ void SceneLoader::ParseComponents(Object* obj, SerialParser& parser)
         {
             ParseWaypointComponent(obj, parser);
         }
+		else if (compName == "ProjectileComponent")
+		{
+			ParseProjectileComponent(obj, parser);
+		}
 
         parser.Expect('}'); // component end
 
@@ -789,6 +794,31 @@ void SceneLoader::ParseWaypointComponent(Data::Object* obj, SerialParser& parser
     comp.SetEnabled(enabled);
     comp.m_genHeight = genHeight;
     comp.m_spacing = spacing;
+}
+
+void Apex::Serialization::SceneLoader::ParseProjectileComponent(Data::Object* obj, SerialParser& parser)
+{
+	parser.ParseString();
+	parser.Expect(':');
+	bool enabled = parser.ParseBool();
+	parser.Expect(',');
+
+    parser.ParseString();
+	parser.Expect(':');
+    LibMath::Vector3 direction = parser.ParseVector3();
+    parser.Expect(',');
+
+    parser.ParseString();
+    parser.Expect(':');
+	float speed = parser.ParseFloat();
+	parser.Expect(',');
+
+	parser.ParseString();
+	parser.Expect(':');
+	float lifetime = parser.ParseFloat();
+
+	auto& comp = obj->AddComponent<Gameplay::ProjectileComponent>(direction, speed, lifetime);
+	comp.SetEnabled(enabled);
 }
 
 void SceneLoader::ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser)

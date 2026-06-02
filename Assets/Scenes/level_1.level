@@ -849,8 +849,8 @@
     "components": {
       "MeshRenderer": {
         "enabled": true,
-        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
-        "material": "Assets/Material.002.mat",
+        "mesh": "Assets/Meshes/star/star.mesh",
+        "material": "Assets/Material/star.mat",
         "castShadow": false 
       },
       "Rigidbody": {
@@ -873,7 +873,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "mesh": "Assets/estrellitaaa/estrellitaaa.mesh",
+        "mesh": "Assets/Meshes/star/star.mesh",
         "type": "Convex"
       }
     }
@@ -1047,7 +1047,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1084,7 +1084,7 @@
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,
         "bounciness": 0.000000,
-        "halfExtents": [2.500000, 2.500000, 2.500000]
+        "halfExtents": [2.500000,2.500000,2.500000]
       },
       "ScriptComponent": {
         "enabled": true,
@@ -1117,7 +1117,6 @@
       },
       "BoxCollider": {
         "enabled": true,
-        "halfExtents": [2.000000, 2.000000, 0.100000],
         "isTrigger": true,
         "staticFriction": 0.500000,
         "dynamicFriction": 0.500000,

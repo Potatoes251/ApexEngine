@@ -1,8 +1,10 @@
 #include "LuaFunction/ObjectLua.h"
+#include "LuaFunction/ComponentLua.h"
 
 #include "Object.h"
 
 #include "Application.h"
+
 
 using namespace Apex::Data;
 
@@ -15,6 +17,9 @@ void Apex::Data::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("Destroy_Internal", Apex::Data::Lua_Destroy);
 	lua.RegisterFunction("GetName_Internal", Apex::Data::Lua_GetName);
     lua.RegisterFunction("DestroyCollectible_Internal", Apex::Data::Lua_DestroyCollectible);
+	lua.RegisterFunction("CreateObject_Internal", Apex::Data::Lua_CreateObject);
+    lua.RegisterFunction("CreateCube_Internal", Apex::Data::Lua_CreateCube);
+	lua.RegisterFunction("CreateSphere_Internal", Apex::Data::Lua_CreateSphere);
 }
 
 
@@ -105,4 +110,105 @@ int Apex::Data::Lua_DestroyCollectible(lua_State* L)
     obj->Destroy();
 
     return 0;
+}
+
+int Apex::Data::Lua_CreateObject(lua_State* L)
+{
+    const char* name = lua_gettop(L) >= 1 ? luaL_checkstring(L, 1) : nullptr;
+
+    Application* app = Application::Get();
+    if (!app || !app->GetScene())
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Object* newObj = app->GetScene()->CreateObjectRunTime();
+    if (!newObj)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    if (name)
+    {
+        newObj->SetName(name); 
+    }
+
+    Apex::Comp::PushLuaObject(L, newObj);
+
+    return 1; 
+}
+
+int Apex::Data::Lua_CreateCube(lua_State* L)
+{
+    const char* name = lua_gettop(L) >= 1 ? luaL_checkstring(L, 1) : nullptr;
+
+    Application* app = Application::Get();
+    if (!app || !app->GetScene())
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Object* newObj = app->GetScene()->CreateObjectRunTime();
+    if (!newObj)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Apex::Resources::ResourceManager* resourceManager = app ? app->GetResourceManager() : nullptr;
+
+    auto& comp = newObj->AddComponent<Apex::Rendering::MeshRenderer>();
+
+    auto mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Cube/Cube.mesh");
+    comp.SetMesh(mesh);
+    auto mat = resourceManager->CreateAsync<Apex::Rendering::Material>("Assets/Material/Default.mat");
+    comp.SetMaterial(mat);
+
+    if (name)
+    {
+        newObj->SetName(name);
+    }
+
+    Apex::Comp::PushLuaObject(L, newObj);
+
+    return 1;
+}
+
+int Apex::Data::Lua_CreateSphere(lua_State* L)
+{
+	const char* name = lua_gettop(L) >= 1 ? luaL_checkstring(L, 1) : nullptr;
+
+	Application* app = Application::Get();
+	if (!app || !app->GetScene())
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Object* newObj = app->GetScene()->CreateObjectRunTime();
+	if (!newObj)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Apex::Resources::ResourceManager* resourceManager = app ? app->GetResourceManager() : nullptr;
+
+	auto& comp = newObj->AddComponent<Apex::Rendering::MeshRenderer>();
+	auto mesh = resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
+	comp.SetMesh(mesh);
+	auto mat = resourceManager->CreateAsync<Apex::Rendering::Material>("Assets/Material/Default.mat");
+	comp.SetMaterial(mat);
+
+	if (name)
+	{
+		newObj->SetName(name);
+	}
+
+	Apex::Comp::PushLuaObject(L, newObj);
+
+	return 1;
 }

@@ -1,12 +1,19 @@
 #include "ProjectileComponent.h"
+
 #include "Object.h"
 #include "Physic.h"
+#include "Log.h"
 
 using namespace Apex::Gameplay;
 
-void ProjectileComponent::Setup(Physic::PhysicSystem* physic, LibMath::Vector3 const& direction, float speed, float lifeSpan)
+Apex::Gameplay::ProjectileComponent::ProjectileComponent(LibMath::Vector3 const& direction, float speed, float lifeSpan) :
+	m_direction(direction.normalized()), m_speed(speed), m_lifeSpan(lifeSpan) {}
+
+Apex::Gameplay::ProjectileComponent::ProjectileComponent(ProjectileComponent const& other) : 
+	m_direction(other.m_direction), m_speed(other.m_speed), m_lifeSpan(other.m_lifeSpan), m_age(other.m_age) {}
+
+void Apex::Gameplay::ProjectileComponent::Setup(LibMath::Vector3 const& direction, float speed, float lifeSpan)
 {
-    m_physic = physic;
     m_direction = direction.normalized();
     m_speed = speed;
     m_lifeSpan = lifeSpan;
@@ -22,22 +29,13 @@ void ProjectileComponent::OnFixedUpdate(float fixedDeltaTime_s)
     }
 
     LibMath::Vector3 displacement = m_direction * m_speed * fixedDeltaTime_s;
-    float distance = displacement.magnitude();
+    LibMath::Vector3 newPosition = GetOwner()->GetLocalTransform().getPosition() + displacement;
+    GetOwner()->SetLocalPosition(newPosition);
+}
 
-    if (distance > 0.0001f && m_physic)
-    {
-        Physic::HitResult hit;
-        // Sweeping via Raycast to check for solid obstacles
-        if (m_physic->Raycast(hit, GetOwner()->GetLocalTransform().getPosition(), m_direction, distance))
-        {
-            // Trigger damage context or bounce here if necessary
-            GetOwner()->Destroy();
-            return;
-        }
-    }
-
-    // Move Forward
-    GetOwner()->SetLocalPosition(GetOwner()->GetLocalTransform().getPosition() + displacement);
+void Apex::Gameplay::ProjectileComponent::OnTriggerEnter(Physic::Collider* other)
+{
+	GetOwner()->Destroy();
 }
 
 void ProjectileComponent::Serialize(std::ostream& out) const 
