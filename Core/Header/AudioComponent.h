@@ -22,6 +22,10 @@ namespace Apex::Audio
 		void Play3D();
 		void PlayAt(LibMath::Vector3 pos);
 		void Stop();
+		void SetSound(const std::string& name) { m_sound = name; }
+		void SetVolume(float volume) { m_volume = volume; }
+		void SetChannel(int channel) { m_channel = channel; }
+		void SetLoop(bool loop) { m_loop = loop; }
 
 		void Serialize(std::ostream& out) const override;
 

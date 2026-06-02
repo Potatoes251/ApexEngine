@@ -144,10 +144,12 @@ void CharacterController::Serialize(std::ostream& out) const
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
-	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "Speed", ExposedVar::Float, &m_speed },
-			{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
-			{ "Density", ExposedVar::Float, &m_density },
+	return 
+	{	
+		{ "Distance to ground", ExposedVar::Float, &m_groundedDistance },
+		{ "Speed", ExposedVar::Float, &m_speed },
+		{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
+		{ "Density", ExposedVar::Float, &m_density },
 	};
 }
 
@@ -157,6 +159,7 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 	for (HitResult const& hit : hits)
 	{
 		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+		if (!obj) continue;
 		Collider* collider = dynamic_cast<Collider*>(obj->GetComponent(hit.m_colliderId));
 		RigidBodyComponent* body = dynamic_cast<RigidBodyComponent*>(obj->GetComponent(hit.m_bodyId));
 		if (body != m_body

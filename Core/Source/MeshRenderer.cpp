@@ -19,11 +19,6 @@ void MeshRenderer::SetModel(Apex::Resources::ResourceHandle<Model> model)
     m_model = model;
 }
 
-void MeshRenderer::SetMaterial(ResourceHandle<Material> material)
-{
-    m_material = material;
-}
-
 void MeshRenderer::SetMaterials(std::vector<Apex::Resources::ResourceHandle<Material>> materials)
 {
     m_materials = materials;

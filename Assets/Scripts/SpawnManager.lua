@@ -14,4 +14,8 @@ function SpawnManager:SetSpawnPoint(newSpawnPoint)
     end
 end
 
+function SpawnManager:GetSpawnPoint()
+    return self.spawnPosition
+end
+
 return SpawnManager

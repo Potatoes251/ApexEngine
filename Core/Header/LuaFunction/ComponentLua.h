@@ -31,6 +31,7 @@ namespace Apex::Comp
 
 	int Lua_GetOwner(lua_State* L);
 	int Lua_SetEnabled(lua_State* L);
+	int Lua_AddComponent(lua_State* L);
 }
 
 

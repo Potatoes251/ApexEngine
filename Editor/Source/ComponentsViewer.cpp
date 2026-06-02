@@ -22,6 +22,7 @@
 
 #include "ViewComponent.h"
 #include "Waypoint.h"
+#include "ProjectileComponent.h"
 
 #include "Command/SetExposedVarCommand.h"
 #include "Command/SetScriptVarCommand.h"
@@ -51,6 +52,7 @@ static constexpr uint32_t COL_AUDIO = 0xFFCE93D8; // purple
 static constexpr uint32_t COL_VIEW = 0xFF64B5F6; // blue
 static constexpr uint32_t COL_CONTROLLER = 0xFFE57373; // soft red
 static constexpr uint32_t COL_PATHFINDING = 0xFF26C6DA;	// teal
+static constexpr uint32_t COL_PROJECTILE = 0xFF4DB6AC; // turquoise
 static constexpr uint32_t COL_DEFAULT = 0xFF90A4AE; // grey
 
 ComponentsViewer::ComponentsViewer(IGUI* gui, Scene* scene,
@@ -77,6 +79,7 @@ static uint32_t AccentForType(const char* typeName)
 	if (type.find("Audio") != std::string::npos) return COL_AUDIO;
 	if (type.find("View") != std::string::npos) return COL_VIEW;
 	if (type.find("Nav") != std::string::npos) return COL_PATHFINDING;
+	if (type.find("Projectile") != std::string::npos) return COL_PROJECTILE;
 	return COL_DEFAULT;
 }
 
@@ -308,7 +311,8 @@ void ComponentsViewer::Draw()
 				}));
 		}
 
-		if (m_gui->MenuItem("Sound"))
+		m_gui->Separator();
+		if (m_gui->MenuItem("Audio Component"))
 		{
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
@@ -334,6 +338,16 @@ void ComponentsViewer::Draw()
 				[this](Object* obj)
 				{
 					Component* comp = &obj->AddComponent<Pathfinding::NavGenVolume>();
+					return comp->GetId();
+				}));
+		}
+
+		if (m_gui->MenuItem("ProjectileComponent"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Component* comp = &obj->AddComponent<Gameplay::ProjectileComponent>();
 					return comp->GetId();
 				}));
 		}
