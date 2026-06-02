@@ -6,9 +6,11 @@
 #include <bit>
 
 #include "Mesh.h"
+#include "Model.h"
 
-// to be increased after each modifictation to the bin loader
-constexpr int CURRENT_VERSION = 6;
+// to be increased after each modification to the bin loader
+constexpr uint32_t LEGACY_VERSION = 6;
+constexpr uint32_t CURRENT_VERSION = 7;
 
 struct MeshHeader
 {
@@ -27,8 +29,9 @@ public:
 	BinLoader& operator=(BinLoader const&) = delete;
 	~BinLoader() = default;
 
-	bool Load(std::string path, Mesh& mesh_out, std::string& sourcePath_out);
-	bool Export(std::string path, Mesh const& mesh);
+	bool Load(std::string const& path, Model& model);
+	bool LoadLegacy(std::ifstream& file, Model& model);
+	bool Export(std::string const& path, Model const& model);
 
 	static void WriteString(std::ofstream& file, std::string const& str);
 	static void Write32Bits(std::ofstream& file, uint32_t const& val);
@@ -48,20 +51,23 @@ public:
 private:
 	// read
 
-	bool ReadHeader(std::ifstream& file, std::string& sourcePath_out);
+	bool ReadHeader(std::ifstream& file, uint32_t& version);
 	bool ReadVerticesIndices(Mesh& mesh, std::ifstream& file);
-	bool ReadBoneInfo(Mesh& mesh, std::ifstream& file);
-	bool ReadBoneMap(Mesh& mesh, std::ifstream& file);
-	bool ReadAnimation(Mesh& mesh, std::filesystem::path const& path);
+	bool ReadSkeleton(Model& model, std::ifstream& file);
+	bool ReadBoneMap(Model& model, std::ifstream& file);
+	bool ReadAnimation(Model& model, std::filesystem::path const& path);
 	bool ReadSingleBoneAnimation(SingleBoneAnimation& sba, std::ifstream& file);
 
+	void LoadAnimations(std::string const& path, Model& model);
 	// write
 
 	void WriteHeader(std::ofstream& file);
+	void WriteSkeleton(Model const& model, std::ofstream& file);
+	void WriteBoneMap(Model const& model, std::ofstream& file);
+
 	void WriteVerticesIndices(Mesh const& mesh, std::ofstream& file);
-	void WriteBoneInfo(Mesh const& mesh, std::ofstream& file);
-	void WriteBoneMap(Mesh const& mesh, std::ofstream& file);
-	bool WriteAnimations(Mesh const& mesh, std::filesystem::path const& path);
+	
+	bool WriteAnimations(Model const& model, std::filesystem::path const& path);
 	void WriteSingleBoneAnimation(SingleBoneAnimation const& sba, std::ofstream& file);
 };
 

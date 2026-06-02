@@ -23,11 +23,24 @@ class IResource
 public:
     IResource() = default;
     IResource(const std::string& path) : m_path(path) {}
+    IResource(IResource&& other) noexcept : m_path(other.m_path), m_rhi(other.m_rhi), m_rm(other.m_rm)
+    {
+        m_state.store(other.m_state);
+        other.m_state = ResourceState::Unloaded;
+    }
+    IResource& operator=(IResource&& other) noexcept   
+    {
+        m_path = other.m_path;
+        m_rhi = other.m_rhi;
+        m_rm = other.m_rm;
+        m_state.store(other.m_state);
+        other.m_state = ResourceState::Unloaded;
+    }
     virtual ~IResource() = default;
     // load on the CPU
-    virtual void LoadFromFile() {}
+    virtual void LoadFromFile() { m_state = ResourceState::Loaded; }
     // Perform GPU part
-    virtual void UploadToGpu() {}
+    virtual void UploadToGpu() { m_state = ResourceState::Uploaded; }
 
     const std::string& GetPath() const { return m_path; }
 

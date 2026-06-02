@@ -1,19 +1,18 @@
 #ifndef SKYBOX
 #define SKYBOX
 
-#include "RHI.h"
-
-#include "Cubemap.h"
-#include "Mesh.h"
-#include "Shader.h"
 #include "ResourceHandle.h"
+
+class Shader;
+class Model;
+class Cubemap;
 
 namespace Apex::Rendering
 {
 	class Skybox
 	{
 	public:
-		Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHandle<Mesh> mesh, 
+		Skybox(Resources::ResourceHandle<Cubemap> cubemap, Resources::ResourceHandle<Model> model, 
 			Resources::ResourceHandle<Shader> shader);
 		Skybox(Skybox const&);
 		Skybox& operator=(Skybox const&);
@@ -21,7 +20,7 @@ namespace Apex::Rendering
 		void Render(LibMath::Matrix4 viewProj);
 	private:
 		Resources::ResourceHandle<Cubemap> m_cubemap;
-		Resources::ResourceHandle<Mesh> m_mesh;
+		Resources::ResourceHandle<Model> m_model;
 		Resources::ResourceHandle<Shader> m_shader;
 	};
 }

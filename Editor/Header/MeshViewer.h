@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-class Mesh;
+class Model;
 
 namespace Fs = std::filesystem;
 using namespace Apex::UserInterface;
@@ -116,7 +116,7 @@ namespace Apex::Editor
         uintmax_t   m_fileBytes = 0;
 
         // Mesh resource 
-        Apex::Resources::ResourceHandle<Mesh> m_mesh;
+        Apex::Resources::ResourceHandle<Model> m_model;
 
         // Offscreen FBO 
         Apex::Rendering::RHIFrameBufferHandle m_fbo = 0;

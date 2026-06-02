@@ -61,12 +61,11 @@ namespace Apex::Serialization
 		void ParseProjectileComponent(Data::Object* obj, SerialParser& parser);
 
         void ParseScriptVar(Scripting::ScriptComponent& script, SerialParser& parser);
-        void ParseMaterials(SerialParser& parser);
 
         Apex::Physic::BodyType StringToBodyType(const std::string& str);
         Apex::Physic::MeshColliderType StringToMeshColliderType(const std::string& str);
 
-        Apex::Resources::ResourceHandle<Mesh> GetMeshHandle(const std::string& path);
+        Apex::Resources::ResourceHandle<Model> GetModelHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Texture> GetTextureHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Rendering::Material> GetMaterialHandle(const std::string& path);
         Apex::Resources::ResourceHandle<Shader> GetShaderHandle(const std::string& path);

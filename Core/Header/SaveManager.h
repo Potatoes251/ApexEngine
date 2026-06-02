@@ -78,8 +78,9 @@ namespace Apex::Save
         // Forward-declare Scene so callers don't need to include Scene.h here.
         void ApplyToScene(const SaveData& data, Rendering::Scene* scene) const;
 
-    private:
         std::string BuildPath(uint32_t slotIndex) const;
+
+    private:
 
         // --- Serialization helpers (hand-written JSON) ------------------
         static std::string Serialize(const SaveData& data);

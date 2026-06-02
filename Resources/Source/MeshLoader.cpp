@@ -2,32 +2,23 @@
 
 #include "BinLoader.h"
 #include "MeshImporter.h"
+#include "Model.h"
 
 #include "Log.H"
 
 #include <filesystem>
 #include <fstream>
+#include <cassert>
 
-void MeshLoader::Load(std::string path, Mesh& mesh)
+void MeshLoader::Load(std::string const& path, Model& model)
 {
     std::filesystem::path filePath(path);
     std::string extension = filePath.extension().string();
 
     BinLoader binLoader;
-    std::string sourcePath;
-    if (IsBinFile(extension) && binLoader.Load(path, mesh, sourcePath)) return;
+    if (IsBinFile(extension) && binLoader.Load(path, model)) return;
 
     LOG_WARNING_CAT("Resource", "Failed to load {} from binary", path);
-
-    if (!sourcePath.empty()) path = sourcePath;
-
-    MeshImporter importer;
-    std::vector<MaterialImportData> mats;
-    if (importer.Import(path, mesh, mats))
-    {
-        binLoader.Export(path, mesh);
-        return;
-    }
 }
 
 static void WriteMaterialFile(const std::filesystem::path& fbxPath, const MaterialImportData& mat)
@@ -76,16 +67,16 @@ static void WriteMaterialFile(const std::filesystem::path& fbxPath, const Materi
     LOG_INFO_CAT("Resource", "Generated material file: {}", matPath.generic_string());
 }
 
-void MeshLoader::Import(std::string path)
+void MeshLoader::Import(std::string const& path)
 {
-    Mesh mesh;
+    Model model;
     std::vector<MaterialImportData> materials;
     MeshImporter importer;
 
-    if (importer.Import(path, mesh, materials))
+    if (importer.Import(path, model, materials))
     {
         BinLoader binLoader;
-        binLoader.Export(path, mesh);
+        binLoader.Export(path, model);
 
         // Write a .mat file for each extracted material
         std::filesystem::path fbxPath(path);
@@ -93,8 +84,7 @@ void MeshLoader::Import(std::string path)
             WriteMaterialFile(fbxPath, mat);
 
         if (!materials.empty())
-            LOG_INFO_CAT("Resource", "Extracted {} material(s) from {}",
-                materials.size(), path);
+            LOG_INFO_CAT("Resource", "Extracted {} material(s) from {}", materials.size(), path);
     }
 }
 

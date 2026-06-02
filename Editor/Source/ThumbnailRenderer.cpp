@@ -1,5 +1,6 @@
 #include "ThumbnailRenderer.h"
 #include "Mesh.h"
+#include "Model.h"
 #include "Texture.h"
 
 #include "LibMath/Angle.h"
@@ -14,7 +15,7 @@ namespace Apex::Editor
         : m_rhi(rhi), m_resourceManager(resourceManager)
     {
         BuildShaders();
-        m_sphereMesh = m_resourceManager.CreateAsync<Mesh>("ApexAssets/Meshes/Sphere/Sphere.mesh");
+        m_sphereMesh = m_resourceManager.CreateAsync<Model>("ApexAssets/Meshes/Sphere/Sphere.mesh");
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -34,7 +35,7 @@ namespace Apex::Editor
         auto loadIt = m_loadingHandles.find(key);
         if (loadIt == m_loadingHandles.end())
         {
-            m_loadingHandles[key] = m_resourceManager.CreateAsync<Mesh>(key);
+            m_loadingHandles[key] = m_resourceManager.CreateAsync<Model>(key);
             return 0;
         }
 
@@ -57,7 +58,7 @@ namespace Apex::Editor
         return (it != m_cache.end()) ? it->second : 0;
     }
 
-    uint32_t ThumbnailRenderer::Render(const Fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle)
+    uint32_t ThumbnailRenderer::Render(const Fs::path& path, Apex::Resources::ResourceHandle<Model> handle)
     {
         if (m_shader == 0 || !handle.IsReady()) return 0;
 
@@ -115,7 +116,10 @@ namespace Apex::Editor
         m_rhi.SetUniformFloat(m_shader, "uExposure", 1.f);
         m_rhi.SetUniformVec3(m_shader, "uBaseColor", { 0.75f, 0.75f, 0.75f });
 
-        handle->Draw();
+        for (Mesh const& mesh : handle->GetMeshes())
+        {
+            mesh.Draw();
+        }
 
         m_rhi.UnBindFrameBuffer();
 
@@ -124,8 +128,8 @@ namespace Apex::Editor
 
     uint32_t ThumbnailRenderer::RenderMaterialPreview(Apex::Resources::ResourceHandle<Apex::Rendering::Material> mat)
     {
-        if (m_matShader == 0 || !m_sphereMesh.IsReady()) return 0;
-        if (!mat.IsValid()) return 0;
+        if (!m_sphereMesh.IsReady() || m_sphereMesh->GetMeshes().size() == 0) return 0;
+        if (m_matShader == 0 || !mat.IsValid()) return 0;
 
         Apex::Rendering::RHITextureHandle colorTex = 0;
         Apex::Rendering::RHIFrameBufferHandle fbo =
@@ -171,7 +175,7 @@ namespace Apex::Editor
         LibMath::Vector3 tint = mat->GetTint();
         m_rhi.SetUniformVec3(m_matShader, "uTint", tint);
 
-        m_sphereMesh->Draw();
+        m_sphereMesh->GetMeshes()[0].Draw();
         m_rhi.UnBindFrameBuffer();
 
         return m_rhi.GetTexture(colorTex);

@@ -4,7 +4,8 @@
 
 #include <irrKlang.h>   // the only file that touches irrKlang
 #include <iostream>
-
+#include <fstream>
+#include <cassert>
 namespace Apex::Audio
 {
     // ── Factory ─────────────────────────────────────────────────────

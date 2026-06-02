@@ -7,7 +7,7 @@
 #include "IDrawList.h"
 #include "EditorIcon.h"
 #include "ThumbnailRenderer.h"
-#include "Mesh.h"
+#include "Model.h"
 #include "Texture.h"
 #include "Material.h"
 #include "Command/SetAssetCommand.h"
@@ -177,7 +177,7 @@ namespace Apex::Resources
         // Lowercase for case-insensitive comparison
         for (auto& c : ext) c = static_cast<char>(::tolower(c));
 
-        if constexpr (std::is_same_v<T, Mesh>)
+        if constexpr (std::is_same_v<T, Model>)
             return ext == ".mesh";
         if constexpr (std::is_same_v<T, Rendering::Material>)
             return ext == ".mat";

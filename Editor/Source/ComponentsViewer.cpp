@@ -177,7 +177,7 @@ void ComponentsViewer::Draw()
 					[this](Object* obj)
 					{
 						Collider& comp = obj->AddComponent<MeshCollider>(
-							m_selectedObj->GetComponent<MeshRenderer>()->GetMesh(),
+							m_selectedObj->GetComponent<MeshRenderer>()->GetModel(),
 							MeshColliderType::Convex, false);
 
 						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
@@ -306,7 +306,7 @@ void ComponentsViewer::Draw()
 			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
 				[this](Object* obj)
 				{
-					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetMesh());
+					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetModel());
 					return comp->GetId();
 				}));
 		}
@@ -663,7 +663,7 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 			break;
 		}
 		case ExposedVar::Mesh:
-			DrawComponent(var.name, (ResourceHandle<Mesh>*)var.data);
+			DrawComponent(var.name, (ResourceHandle<Model>*)var.data);
 			break;
 		case ExposedVar::Material:
 			DrawComponent(var.name, (ResourceHandle<Material>*)var.data);
@@ -750,7 +750,7 @@ bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
 	return false;
 }
 
-void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Mesh>* mesh)
+void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Model>* mesh)
 {
 	uint32_t thumb = mesh->IsValid() ? ResolveMeshPreview((*mesh)->GetPath()) : 0;
 	DrawAssetPreview(thumb, "Mesh", PREVIEW_SIZE);
@@ -768,7 +768,7 @@ void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, Reso
 void Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, ResourceHandle<Material>* material)
 {
 	uint32_t thumb = material->IsValid() ? ResolveMaterialPreview((*material)->GetPath()) : 0;
-	DrawAssetPreview(thumb, "Material", PREVIEW_SIZE);
+	DrawAssetPreview(thumb, name, PREVIEW_SIZE);
 	m_gui->SameLine(0.f, 6.f);
 
 	m_gui->BeginChildPanel(std::string("##matcol") + name, 0.f, PREVIEW_SIZE, false);

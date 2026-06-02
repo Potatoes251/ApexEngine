@@ -503,7 +503,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 				ToPxVec(scale),						// scaling
 				physx::PxQuat(physx::PxIdentity)   // rotation
 			);
-			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetMesh()), meshScale);
+			physx::PxTriangleMeshGeometry geometry(CookTriangleMesh(mesh.GetModel()), meshScale);
 			physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
 
 			shape->userData = (void*)&mesh;
@@ -518,7 +518,7 @@ physx::PxShape* PhysicSystem::CreateShapeMesh(MeshCollider const& mesh, RigidBod
 			physx::PxQuat(physx::PxIdentity)    // rotation
 		);
 
-		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetMesh()), meshScale);
+		physx::PxConvexMeshGeometry geometry(CookConvexMesh(mesh.GetModel()), meshScale);
 
 		physx::PxShape* shape = m_pxCtx.m_physics->createShape(geometry, *GetMaterial(mesh));
 		
@@ -712,17 +712,32 @@ void PhysicSystem::DrawColliders()
 	}
 }
 
-physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh)
+physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceHandle<Model> const& model)
 {
+	std::vector<physx::PxVec3> allVertices;
+	std::vector<physx::PxU32>  allIndices;
+
+	physx::PxU32 vertexOffset = 0;
+
+	for (Mesh const& mesh : model->GetMeshes())
+	{
+		for (Vertex const& vertex : mesh.m_vertices)
+			allVertices.push_back(ToPxVec(vertex.m_position));
+		for (int32_t index : mesh.m_indices)
+			allIndices.push_back(index + vertexOffset);
+
+		vertexOffset += static_cast<physx::PxU32>(mesh.m_vertices.size());
+	}
+
 	physx::PxTriangleMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
-	meshDesc.points.stride = sizeof(::Vertex);
-	meshDesc.points.data = mesh->m_vertices.data();
+	meshDesc.points.count = vertexOffset;
+	meshDesc.points.stride = sizeof(physx::PxVec3);
+	meshDesc.points.data = allVertices.data();
 
-	meshDesc.triangles.count = static_cast<physx::PxU32>(mesh->GetVertexCount() / 3);
-	meshDesc.triangles.stride = sizeof(int) * 3;
-	meshDesc.triangles.data = mesh->m_indices.data();
+	meshDesc.triangles.count = static_cast<physx::PxU32>(allIndices.size() / 3);
+	meshDesc.triangles.stride = sizeof(physx::PxU32) * 3;
+	meshDesc.triangles.data = allIndices.data();
 
 	physx::PxTolerancesScale scale;
 	physx::PxCookingParams params(scale);
@@ -740,14 +755,21 @@ physx::PxTriangleMesh* PhysicSystem::CookTriangleMesh(Apex::Resources::ResourceH
 	return m_pxCtx.m_physics->createTriangleMesh(readBuffer);
 }
 
-physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandle<Mesh> const& mesh)
+physx::PxConvexMesh* PhysicSystem::CookConvexMesh(Apex::Resources::ResourceHandle<Model> const& model)
 {
+	std::vector<physx::PxVec3> allVertices;
+
+	for (Mesh const& mesh : model->GetMeshes())
+	{
+		for (Vertex const& vertex : mesh.m_vertices)
+			allVertices.push_back(ToPxVec(vertex.m_position));
+	}
+
 	physx::PxConvexMeshDesc meshDesc;
 
-	meshDesc.points.count = static_cast<physx::PxU32>(mesh->GetVertexCount());
-	meshDesc.points.stride = sizeof(::Vertex);
-	meshDesc.points.data = mesh->m_vertices.data();
-
+	meshDesc.points.count = static_cast<physx::PxU32>(allVertices.size());
+	meshDesc.points.stride = sizeof(physx::PxVec3);
+	meshDesc.points.data = allVertices.data();
 	meshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
 
 	physx::PxTolerancesScale scale;

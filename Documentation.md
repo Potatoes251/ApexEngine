@@ -51,10 +51,8 @@
 ### Engine bonus
 
 * Shadow Mapping
-* Normal Mapping
 * Skybox
 * Resources visualizer
-* Menu to change visual theme of the editor
 
 
 

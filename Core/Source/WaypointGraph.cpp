@@ -57,7 +57,7 @@ void WaypointGraph::Load(std::string const& path)
 
 	if (size == 0)
 	{
-		LOG_ERROR_CAT("Resource", "File is empty : {}", path);
+		LOG_ERROR_CAT("Pathfinding", "File is empty : {}", path);
 		return;
 	}
 	

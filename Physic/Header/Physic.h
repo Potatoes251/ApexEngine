@@ -7,6 +7,7 @@
 #include "LibMath/Quaternion.h"
 
 #include "Mesh.h"
+#include "Model.h"
 #include "ResourceHandle.h"
 
 #include "Collider.h"
@@ -51,8 +52,6 @@ namespace Apex::Physic
 
 		void			CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 		void			RemoveActor(RigidBodyComponent const& rigidbody);
-
-		const			std::unordered_map<std::string, Resources::ResourceEntry>&	GetMaterials() const;
 
 		bool			Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
 		bool			Raycast(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
@@ -121,8 +120,8 @@ namespace Apex::Physic
 		void	SyncFromPhysx();
 		void	ApplyForce(physx::PxRigidDynamic* body, Force force);
 
-		physx::PxTriangleMesh*	CookTriangleMesh(Resources::ResourceHandle<Mesh> const& mesh);
-		physx::PxConvexMesh*	CookConvexMesh(Resources::ResourceHandle<Mesh> const& mesh);
+		physx::PxTriangleMesh*	CookTriangleMesh(Resources::ResourceHandle<Model> const& model);
+		physx::PxConvexMesh*	CookConvexMesh(Resources::ResourceHandle<Model> const& model);
 
 		static physx::PxVec3			ToPxVec(LibMath::Vector3 vec) { return { vec[0], vec[1], vec[2] }; }
 		static LibMath::Vector3			ToLibVec(physx::PxVec3 vec) { return { vec.x, vec.y, vec.z }; }

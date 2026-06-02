@@ -669,6 +669,63 @@ namespace Apex::Editor
         }
     }
 
+    void Editor::CollectHudDependencies(
+        const std::string& scriptPath,
+        std::unordered_set<std::string>& outHuds)
+    {
+        std::ifstream file(Fs::current_path() / scriptPath);
+
+        if (!file.is_open())
+            return;
+
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            auto commentPos = line.find("--");
+            if (commentPos != std::string::npos)
+                line = line.substr(0, commentPos);
+
+            size_t pos = 0;
+
+            while ((pos = line.find("CreateHUD", pos)) != std::string::npos)
+            {
+                pos += strlen("CreateHUD");
+
+                while (pos < line.size() && std::isspace(line[pos]))
+                    ++pos;
+
+                if (pos >= line.size() || line[pos] != '(')
+                    continue;
+
+                ++pos;
+
+                while (pos < line.size() && std::isspace(line[pos]))
+                    ++pos;
+
+                if (pos >= line.size())
+                    continue;
+
+                if (line[pos] != '"' && line[pos] != '\'')
+                    continue;
+
+                char quote = line[pos++];
+
+                size_t start = pos;
+
+                while (pos < line.size() && line[pos] != quote)
+                    ++pos;
+
+                if (pos >= line.size())
+                    continue;
+
+                std::string hudName = line.substr(start, pos - start);
+
+                outHuds.insert("Assets/HUD/" + hudName + ".hud");
+            }
+        }
+    }
+
     void Editor::CollectAssetsFromMats(const std::string& matPath,
         std::unordered_set<std::string>& outAssets)
     {
@@ -853,9 +910,6 @@ namespace Apex::Editor
         // these are never referenced in scene files so must be listed explicitly.
         static const char* s_engineAssets[] =
         {
-            // DebugRenderer (InitRendering)
-            "ApexAssets/Shaders/LineVert.glsl",
-            "ApexAssets/Shaders/LineFrag.glsl",
             // Shadow system (InitLighting)
             "ApexAssets/Shaders/DirShadowVert.glsl",
             "ApexAssets/Shaders/DirShadowFrag.glsl",
@@ -872,9 +926,7 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/pz.png",
             "ApexAssets/Textures/Skybox/nz.png",
             // Skybox mesh
-            "ApexAssets/Meshes/cube.mesh",
-            "Assets/HUD/GameHUD.hud",
-            "Assets/HUD/Fight.hud",
+            "ApexAssets/Meshes/cube/cube.mesh",
         };
 
         for (const char* assetPath : s_engineAssets)
@@ -899,23 +951,6 @@ namespace Apex::Editor
             fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
         }
 
-        // Default save file
-        if (!scenePaths.empty())
-        {
-            fs::path savePath = outputDir / "Saves/slot_0.sav";
-
-            fs::create_directories(savePath.parent_path(), ec);
-
-            std::ofstream saveFile(savePath);
-
-            if (saveFile.is_open())
-            {
-                saveFile << "{\n";
-                saveFile << "    \"scene\": \"" << scenePaths[0] << "\"\n";
-                saveFile << "}\n";
-            }
-        }
-
         // Collect all asset paths referenced by the selected scenes
         // by parsing their JSON directly — no dependency on what
         // the editor happened to load in this session.
@@ -924,6 +959,56 @@ namespace Apex::Editor
 
         for (const auto& scenePath : scenePaths)
             CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+
+        std::unordered_set<std::string> hudDeps;
+
+        for (const auto& assetPath : assetsToCopy)
+        {
+            if (assetPath.ends_with(".lua"))
+                CollectHudDependencies(assetPath, hudDeps);
+        }
+
+        assetsToCopy.merge(hudDeps);
+
+        fs::path hudDir = fs::current_path() / "Assets/HUD";
+
+        if (fs::exists(hudDir))
+        {
+            for (const auto& entry : fs::recursive_directory_iterator(hudDir))
+            {
+                if (!entry.is_regular_file())
+                    continue;
+
+                const auto& path = entry.path();
+
+                if (path.extension() == ".hud")
+                {
+                    std::ifstream file(path);
+
+                    std::string line;
+
+                    while (std::getline(file, line))
+                    {
+                        size_t texPos = line.find("\"texture\"");
+                        if (texPos == std::string::npos)
+                            continue;
+
+                        size_t firstQuote = line.find('"', texPos + 9);
+                        if (firstQuote == std::string::npos)
+                            continue;
+
+                        size_t secondQuote = line.find('"', firstQuote + 1);
+                        if (secondQuote == std::string::npos)
+                            continue;
+
+                        std::string texturePath =
+                            line.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+
+                        assetsToCopy.insert(texturePath);
+                    }
+                }
+            }
+        }
 
         for (const auto& matPath : matsToParse)
             assetsToCopy.insert(matPath);
@@ -966,6 +1051,32 @@ namespace Apex::Editor
                         LOG_ERROR_CAT("Build", "Could not copy Animation folder for {}: {}",
                             assetPath.c_str(), ec.message().c_str());
                 }
+            }
+        }
+
+        // Write build_scenes.json into the build output
+        {
+            fs::path jsonDst = outputDir / "Assets/build_scenes.json";
+            fs::create_directories(jsonDst.parent_path(), ec);
+
+            std::ofstream json(jsonDst);
+            if (json.is_open())
+            {
+                json << "{\n    \"scenes\": [\n";
+                for (size_t i = 0; i < scenePaths.size(); ++i)
+                {
+                    std::string path = scenePaths[i];
+                    std::replace(path.begin(), path.end(), '\\', '/');
+                    json << "        \"" << path << "\"";
+                    if (i + 1 < scenePaths.size()) json << ",";
+                    json << "\n";
+                }
+                json << "    ]\n}\n";
+                LOG_INFO_CAT("Build", "build_scenes.json written ({} scene(s))", scenePaths.size());
+            }
+            else
+            {
+                LOG_ERROR_CAT("Build", "Failed to write build_scenes.json");
             }
         }
 

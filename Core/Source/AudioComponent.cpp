@@ -2,11 +2,20 @@
 
 #include "Object.h"
 
+#include "Application.h"
+
 using namespace Apex::Audio;
 
 AudioComponent::~AudioComponent()
 {
 	Stop();
+}
+
+void AudioComponent::OnStart()
+{
+	m_engine = Application::Get()->GetAudio();
+	if (!m_sound.empty())
+		m_engine->Preload(m_sound); // loads into cache, no playback
 }
 
 void AudioComponent::Play()
@@ -30,8 +39,7 @@ void AudioComponent::PlayAt(LibMath::Vector3 pos)
 
 void AudioComponent::Stop()
 {
-	if (m_engine)
-		m_engine->StopSound(m_soundHandle);
+	m_engine->StopSound(m_soundHandle);
 }
 
 void AudioComponent::Serialize(std::ostream& out) const
