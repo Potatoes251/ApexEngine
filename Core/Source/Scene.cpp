@@ -35,6 +35,7 @@ namespace Apex::Rendering
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
 		copy->m_graph = m_graph;
 		copy->m_shader = m_shader;
+		copy->m_name = m_name;
 
 		CloneObjects(copy);
 		ReparentObjects(copy);
@@ -346,13 +347,13 @@ namespace Apex::Rendering
 		MarkDirty();
 	}
 
-	void Scene::Save(const std::string& path)
+	void Scene::Save()
 	{
-		std::ofstream file(path);
+		std::ofstream file(m_name);
 
 		if (!file)
 		{
-			LOG_ERROR("Scene::Save Failed to open file : {}", path);
+			LOG_ERROR("Scene::Save Failed to open file : {}", m_name);
 			return;
 		}
 
@@ -417,7 +418,7 @@ namespace Apex::Rendering
 		file << "]\n";
 		file << "}\n";
 
-		LOG_INFO("Scene saved to {}", path);
+		LOG_INFO("Scene saved to {}", m_name);
 
 		ClearDirty();
 	}

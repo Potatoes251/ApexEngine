@@ -141,7 +141,7 @@ namespace Apex::Editor
 
                 if (key == Input::Key::S && down && InputSystem::Get().IsKeyDown(Key::Ctrl))
                 {
-                    m_app->GetScene()->Save(m_app->GetScenePath());
+                    m_app->GetScene()->Save();
                     m_window->SetWindowTitle("Apex Editor");
                 }
                     
@@ -364,7 +364,7 @@ namespace Apex::Editor
 
             if (m_gui->Button("Save & Exit"))
             {
-                m_app->GetScene()->Save(m_app->GetScenePath());
+                m_app->GetScene()->Save();
                 m_window->SetShouldClose(true);
                 m_gui->CloseCurrentPopup();
             }
@@ -1179,7 +1179,7 @@ namespace Apex::Editor
         const Camera& cam = m_viewport->GetCamera();
         LibMath::Vector3 pos = cam.GetPosition();
 
-        upsert(m_app->GetLastSceneKey(), m_app->GetScenePath(), true);
+        upsert(m_app->GetLastSceneKey(), m_app->GetScene()->GetName(), true);
         upsert("CameraPosition=", "{"
             + std::to_string(pos[0]) + "f, "
             + std::to_string(pos[1]) + "f, "

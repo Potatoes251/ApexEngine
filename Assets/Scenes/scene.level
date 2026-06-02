@@ -93,8 +93,8 @@
     "id": 35,
     "parent": null,
     "name": "Painting",
-    "position": [-5.307778,3.197713,8.522598],
-    "rotation": [0.000000,0.382683,0.000000,0.923880],
+    "position": [-21.299885,3.197718,30.639408],
+    "rotation": [0.000000,0.584263,0.000000,0.811564],
     "scale": [2.213460,2.213460,2.213460],
     "components": {
       "MeshRenderer": {
@@ -103,7 +103,7 @@
         "materials": [
             "Assets/Material/Painting.mat"
         ],
-        "castShadow": true
+        "castShadow": false 
       },
       "Rigidbody": {
         "enabled": true,
@@ -123,7 +123,7 @@
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
           "TargetScene": "Assets/Scenes/level_1.level",
-          "LoadTime": 1.000000
+          "LoadTime": 1.500000
         }
       }
     }
@@ -163,7 +163,7 @@
   {
     "id": 37,
     "parent": null,
-    "name": "Cube",
+    "name": "Music",
     "position": [6.517717,-1.226404,17.245037],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],

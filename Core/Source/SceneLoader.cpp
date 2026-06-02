@@ -33,7 +33,8 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
 {
     std::filesystem::path graphPath{ path };
     scene.GetGraph()->Load(graphPath.replace_extension(".nav").string());
-    
+    scene.SetName(path);
+
     std::ifstream file(path);
     assert(file && "Cannot open scene file");
     

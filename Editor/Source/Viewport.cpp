@@ -542,7 +542,7 @@ void Apex::Editor::Viewport::DrawPlayBar()
 		if (m_gui->Button("GenerateNavGraph"))
 		{
 			Scene* scene = m_editor->GetApp()->GetScene();
-			std::filesystem::path path{ m_editor->GetApp()->GetScenePath() };
+			std::filesystem::path path{ m_editor->GetApp()->GetScene()->GetName()};
 			path.replace_extension(".nav");
 			std::vector<Pathfinding::NavGenVolume*> navVol = scene->GetComponents<Pathfinding::NavGenVolume>();
 			if (!navVol.empty())

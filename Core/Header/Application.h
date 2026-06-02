@@ -73,7 +73,6 @@ namespace Apex
             Rendering::RenderPassInfo pass = Rendering::RenderPassInfo());
 
         Windowing::IWindow*         GetWindow() { return m_window; }
-        std::string                 GetScenePath() { return m_scenePath; }
         Rendering::Scene*           GetScene() { return m_scene.get(); }
         void                        SetScene(std::unique_ptr<Rendering::Scene> scene) { m_scene = std::move(scene); }
         Resources::ResourceManager* GetResourceManager() { return m_resourceManager.get(); }
@@ -95,7 +94,7 @@ namespace Apex
         const std::vector<size_t>& GetCollectedObjects() const;
 
         void    Pause()     { m_running = false; }
-        void    Unpause()   { m_running = true; }
+        void    UnPause()   { m_running = true; }
 
     private:
         void InitLog();
@@ -141,7 +140,6 @@ namespace Apex
         std::string m_targetScene{};
 
         static inline Application* m_instance = nullptr;
-        std::string m_scenePath = "Assets/Scenes/scene.level";
         
         static constexpr const char* m_saveFilePath = "Saves/slot_0.sav";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";
