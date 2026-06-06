@@ -365,3 +365,13 @@ const std::vector<size_t>& Apex::Application::GetCollectedObjects() const
 {
     return m_collectedObjects;
 }
+
+void Apex::Application::Pause() 
+{
+    m_window->SetCursorCaptured(false);
+}
+
+void Apex::Application::Unpause()
+{
+    m_window->SetCursorCaptured(true);
+}

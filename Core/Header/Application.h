@@ -94,8 +94,8 @@ namespace Apex
         void AddCollectedObject(size_t id);
         const std::vector<size_t>& GetCollectedObjects() const;
 
-        void    Pause()     { m_running = false; }
-        void    Unpause()   { m_running = true; }
+        void    Pause();
+        void    Unpause();
 
     private:
         void InitLog();

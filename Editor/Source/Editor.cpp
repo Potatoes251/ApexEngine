@@ -144,7 +144,6 @@ namespace Apex::Editor
                     m_app->GetScene()->Save(m_app->GetScenePath());
                     m_window->SetWindowTitle("Apex Editor");
                 }
-                    
             });
 
         m_window->SetMouseMoveCallback([&](double mouseX, double mouseY)
