@@ -1,7 +1,6 @@
 #include "SerializationParser.h"
 
 using namespace Apex::Serialization;
-using namespace LibMath;
 
 SerialParser::SerialParser(const std::string& text)
     : m_text(text), m_index(0) {}
@@ -100,7 +99,7 @@ bool SerialParser::Match(const std::string& str)
     return false;
 }
 
-Vector3 SerialParser::ParseVector3()
+LibMath::Vector3 SerialParser::ParseVector3()
 {
     Expect('[');
 
@@ -117,7 +116,7 @@ Vector3 SerialParser::ParseVector3()
     return { x,y,z };
 }
 
-Vector4 SerialParser::ParseVector4()
+LibMath::Vector4 SerialParser::ParseVector4()
 {
     Expect('[');
 
@@ -137,7 +136,7 @@ Vector4 SerialParser::ParseVector4()
     return { x,y,z,w };
 }
 
-Quaternion SerialParser::ParseQuaternion()
+LibMath::Quaternion SerialParser::ParseQuaternion()
 {
     Expect('[');
 

@@ -43,7 +43,21 @@ namespace Apex::Save
     class SaveManager
     {
     public:
+        // Returns metadata for every slot file that exists on disk,
+        // sorted by slot index. Useful for a load-game UI.
+        struct SlotInfo
+        {
+            uint32_t    m_slotIndex;
+            std::string m_scenePath;
+            int         m_score;
+        };
+        
         explicit SaveManager(const std::string& saveDir = "Saves/");
+
+        std::vector<SlotInfo> ListSlots() const;
+
+        // Returns the save-directory path this manager was constructed with.
+        const std::string& GetSaveDir() const { return m_saveDir; }
 
         // --- Persistence ------------------------------------------------
 
@@ -55,21 +69,6 @@ namespace Apex::Save
 
         // Delete a save slot file from disk.
         bool Delete(uint32_t slotIndex) const;
-
-        // --- Introspection ----------------------------------------------
-
-        // Returns metadata for every slot file that exists on disk,
-        // sorted by slot index. Useful for a load-game UI.
-        struct SlotInfo
-        {
-            uint32_t    slotIndex;
-            std::string scenePath;
-            int         score;
-        };
-        std::vector<SlotInfo> ListSlots() const;
-
-        // Returns the save-directory path this manager was constructed with.
-        const std::string& GetSaveDir() const { return m_saveDir; }
 
         // --- Scene integration ------------------------------------------
 

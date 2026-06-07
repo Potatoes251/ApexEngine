@@ -3,7 +3,6 @@
 #include "Animator.h"
 #include "Camera.h"
 
-using namespace LibMath;
 using namespace Apex;
 using namespace Apex::Resources;
 using namespace Apex::Rendering;
@@ -92,11 +91,11 @@ void MeshRenderer::Render(RenderPassInfo passInfo)
     if (!m_model.IsReady() ||
         (!m_castShadow && (passInfo.m_flags & ShadowPass)))
         return;
-
+    
     if (m_materials.size() < m_model->GetMeshes().size())
         m_materials.resize(m_model->GetMeshes().size());
 
-    Matrix4 modelMatrix = GetOwner()->GetGlobalTransform();
+    LibMath::Matrix4 modelMatrix = GetOwner()->GetGlobalTransform();
 
     passInfo.m_shader->SetUniform("uModel", modelMatrix);
     if (passInfo.m_camera)

@@ -91,6 +91,12 @@ namespace Apex::Editor
 		Fs::path GetExternalDropDest(float mouseX, float mouseY) const;
 
 	private:
+		struct BreadcrumbRect
+		{
+			Fs::path m_path;
+			float m_x, m_y, m_width, m_height;
+		};
+
 		// Layout helpers 
 		void DrawToolbar();
 		void DrawBreadcrumb();
@@ -165,12 +171,7 @@ namespace Apex::Editor
 		float m_gridX = 0.f, m_gridY = 0.f;
 		float m_gridWidth = 0.f, m_gridHeight = 0.f;
 
-		struct BreadcrumbRect
-		{
-			Fs::path m_path;
-			float m_x, m_y, m_width, m_height;
-		};
-		std::vector<BreadcrumbRect> m_breadcrumbRects;
+		std::vector<BreadcrumbRect> m_breadCrumbRects;
 
 		// Hovered drop destination for external OS drops.
 		// m_hoveredDestThisFrame: set by hovered items each frame, cleared at start of Draw().

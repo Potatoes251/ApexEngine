@@ -19,7 +19,9 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+
 #include <windows.h>
+
 #undef CreateWindow
 #endif
 
@@ -842,17 +844,17 @@ namespace Apex::Editor
 
     void Editor::Build(const std::vector<std::string>& scenePaths)
     {
-        namespace fs = std::filesystem;
+        namespace Fs = std::filesystem;
 
-        fs::path gameExeDir = fs::path(GAME_EXE_DIR);
-        fs::path outputDir = fs::current_path() / "ApexBuild";
+        Fs::path gameExeDir = Fs::path(GAME_EXE_DIR);
+        Fs::path outputDir = Fs::current_path() / "ApexBuild";
 
         std::error_code ec;
 
         // Wipe the previous build entirely so no stale files from
         // old scenes or renamed assets can linger across builds.
-        if (fs::exists(outputDir))
-            fs::remove_all(outputDir, ec);
+        if (Fs::exists(outputDir))
+            Fs::remove_all(outputDir, ec);
 
         if (ec)
         {
@@ -860,42 +862,42 @@ namespace Apex::Editor
             return;
         }
 
-        fs::create_directories(outputDir, ec);
+        Fs::create_directories(outputDir, ec);
 
-        constexpr auto copyOpts = fs::copy_options::overwrite_existing
-            | fs::copy_options::recursive;
+        constexpr auto copyOpts = Fs::copy_options::overwrite_existing
+            | Fs::copy_options::recursive;
 
         // Game exe + DLLs
-        fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
-            fs::copy_options::overwrite_existing, ec);
+        Fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
+            Fs::copy_options::overwrite_existing, ec);
 
-        for (auto& entry : fs::directory_iterator(gameExeDir, ec))
+        for (auto& entry : Fs::directory_iterator(gameExeDir, ec))
         {
             if (entry.path().extension() == ".dll")
-                fs::copy(entry.path(), outputDir / entry.path().filename(),
-                    fs::copy_options::overwrite_existing, ec);
+                Fs::copy(entry.path(), outputDir / entry.path().filename(),
+                    Fs::copy_options::overwrite_existing, ec);
         }
 
-        fs::path src = fs::current_path() / "ApexAssets/Fonts";
-        fs::path dst = outputDir / "ApexAssets/Fonts";
+        Fs::path src = Fs::current_path() / "ApexAssets/Fonts";
+        Fs::path dst = outputDir / "ApexAssets/Fonts";
 
-        fs::create_directories(dst, ec);
+        Fs::create_directories(dst, ec);
 
-        for (auto& entry : fs::recursive_directory_iterator(src))
+        for (auto& entry : Fs::recursive_directory_iterator(src))
         {
             const auto& path = entry.path();
 
-            auto relative = fs::relative(path, src);
+            auto relative = Fs::relative(path, src);
             auto target = dst / relative;
 
             if (entry.is_directory())
             {
-                fs::create_directories(target, ec);
+                Fs::create_directories(target, ec);
             }
             else
             {
-                fs::create_directories(target.parent_path(), ec);
-                fs::copy_file(path, target, fs::copy_options::overwrite_existing, ec);
+                Fs::create_directories(target.parent_path(), ec);
+                Fs::copy_file(path, target, Fs::copy_options::overwrite_existing, ec);
             }
 
             if (ec)
@@ -930,24 +932,24 @@ namespace Apex::Editor
 
         for (const char* assetPath : s_engineAssets)
         {
-            fs::path src = fs::current_path() / assetPath;
-            fs::path dst = outputDir / assetPath;
-            fs::create_directories(dst.parent_path(), ec);
-            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+            Fs::path src = Fs::current_path() / assetPath;
+            Fs::path dst = outputDir / assetPath;
+            Fs::create_directories(dst.parent_path(), ec);
+            Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
         }
 
         // Selected scene files
         for (const auto& scenePath : scenePaths)
         {
-            fs::path src = fs::current_path() / scenePath;
-            fs::path dst = outputDir / scenePath;
-            fs::create_directories(dst.parent_path(), ec);
-            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+            Fs::path src = Fs::current_path() / scenePath;
+            Fs::path dst = outputDir / scenePath;
+            Fs::create_directories(dst.parent_path(), ec);
+            Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
 
-            src = (fs::current_path() / scenePath).replace_extension(".nav");
+            src = (Fs::current_path() / scenePath).replace_extension(".nav");
             dst = (outputDir / scenePath).replace_extension(".nav");
-            fs::create_directories(dst.parent_path(), ec);
-            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+            Fs::create_directories(dst.parent_path(), ec);
+            Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
         }
 
         // Collect all asset paths referenced by the selected scenes
@@ -969,11 +971,11 @@ namespace Apex::Editor
 
         assetsToCopy.merge(hudDeps);
 
-        fs::path hudDir = fs::current_path() / "Assets/HUD";
+        Fs::path hudDir = Fs::current_path() / "Assets/HUD";
 
-        if (fs::exists(hudDir))
+        if (Fs::exists(hudDir))
         {
-            for (const auto& entry : fs::recursive_directory_iterator(hudDir))
+            for (const auto& entry : Fs::recursive_directory_iterator(hudDir))
             {
                 if (!entry.is_regular_file())
                     continue;
@@ -1034,18 +1036,18 @@ namespace Apex::Editor
         // Copy all collected assets
         for (const auto& assetPath : assetsToCopy)
         {
-            fs::path src = fs::current_path() / assetPath;
-            fs::path dst = outputDir / assetPath;
-            fs::create_directories(dst.parent_path(), ec);
-            fs::copy(src, dst, fs::copy_options::overwrite_existing, ec);
+            Fs::path src = Fs::current_path() / assetPath;
+            Fs::path dst = outputDir / assetPath;
+            Fs::create_directories(dst.parent_path(), ec);
+            Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
 
             if (src.extension() == ".mesh")
             {
-                fs::path animSrc = src.parent_path() / "Animation";
-                if (fs::exists(animSrc) && fs::is_directory(animSrc))
+                Fs::path animSrc = src.parent_path() / "Animation";
+                if (Fs::exists(animSrc) && Fs::is_directory(animSrc))
                 {
-                    fs::path animDst = dst.parent_path() / "Animation";
-                    fs::copy(animSrc, animDst, copyOpts, ec);
+                    Fs::path animDst = dst.parent_path() / "Animation";
+                    Fs::copy(animSrc, animDst, copyOpts, ec);
                     if (ec)
                         LOG_ERROR_CAT("Build", "Could not copy Animation folder for {}: {}",
                             assetPath.c_str(), ec.message().c_str());
@@ -1055,8 +1057,8 @@ namespace Apex::Editor
 
         // Write build_scenes.json into the build output
         {
-            fs::path jsonDst = outputDir / "Assets/build_scenes.json";
-            fs::create_directories(jsonDst.parent_path(), ec);
+            Fs::path jsonDst = outputDir / "Assets/build_scenes.json";
+            Fs::create_directories(jsonDst.parent_path(), ec);
 
             std::ofstream json(jsonDst);
             if (json.is_open())

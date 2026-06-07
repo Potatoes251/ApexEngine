@@ -5,6 +5,7 @@
 #include <mutex>
 
 #define FBXSDK_SHARED
+
 #include <fbxsdk.h>
 
 #include "BinLoader.h"

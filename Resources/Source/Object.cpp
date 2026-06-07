@@ -6,7 +6,6 @@
 #include "Log.h"
 
 using namespace Apex::Data;
-using namespace LibMath;
 using namespace Apex::SceneGraph;	
 
 Apex::Data::Object::Object()
@@ -30,7 +29,7 @@ Apex::Data::Object::Object(size_t forcedId)
 	RegisterName(m_name);
 }
 
-Object::Object(const Transform& localTransform, const Transform& globalTransform) :
+Object::Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform) :
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
@@ -89,7 +88,7 @@ void Object::RemoveId()
 	m_id = INVALID_ID;
 }
 
-void Object::SetLocalTransform(const Transform& transform)
+void Object::SetLocalTransform(const LibMath::Transform& transform)
 {
 	m_localTransform = transform;
 	m_owner->MarkDirty();
@@ -115,7 +114,7 @@ void Object::SetLocalScale(const LibMath::Vector3& scale)
 	m_owner->MarkDirty();
 }
 
-void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
+void Apex::Data::Object::SetGlobalTransform(const LibMath::Transform& transform)
 {	
 	Object* parent = GetParent();
 	
@@ -145,12 +144,12 @@ void Apex::Data::Object::SetName(std::string name)
 	}
 }
 
-const Transform& Object::GetLocalTransform() const
+const LibMath::Transform& Object::GetLocalTransform() const
 {
 	return m_localTransform;
 }
 
-const Transform& Object::GetGlobalTransform() const
+const LibMath::Transform& Object::GetGlobalTransform() const
 {
 	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
 

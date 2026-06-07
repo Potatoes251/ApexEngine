@@ -25,7 +25,6 @@ public:
 
 private:
 	uint32_t m_shader = 0;
-
 };
 
 #endif // !COMPUTE_SHADER

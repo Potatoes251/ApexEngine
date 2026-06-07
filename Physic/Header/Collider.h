@@ -43,7 +43,7 @@ namespace Apex::Physic
 		// id of physics material
 		size_t m_id = SIZE_MAX;
 
-		bool			m_isTrigger;
+		bool m_isTrigger;
 	};
 }
 

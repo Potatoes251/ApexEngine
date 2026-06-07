@@ -529,43 +529,45 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 		case ExposedVar::Float:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
-			float oldVal = std::get<float>(var.value);
+			float oldVal = std::get<float>(var.m_value);
 			float newVal = oldVal;
-			if (m_gui->InputFloat(std::string("##") + var.name, &newVal))
+			if (m_gui->InputFloat(std::string("##") + var.m_name, &newVal))
 			{
-				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<float>>(m_scene, script, var.name, oldVal, newVal));
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<float>>(m_scene, script, var.m_name, oldVal, newVal));
 			}
 			break;
 		}
 		case ExposedVar::Bool:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
-			bool oldVal = std::get<bool>(var.value);
+			bool oldVal = std::get<bool>(var.m_value);
 			bool newVal = oldVal;
-			if (m_gui->Checkbox(std::string("##") + var.name, &newVal))
+			if (m_gui->Checkbox(std::string("##") + var.m_name, &newVal))
 			{
-				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<bool>>(m_scene, script, var.name, oldVal, newVal));
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<bool>>(m_scene, script, var.m_name, oldVal, newVal));
 			}
 			break;
 		}
 		case ExposedVar::String:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
 			char buffer[256];
-			std::string const& oldVal = std::get<std::string>(var.value);
+			std::string const& oldVal = std::get<std::string>(var.m_value);
 			strncpy_s(buffer, oldVal.c_str(), 255);
 			buffer[255] = '\0';
-			if (m_gui->InputText(std::string("##") + var.name, buffer, 256))
+			if (m_gui->InputText(std::string("##") + var.m_name, buffer, 256))
 			{
-				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<std::string>>(m_scene, script, var.name, oldVal, std::string(buffer)));
+				CommandManager::Get().Execute(std::make_unique<SetScriptVarCommand<std::string>>(
+					m_scene, script, var.m_name, oldVal, std::string(buffer))
+				);
 			}
 			break;
 		}
@@ -576,60 +578,60 @@ void Apex::Editor::ComponentsViewer::DrawScriptComponent(Apex::Scripting::Script
 
 void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex::Component* comp)
 {
-	std::string wid = std::string("##") + var.name;
+	std::string wid = std::string("##") + var.m_name;
 	switch (var.type)
 	{
 		case ExposedVar::Float:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
-			float oldVal = *(float*)var.data;
-			if (m_gui->InputFloat(wid, (float*)var.data))
+			float oldVal = *(float*)var.m_data;
+			if (m_gui->InputFloat(wid, (float*)var.m_data))
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.data));
+					std::make_unique<SetExposedVarCommand<float>>(var, obj, comp, oldVal, *(float*)var.m_data));
 			}
 			break;
 		}
 		case ExposedVar::Int:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
-			int oldVal = *(int*)var.data;
-			if (m_gui->InputInt(wid, (int*)var.data))
+			int oldVal = *(int*)var.m_data;
+			if (m_gui->InputInt(wid, (int*)var.m_data))
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.m_data));
 			}
 			break;
 		}
 		case ExposedVar::Bool:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
-			bool oldVal = *(bool*)var.data;
-			if (m_gui->Checkbox(wid, (bool*)var.data))
+			bool oldVal = *(bool*)var.m_data;
+			if (m_gui->Checkbox(wid, (bool*)var.m_data))
 			{
 				m_changed = true;
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.data));
+					std::make_unique<SetExposedVarCommand<bool>>(var, obj, comp, oldVal, *(bool*)var.m_data));
 			}
 			break;
 		}
 		case ExposedVar::String:
 		{
 			m_gui->AlignTextToFramePadding();
-			m_gui->Text(var.name);
+			m_gui->Text(var.m_name);
 			m_gui->SameLine(LABEL_WIDTH);
 			m_gui->SetNextItemWidth(-1.f);
-			std::string oldVal = *(std::string*)var.data;
+			std::string oldVal = *(std::string*)var.m_data;
 			char buf[256];
 			strncpy(buf, oldVal.c_str(), sizeof(buf));
 			buf[sizeof(buf) - 1] = '\0'; // ensure null termination
@@ -644,51 +646,51 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 		}
 		case ExposedVar::Enum:
 		{
-			int oldVal = *(int*)var.data;
+			int oldVal = *(int*)var.m_data;
 			if (DrawComponentEnum(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.data));
+					std::make_unique<SetExposedVarCommand<int>>(var, obj, comp, oldVal, *(int*)var.m_data));
 			}
 			break;
 		}
 		case ExposedVar::Vector3:
 		{
-			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
-			if (DrawComponent(var.name, *(LibMath::Vector3*)var.data))
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.m_data;
+			if (DrawComponent(var.m_name, *(LibMath::Vector3*)var.m_data))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.m_data));
 			}
 			break;
 		}
 		case ExposedVar::Mesh:
-			DrawComponent(var.name, (ResourceHandle<Model>*)var.data);
+			DrawComponent(var.m_name, (ResourceHandle<Model>*)var.m_data);
 			break;
 		case ExposedVar::Material:
-			DrawComponent(var.name, (ResourceHandle<Material>*)var.data);
+			DrawComponent(var.m_name, (ResourceHandle<Material>*)var.m_data);
 			break;
 		case ExposedVar::Texture:
-			DrawComponent(var.name, (ResourceHandle<Texture>*)var.data);
+			DrawComponent(var.m_name, (ResourceHandle<Texture>*)var.m_data);
 			break;
 		case ExposedVar::Color3:
 		{
-			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.data;
+			LibMath::Vector3 oldVal = *(LibMath::Vector3*)var.m_data;
 			if (DrawComponentColor3(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.data));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector3>>(var, obj, comp, oldVal, *(LibMath::Vector3*)var.m_data));
 			}
 			break;
 		}
 
 		case ExposedVar::Color4:
 		{
-			LibMath::Vector4 oldVal = *(LibMath::Vector4*)var.data;
+			LibMath::Vector4 oldVal = *(LibMath::Vector4*)var.m_data;
 			if (DrawComponentColor4(var))
 			{
 				CommandManager::Get().Execute(
-					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.data));
+					std::make_unique<SetExposedVarCommand<LibMath::Vector4>>(var, obj, comp, oldVal, *(LibMath::Vector4*)var.m_data));
 			}
 			break;
 		}
@@ -698,16 +700,16 @@ void Apex::Editor::ComponentsViewer::DrawVar(ExposedVar& var, Object* obj, Apex:
 bool Apex::Editor::ComponentsViewer::DrawComponentEnum(ExposedVar var)
 {
 	m_gui->AlignTextToFramePadding();
-	m_gui->Text(var.name);
+	m_gui->Text(var.m_name);
 	m_gui->SameLine(LABEL_WIDTH);
 	m_gui->SetNextItemWidth(-1.f);
 
-	int value = *(int*)var.data;
+	int value = *(int*)var.m_data;
 	std::string items;
-	for (const auto& n : var.enumNames) items += n + '\0';
-	if (m_gui->Combo(std::string("##") + var.name, &value, items.c_str()))
+	for (const auto& n : var.m_enumNames) items += n + '\0';
+	if (m_gui->Combo(std::string("##") + var.m_name, &value, items.c_str()))
 	{
-		*(int*)var.data = value; 
+		*(int*)var.m_data = value; 
 		m_changed = true;
 		return true;
 	}
@@ -727,9 +729,9 @@ bool Apex::Editor::ComponentsViewer::DrawComponent(std::string const& name, LibM
 bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
 {
 	m_gui->AlignTextToFramePadding();
-	m_gui->Text(var.name);
+	m_gui->Text(var.m_name);
 	m_gui->SameLine(LABEL_WIDTH);
-	if (m_gui->ColorEdit3("##c3", (float*)var.data))
+	if (m_gui->ColorEdit3("##c3", (float*)var.m_data))
 	{
 		m_changed = true;
 		return true;
@@ -740,9 +742,9 @@ bool Apex::Editor::ComponentsViewer::DrawComponentColor3(ExposedVar var)
 bool Apex::Editor::ComponentsViewer::DrawComponentColor4(ExposedVar var)
 {
 	m_gui->AlignTextToFramePadding();
-	m_gui->Text(var.name);
+	m_gui->Text(var.m_name);
 	m_gui->SameLine(LABEL_WIDTH);
-	if (m_gui->ColorEdit4("##c4", (float*)var.data))
+	if (m_gui->ColorEdit4("##c4", (float*)var.m_data))
 	{
 		m_changed = true;
 		return true;

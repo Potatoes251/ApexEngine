@@ -124,11 +124,11 @@ void Apex::Game::Game::SaveCurrentGame()
     if (existingData)
         data = *existingData;
 
-    data.scenePath = m_app->GetScenePath();
+    data.m_scenePath = m_app->GetScenePath();
 
     if (player)
     {
-        data.playerPosition = player->GetGlobalPosition();
+        data.m_playerPosition = player->GetGlobalPosition();
 
         auto* script = player->GetComponent<Apex::Scripting::ScriptComponent>();
         if (script && script->GetInstanceRef() != LUA_REFNIL)
@@ -137,7 +137,7 @@ void Apex::Game::Game::SaveCurrentGame()
             lua_rawgeti(L, LUA_REGISTRYINDEX, script->GetInstanceRef());
             lua_getfield(L, -1, "coinCount");
             if (lua_isnumber(L, -1))
-                data.score = (int)lua_tonumber(L, -1);
+                data.m_score = (int)lua_tonumber(L, -1);
             lua_pop(L, 2); // pop coinCount + instance
         }
     }
@@ -149,12 +149,12 @@ void Apex::Game::Game::SaveCurrentGame()
         // AddCollectedObject already deduplicates on the app side,
         // but guard here too in case the old save had the same id
         bool alreadyPresent = false;
-        for (const auto& item : data.collectedItems)
+        for (const auto& item : data.m_collectedItems)
         {
-            if (item.objectId == id) { alreadyPresent = true; break; }
+            if (item.m_objectId == id) { alreadyPresent = true; break; }
         }
         if (!alreadyPresent)
-            data.collectedItems.push_back({ id });
+            data.m_collectedItems.push_back({ id });
     }
 
     m_app->GetSaveManager()->Save(data, m_currentSaveSlot);
@@ -174,7 +174,7 @@ void Apex::Game::Game::LoadSavedGame()
     const SaveData& data = *optData;
 
     // 1. Load the scene without calling Start() yet.
-    m_app->LoadScene(data.scenePath, /*startScene=*/false);
+    m_app->LoadScene(data.m_scenePath, /*startScene=*/false);
 
     // 2. Remove items the player already collected.
     m_app->GetSaveManager()->ApplyToScene(data, m_app->GetScene());
@@ -193,7 +193,7 @@ void Apex::Game::Game::LoadSavedGame()
         {
             lua_State* L = m_app->GetLuaManager()->GetState();
             lua_rawgeti(L, LUA_REGISTRYINDEX, script->GetInstanceRef()); // push instance
-            lua_pushinteger(L, data.score);                               // push value
+            lua_pushinteger(L, data.m_score);                               // push value
             lua_setfield(L, -2, "coinCount");                             // instance.coinCount = score
             lua_pop(L, 1);                                                // pop instance
 
@@ -203,7 +203,7 @@ void Apex::Game::Game::LoadSavedGame()
             {
                 lua_getfield(L, -1, "AddScore"); // push hud:AddScore
                 lua_pushvalue(L, -2);            // self (hud)
-                lua_pushinteger(L, data.score);
+                lua_pushinteger(L, data.m_score);
                 lua_pcall(L, 2, 0, 0);
             }
             lua_pop(L, 2);
@@ -212,7 +212,7 @@ void Apex::Game::Game::LoadSavedGame()
         break;
     }
 
-    LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", m_currentSaveSlot, data.scenePath);
+    LOG_INFO("LoadSavedGame – slot {} loaded (scene: {})", m_currentSaveSlot, data.m_scenePath);
 }
 
 void Apex::Game::Game::DeleteSaveSlot(int slot)

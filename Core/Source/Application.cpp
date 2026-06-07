@@ -221,15 +221,15 @@ void Apex::Application::Tick()
 
     if (m_running)
     {
-        constexpr float fixedUpdateTime_s = 1.f / 60.f;
+        constexpr float FIXED_UPDATE_TIME_S = 1.f / 60.f;
 
         m_scene->Update(m_deltaTime_s);
         m_accumulator_s += m_deltaTime_s;
 
-        while (m_accumulator_s >= fixedUpdateTime_s)
+        while (m_accumulator_s >= FIXED_UPDATE_TIME_S)
         {
-            m_scene->FixedUpdate(fixedUpdateTime_s);
-            m_accumulator_s -= fixedUpdateTime_s;
+            m_scene->FixedUpdate(FIXED_UPDATE_TIME_S);
+            m_accumulator_s -= FIXED_UPDATE_TIME_S;
         }
 
         m_scene->LateUpdate(m_deltaTime_s);
@@ -366,12 +366,14 @@ const std::vector<size_t>& Apex::Application::GetCollectedObjects() const
     return m_collectedObjects;
 }
 
-void Apex::Application::Pause() 
+void Apex::Application::Pause()
 {
+    m_running = false;
     m_window->SetCursorCaptured(false);
 }
 
 void Apex::Application::Unpause()
 {
+    m_running = true;
     m_window->SetCursorCaptured(true);
 }
