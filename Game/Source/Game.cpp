@@ -124,7 +124,7 @@ void Apex::Game::Game::SaveCurrentGame()
     if (existingData)
         data = *existingData;
 
-    data.m_scenePath = m_app->GetScenePath();
+    data.m_scenePath = m_app->GetScene()->GetName();
 
     if (player)
     {

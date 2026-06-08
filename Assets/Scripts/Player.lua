@@ -32,9 +32,6 @@ function Player:New()
     accumulatedTime = 0,
     smoothBlend = 0,
 
-    segments = 8,
-    lives = 3,
-
     spawnX = 0,
     spawnY = 0,
     spawnZ = 0,
@@ -191,9 +188,6 @@ function Player:TakeDamage(amount)
     else
         self:Die()
     end
-
-    self.segments = self.hud:GetSegments()
-    self.lives = self.hud:GetLives()
 end
  
 function Player:Heal(amount)
