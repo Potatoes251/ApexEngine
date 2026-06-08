@@ -36,6 +36,21 @@ namespace Apex::Editor
 
 		void Draw();
 
+	private:
+		void DrawHeader();
+		void DrawComponentsList();
+
+		void DrawAddComponentButton();
+		void DrawAddComponentPopup();
+
+		void DrawRenderComponentsMenu();
+		void DrawPhysicsComponentsMenu();
+		void DrawScriptComponentsMenu();
+		void DrawLightComponentsMenu();
+		void DrawCameraComponentsMenu();
+		void DrawControllerComponentsMenu();
+		void DrawMiscComponentsMenu();
+
 		void DrawTransform(Apex::Data::Object* obj);
 		void DrawComponent(Apex::Data::Object* obj, Apex::Component* comp);
 
@@ -43,7 +58,6 @@ namespace Apex::Editor
 
 		void HandleSelection(Apex::Component* comp);
 
-	private:
 		void DrawScriptComponent(Apex::Scripting::ScriptComponent* script);
 		void DrawVar(ExposedVar& var, Apex::Data::Object* obj, Apex::Component* comp);
 

@@ -72,7 +72,6 @@ namespace Apex::Rendering
 
 		bool			m_dirty = true;
 		bool			m_isMain = false;
-	private:
 	};
 }
 

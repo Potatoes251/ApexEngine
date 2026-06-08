@@ -17,7 +17,7 @@ namespace Apex::Save
     // -----------------------------------------------------------------
     struct CollectedItem
     {
-        size_t      objectId = 0;       // ID of the Object that was picked up
+        size_t      m_objectId = 0;       // ID of the Object that was picked up
     };
 
     // -----------------------------------------------------------------
@@ -27,19 +27,19 @@ namespace Apex::Save
     struct SaveData
     {
         // --- Meta -------------------------------------------------------
-        uint32_t    slotIndex = 0;
+        uint32_t    m_slotIndex = 0;
 
         // --- World state ------------------------------------------------
-        std::string scenePath;             // path that Application::LoadScene() accepts
+        std::string m_scenePath;             // path that Application::LoadScene() accepts
 
         // --- Player state -----------------------------------------------
-        LibMath::Vector3 playerPosition;
-        int         score = 0;
-        int         hp = 100;
+        LibMath::Vector3 m_playerPosition;
+        int         m_score = 0;
+        int         m_hp = 100;
 
         // --- Collected items --------------------------------------------
         // Objects in this list are removed from the scene after loading.
-        std::vector<CollectedItem> collectedItems;
+        std::vector<CollectedItem> m_collectedItems;
     };
 }
 

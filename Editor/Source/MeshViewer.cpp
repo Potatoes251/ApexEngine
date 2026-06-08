@@ -491,15 +491,22 @@ void MeshViewer::RenderGrid()
     std::vector<float> verts;
     verts.reserve((HALF * 2 + 1) * 4 * 3);
 
-    auto push = [&](float x, float y, float z) { verts.push_back(x); verts.push_back(y); verts.push_back(z); };
+    auto push = [&](float x, float y, float z) 
+        { 
+            verts.push_back(x); 
+            verts.push_back(y); 
+            verts.push_back(z); 
+        };
 
     for (int i = -HALF; i <= HALF; ++i)
     {
         float f = static_cast<float>(i) * STEP;
         // Lines along Z
-        push(f, 0.f, -HALF * STEP); push(f, 0.f, HALF * STEP);
+        push(f, 0.f, -HALF * STEP);
+        push(f, 0.f, HALF * STEP);
         // Lines along X
-        push(-HALF * STEP, 0.f, f); push(HALF * STEP, 0.f, f);
+        push(-HALF * STEP, 0.f, f);
+        push(HALF * STEP, 0.f, f);
     }
 
     glBindVertexArray(tmpVAO);

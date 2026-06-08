@@ -24,9 +24,9 @@ namespace Apex::Lighting
 		LibMath::Matrix4	GetProjMatrix() const override;
 		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera*) const override;
 
-
 		float GetInnerCutoff() const { return m_innerCutoff; }
 		float GetOuterCutoff() const { return m_outerCutoff; }
+
 	private:
 		float m_innerCutoff = 0.64f;
 		float m_outerCutoff = 0.25f;

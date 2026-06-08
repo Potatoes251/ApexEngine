@@ -5,9 +5,11 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
+
 // windows.h defines CreateWindow as a macro which conflicts with our IWindow* CreateWindow
 #undef CreateWindow
 

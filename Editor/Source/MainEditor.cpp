@@ -8,7 +8,9 @@
 #include <iostream>
 
 #ifdef _WIN32
+
 #include <windows.h>
+
 #endif
 
 static std::filesystem::path GetExeDir(const char* argv0)

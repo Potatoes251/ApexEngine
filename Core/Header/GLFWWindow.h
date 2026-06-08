@@ -67,6 +67,20 @@ namespace Apex::Windowing
 
 
 	private:
+		// GLFW static callback wrappers
+		static void	GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void	GLFWCursorCallback(GLFWwindow* window, double xpos, double ypos);
+		static void	GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		static void	GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+		static void	GLFWResizeCallback(GLFWwindow* window, int width, int height);
+		static void GLFWDropCallback(GLFWwindow* window, int count, const char** paths);
+
+		void		SetCloseCallback(CloseCallback callback);
+		void		SetShouldClose(bool close);
+
+		static Input::Key TranslateKey(int glfwKey);
+		static Input::MouseButton TranslateMouseButton(int glfwButton);
+
 		GLFWwindow* m_window = nullptr;
 		GLFWcursor* m_crosshairCursor = nullptr;
 		bool        m_isPrimary = true;   // only primary calls glfwInit/Terminate
@@ -86,21 +100,6 @@ namespace Apex::Windowing
 		ResizeCallback		 m_resizeCallback;
 		ExternalDropCallback m_dropCallback;
 		CloseCallback		 m_closeCallback;
-
-		// GLFW static callback wrappers
-		static void	GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-		static void	GLFWCursorCallback(GLFWwindow* window, double xpos, double ypos);
-		static void	GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-		static void	GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-		static void	GLFWResizeCallback(GLFWwindow* window, int width, int height);
-		static void GLFWDropCallback(GLFWwindow* window, int count, const char** paths);
-		
-		void		SetCloseCallback(CloseCallback callback);
-		void		SetShouldClose(bool close);
-
-		static Input::Key TranslateKey(int glfwKey);
-		static Input::MouseButton TranslateMouseButton(int glfwButton);
-
 	};
 } // namespace Apex::Windowing
 

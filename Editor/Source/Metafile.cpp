@@ -26,7 +26,7 @@ namespace Apex::Editor
 
         std::ifstream file(SidecarPath(assetPath));
         if (!file.is_open())
-            return false;   // not an error — file simply doesn't exist yet
+            return false;   // not an error ï¿½ file simply doesn't exist yet
 
         std::string line;
         while (std::getline(file, line))
@@ -41,7 +41,7 @@ namespace Apex::Editor
 
             auto separator = line.find('=');
             if (separator == std::string::npos)
-                continue;   // malformed line — skip silently
+                continue;   // malformed line ï¿½ skip silently
 
             std::string key = line.substr(0, separator);
             std::string value = line.substr(separator + 1);

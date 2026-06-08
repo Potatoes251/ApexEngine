@@ -20,11 +20,11 @@ namespace Apex::Editor
 	enum class TextureBackground { Checkerboard, Black, White };
 
 	// GPU block-compression formats supported by the editor.
-	// None  — raw RGBA8, no compression
-	// BC1   — RGB  (no alpha), ~6:1 compression
-	// BC3   — RGBA (smooth alpha), ~4:1 compression
-	// BC4   — single channel (R), grayscale / roughness maps
-	// BC5   — two channels (RG), normal maps
+	// None  - raw RGBA8, no compression
+	// BC1   - RGB  (no alpha), ~6:1 compression
+	// BC3   - RGBA (smooth alpha), ~4:1 compression
+	// BC4   - single channel (R), grayscale / roughness maps
+	// BC5   - two channels (RG), normal maps
 	enum class CompressionFormat { None, BC1, BC3, BC4, BC5 };
 
 	class TextureEditor

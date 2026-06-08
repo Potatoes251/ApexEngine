@@ -524,8 +524,8 @@ void Apex::Editor::Viewport::DrawPlayBar()
 		{
 			// Scan for .level files once when the popup opens
 			m_buildScenes.clear();
-			namespace fs = std::filesystem;
-			for (auto& entry : fs::recursive_directory_iterator("Assets/"))
+			namespace Fs = std::filesystem;
+			for (auto& entry : Fs::recursive_directory_iterator("Assets/"))
 			{
 				if (entry.path().extension() == ".level")
 				{
@@ -739,7 +739,9 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 
 		if (IconButton(element.m_icon, element.m_label, { SNAP_BUTTON_WIDTH, SNAP_BUTTON_WIDTH }, *element.m_enabled))
 		{
-			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(element.m_enabled, *element.m_enabled, !*element.m_enabled));
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(
+				element.m_enabled, *element.m_enabled, !*element.m_enabled)
+			);
 		}
 
 		if (m_gui->IsItemHovered())

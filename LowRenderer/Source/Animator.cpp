@@ -225,13 +225,13 @@ void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int ori
 
 		m_nextState = PlayLayerBlendSpaceAnim;
 
-		m_layerBendingOrigine = origine;
+		m_layerBendingOrigin = origine;
 	}
 	else
 	{
 		if (origine < 0 || origine > m_boneCount) return;		//check if the origine of the layer blend is valid
 
-		m_layerBendingOrigine = origine;
+		m_layerBendingOrigin = origine;
 
 		m_animationA = &m_model->GetAnimations()[animationIndexA];
 		m_animationB = &m_model->GetAnimations()[animationIndexB];
@@ -310,7 +310,7 @@ void Animator::WaitForResourcesToBeLoaded()
 		{
 			m_animationB = &m_model->GetAnimations()[m_animationIndexB];
 		}
-		if (m_layerBendingOrigine < 0 || m_layerBendingOrigine > m_boneCount)
+		if (m_layerBendingOrigin < 0 || m_layerBendingOrigin > m_boneCount)
 		{
 			m_state = PlayNoAnim;
 		}
@@ -402,7 +402,7 @@ void Animator::ReplaceBones(
 
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
-		if (bone >= m_layerBendingOrigine)
+		if (bone >= m_layerBendingOrigin)
 		{
 			skeleton_out[bone] = skeletonB[bone];
 		}
@@ -433,7 +433,7 @@ void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance&
 	std::vector<int>	chain;
 	int					current = ik.m_endBoneIndex;
 
-	for (int i = 0; i < ik.m_chainLenght; i++)
+	for (int i = 0; i < ik.m_chainLength; i++)
 	{
 		if (current < 0)
 			return;

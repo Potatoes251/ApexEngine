@@ -2,7 +2,7 @@
 #define META_FILE
 
 // ============================================================
-// MetaFile.h — Lightweight key=value sidecar file utility.
+// MetaFile.h - Lightweight key=value sidecar file utility.
 //
 // Meta files live next to their asset with a ".meta" suffix:
 //   Assets/Textures/hero.png  -  Assets/Textures/hero.png.meta
