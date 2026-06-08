@@ -35,6 +35,9 @@ namespace Apex::Rendering
 
 		void SetSkybox(std::unique_ptr<Skybox> skybox) { m_skybox = std::move(skybox); }
 
+		void SetName(std::string const& name) { m_name = name; }
+		std::string const& GetName() { return m_name; }
+
 		Lighting::VisibleLights GetVisibleLights() const;
 
 		Data::Object* CreateObject();
@@ -70,7 +73,7 @@ namespace Apex::Rendering
 		Physic::PhysicSystem* GetPhysic() { return &m_physics; }
 		Pathfinding::WaypointGraph* GetGraph() { return &m_graph; }
 
-		void Save(const std::string& path);
+		void Save();
 		void SetOnMarkedDirtyCallback(std::function<void()> callback);
 	private:
 		// clone helpers
@@ -82,6 +85,8 @@ namespace Apex::Rendering
 
 		Physic::PhysicSystem m_physics;
 		Pathfinding::WaypointGraph m_graph;
+
+		std::string m_name;
 
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_objects;
 		std::vector<std::unique_ptr<Apex::Data::Object>> m_createdObjects;

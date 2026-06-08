@@ -160,10 +160,14 @@ void PhysicSystem::RemoveActor(RigidBodyComponent const& rigidbody)
 	}
 }
 
-bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance)
+bool PhysicSystem::Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance, bool onlyStatic)
 {
+	physx::PxQueryFilterData filterData;
+	if (onlyStatic)
+		filterData = physx::PxQueryFilterData(physx::PxQueryFlag::eSTATIC);
+
 	physx::PxRaycastBuffer hit;
-	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hit);
+	bool result = m_scene->raycast(ToPxVec(position), ToPxVec(direction.normalize()), distance, hit, physx::PxHitFlag::eDEFAULT, filterData);
 
 	if (!result) return false;
 

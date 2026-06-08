@@ -124,7 +124,7 @@ namespace Apex::Resources
 		auto guard = [this](void*)
 			{
 				if (m_pendingLoads.fetch_sub(1, std::memory_order_acq_rel) == 1)
-					m_allLoadedCV.notify_all(); // last one out flips the light
+					m_allLoadedCV.notify_all();
 			};
 		std::unique_ptr<void, decltype(guard)> _(this, guard);
 
