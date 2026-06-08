@@ -849,10 +849,25 @@ namespace Apex::Editor
         Fs::path gameExeDir = Fs::path(GAME_EXE_DIR);
         Fs::path outputDir = Fs::current_path() / "ApexBuild";
 
+        BuildSetupOutputDir(outputDir);
+        BuildCopyExecutables(gameExeDir, outputDir);
+        BuildCopyFonts(outputDir);
+        BuildCopyEngineAssets(outputDir);
+        BuildCopySceneFiles(scenePaths, outputDir);
+
+        std::unordered_set<std::string> assetsToCopy;
+        BuildCollectDependencies(scenePaths, assetsToCopy);
+        BuildCopyAssets(assetsToCopy, outputDir);
+
+        BuildWriteScenesJson(scenePaths, outputDir);
+    }
+
+    // ---------------------------------------------------------------------------
+
+    void Editor::BuildSetupOutputDir(const Fs::path& outputDir)
+    {
         std::error_code ec;
 
-        // Wipe the previous build entirely so no stale files from
-        // old scenes or renamed assets can linger across builds.
         if (Fs::exists(outputDir))
             Fs::remove_all(outputDir, ec);
 
@@ -863,11 +878,12 @@ namespace Apex::Editor
         }
 
         Fs::create_directories(outputDir, ec);
+    }
 
-        constexpr auto copyOpts = Fs::copy_options::overwrite_existing
-            | Fs::copy_options::recursive;
+    void Editor::BuildCopyExecutables(const Fs::path& gameExeDir, const Fs::path& outputDir)
+    {
+        std::error_code ec;
 
-        // Game exe + DLLs
         Fs::copy(gameExeDir / "GameLauncher.exe", outputDir / "Game.exe",
             Fs::copy_options::overwrite_existing, ec);
 
@@ -877,6 +893,11 @@ namespace Apex::Editor
                 Fs::copy(entry.path(), outputDir / entry.path().filename(),
                     Fs::copy_options::overwrite_existing, ec);
         }
+    }
+
+    void Editor::BuildCopyFonts(const Fs::path& outputDir)
+    {
+        std::error_code ec;
 
         Fs::path src = Fs::current_path() / "ApexAssets/Fonts";
         Fs::path dst = outputDir / "ApexAssets/Fonts";
@@ -886,9 +907,7 @@ namespace Apex::Editor
         for (auto& entry : Fs::recursive_directory_iterator(src))
         {
             const auto& path = entry.path();
-
-            auto relative = Fs::relative(path, src);
-            auto target = dst / relative;
+            auto target = dst / Fs::relative(path, src);
 
             if (entry.is_directory())
             {
@@ -906,18 +925,17 @@ namespace Apex::Editor
                 ec.clear();
             }
         }
+    }
 
-        // Engine-level ApexAssets always required by Application.cpp —
-        // these are never referenced in scene files so must be listed explicitly.
+    void Editor::BuildCopyEngineAssets(const Fs::path& outputDir)
+    {
         static const char* s_engineAssets[] =
         {
-            // Shadow system (InitLighting)
             "ApexAssets/Shaders/DirShadowVert.glsl",
             "ApexAssets/Shaders/DirShadowFrag.glsl",
             "ApexAssets/Shaders/OmniShadowVert.glsl",
             "ApexAssets/Shaders/OmniShadowFrag.glsl",
             "ApexAssets/Shaders/OmniShadowGeo.glsl",
-            // Skybox (LoadScene)
             "ApexAssets/Shaders/SkyboxVert.glsl",
             "ApexAssets/Shaders/SkyboxFrag.glsl",
             "ApexAssets/Textures/Skybox/px.png",
@@ -926,9 +944,10 @@ namespace Apex::Editor
             "ApexAssets/Textures/Skybox/py.png",
             "ApexAssets/Textures/Skybox/pz.png",
             "ApexAssets/Textures/Skybox/nz.png",
-            // Skybox mesh
             "ApexAssets/Meshes/cube/cube.mesh",
         };
+
+        std::error_code ec;
 
         for (const char* assetPath : s_engineAssets)
         {
@@ -937,8 +956,12 @@ namespace Apex::Editor
             Fs::create_directories(dst.parent_path(), ec);
             Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
         }
+    }
 
-        // Selected scene files
+    void Editor::BuildCopySceneFiles(const std::vector<std::string>& scenePaths, const Fs::path& outputDir)
+    {
+        std::error_code ec;
+
         for (const auto& scenePath : scenePaths)
         {
             Fs::path src = Fs::current_path() / scenePath;
@@ -946,101 +969,91 @@ namespace Apex::Editor
             Fs::create_directories(dst.parent_path(), ec);
             Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
 
-            src = (Fs::current_path() / scenePath).replace_extension(".nav");
-            dst = (outputDir / scenePath).replace_extension(".nav");
-            Fs::create_directories(dst.parent_path(), ec);
+            // .nav sidecar
+            src = src.replace_extension(".nav");
+            dst = dst.replace_extension(".nav");
             Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
         }
+    }
 
-        // Collect all asset paths referenced by the selected scenes
-        // by parsing their JSON directly — no dependency on what
-        // the editor happened to load in this session.
-        std::unordered_set<std::string> assetsToCopy;
+    void Editor::BuildCollectDependencies(const std::vector<std::string>& scenePaths,
+        std::unordered_set<std::string>& outAssets)
+    {
         std::unordered_set<std::string> matsToParse;
 
+        // 1. Scene JSON → asset paths + material paths
         for (const auto& scenePath : scenePaths)
-            CollectAssetPaths(scenePath, assetsToCopy, matsToParse);
+            CollectAssetPaths(scenePath, outAssets, matsToParse);
 
+        // 2. Lua scripts → HUD dependencies
         std::unordered_set<std::string> hudDeps;
-
-        for (const auto& assetPath : assetsToCopy)
-        {
+        for (const auto& assetPath : outAssets)
             if (assetPath.ends_with(".lua"))
                 CollectHudDependencies(assetPath, hudDeps);
-        }
+        outAssets.merge(hudDeps);
 
-        assetsToCopy.merge(hudDeps);
-
+        // 3. HUD files → texture dependencies
         Fs::path hudDir = Fs::current_path() / "Assets/HUD";
-
         if (Fs::exists(hudDir))
         {
             for (const auto& entry : Fs::recursive_directory_iterator(hudDir))
             {
-                if (!entry.is_regular_file())
+                if (!entry.is_regular_file() || entry.path().extension() != ".hud")
                     continue;
 
-                const auto& path = entry.path();
-
-                if (path.extension() == ".hud")
+                std::ifstream file(entry.path());
+                std::string line;
+                while (std::getline(file, line))
                 {
-                    std::ifstream file(path);
+                    size_t texPos = line.find("\"texture\"");
+                    if (texPos == std::string::npos) continue;
 
-                    std::string line;
+                    size_t q1 = line.find('"', texPos + 9);
+                    if (q1 == std::string::npos) continue;
 
-                    while (std::getline(file, line))
-                    {
-                        size_t texPos = line.find("\"texture\"");
-                        if (texPos == std::string::npos)
-                            continue;
+                    size_t q2 = line.find('"', q1 + 1);
+                    if (q2 == std::string::npos) continue;
 
-                        size_t firstQuote = line.find('"', texPos + 9);
-                        if (firstQuote == std::string::npos)
-                            continue;
-
-                        size_t secondQuote = line.find('"', firstQuote + 1);
-                        if (secondQuote == std::string::npos)
-                            continue;
-
-                        std::string texturePath =
-                            line.substr(firstQuote + 1, secondQuote - firstQuote - 1);
-
-                        assetsToCopy.insert(texturePath);
-                    }
+                    outAssets.insert(line.substr(q1 + 1, q2 - q1 - 1));
                 }
             }
         }
 
+        // 4. Material files themselves
         for (const auto& matPath : matsToParse)
-            assetsToCopy.insert(matPath);
+            outAssets.insert(matPath);
 
+        // 5. Lua scripts → transitive require() dependencies
         std::unordered_set<std::string> luaDeps;
         std::unordered_set<std::string> visited;
-        for (const auto& assetPath : assetsToCopy)
-        {
+        for (const auto& assetPath : outAssets)
             if (assetPath.ends_with(".lua"))
                 CollectLuaDependencies(assetPath, luaDeps, visited);
-        }
-        assetsToCopy.merge(luaDeps);
+        outAssets.merge(luaDeps);
 
+        // 6. Material files → referenced textures/shaders
         std::unordered_set<std::string> matDeps;
-
-        for (const auto& assetPath : assetsToCopy)
-        {
+        for (const auto& assetPath : outAssets)
             if (assetPath.ends_with(".mat"))
                 CollectAssetsFromMats(assetPath, matDeps);
-        }
+        outAssets.merge(matDeps);
+    }
 
-        assetsToCopy.merge(matDeps);
+    void Editor::BuildCopyAssets(const std::unordered_set<std::string>& assets,
+        const Fs::path& outputDir)
+    {
+        constexpr auto copyOpts = Fs::copy_options::overwrite_existing
+            | Fs::copy_options::recursive;
+        std::error_code ec;
 
-        // Copy all collected assets
-        for (const auto& assetPath : assetsToCopy)
+        for (const auto& assetPath : assets)
         {
             Fs::path src = Fs::current_path() / assetPath;
             Fs::path dst = outputDir / assetPath;
             Fs::create_directories(dst.parent_path(), ec);
             Fs::copy(src, dst, Fs::copy_options::overwrite_existing, ec);
 
+            // Meshes may have a sibling Animation/ folder
             if (src.extension() == ".mesh")
             {
                 Fs::path animSrc = src.parent_path() / "Animation";
@@ -1054,37 +1067,35 @@ namespace Apex::Editor
                 }
             }
         }
+    }
 
-        // Write build_scenes.json into the build output
+    void Editor::BuildWriteScenesJson(const std::vector<std::string>& scenePaths,
+        const Fs::path& outputDir)
+    {
+        std::error_code ec;
+
+        Fs::path jsonDst = outputDir / "Assets/build_scenes.json";
+        Fs::create_directories(jsonDst.parent_path(), ec);
+
+        std::ofstream json(jsonDst);
+        if (!json.is_open())
         {
-            Fs::path jsonDst = outputDir / "Assets/build_scenes.json";
-            Fs::create_directories(jsonDst.parent_path(), ec);
-
-            std::ofstream json(jsonDst);
-            if (json.is_open())
-            {
-                json << "{\n    \"scenes\": [\n";
-                for (size_t i = 0; i < scenePaths.size(); ++i)
-                {
-                    std::string path = scenePaths[i];
-                    std::replace(path.begin(), path.end(), '\\', '/');
-                    json << "        \"" << path << "\"";
-                    if (i + 1 < scenePaths.size()) json << ",";
-                    json << "\n";
-                }
-                json << "    ]\n}\n";
-                LOG_INFO_CAT("Build", "build_scenes.json written ({} scene(s))", scenePaths.size());
-            }
-            else
-            {
-                LOG_ERROR_CAT("Build", "Failed to write build_scenes.json");
-            }
+            LOG_ERROR_CAT("Build", "Failed to write build_scenes.json");
+            return;
         }
 
-        if (ec)
-            LOG_WARNING_CAT("Build", "{}", ec.message().c_str());
-        else
-            LOG_INFO_CAT("Build", "Build complete -> {}", outputDir.string().c_str());
+        json << "{\n    \"scenes\": [\n";
+        for (size_t i = 0; i < scenePaths.size(); ++i)
+        {
+            std::string path = scenePaths[i];
+            std::replace(path.begin(), path.end(), '\\', '/');
+            json << "        \"" << path << "\"";
+            if (i + 1 < scenePaths.size()) json << ",";
+            json << "\n";
+        }
+        json << "    ]\n}\n";
+
+        LOG_INFO_CAT("Build", "build_scenes.json written ({} scene(s))", scenePaths.size());
     }
 
     void Editor::OpenMaterialEditor(const std::filesystem::path& path)

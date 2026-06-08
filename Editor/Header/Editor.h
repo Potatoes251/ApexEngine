@@ -79,6 +79,15 @@ namespace Apex::Editor
 		void SaveUserSettings();
 
 	private:
+		void BuildSetupOutputDir(const Fs::path& outputDir);
+		void BuildCopyExecutables(const Fs::path& gameExeDir, const Fs::path& outputDir);
+		void BuildCopyFonts(const Fs::path& outputDir);
+		void BuildCopyEngineAssets(const Fs::path& outputDir);
+		void BuildCopySceneFiles(const std::vector<std::string>& scenePaths, const Fs::path& outputDir);
+		void BuildCollectDependencies(const std::vector<std::string>& scenePaths, std::unordered_set<std::string>& outAssets);
+		void BuildCopyAssets(const std::unordered_set<std::string>& assets, const Fs::path& outputDir);
+		void BuildWriteScenesJson(const std::vector<std::string>& scenePaths, const Fs::path& outputDir);
+
 		static const char* TypeToString(AssetType type);
 
 		void OpenTextureEditor(const std::filesystem::path& path);

@@ -113,247 +113,18 @@ void ComponentsViewer::Draw()
 		return;
 	}
 
-	m_gui->PushFont(FontID::Large);
-	m_gui->Text(m_selectedObj->GetName());
-	m_gui->PopFont();
-	m_gui->Separator();
-
-	m_gui->PushStyleVariable(StyleVariable::ItemSpacing, 4.f, ROW_PAD);
-
-	DrawTransform(m_selectedObj);
-
-	for (Component* comp : m_selectedObj->GetComponents())
-	{
-		if (!comp) continue;
-		DrawComponent(m_selectedObj, comp);
-	}
+	DrawHeader();
+	DrawComponentsList();
 
 	if (m_pendingDelete)
 	{
-		CommandManager::Get().Execute(std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete));
+		CommandManager::Get().Execute(
+			std::make_unique<RemoveCompCommand>(m_selectedObj, m_pendingDelete));
 		m_pendingDelete = nullptr;
 	}
 
-	m_gui->PopStyleVariable();
-
-	m_gui->Separator();
-
-	float availableWidth = m_gui->GetAvailableSize()[0];
-	m_gui->SetNextItemWidth(availableWidth);
-	if (m_gui->ButtonSized("+ Add Component", { availableWidth, 28.f }))
-		m_gui->OpenPopup("AddComponent");
-
-	if (m_gui->BeginPopup("AddComponent") && m_selectedObj)
-	{
-		if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr &&
-			m_gui->MenuItem("Mesh Renderer"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj, 
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
-					return comp->GetId();
-				}));
-		}
-
-		if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
-			m_gui->MenuItem("Rigidbody"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
-					return comp->GetId();
-				}));
-		}
-
-		RigidBodyComponent* rb = m_selectedObj->GetComponent<RigidBodyComponent>();
-		if (rb && m_selectedObj->GetComponent<Collider>() == nullptr)
-		{
-			auto* mr = m_selectedObj->GetComponent<MeshRenderer>();
-			if (mr && m_gui->MenuItem("Mesh Collider"))
-			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-					[this](Object* obj)
-					{
-						Collider& comp = obj->AddComponent<MeshCollider>(
-							m_selectedObj->GetComponent<MeshRenderer>()->GetModel(),
-							MeshColliderType::Convex, false);
-
-						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return comp.GetId();
-					}));
-			}
-			else if (m_gui->MenuItem("Box Collider"))
-			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-					[this](Object* obj)
-					{
-						Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
-
-						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return comp.GetId();
-					}));
-			}
-			else if (m_gui->MenuItem("Capsule Collider"))
-			{
-				CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-					[this](Object* obj)
-					{
-						CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
-						m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
-						return comp.GetId();
-					}));
-			}
-		}
-
-		if (m_gui->MenuItem("WaterVolume"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					WaterVolume& comp = obj->AddComponent<WaterVolume>();
-					return comp.GetId();
-				}));
-		}
-
-		m_gui->Separator();
-		if (m_gui->MenuItem("Lua Script"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
-					return comp->GetId();
-				}));
-		}
-
-		m_gui->Separator();
-		if (m_gui->MenuItem("Directional Light"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<DirectionalLightComponent>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("Point Light"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<PointLightComponent>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("Spot Light"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<SpotLightComponent>();
-					return comp->GetId();
-				}));
-		}
-
-		m_gui->Separator();
-		if (m_gui->MenuItem("First Person Camera"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<FirstPersonCamera>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("Third Person Camera"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<ThirdPersonCamera>();
-					return comp->GetId();
-				}));
-		}
-
-		m_gui->Separator();
-		if (m_gui->MenuItem("Character Controller"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Controller::CharacterController>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("AI Controller"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Controller::AIController>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("Animator"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetModel());
-					return comp->GetId();
-				}));
-		}
-
-		m_gui->Separator();
-		if (m_gui->MenuItem("Audio Component"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Audio::AudioComponent>(nullptr);
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("View Component"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<ViewComponent>(m_scene->GetPhysic(), 10.f, 1.5f, 1.f, 10, 10);
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("NavGenVolume"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Pathfinding::NavGenVolume>();
-					return comp->GetId();
-				}));
-		}
-
-		if (m_gui->MenuItem("ProjectileComponent"))
-		{
-			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
-				[this](Object* obj)
-				{
-					Component* comp = &obj->AddComponent<Gameplay::ProjectileComponent>();
-					return comp->GetId();
-				}));
-		}
-
-		m_gui->EndPopup();
-	}
+	DrawAddComponentButton();
+	DrawAddComponentPopup();
 
 	m_gui->EndPanel();
 
@@ -363,6 +134,295 @@ void ComponentsViewer::Draw()
 	m_scriptPicker.Draw();
 
 	m_gui->PopFont();
+}
+
+void ComponentsViewer::DrawHeader()
+{
+	m_gui->PushFont(FontID::Large);
+	m_gui->Text(m_selectedObj->GetName());
+	m_gui->PopFont();
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawComponentsList()
+{
+	m_gui->PushStyleVariable(
+		StyleVariable::ItemSpacing, 4.f, ROW_PAD);
+
+	DrawTransform(m_selectedObj);
+
+	for (Component* comp : m_selectedObj->GetComponents())
+	{
+		if (comp)
+			DrawComponent(m_selectedObj, comp);
+	}
+
+	m_gui->PopStyleVariable();
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawAddComponentButton()
+{
+	float width = m_gui->GetAvailableSize()[0];
+
+	m_gui->SetNextItemWidth(width);
+
+	if (m_gui->ButtonSized("+ Add Component", { width, 28.f }))
+		m_gui->OpenPopup("AddComponent");
+}
+
+void ComponentsViewer::DrawAddComponentPopup()
+{
+	if (!m_gui->BeginPopup("AddComponent") || !m_selectedObj)
+		return;
+
+	DrawRenderComponentsMenu();
+	DrawPhysicsComponentsMenu();
+	DrawScriptComponentsMenu();
+	DrawLightComponentsMenu();
+	DrawCameraComponentsMenu();
+	DrawControllerComponentsMenu();
+	DrawMiscComponentsMenu();
+
+	m_gui->EndPopup();
+}
+
+void ComponentsViewer::DrawRenderComponentsMenu()
+{
+	if (m_selectedObj->GetComponent<MeshRenderer>() == nullptr &&
+		m_gui->MenuItem("Mesh Renderer"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<MeshRenderer>(m_resourceManager);
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("Animator"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Animator>(obj->GetComponent<MeshRenderer>()->GetModel());
+				return comp->GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawPhysicsComponentsMenu()
+{
+	if (m_selectedObj->GetComponent<RigidBodyComponent>() == nullptr &&
+		m_gui->MenuItem("Rigidbody"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<RigidBodyComponent>(1.0f);
+				return comp->GetId();
+			}));
+	}
+
+	RigidBodyComponent* rb =
+		m_selectedObj->GetComponent<RigidBodyComponent>();
+
+	if (rb && m_selectedObj->GetComponent<Collider>() == nullptr)
+	{
+		auto* mr = m_selectedObj->GetComponent<MeshRenderer>();
+		if (mr && m_gui->MenuItem("Mesh Collider"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Collider& comp = obj->AddComponent<MeshCollider>(
+						m_selectedObj->GetComponent<MeshRenderer>()->GetModel(),
+						MeshColliderType::Convex, false);
+
+					m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+					return comp.GetId();
+				}));
+		}
+		else if (m_gui->MenuItem("Box Collider"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					Collider& comp = obj->AddComponent<BoxCollider>(LibMath::Vector3(1.0f, 1.0f, 1.0f), false);
+
+					m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+					return comp.GetId();
+				}));
+		}
+		else if (m_gui->MenuItem("Capsule Collider"))
+		{
+			CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+				[this](Object* obj)
+				{
+					CapsuleCollider& comp = obj->AddComponent<CapsuleCollider>(0.5f, 0.2f, false);
+					m_scene->GetPhysic()->CreateActor(comp, *obj->GetComponent<RigidBodyComponent>());
+					return comp.GetId();
+				}));
+		}
+	}
+
+	if (m_gui->MenuItem("WaterVolume"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				WaterVolume& comp = obj->AddComponent<WaterVolume>();
+				return comp.GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawScriptComponentsMenu()
+{
+	if (m_gui->MenuItem("Lua Script"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<ScriptComponent>(m_luaManager);
+				return comp->GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawLightComponentsMenu()
+{
+	if (m_gui->MenuItem("Directional Light"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<DirectionalLightComponent>();
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("Point Light"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<PointLightComponent>();
+				return comp->GetId();
+
+			}));
+	}
+
+	if (m_gui->MenuItem("Spot Light"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<SpotLightComponent>();
+				return comp->GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawCameraComponentsMenu()
+{
+	if (m_gui->MenuItem("First Person Camera"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<FirstPersonCamera>();
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("Third Person Camera"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<ThirdPersonCamera>();
+				return comp->GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawControllerComponentsMenu()
+{
+	if (m_gui->MenuItem("Character Controller"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Controller::CharacterController>();
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("AI Controller"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Controller::AIController>();
+				return comp->GetId();
+			}));
+	}
+
+	m_gui->Separator();
+}
+
+void ComponentsViewer::DrawMiscComponentsMenu()
+{
+	if (m_gui->MenuItem("Audio Component"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Audio::AudioComponent>(nullptr);
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("View Component"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<ViewComponent>(m_scene->GetPhysic(), 10.f, 1.5f, 1.f, 10, 10);
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("NavGenVolume"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Pathfinding::NavGenVolume>();
+				return comp->GetId();
+			}));
+	}
+
+	if (m_gui->MenuItem("ProjectileComponent"))
+	{
+		CommandManager::Get().Execute(std::make_unique<AddCompCommand>(m_selectedObj,
+			[this](Object* obj)
+			{
+				Component* comp = &obj->AddComponent<Gameplay::ProjectileComponent>();
+				return comp->GetId();
+			}));
+	}
 }
 
 void ComponentsViewer::DrawTransform(Object* obj)
