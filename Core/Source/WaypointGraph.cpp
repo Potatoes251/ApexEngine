@@ -25,12 +25,14 @@ void WaypointGraph::GenerateGraph(std::string const& path, Physic::PhysicSystem*
 	LibMath::Vector3 min = param->GetMinBound();
 	LibMath::Vector3 max = param->GetMaxBound();
 
+	float rayDistance = param->m_genHeight - min[1];
+
 	for (float x = min[0]; x < max[0]; x += param->m_spacing)
 	{
 		for (float z = min[2]; z < max[2]; z += param->m_spacing)
 		{
 			Physic::HitResult hit;
-			if (physic->Raycast(hit, { x, param->m_genHeight, z }, LibMath::Vector3::down(), param->m_genHeight, true))
+			if (physic->Raycast(hit, { x, param->m_genHeight, z }, LibMath::Vector3::down(), rayDistance, true))
 			{
 				AddWaypoint(hit.m_position);
 			}
