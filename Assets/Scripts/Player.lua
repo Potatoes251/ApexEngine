@@ -32,6 +32,9 @@ function Player:New()
     accumulatedTime = 0,
     smoothBlend = 0,
 
+    segments = 8,
+    lives = 3,
+
     spawnX = 0,
     spawnY = 0,
     spawnZ = 0,
@@ -42,9 +45,6 @@ function Player:New()
     invincibleTimer = 0,
     damageTimer = 0,
     canFire = false,
-
-    coinCount = 0,
-
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -191,6 +191,9 @@ function Player:TakeDamage(amount)
     else
         self:Die()
     end
+
+    self.segments = self.hud:GetSegments()
+    self.lives = self.hud:GetLives()
 end
  
 function Player:Heal(amount)
@@ -252,7 +255,6 @@ function Player:OnTriggerEnter(col)
     if obj:HasTag("Coin") then
         self.audio:SetSound("Assets/Sounds/Coin.wav")
         self.audio:Play()
-        self.coinCount = self.coinCount + 1
         if self.hud ~= nil then
             self:UpdateScore(1)
         end
