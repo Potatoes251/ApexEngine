@@ -10,7 +10,6 @@ end
 
 function Coin:Start()
     self:AddTag("Coin")
-    self.audio = AudioComponent.Get(self)
 end
 
 return Coin

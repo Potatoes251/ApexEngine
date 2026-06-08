@@ -263,6 +263,9 @@ vec3 CalcSpotLight(SpotLight light, vec3 diffuseTex, vec3 specTex)
     float epsilon = light.param.z - light.param.w;
     float intensity = clamp((theta - light.param.w) / epsilon, 0.0, 1.0);
 	
+	if (theta < light.param.w)
+		return vec3(0.0);
+
 	vec3 ambient = 0.3 * light.color.xyz * diffuseTex;
 	
 	float diff = max(dot(normal, lightDirection), 0.0);

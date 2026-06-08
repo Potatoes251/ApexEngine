@@ -53,7 +53,7 @@ namespace Apex::Physic
 		void			CreateActor(Collider const& collider, RigidBodyComponent& rigidBody);
 		void			RemoveActor(RigidBodyComponent const& rigidbody);
 
-		bool			Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
+		bool			Raycast(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance, bool onlyStatic = false);
 		bool			Raycast(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, float distance);
 		bool			Sweep(HitResult& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance);
 		bool			Sweep(std::vector<HitResult>& hit_out, LibMath::Vector3 position, LibMath::Vector3 direction, Collider const& collider, float distance);

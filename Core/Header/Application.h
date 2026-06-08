@@ -141,11 +141,12 @@ namespace Apex
         std::string m_targetScene{};
 
         static inline Application* m_instance = nullptr;
-        std::string m_scenePath = "Assets/Scenes/scene.level";
         
         static constexpr const char* m_buildScenesPath = "Assets/build_scenes.json";
         static constexpr const char* m_prefsPath = "Editor/prefs.ini";
         static constexpr const char* m_lastSceneKey = "LastScene=";
+
+        std::string m_scenePath = "Assets/Scenes/scene.level";
 	};
 }
 

@@ -3,6 +3,8 @@
 #include "GpuLightStructs.h"
 #include "Object.h"
 
+#include "LibMath/Trigonometry.h"
+
 using namespace Apex;
 using namespace Apex::Lighting;
 
@@ -45,7 +47,7 @@ void SpotLightComponent::FillGpuData(void* data_out)
 
 LibMath::Matrix4 Apex::Lighting::SpotLightComponent::GetProjMatrix() const
 {
-    return LibMath::Matrix4::perspective(LibMath::Radian(m_outerCutoff), 1.f, m_nearShadow, m_farShadow);
+    return LibMath::Matrix4::perspective(LibMath::acos(m_outerCutoff) * 2.f, 1.f, m_nearShadow, m_farShadow);
 }
 
 std::vector<LibMath::Matrix4> Apex::Lighting::SpotLightComponent::GetViewMatrix(Rendering::Camera*) const

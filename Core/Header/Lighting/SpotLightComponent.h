@@ -28,8 +28,8 @@ namespace Apex::Lighting
 		float GetOuterCutoff() const { return m_outerCutoff; }
 
 	private:
-		float m_innerCutoff = 50.f;
-		float m_outerCutoff = 75.f;
+		float m_innerCutoff = 0.64f;
+		float m_outerCutoff = 0.25f;
 		float m_nearShadow = .1f;
 		float m_farShadow = 10.f;
 	};

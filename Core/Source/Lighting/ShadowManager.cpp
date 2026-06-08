@@ -70,7 +70,13 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	int shadowCount = 0;
 	for (DirectionalLightComponent* light : lights.m_directionalLights)
 	{
-		if (!light->IsCastingShadow() || !AcquireCascadedShadowMap(light, camera, shadowCount)) continue;
+		if (!light->IsCastingShadow())
+		{
+			light->SetShadowIdx(-1);
+			continue;
+		}
+
+		if (!AcquireCascadedShadowMap(light, camera, shadowCount)) continue;
 
 		CascadedShadowMap& shadow = m_cascadedShadowMaps[shadowCount];
 
@@ -95,7 +101,13 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	shadowCount = 0;
 	for (SpotLightComponent* light : lights.m_spotLights)
 	{
-		if (!light->IsCastingShadow() || !AcquireShadowMap(light, camera, shadowCount)) continue;
+		if (!light->IsCastingShadow()) 
+		{
+			light->SetShadowIdx(-1);
+			continue;
+		}
+
+		if (!AcquireShadowMap(light, camera, shadowCount)) continue;
 
 		ShadowMap& shadow = m_shadowMaps[shadowCount];
 
@@ -113,7 +125,13 @@ void ShadowManager::RenderShadows(VisibleLights const& lights, Scene* scene, Cam
 	m_omniShader->Use();
 	for (PointLightComponent* light : lights.m_pointLights)
 	{
-		if (!light->IsCastingShadow() || !AcquireShadowCubeMap(light, shadowCount)) continue;
+		if (!light->IsCastingShadow())
+		{
+			light->SetShadowIdx(-1);
+			continue;
+		}
+
+		if (!AcquireShadowCubeMap(light, shadowCount)) continue;
 
 		ShadowCubeMap& shadow = m_shadowCubeMaps[shadowCount];
 
