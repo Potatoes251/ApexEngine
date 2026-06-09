@@ -50,7 +50,7 @@ end
 
 function Fight:CheckEncounter(dt)
     if not isInGrass then return end
-    if true then self:OnBattleStart() return end
+
     self.encounterTimer = self.encounterTimer + dt
     if self.encounterTimer > 1 then
         if math.random(self.encounterChance) == 1 then
