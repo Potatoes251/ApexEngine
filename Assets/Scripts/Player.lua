@@ -45,9 +45,10 @@ function Player:New()
     jumpCombo = 0,
     jumpTimer = 0,
     lungeUpwardForce = 0.2,
-    lungeForwardForce = 4,
+    lungeForwardForce = 20,
     groundPoundForce = 25,
     isGroundPounding = false,
+    hasLunged = false,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -140,12 +141,14 @@ function Player:FixedUpdate(dt)
     end
 
     --lunge
-    if (Input.IsKeyDown("E") and not isGrounded and not isInWater and not self.isGroundPounding) then
+    if (Input.IsKeyDown("E") and not isGrounded and not isInWater and not self.isGroundPounding and not self.hasLunged) then
         local forward = self.cam:GetFront()
         forward.y = 0
         forward = forward:Normalized()
         forward.x = forward.x * self.lungeForwardForce
         forward.z = forward.z * self.lungeForwardForce
+
+        self.hasLunged = true
 
         self.cc:AddImpulse(forward + Vector3.New(0, self.lungeUpwardForce, 0))
     end
@@ -160,6 +163,10 @@ function Player:FixedUpdate(dt)
 
     if (self.isGroundPounding and isGrounded) then
         self.isGroundPounding = false
+    end
+
+    if (self.hasLunged and isGrounded) then
+        self.hasLunged = false
     end
 
     self.wasInWater = isInWater
