@@ -400,7 +400,8 @@ void MeshViewer::RenderScene()
 
     m_rhi->BindFrameBuffer(m_fbo, m_fboWidth, m_fboHeight);
 
-    glClearColor(0.12f, 0.12f, 0.14f, 1.f);
+    m_rhi->SetCullingFace(false);
+    m_rhi->SetClearColor(0.12f, 0.12f, 0.14f, 1.f);
     m_rhi->Clear();
 
     LibMath::Matrix4 matrixViewProj = GetViewProj();

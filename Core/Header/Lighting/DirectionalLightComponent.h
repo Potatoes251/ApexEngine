@@ -17,7 +17,6 @@ namespace Apex::Lighting
 
 		void Serialize(std::ostream& out) const override;
 		const char* GetTypeName() const override { return "DirectionalLight"; }
-		std::vector<ExposedVar> GetExposedVariables() override;
 
 		void FillGpuData(void* data_out) override;
 

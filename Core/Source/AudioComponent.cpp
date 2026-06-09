@@ -39,7 +39,8 @@ void AudioComponent::PlayAt(LibMath::Vector3 pos)
 
 void AudioComponent::Stop()
 {
-	m_engine->StopSound(m_soundHandle);
+	if (m_engine)
+		m_engine->StopSound(m_soundHandle);
 }
 
 void AudioComponent::Serialize(std::ostream& out) const

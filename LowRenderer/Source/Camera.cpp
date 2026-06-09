@@ -20,6 +20,18 @@ void Camera::SetProjectionMatrix(float aspect, float near, float far)
 	m_viewProj = m_proj * m_view;
 }
 
+void Camera::SetYaw(float degree)
+{
+	m_yaw = LibMath::Degree(degree);
+	m_dirty = true;
+}
+
+void Camera::SetPitch(float degree)
+{
+	m_pitch = LibMath::Degree(LibMath::clamp(degree, -89.f, 89.f));
+	m_dirty = true;
+}
+
 LibMath::Matrix4 Camera::GetViewProj()
 {
 	if (m_dirty) UpdateMatrices();
@@ -28,7 +40,6 @@ LibMath::Matrix4 Camera::GetViewProj()
 
 LibMath::Matrix4 Camera::GetProjection()
 {
-	if (m_dirty) UpdateMatrices();
 	return m_proj;
 }
 

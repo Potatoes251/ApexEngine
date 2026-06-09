@@ -35,7 +35,7 @@ namespace Apex::Lighting
 		bool				IsCastingShadow() const { return m_castShadows; }
 	protected:
 		LibMath::Vector3 m_color = LibMath::Vector3(1.f, 1.f, 1.f);
-		float m_intensity = 10.f;
+		float m_intensity = 1.f;
 		int m_shadowIdx = -1;
 		bool m_castShadows = true;
 	};

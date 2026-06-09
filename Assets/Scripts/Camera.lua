@@ -20,6 +20,18 @@ function Camera.Get(obj)
 end
 
 -- Methods
+function Camera:SetMain()
+    return Camera_SetMain_Internal(self)
+end
+
+function Camera:SetYaw(degree)
+    return Camera_SetYaw_Internal(self, degree)
+end
+
+function Camera:SetPitch(degree)
+    return Camera_SetPitch_Internal(self, degree)
+end
+
 function Camera:GetFront()
     return Camera_GetFront_Internal(self)
 end

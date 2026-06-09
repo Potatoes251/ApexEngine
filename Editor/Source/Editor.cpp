@@ -442,6 +442,7 @@ namespace Apex::Editor
         {
             m_app->SetScene(m_editScene->Clone());
             m_app->GetAudio()->StopAll();
+            m_app->Unpause();
             if (m_hierarchy) m_hierarchy->SetScene(m_app->GetScene());
             if (m_componentsViewer) m_componentsViewer->SetScene(m_app->GetScene());
             auto* ui = m_app->GetUI();
