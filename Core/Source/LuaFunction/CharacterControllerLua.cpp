@@ -26,6 +26,10 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("CC_IsGrounded_Internal", Apex::Controller::Lua_CC_IsGrounded);
     lua.RegisterFunction("CC_IsInWater_Internal", Apex::Controller::Lua_CC_IsInWater);
     lua.RegisterFunction("AIC_SetTarget_Internal", Apex::Controller::Lua_AIC_SetTarget);
+    lua.RegisterFunction("CC_SetVelocityX_Internal", Apex::Controller::Lua_CC_SetVelocityX);
+    lua.RegisterFunction("CC_SetVelocityY_Internal", Apex::Controller::Lua_CC_SetVelocityY);
+    lua.RegisterFunction("CC_SetVelocityZ_Internal", Apex::Controller::Lua_CC_SetVelocityZ);
+    lua.RegisterFunction("CC_SetVelocity_Internal", Apex::Controller::Lua_CC_SetVelocity);
 }
 
 int Apex::Controller::Lua_CC_TP(lua_State* L)
@@ -174,6 +178,62 @@ int Apex::Controller::Lua_GetAIController(lua_State* L)
 
     // push component as userdata
     lua_pushlightuserdata(L, cc);
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_SetVelocityX(lua_State* L)
+{
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    float value = (float)luaL_checknumber(L, 2);
+
+    cc->SetVelocityX(value);
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_SetVelocityY(lua_State* L)
+{
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    float value = (float)luaL_checknumber(L, 2);
+
+    cc->SetVelocityY(value);
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_SetVelocityZ(lua_State* L)
+{
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    float value = (float)luaL_checknumber(L, 2);
+
+    cc->SetVelocityZ(value);
+
+    return 1;
+}
+
+int Apex::Controller::Lua_CC_SetVelocity(lua_State* L)
+{
+    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
+
+    if (!cc)
+        return 0;
+
+    LuaVector3* velocity = CheckVector3(L, 2);
+
+    cc->SetVelocity(velocity->m_value);
 
     return 1;
 }

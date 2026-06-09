@@ -42,6 +42,13 @@ function Player:New()
     invincibleTimer = 0,
     damageTimer = 0,
     canFire = false,
+    jumpCombo = 0,
+    jumpTimer = 0,
+    lungeUpwardForce = 0.2,
+    lungeForwardForce = 20,
+    groundPoundForce = 25,
+    isGroundPounding = false,
+    hasLunged = false,
     }
     setmetatable(instance, { __index = self })
     return instance
@@ -96,24 +103,70 @@ function Player:FixedUpdate(dt)
 
     self:ProcessInput(dt)
 
+    self.jumpTimer = self.jumpTimer - dt
+
     self.anim:SetBlendRatio(self.smoothBlend)
 
     isGrounded = self.cc:IsGrounded()
     isInWater = self.cc:IsInWater()
 
-    if Input.IsKeyDown("Space") and isGrounded and not isInWater then
+    --jump
+    if (Input.IsKeyDown("Space") and isGrounded and not isInWater and not self.isGroundPounding) then
         if self.smoothBlend > 0.5 then
             self.anim:StartCrossfade("Walking", "Jump", 0.5, true)
         else
             self.anim:StartCrossfade("Idle", "Jump", 0.5, true)
         end
-        self.cc:Jump()
+
+        if self.jumpTimer <= 0 then
+            self.jumpCombo = 0
+        end
+
+        self.jumpCombo = self.jumpCombo + 1
+        self.jumpTimer = 0.5
+
+        if self.jumpCombo == 1 then
+            self.cc:SetVelocityY(8)
+        elseif self.jumpCombo == 2 then
+            self.cc:SetVelocityY(11)
+        elseif self.jumpCombo == 3 then
+            self.cc:SetVelocityY(16)
+        end
     end
 
     if (not self.wasGrounded and isGrounded and not isInWater) or (self.wasInWater and not isInWater) then 
         self.anim:StartBlend("Idle", "Walking", 0, true)
     elseif not self.wasInWater and isInWater then
         self.anim:StartBlend("Idle", "Swimming", 0, true)
+    end
+
+    --lunge
+    if (Input.IsKeyDown("E") and not isGrounded and not isInWater and not self.isGroundPounding and not self.hasLunged) then
+        local forward = self.cam:GetFront()
+        forward.y = 0
+        forward = forward:Normalized()
+        forward.x = forward.x * self.lungeForwardForce
+        forward.z = forward.z * self.lungeForwardForce
+
+        self.hasLunged = true
+
+        self.cc:Move(forward + Vector3.New(0, self.lungeUpwardForce, 0))
+    end
+
+    --groundPound
+    if (Input.IsKeyDown("Ctrl") and not isGrounded and not isInWater and not self.isGroundPounding) then
+        self.isGroundPounding = true
+        self.cc:SetVelocityX(0)
+        self.cc:SetVelocityY(-self.groundPoundForce)
+        self.cc:SetVelocityZ(0)
+    end
+
+    if (self.isGroundPounding and isGrounded) then
+        self.isGroundPounding = false
+    end
+
+    if (self.hasLunged and isGrounded) then
+        self.hasLunged = false
     end
 
     self.wasInWater = isInWater
