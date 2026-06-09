@@ -122,7 +122,7 @@ function Fight:OnBattleEnd()
     self.playerScript:StartAnim()
     HideMouse()
     self.camera:SetEnabled(true)
-    --self.camera:SetMain()
+    self.camera:SetMain()
 end
 
 function Fight:StartPlayerTurn()
