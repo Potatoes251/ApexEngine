@@ -1,9 +1,12 @@
 #version 420 core
 
+#define CASCADE_COUNT 4
+
 in vec3 vFragPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 in vec4 FragPosLightSpace[10];
+in float vViewSpaceDepth;
 
 uniform int       uUseTexture;
 uniform vec3      uTint;
@@ -13,6 +16,7 @@ layout(binding = 0) uniform sampler2D uTexture;
 uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
+uniform float cascadeSplits[CASCADE_COUNT];
 
 // 5-14 regular shadow maps
 layout(binding = 5) uniform sampler2D		shadowMap[10];
@@ -71,24 +75,31 @@ layout(std140, binding = 2) uniform SpotLightBuffer
 
 out vec4 FragColor;
 
+int SelectCascade(int shadowIdx)
+{
+    for (int c = 0; c < CASCADE_COUNT; c++)
+    {
+        if (vViewSpaceDepth < cascadeSplits[c])
+            return shadowIdx + c;  // shadowIdx is the base slot for this light
+    }
+    return shadowIdx + CASCADE_COUNT - 1; // fallback to last cascade
+}
 
 float ShadowCalculation(DirLight light)
 {
 	int shadowIdx = int(light.param.y);
-    vec3 projCoords = FragPosLightSpace[shadowIdx].xyz / FragPosLightSpace[shadowIdx].w;
+	int cascadeIdx = SelectCascade(shadowIdx);
+	int localCascade = cascadeIdx - shadowIdx;
+    vec3 projCoords = FragPosLightSpace[cascadeIdx].xyz / FragPosLightSpace[cascadeIdx].w;
     projCoords = projCoords * 0.5 + 0.5;
 
     if (projCoords.z > 1.0)
         return 0.0;
 
-    float closestDepth  = texture(shadowMap[shadowIdx], projCoords.xy).r;
+    float closestDepth  = texture(shadowMap[cascadeIdx], projCoords.xy).r;
     float currentDepth  = projCoords.z;
 
-	float texelSize = 1.0 / textureSize(shadowMap[shadowIdx], 0).x;
-	
-	// fix acne
-	float bias = 0;
-	bias = max(0.005 * (1.0 - dot(vNormal, -light.dir.xyz)), 0.005);
+	float texelSize = 1.0 / textureSize(shadowMap[cascadeIdx], 0).x;
 
 	// make shadow smoother
 	float shadow = 0.0;
@@ -96,13 +107,11 @@ float ShadowCalculation(DirLight light)
 	{
 	    for(int y = -1; y <= 1; ++y)
 	    {
-	        float pcfDepth = texture(shadowMap[shadowIdx], projCoords.xy + vec2(x, y) * texelSize).r; 
-	        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+	        float pcfDepth = texture(shadowMap[cascadeIdx], projCoords.xy + vec2(x, y) * texelSize).r; 
+	        shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
 	    }    
 	}
 	shadow /= 9.0;
-
-	//shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     return shadow;
 }
@@ -254,6 +263,9 @@ vec3 CalcSpotLight(SpotLight light, vec3 diffuseTex, vec3 specTex)
     float epsilon = light.param.z - light.param.w;
     float intensity = clamp((theta - light.param.w) / epsilon, 0.0, 1.0);
 	
+	if (theta < light.param.w)
+		return vec3(0.0);
+
 	vec3 ambient = 0.3 * light.color.xyz * diffuseTex;
 	
 	float diff = max(dot(normal, lightDirection), 0.0);

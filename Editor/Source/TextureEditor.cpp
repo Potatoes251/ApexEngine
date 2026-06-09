@@ -300,7 +300,7 @@ namespace Apex::Editor
             pickerClicked = m_gui.Button(m_pickerModeActive ? "[X]" : "[.]");
 
         if (m_pickerModeActive)
-            m_gui.PopColor();   // always pop — state captured before the button
+            m_gui.PopColor();   // always pop ï¿½ state captured before the button
 
         if (pickerClicked)
         {
@@ -673,7 +673,7 @@ namespace Apex::Editor
         LibMath::Vector2 swatchMin(cursor[0], cursor[1]);
         LibMath::Vector2 swatchMax(swatchMin[0] + DETAILS_WIDTH - 20.f, swatchMin[1] + 28.f);
 
-        // Clamp to [0,1] for display — HDR values above 1 are shown as white
+        // Clamp to [0,1] for display ï¿½ HDR values above 1 are shown as white
         auto clamp01 = [](float v) { return v < 0.f ? 0.f : (v > 1.f ? 1.f : v); };
         uint32_t color32 =
             (uint32_t(clamp01(m_pickedColor.m_a) * 255.f) << 24) |
@@ -691,7 +691,7 @@ namespace Apex::Editor
 
         if (IsHDR())
         {
-            // HDR — show raw float values, may exceed 1.0
+            // HDR ï¿½ show raw float values, may exceed 1.0
             m_gui.Text("R: " + fmtFloat(m_pickedColor.m_r) +
                 "  G: " + fmtFloat(m_pickedColor.m_g) +
                 "  B: " + fmtFloat(m_pickedColor.m_b) +
@@ -748,7 +748,7 @@ namespace Apex::Editor
             });
 
         // 2. Info & Size Estimates
-        static const char* hints[] = { "Uncompressed RGBA8", "~6:1 — diffuse", "~4:1 — alpha", "~2:1 — linear", "~2:1 — normal" };
+        static const char* hints[] = { "Uncompressed RGBA8", "~6:1 ï¿½ diffuse", "~4:1 ï¿½ alpha", "~2:1 ï¿½ linear", "~2:1 ï¿½ normal" };
         drawRow("Info:", [&] { m_gui.TextDisabled(hints[static_cast<int>(m_compression)]); });
 
         if (m_compression != CompressionFormat::None && m_width > 0) 
@@ -1071,14 +1071,14 @@ namespace Apex::Editor
 
         if (!m_pixelsHDR.empty())
         {
-            // HDR export — write as .hdr (RGBE)
+            // HDR export ï¿½ write as .hdr (RGBE)
             if (dest.extension().empty()) dest += ".hdr";
             stbi_write_hdr(dest.string().c_str(),
                 m_width, m_height, 4, m_pixelsHDR.data());
         }
         else
         {
-            // LDR export — prefer PNG, fallback to JPG
+            // LDR export ï¿½ prefer PNG, fallback to JPG
             if (dest.extension().empty()) dest += ".png";
             std::string destStr = dest.string();
             int success = stbi_write_png(destStr.c_str(),

@@ -29,38 +29,18 @@ using namespace Apex::Physic;
 
 namespace Apex::Rendering
 {
-	std::unique_ptr<Scene> Scene::Clone()
+	std::unique_ptr<Scene> Scene::Clone() const
 	{
 		std::unique_ptr<Scene> copy = std::make_unique<Scene>();
 		copy->m_skybox = std::make_unique<Skybox>(*m_skybox);
 		copy->m_graph = m_graph;
+		copy->m_shader = m_shader;
+		copy->m_name = m_name;
 
-		for (const auto& obj : m_objects)
-		{
-			copy->m_objects.push_back(obj->Clone());
-			std::unique_ptr<Object>& newObj = copy->m_objects.back();
+		CloneObjects(copy);
+		ReparentObjects(copy);
 
-			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
-			Collider* collider = newObj->GetComponent<Collider>();
-
-			if (body && collider)
-			{
-				PhysMatHandle mat = collider->GetMaterial();
-
-				if (mat.IsValid())
-					collider->SetMaterial(copy->m_physics.CreateMaterial(
-						mat->GetPath(), mat->MutStaticFriction(), mat->MutDynamicFriction(), mat->MutBounciness()));
-				
-				copy->m_physics.CreateActor(*collider, *body);
-			}
-
-			newObj->SetOnChangedCallback([this]()
-				{
-					MarkDirty();
-				});
-		}
-
-		for (auto& obj : copy->m_objects)
+		for (auto const& obj : copy->m_objects)
 		{
 			Camera* cam = obj->GetComponent<Camera>();
 			if (cam && cam->IsMainCamera())
@@ -73,11 +53,11 @@ namespace Apex::Rendering
 		return copy;
 	}
 
-	Lighting::VisibleLights Scene::GetVisibleLights()
+	Lighting::VisibleLights Scene::GetVisibleLights() const
 	{
 		Lighting::VisibleLights visibleLights;
 
-		for (std::unique_ptr<Object>& obj : m_objects)
+		for (std::unique_ptr<Object> const& obj : m_objects)
 		{
 			Lighting::DirectionalLightComponent* dirLight = obj->GetComponent<Lighting::DirectionalLightComponent>();
 
@@ -109,6 +89,22 @@ namespace Apex::Rendering
 			});
 
 		m_objects.push_back(std::move(obj));
+		MarkDirty();
+
+		return ptr;
+	}
+
+	Object* Scene::CreateObjectRunTime()
+	{
+		auto obj = std::make_unique<Object>();
+		Object* ptr = obj.get();
+
+		obj->SetOnChangedCallback([this]()
+			{
+				MarkDirty();
+			});
+
+		m_createdObjects.push_back(std::move(obj));
 		MarkDirty();
 
 		return ptr;
@@ -150,6 +146,15 @@ namespace Apex::Rendering
 
 		std::shared_ptr<Apex::SceneGraph::SceneNode> node = obj->GetSceneNode();
 
+		if (node)
+		{
+			for (auto const& child : node->GetChildren())
+			{
+				if (child && child->GetObject())
+					DestroyObject(child->GetObject());
+			}
+		}
+
 		if (node && node->GetParent())
 			node->Destroy();
 
@@ -184,7 +189,7 @@ namespace Apex::Rendering
 		}
 	}
 
-	void Scene::MarkDirty()
+	void Scene::MarkDirty() const
 	{
 		m_isDirty = true;
 		if (m_onMarkedDirty)
@@ -229,6 +234,12 @@ namespace Apex::Rendering
 			obj->LateUpdate(deltaTime_s);
 		}
 
+		for (auto& obj : m_createdObjects)
+		{
+			m_objects.push_back(std::move(obj));
+		}
+		m_createdObjects.clear();
+
 		DestroyPendingObject();
 	}
 
@@ -261,9 +272,18 @@ namespace Apex::Rendering
 
 	void Scene::Render(RenderPassInfo passInfo)
 	{
+		if (!passInfo.m_shader.IsReady())
+		{
+			passInfo.m_shader = m_shader;
+		}
+		if (!passInfo.m_shader.IsReady()) return;
+
+		passInfo.m_shader->Use();
+
+		if (passInfo.m_rhi) passInfo.m_rhi->SetCullingFace(false);
+
 		for (MeshRenderer* renderer : GetComponents<MeshRenderer>())
 		{
-			passInfo.m_id = renderer->GetOwner()->GetId();
 			renderer->Render(passInfo);
 		}
 		if (passInfo.m_flags & RenderSkybox && passInfo.m_camera)
@@ -272,6 +292,7 @@ namespace Apex::Rendering
 			view[3][0] = 0;
 			view[3][1] = 0;
 			view[3][2] = 0;
+			if (passInfo.m_rhi) passInfo.m_rhi->SetCullingFace(true);
 			m_skybox->Render(passInfo.m_camera->GetProjection() * view);
 		}
 		if (passInfo.m_flags & ShowCollider)
@@ -348,13 +369,13 @@ namespace Apex::Rendering
 		MarkDirty();
 	}
 
-	void Scene::Save(const std::string& path)
+	void Scene::Save()
 	{
-		std::ofstream file(path);
+		std::ofstream file(m_name);
 
 		if (!file)
 		{
-			LOG_ERROR("Scene::Save Failed to open file : {}", path);
+			LOG_ERROR("Scene::Save Failed to open file : {}", m_name);
 			return;
 		}
 
@@ -363,45 +384,15 @@ namespace Apex::Rendering
 
 		file << "{\n";
 
-		file << "\"materials\": [\n";
-
-		auto& materials = m_physics.GetMaterials();
-
-		bool first = true;
-
-		for (auto const& [name, entry] : materials)
-		{
-			auto* material = dynamic_cast<PhysicMaterial*>(entry.m_resource.get());
-			if (!material)
-				continue;
-
-			if (!first)
-				file << ",\n";
-
-			first = false;
-
-			file <<
-				"  {\n"
-				"    \"id\": " << material->GetId() << ",\n"
-				"    \"static friction\": " << material->MutStaticFriction() << ",\n"
-				"    \"dynamic friction\": " << material->MutDynamicFriction() << ",\n"
-				"    \"bounciness\": " << material->MutBounciness() << "\n"
-				"  }";
-		}
-
-		file << "\n],\n";
-
 		file << "\"objects\": [\n";
 
-		for (size_t i = 0; i < m_objects.size(); i++)
+		for (const auto& obj : m_objects)
 		{
-			auto& obj = m_objects[i];
-
 			const auto& transform = obj->GetLocalTransform();
 
-			auto pos = transform.getPosition();
-			auto rot = transform.getRotation();
-			auto scale = transform.getScale();
+			auto const& pos = transform.getPosition();
+			auto const& rot = transform.getRotation();
+			auto const& scale = transform.getScale();
 
 			Apex::SceneGraph::SceneNode* node = obj->GetSceneNode().get();
 
@@ -416,9 +407,9 @@ namespace Apex::Rendering
 			file << "    \"id\": " << obj->GetId() << ",\n";
 			file << "    \"parent\": " << (parentId == SIZE_MAX ? "null" : std::to_string(parentId)) << ",\n";
 			file << "    \"name\": \"" << obj->GetName() << "\",\n";
-			file << "    \"position\": [" << pos[0] << "," << pos[1] << "," << pos[2] << "],\n";
+			file << "    \"position\": " << pos << ",\n";
 			file << "    \"rotation\": [" << rot[0] << "," << rot[1] << "," << rot[2] << "," << rot[3] << "],\n";
-			file << "    \"scale\": [" << scale[0] << "," << scale[1] << "," << scale[2] << "],\n";
+			file << "    \"scale\": " << scale << ",\n";
 
 			file << "    \"components\": {\n";
 
@@ -440,7 +431,7 @@ namespace Apex::Rendering
 			file << "\n    }\n";
 			file << "  }";
 
-			if (i < m_objects.size() - 1)
+			if (obj != m_objects.back())
 				file << ",";
 
 			file << "\n";
@@ -449,13 +440,56 @@ namespace Apex::Rendering
 		file << "]\n";
 		file << "}\n";
 
-		LOG_INFO("Scene saved to {}", path);
+		LOG_INFO("Scene saved to {}", m_name);
 
 		ClearDirty();
 	}
+
 	void Scene::SetOnMarkedDirtyCallback(std::function<void()> callback)
 	{
 		if (callback)
 			m_onMarkedDirty = callback;
+	}
+
+	void Scene::CloneObjects(std::unique_ptr<Scene>& copy) const
+	{
+		for (const auto& obj : m_objects)
+		{
+			copy->m_objects.push_back(obj->Clone());
+			std::unique_ptr<Object>& newObj = copy->m_objects.back();
+
+			RigidBodyComponent* body = newObj->GetComponent<RigidBodyComponent>();
+			Collider* collider = newObj->GetComponent<Collider>();
+
+			if (body && collider)
+			{
+				copy->m_physics.CreateActor(*collider, *body);
+			}
+
+			newObj->SetOnChangedCallback([this]()
+				{
+					MarkDirty();
+				});
+		}
+	}
+
+	void Scene::ReparentObjects(std::unique_ptr<Scene>& copy) const
+	{
+		for (const auto& obj : m_objects)
+		{
+			for (auto const& child : obj->GetSceneNode()->GetChildren())
+			{
+				size_t parentId = obj->GetId();
+				size_t childId = child->GetObject()->GetId();
+
+				auto parentIt = std::find_if(copy->m_objects.begin(), copy->m_objects.end(),
+					[parentId](const auto& o) { return o->GetId() == parentId; });
+				auto childIt = std::find_if(copy->m_objects.begin(), copy->m_objects.end(),
+					[childId](const auto& o) { return o->GetId() == childId; });
+
+				if (parentIt != copy->m_objects.end() && childIt != copy->m_objects.end())
+					(*parentIt)->GetSceneNode()->AddChild((*childIt)->GetSceneNode());
+			}
+		}
 	}
 }

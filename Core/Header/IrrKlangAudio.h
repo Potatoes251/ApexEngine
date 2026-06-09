@@ -2,14 +2,14 @@
 #define IRRKLANG_AUDIO
 
 // ================================================================================
-// IrrKlangAudio.h — INTERNAL. Do NOT include outside the audio implementation.
+// IrrKlangAudio.h - INTERNAL. Do NOT include outside the audio implementation.
 // ================================================================================
 
 #include "Audio.h"
 
 #include <unordered_map>
 
-// Forward-declare irrKlang types — keeps this header clean.
+// Forward-declare irrKlang types - keeps this header clean.
 namespace irrklang
 {
     class ISoundEngine;

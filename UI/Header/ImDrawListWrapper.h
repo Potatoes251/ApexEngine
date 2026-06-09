@@ -1,9 +1,11 @@
 #ifndef IMDRAWLISTWRAPPER_H
 #define IMDRAWLISTWRAPPER_H
+
 // ============================================================
 // ImDrawListWrapper.h - INTERNAL.
 // Concrete IDrawList backed by ImDrawList.
 // ============================================================
+
 #include "IDrawList.h"
 
 struct ImDrawList;

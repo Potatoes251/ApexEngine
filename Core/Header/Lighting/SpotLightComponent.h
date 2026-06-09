@@ -12,8 +12,6 @@ namespace Apex::Lighting
 		SpotLightComponent() = default;
 		SpotLightComponent(LibMath::Vector3 color, float intensity, float innerCutoff, float outerCutoff);
 		~SpotLightComponent() = default;
-		SpotLightComponent(SpotLightComponent const& other);
-		SpotLightComponent& operator=(SpotLightComponent const& other);
 
 		std::unique_ptr<Component> Clone() override { return std::make_unique<SpotLightComponent>(*this); }
 
@@ -26,12 +24,12 @@ namespace Apex::Lighting
 		LibMath::Matrix4	GetProjMatrix() const override;
 		std::vector<LibMath::Matrix4>	GetViewMatrix(Rendering::Camera*) const override;
 
-
 		float GetInnerCutoff() const { return m_innerCutoff; }
 		float GetOuterCutoff() const { return m_outerCutoff; }
+
 	private:
-		float m_innerCutoff = 50.f;
-		float m_outerCutoff = 75.f;
+		float m_innerCutoff = 0.64f;
+		float m_outerCutoff = 0.25f;
 		float m_nearShadow = .1f;
 		float m_farShadow = 10.f;
 	};

@@ -87,9 +87,4 @@ void CommandManager::Redo()
 	cmd->Execute();
 
 	m_undoStack.push_back(std::move(cmd));
-
-	if (m_undoStack.size() > MAX_SIZE)
-	{
-		m_undoStack.pop_front();
-	}
 }

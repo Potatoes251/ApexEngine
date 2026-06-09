@@ -2,11 +2,20 @@
 
 #include "Object.h"
 
+#include "Application.h"
+
 using namespace Apex::Audio;
 
 AudioComponent::~AudioComponent()
 {
 	Stop();
+}
+
+void AudioComponent::OnStart()
+{
+	m_engine = Application::Get()->GetAudio();
+	if (!m_sound.empty())
+		m_engine->Preload(m_sound); // loads into cache, no playback
 }
 
 void AudioComponent::Play()

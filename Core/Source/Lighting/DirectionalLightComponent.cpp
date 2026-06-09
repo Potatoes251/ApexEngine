@@ -7,20 +7,6 @@
 using namespace Apex;
 using namespace Apex::Lighting;
 
-DirectionalLightComponent::DirectionalLightComponent(DirectionalLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-}
-
-DirectionalLightComponent& DirectionalLightComponent::operator=(DirectionalLightComponent const& other)
-{
-    m_color = other.m_color;
-    m_intensity = other.m_intensity;
-
-    return *this;
-}
-
 void DirectionalLightComponent::Serialize(std::ostream& out) const
 {
     out << "        \"color\": ["
@@ -30,16 +16,6 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
     out << "        \"intensity\": " << m_intensity << ",\n";
     out << "        \"shadowDistance\": " << m_shadowDistance << ",\n";
     out << "        \"shadowExtent\": " << m_shadowExtents << "\n";
-}
-
-std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()
-{
-    std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
-
-    exposedVec.push_back({ "Shadow Distance", ExposedVar::Float, &m_shadowDistance });
-    exposedVec.push_back({ "Shadow Extent", ExposedVar::Float, &m_shadowExtents });
-
-    return exposedVec;
 }
 
 void DirectionalLightComponent::FillGpuData(void* data_out)
@@ -71,4 +47,23 @@ std::vector<LibMath::Matrix4> DirectionalLightComponent::GetViewMatrix(Rendering
     }
 
     return { LibMath::Matrix4::lookAt(eye, sceneCenter, worldUp) };
+}
+
+LibMath::Matrix4 DirectionalLightComponent::GetViewMatrix(std::array<LibMath::Vector3, 8> const& sliceCorners) const
+{
+    // Compute center of the slice frustum
+    LibMath::Vector3 center = { 0.f, 0.f, 0.f };
+    for (const auto& corner : sliceCorners)
+        center += corner;
+    center /= 8.f;
+
+    LibMath::Vector3 forward = GetOwner()->GetGlobalTransform().getForward().normalized();
+
+    LibMath::Vector3 eye = center - forward; // distance doesn't matter for directional
+
+    LibMath::Vector3 worldUp = LibMath::Vector3::up();
+    if (fabs(forward.dot(worldUp)) > 0.999f)        // avoid up and forward being identical
+        worldUp = LibMath::Vector3(0.f, 0.f, 1.f);
+
+    return LibMath::Matrix4::lookAt(eye, center, worldUp);
 }

@@ -53,10 +53,8 @@
 * Function parameters used to output data must have their name ending with "\_out" (ex: var\_out)
 * Single-letter variables may only be used as iterators in for loops and for math (x, y, z)
 * In cpp files, the first include statement must be the one directly associated to the file (ex: vector.cpp must first include vector.h)
-* Different groups of include statements must be separated by an empty line
 * Do not typedef primitive types
 * "using namespace" keyword is prohibited if namespace is from c++ standard or an external library (including LibMath)
 * Only one class per header/cpp pair (can still have several nested class, Struct, Enum)
 * Only one instruction per line allowed excepted break; in switch (ex: a++; b++; -> prohibited)
-* No variable assignement in if statement conditions
 

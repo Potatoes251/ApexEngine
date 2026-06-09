@@ -12,5 +12,4 @@ function Coin:Start()
     self:AddTag("Coin")
 end
 
-
 return Coin

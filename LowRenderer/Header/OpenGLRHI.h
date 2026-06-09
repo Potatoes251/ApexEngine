@@ -21,6 +21,8 @@ namespace Apex::Rendering
 		void SetClearColor(float r, float g, float b, float a = 1.f) override;
 		void Clear() override;
 		void ClearDepth() override;
+		void SetCullingFace(bool front) override;
+		void SetCullingEnabled(bool enabled) override;
 
 		RHIVAOHandle	CreateVAO() override;
 		void			BindVAO(RHIVAOHandle vao) override;
@@ -64,6 +66,7 @@ namespace Apex::Rendering
 		void DispatchCompute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) override;
 		void SetUniformInt(RHIShaderHandle shader, const std::string_view& name, int value) override;
 		void SetUniformFloat(RHIShaderHandle shader, const std::string_view& name, float value) override;
+		void SetUniformFloatArray(RHIShaderHandle shader, const std::string_view& name, const float& value, int count) override;
 		void SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec) override;
 		void SetUniformVec4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector4& vec) override;
 		void SetUniformMat4(RHIShaderHandle shader, const std::string_view& name, const LibMath::Matrix4& matrix) override;
@@ -86,6 +89,11 @@ namespace Apex::Rendering
 		uint32_t GetShader(RHIShaderHandle handle)  const;
 
 	private:
+		uint32_t NewHandle() { return m_nextHandle++; }
+
+		static GLuint       CompileShader(const std::string& path, GLenum type);
+		static std::string  ReadFile(const std::string& path);
+
 		std::unordered_map<RHIBufferHandle, GLuint>			m_buffers;
 		std::unordered_map<RHIFrameBufferHandle, GLuint>	m_frameBuffers;
 		std::unordered_map<RHIUniformBufferHandle, GLuint>	m_uniformBuffers;
@@ -94,12 +102,6 @@ namespace Apex::Rendering
 		std::unordered_map<RHIShaderHandle, GLuint>			m_shaders;
 
 		uint32_t m_nextHandle = 1;
-
-		uint32_t NewHandle() { return m_nextHandle++; }
-
-
-		static GLuint       CompileShader(const std::string& path, GLenum type);
-		static std::string  ReadFile(const std::string& path);
 	};
 }
 

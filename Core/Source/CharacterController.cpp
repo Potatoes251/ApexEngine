@@ -85,9 +85,6 @@ void CharacterController::OnFixedUpdate(float deltatime_s)
 		return;
 	}
 
-	std::vector<HitResult> hits;
-	HitResult hit;
-
 	LibMath::Vector3 remaining = displacement;
 	constexpr int MAX_ITERATIONS = 3;
 
@@ -147,10 +144,12 @@ void CharacterController::Serialize(std::ostream& out) const
 
 std::vector<Apex::ExposedVar> CharacterController::GetExposedVariables()
 {
-	return { { "Distance to ground", ExposedVar::Float, &m_groundedDistance },
-			{ "Speed", ExposedVar::Float, &m_speed },
-			{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
-			{ "Density", ExposedVar::Float, &m_density },
+	return 
+	{	
+		{ "Distance to ground", ExposedVar::Float, &m_groundedDistance },
+		{ "Speed", ExposedVar::Float, &m_speed },
+		{ "Rotation Speed", ExposedVar::Float, &m_rotationSpeed },
+		{ "Density", ExposedVar::Float, &m_density },
 	};
 }
 
@@ -159,8 +158,12 @@ bool CharacterController::FindClosestHit(std::vector<HitResult> const& hits, Hit
 	bool found = false;
 	for (HitResult const& hit : hits)
 	{
-		if (hit.m_body != m_body 
-			&& !hit.m_collider->IsTrigger()
+		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
+		if (!obj) continue;
+		Collider* collider = dynamic_cast<Collider*>(obj->GetComponent(hit.m_colliderId));
+		RigidBodyComponent* body = dynamic_cast<RigidBodyComponent*>(obj->GetComponent(hit.m_bodyId));
+		if (body != m_body
+			&& !collider->IsTrigger()
 			&& (!found || hit.m_distance < closest_out.m_distance))
 		{
 			closest_out = hit;

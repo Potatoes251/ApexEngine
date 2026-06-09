@@ -1,7 +1,7 @@
 #ifndef MESH_LOADER
 #define MESH_LOADER
 
-#include "Mesh.h"
+class Model;
 
 #include <string>
 
@@ -15,10 +15,10 @@ public:
 
 	// regular loading use custom files
 
-	static void Load(std::string path, Mesh& mesh);
+	static void Load(std::string const& path, Model& model);
 	// force skip custom file and overwrite them
 	
-	static void Import(std::string path);
+	static void Import(std::string const& path);
 
 private:
 	static bool IsBinFile(std::string const& extension);

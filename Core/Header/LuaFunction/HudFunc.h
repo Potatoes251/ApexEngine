@@ -48,6 +48,10 @@ namespace Apex::HudBindings
 
     // UIPanel
     int Lua_HUD_SetPanelColor(lua_State* L);
+
+    // UIButton
+    int Lua_HUD_SetButtonCallBack(lua_State* L);
+    int Lua_HUD_PressButton(lua_State* L);
 }
 
 #endif

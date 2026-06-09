@@ -15,6 +15,11 @@ namespace Apex::Audio
     int Lua_AudioComp_Play(lua_State* L);
     int Lua_AudioComp_Play3D(lua_State* L);
     int Lua_AudioComp_PlayAt(lua_State* L);
+	int Lua_AudioComp_Stop(lua_State* L);
+	int Lua_AudioComp_SetSound(lua_State* L);
+	int Lua_AudioComp_SetVolume(lua_State* L);
+	int Lua_AudioComp_SetChannel(lua_State* L);
+	int Lua_AudioComp_SetLoop(lua_State* L);
 
     int Lua_GetAudioComponent(lua_State* L);
 }

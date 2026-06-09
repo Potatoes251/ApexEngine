@@ -31,6 +31,7 @@ namespace Apex::Rendering
 		std::unique_ptr<Component> Clone() override { return std::make_unique<ThirdPersonCamera>(*this); }
 
 		void Teleport(LibMath::Vector3 pos) override;
+		void OnStart() override;
 		void OnLateUpdate(float deltatime_s) override;
 
 	private:

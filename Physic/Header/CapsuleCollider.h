@@ -10,10 +10,10 @@ namespace Apex::Physic
 	class CapsuleCollider : public Collider
 	{
 	public:
-		CapsuleCollider(float halfHeight, float radius, bool isTrigger, PhysMatHandle material = PhysMatHandle())
-			: m_halfHeight(halfHeight), m_radius(radius), Collider(material, isTrigger) {}
-		CapsuleCollider(CapsuleCollider const& other);
-		CapsuleCollider& operator=(CapsuleCollider const& other);
+		CapsuleCollider(float halfHeight, float radius, bool isTrigger)
+			: m_halfHeight(halfHeight), m_radius(radius), Collider(isTrigger) {}
+		CapsuleCollider(CapsuleCollider const&) = default;
+		CapsuleCollider& operator=(CapsuleCollider const&) = default;
 
 		void Serialize(std::ostream& out) const override;
 

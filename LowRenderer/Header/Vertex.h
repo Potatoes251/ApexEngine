@@ -2,10 +2,11 @@
 #define VERTEX
 
 // ============================================================
-// Vertex.h — Plain vertex layout shared between the RHI,
+// Vertex.h - Plain vertex layout shared between the RHI,
 // resource system, physics, and any other code that needs
 // the vertex format without pulling in the full RHI interface.
 // ============================================================
+
 #include "LibMath/Vector/Vector4.h"
 
 namespace Apex::Rendering

@@ -2,26 +2,15 @@
 
 #include "Log.h"
 
-#include "../../Physic/Header/DebugRenderer.h"
-
 using namespace Apex::Rendering;
 
 using Apex::Component;
 using Apex::ExposedVar;
 
-Animator::Animator(ResourceHandle<Mesh> mesh) : m_mesh(mesh)
-{}
-
-Animator::Animator(const Animator& other)
-{
-	m_mesh = other.m_mesh;
-	m_fps = other.m_fps;
-}
-
 void Animator::Serialize(std::ostream& out) const
 {
 	out << "        \"fps\": " << m_fps << ",\n";
-	out << "		\"Mesh\": \"" << m_mesh->GetPath() << "\"\n";
+	out << "		\"model\": \"" << m_model->GetPath() << "\"\n";
 }
 
 
@@ -39,37 +28,17 @@ std::vector<ExposedVar> Animator::GetExposedVariables()
 	};
 }
 
-void Animator::SetMesh(ResourceHandle<Mesh> mesh)
+void Animator::SetModel(ResourceHandle<Model> model)
 {
-	m_mesh = mesh;
+	m_model = model;
 
-	m_boneCount = static_cast<int>(mesh->m_bones.size());
+	m_boneCount = static_cast<int>(m_model->m_skeleton.size());
 	m_skeletonMatrix.resize(m_boneCount);
-
-	for (size_t i = 0; i < m_boneCount; i++)
-	{
-		m_skeletonMatrix[i] = m_mesh->m_bones[i].m_offsetMatrix;
-	}
 }
 
 void Animator::SetFPS(float fps)
 {
 	m_fps = fps;
-}
-
-void Animator::DrawSkeleton(std::vector<KeyFrame>& globalSkeleton)
-{
-	for (int bone = 0; bone < m_boneCount; ++bone)
-	{
-		int parent = m_mesh->m_bones[bone].m_parentIndex;
-		if (parent < 0)
-			continue;
-
-		LibMath::Vector3 a = GetPos(globalSkeleton[bone].m_matrix);
-		LibMath::Vector3 b = GetPos(globalSkeleton[parent].m_matrix);
-
-		DebugRenderer::Get().AddLine(a, b); // red lines
-	}
 }
 
 void Animator::OnUpdate(float deltaTime)
@@ -128,7 +97,7 @@ void Animator::PlayRepeat(int animationIndex)
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndex];
+		m_animationA = &m_model->GetAnimations()[animationIndex];
 		m_elapse = 0.f;
 		m_state = PlaySingleAnim;
 	}
@@ -143,7 +112,7 @@ void Animator::PlayRepeatInterpolated(int animationIndex)
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndex];
+		m_animationA = &m_model->GetAnimations()[animationIndex];
 		m_elapse = 0.f;
 		m_state = PlaySingleAnimInterpolated;
 	}
@@ -162,8 +131,8 @@ void Animator::PlayCrossFade(int animationIndexA, int animationIndexB, float cro
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndexA];
-		m_animationB = &m_mesh->m_animations[animationIndexB];
+		m_animationA = &m_model->GetAnimations()[animationIndexA];
+		m_animationB = &m_model->GetAnimations()[animationIndexB];
 
 		m_state = PlayCrossFadeAnim;
 
@@ -187,8 +156,8 @@ void Animator::PlayCrossFadeInterpolated(int animationIndexA, int animationIndex
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndexA];
-		m_animationB = &m_mesh->m_animations[animationIndexB];
+		m_animationA = &m_model->GetAnimations()[animationIndexA];
+		m_animationB = &m_model->GetAnimations()[animationIndexB];
 
 		m_state = PlayCrossFadeAnimInterpolated;
 
@@ -212,8 +181,8 @@ void Animator::PlayBlended(int animationIndexA, int animationIndexB, float ratio
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndexA];
-		m_animationB = &m_mesh->m_animations[animationIndexB];
+		m_animationA = &m_model->GetAnimations()[animationIndexA];
+		m_animationB = &m_model->GetAnimations()[animationIndexB];
 
 		m_state = PlayBlendSpaceAnim;
 
@@ -236,8 +205,8 @@ void Animator::PlayBlendedInterpolated(int animationIndexA, int animationIndexB,
 	}
 	else
 	{
-		m_animationA = &m_mesh->m_animations[animationIndexA];
-		m_animationB = &m_mesh->m_animations[animationIndexB];
+		m_animationA = &m_model->GetAnimations()[animationIndexA];
+		m_animationB = &m_model->GetAnimations()[animationIndexB];
 
 		m_state = PlayBlendSpaceAnimInterpolated;
 
@@ -256,16 +225,16 @@ void Animator::PlayeLayerBlend(int animationIndexA, int animationIndexB, int ori
 
 		m_nextState = PlayLayerBlendSpaceAnim;
 
-		m_layerBendingOrigine = origine;
+		m_layerBendingOrigin = origine;
 	}
 	else
 	{
 		if (origine < 0 || origine > m_boneCount) return;		//check if the origine of the layer blend is valid
 
-		m_layerBendingOrigine = origine;
+		m_layerBendingOrigin = origine;
 
-		m_animationA = &m_mesh->m_animations[animationIndexA];
-		m_animationB = &m_mesh->m_animations[animationIndexB];
+		m_animationA = &m_model->GetAnimations()[animationIndexA];
+		m_animationB = &m_model->GetAnimations()[animationIndexB];
 
 		m_state = PlayLayerBlendSpaceAnim;
 
@@ -282,16 +251,16 @@ int Animator::AddIKInstance(int endBoneIndex, int chainLength)
 
 	for (int chainNode = 0; chainNode < chainLength; chainNode++)
 	{
-		if (m_mesh->m_bones[currentBoneIndex].m_parentIndex <= -1)
+		if (m_model->m_skeleton[currentBoneIndex].m_parentIndex <= -1)
 		{
 			return -1;
 		}
 
-		currentBoneIndex = m_mesh->m_bones[currentBoneIndex].m_parentIndex;
+		currentBoneIndex = m_model->m_skeleton[currentBoneIndex].m_parentIndex;
 	}
 
 	//create the IKInstace
-	IKInstance ikInstance = {true, endBoneIndex, chainLength, Vector3(0.f)};
+	IKInstance ikInstance = {true, endBoneIndex, chainLength, LibMath::Vector3(0.f)};
 	m_IKInstances.push_back(ikInstance);
 
 	//return the IKIstance index
@@ -322,26 +291,26 @@ void Animator::DeactivateIKInstace(int index)
 void Animator::WaitForResourcesToBeLoaded()
 {
 	//check if the mesh is loaded
-	if (m_mesh.IsReady())
+	if (m_model.IsReady())
 	{
-		m_boneCount = static_cast<int>(m_mesh->m_bones.size());
+		m_boneCount = static_cast<int>(m_model->m_skeleton.size());
 		m_skeletonMatrix.resize(m_boneCount);
 		for (size_t i = 0; i < m_boneCount; i++)
 		{
-			m_skeletonMatrix[i] = m_mesh->m_bones[i].m_offsetMatrix;
+			m_skeletonMatrix[i] = m_model->m_skeleton[i].m_offsetMatrix;
 		}
 
 		m_state = m_nextState;
 
 		if (m_animationIndexA != -1)
 		{
-			m_animationA = &m_mesh->m_animations[m_animationIndexA];
+			m_animationA = &m_model->GetAnimations()[m_animationIndexA];
 		}
 		if (m_animationIndexB != -1)
 		{
-			m_animationB = &m_mesh->m_animations[m_animationIndexB];
+			m_animationB = &m_model->GetAnimations()[m_animationIndexB];
 		}
-		if (m_layerBendingOrigine < 0 || m_layerBendingOrigine > m_boneCount)
+		if (m_layerBendingOrigin < 0 || m_layerBendingOrigin > m_boneCount)
 		{
 			m_state = PlayNoAnim;
 		}
@@ -362,7 +331,7 @@ void Animator::RemoveRootMotion(vector<KeyFrame>& localSkeleton)
 {
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
-		if (m_mesh->m_bones[bone].m_parentIndex == -1)
+		if (m_model->m_skeleton[bone].m_parentIndex == -1)
 		{
 			localSkeleton[bone].m_position = { 0.f, 0.f, 0.f };
 			// optionally also lock rotation:
@@ -384,7 +353,7 @@ void Animator::GetSkeletonToGlobal(vector<KeyFrame>& skeleton_out, const vector<
 			Matrix4::createScale(localSkeleton[bone].m_scale);
 
 		//create the global matrix
-		int	parent = m_mesh->m_bones[bone].m_parentIndex;
+		int	parent = m_model->m_skeleton[bone].m_parentIndex;
 
 		assert(parent < bone);
 
@@ -403,7 +372,7 @@ void Animator::ApplyOffset(const vector<KeyFrame>& globalTransform)
 {
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
-		m_skeletonMatrix[bone] = globalTransform[bone].m_matrix * m_mesh->m_bones[bone].m_offsetMatrix;
+		m_skeletonMatrix[bone] = globalTransform[bone].m_matrix * m_model->m_skeleton[bone].m_offsetMatrix;
 	}
 }
 
@@ -416,13 +385,13 @@ void Animator::InterpoleSkeletons(
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
 		//position
-		interlopedSkeleton_out[bone].m_position = Vector3::lerp(skeletonA[bone].m_position, skeletonB[bone].m_position, t);
+		interlopedSkeleton_out[bone].m_position = LibMath::Vector3::lerp(skeletonA[bone].m_position, skeletonB[bone].m_position, t);
 
 		//rotation
-		interlopedSkeleton_out[bone].m_rotation = Quaternion::slerp(skeletonA[bone].m_rotation, skeletonB[bone].m_rotation, t);
+		interlopedSkeleton_out[bone].m_rotation = LibMath::Quaternion::slerp(skeletonA[bone].m_rotation, skeletonB[bone].m_rotation, t);
 
 		//scale
-		interlopedSkeleton_out[bone].m_scale = Vector3::lerp(skeletonA[bone].m_scale, skeletonB[bone].m_scale, t);
+		interlopedSkeleton_out[bone].m_scale = LibMath::Vector3::lerp(skeletonA[bone].m_scale, skeletonB[bone].m_scale, t);
 	}
 }
 
@@ -433,7 +402,7 @@ void Animator::ReplaceBones(
 
 	for (int bone = 0; bone < m_boneCount; ++bone)
 	{
-		if (bone >= m_layerBendingOrigine)
+		if (bone >= m_layerBendingOrigin)
 		{
 			skeleton_out[bone] = skeletonB[bone];
 		}
@@ -464,13 +433,13 @@ void Animator::ApllyIKFabrik(vector<KeyFrame>& globalSkeleton, const IKInstance&
 	std::vector<int>	chain;
 	int					current = ik.m_endBoneIndex;
 
-	for (int i = 0; i < ik.m_chainLenght; i++)
+	for (int i = 0; i < ik.m_chainLength; i++)
 	{
 		if (current < 0)
 			return;
 
 		chain.push_back(current);
-		current = m_mesh->m_bones[current].m_parentIndex;
+		current = m_model->m_skeleton[current].m_parentIndex;
 	}
 
 	const int count = (int)chain.size();
@@ -558,7 +527,6 @@ void Animator::PlaySingleAnimation(float deltaTime)
 
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, animationSkeleton);
-	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
 	ApplyOffset(globalSkeleton);
 }
@@ -585,7 +553,6 @@ void Animator::PlaySingleAnimationInterpolated(float deltaTime)
 	vector<KeyFrame> globalSkeleton;
 	GetSkeletonToGlobal(globalSkeleton, interlopedSkeleton);
 
-	DrawSkeleton(globalSkeleton);
 	//transforms -> matrix
 	ApplyOffset(globalSkeleton);
 }

@@ -1,5 +1,6 @@
 #include "Hud.h"
 #include "SerializationParser.h"
+#include "InputSystem.h"
 
 #include "Log.h"
 
@@ -7,6 +8,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+
+using Apex::Input::InputSystem;
 
 using namespace Apex::UserInterface;
 using namespace Apex::Serialization;
@@ -141,6 +144,20 @@ void UIButton::Draw(const UIDrawContext& context) const
 
     if (context.m_isEditor && context.m_selected)
         context.m_drawList->DrawRect(pos, max, 0xFF44AAFF, 4.f, 1.5f);
+
+    InputSystem&    input = InputSystem::Get();
+    Vector2         inputPos = input.GetMousePos();
+
+    if (input.IsMouseButtonDown(Input::MouseButton::Left) &&
+        inputPos[0] >= pos[0] &&
+        inputPos[0] <= max[0] &&
+        inputPos[1] >= pos[1] &&
+        inputPos[1] <= max[1] &&
+        m_onClick &&
+        m_visible)                      //maybe to change for a system that allows HUDs to be closed and it's elements be invisible. 
+    {
+        m_onClick();
+    }
 }
 
 void UIProgressBar::Draw(const UIDrawContext& context) const
@@ -249,7 +266,8 @@ void UICanvas::PrepareForRender(Apex::Rendering::IRHI* rhi)
     for (auto& e : m_elements)
     {
         if (!e) continue;
-        if (auto* img = dynamic_cast<UIImage*>(e.get()))
+        auto* img = dynamic_cast<UIImage*>(e.get());
+        if (img)
         {
             if (img->m_glTexID == 0 && img->m_texture.IsReady())
             {
@@ -259,11 +277,13 @@ void UICanvas::PrepareForRender(Apex::Rendering::IRHI* rhi)
             }
         }
         // Recurse into panels
-        if (auto* panel = dynamic_cast<UIPanel*>(e.get()))
+        auto* panel = dynamic_cast<UIPanel*>(e.get());
+        if (panel)
         {
             for (auto& child : panel->m_children)
             {
-                if (auto* childImg = dynamic_cast<UIImage*>(child.get()))
+                auto* childImg = dynamic_cast<UIImage*>(child.get());
+                if (childImg)
                 {
                     if (childImg->m_glTexID == 0 && childImg->m_texture.IsReady())
                     {
@@ -322,18 +342,27 @@ static UIColor ParseColor(SerialParser& parser)
 {
     parser.Expect('[');
     UIColor color;
-    color.m_r = parser.ParseFloat(); parser.Expect(',');
-    color.m_g = parser.ParseFloat(); parser.Expect(',');
-    color.m_b = parser.ParseFloat(); parser.Expect(',');
+
+    color.m_r = parser.ParseFloat(); 
+    parser.Expect(',');
+
+    color.m_g = parser.ParseFloat(); 
+    parser.Expect(',');
+
+    color.m_b = parser.ParseFloat(); 
+    parser.Expect(',');
+
     color.m_a = parser.ParseFloat();
     parser.Expect(']');
+
     return color;
 }
 
 static LibMath::Vector2 ParseVec2(SerialParser& parser)
 {
     parser.Expect('[');
-    float x = parser.ParseFloat(); parser.Expect(',');
+    float x = parser.ParseFloat(); 
+    parser.Expect(',');
     float y = parser.ParseFloat();
     parser.Expect(']');
     return { x, y };
@@ -353,9 +382,12 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
     file << indent << "  \"name\": \"" << element.m_name << "\",\n";
     file << indent << "  \"anchor\": \"" << AnchorName(element.m_anchor) << "\",\n";
     file << indent << "  \"visible\": " << (element.m_visible ? "true" : "false") << ",\n";
-    WriteVec2(file, "position", element.m_position, (indent + "  ").c_str()); file << ",\n";
-    WriteVec2(file, "size", element.m_size, (indent + "  ").c_str()); file << ",\n";
-    WriteColor(file, "color", element.m_color, (indent + "  ").c_str()); file << ",\n";
+    WriteVec2(file, "position", element.m_position, (indent + "  ").c_str()); 
+    file << ",\n";
+    WriteVec2(file, "size", element.m_size, (indent + "  ").c_str()); 
+    file << ",\n";
+    WriteColor(file, "color", element.m_color, (indent + "  ").c_str()); 
+    file << ",\n";
 
     switch (element.GetType())
     {
@@ -366,7 +398,8 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
             file << indent << "  \"fontSize\": " << text.m_fontSize << "\n";
             file << indent << "  \"hAlign\": " << static_cast<int>(text.m_hAlign) << ",\n";
             file << indent << "  \"vAlign\": " << static_cast<int>(text.m_vAlign) << ",\n";
-            WriteColor(file, "textColor", text.m_textColor, (indent + "  ").c_str()); file << "\n";
+            WriteColor(file, "textColor", text.m_textColor, (indent + "  ").c_str()); 
+            file << "\n";
             break;
         }
         case UIWidgetType::Image:
@@ -380,9 +413,12 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
             const auto& button = static_cast<const UIButton&>(element);
             file << indent << "  \"label\": \"" << button.m_labelText.m_text << "\",\n";
             file << indent << "  \"fontSize\": " << button.m_labelText.m_fontSize << ",\n";
-            WriteColor(file, "colorHover", button.m_colorHover, (indent + "  ").c_str()); file << ",\n";
-            WriteColor(file, "colorPressed", button.m_colorPressed, (indent + "  ").c_str()); file << ",\n";
-            WriteColor(file, "colorText", button.m_labelText.m_textColor, (indent + "  ").c_str()); file << "\n";
+            WriteColor(file, "colorHover", button.m_colorHover, (indent + "  ").c_str()); 
+            file << ",\n";
+            WriteColor(file, "colorPressed", button.m_colorPressed, (indent + "  ").c_str()); 
+            file << ",\n";
+            WriteColor(file, "colorText", button.m_labelText.m_textColor, (indent + "  ").c_str()); 
+            file << "\n";
             break;
         }
         case UIWidgetType::ProgressBar:
@@ -390,15 +426,18 @@ static void WriteElement(std::ofstream& file, const UIElement& element, const st
             const auto& progressBar = static_cast<const UIProgressBar&>(element);
             file << indent << "  \"value\": " << progressBar.m_value << ",\n";
             file << indent << "  \"rounding\": " << progressBar.m_rounding << ",\n";
-            WriteColor(file, "colorBg", progressBar.m_colorBg, (indent + "  ").c_str()); file << ",\n";
-            WriteColor(file, "colorFill", progressBar.m_colorFill, (indent + "  ").c_str()); file << "\n";
+            WriteColor(file, "colorBg", progressBar.m_colorBg, (indent + "  ").c_str()); 
+            file << ",\n";
+            WriteColor(file, "colorFill", progressBar.m_colorFill, (indent + "  ").c_str()); 
+            file << "\n";
             break;
         }
         case UIWidgetType::Panel:
         {
             const auto& panel = static_cast<const UIPanel&>(element);
             file << indent << "  \"rounding\": " << panel.m_rounding << ",\n";
-            WriteColor(file, "colorBg", panel.m_colorBg, (indent + "  ").c_str()); file << ",\n";
+            WriteColor(file, "colorBg", panel.m_colorBg, (indent + "  ").c_str()); 
+            file << ",\n";
             file << indent << "  \"children\": [\n";
             bool first = true;
             for (const auto& child : panel.m_children)
@@ -439,6 +478,12 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
         std::string key = parser.ParseString();
         parser.Expect(':');
 
+        auto* text = dynamic_cast<UIText*>(element.get());
+        auto* image = dynamic_cast<UIImage*>(element.get());
+        auto* button = dynamic_cast<UIButton*>(element.get());;
+        auto* progressBar = dynamic_cast<UIProgressBar*>(element.get());
+        auto* panel = dynamic_cast<UIPanel*>(element.get());
+
         // Base fields
         if (key == "name")          element->m_name = parser.ParseString();
         else if (key == "anchor")   element->m_anchor = AnchorFromName(parser.ParseString());
@@ -448,7 +493,7 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
         else if (key == "color")    element->m_color = ParseColor(parser);
 
         // Type-specific fields
-        else if (auto* text = dynamic_cast<UIText*>(element.get()))
+        else if (text)
         {
             if (key == "text")     text->m_text = parser.ParseString();
             else if (key == "fontSize") text->m_fontSize = parser.ParseFloat();
@@ -456,7 +501,7 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
             else if (key == "vAlign")    text->m_vAlign = static_cast<TextVAlign>(parser.ParseInt());
             else if (key == "textColor") text->m_textColor = ParseColor(parser);
         }
-        else if (auto* image = dynamic_cast<UIImage*>(element.get()))
+        else if (image)
         {
             if (key == "texture")
             {
@@ -465,7 +510,7 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
                     image->LoadTexture(*resourceManager);
             }
         }
-        else if (auto* button = dynamic_cast<UIButton*>(element.get()))
+        else if (button)
         {
             if (key == "label")             button->m_labelText.m_text = parser.ParseString();
             else if (key == "fontSize")     button->m_labelText.m_fontSize = parser.ParseFloat();
@@ -473,14 +518,14 @@ static std::unique_ptr<UIElement> ParseElement(SerialParser& parser, ResourceMan
             else if (key == "colorPressed") button->m_colorPressed = ParseColor(parser);
             else if (key == "colorText")    button->m_labelText.m_textColor = ParseColor(parser);
         }
-        else if (auto* progressBar = dynamic_cast<UIProgressBar*>(element.get()))
+        else if (progressBar)
         {
             if (key == "value")          progressBar->m_value = parser.ParseFloat();
             else if (key == "rounding")  progressBar->m_rounding = parser.ParseFloat();
             else if (key == "colorBg")   progressBar->m_colorBg = ParseColor(parser);
             else if (key == "colorFill") progressBar->m_colorFill = ParseColor(parser);
         }
-        else if (auto* panel = dynamic_cast<UIPanel*>(element.get()))
+        else if (panel)
         {
             if (key == "rounding") panel->m_rounding = parser.ParseFloat();
             else if (key == "colorBg") panel->m_colorBg = ParseColor(parser);

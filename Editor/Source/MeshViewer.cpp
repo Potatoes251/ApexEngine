@@ -2,6 +2,7 @@
 #include "EditorIcon.h"
 
 #include "Mesh.h"
+#include "Model.h"
 
 #include "LibMath/Trigonometry.h"
 #include "LibMath/Arithmetic.h"
@@ -95,7 +96,7 @@ void MeshViewer::Draw()
     }
 
     // Finalize stats/bounds/camera once the async load completes
-    if (!m_statsValid && m_mesh.IsReady())
+    if (!m_statsValid && m_model.IsReady())
         FinalizeMeshLoad();
 
     DrawToolbar();
@@ -393,13 +394,14 @@ void MeshViewer::DrawDetailsViewSection()
 // 3-D rendering 
 void MeshViewer::RenderScene()
 {
-    if (!m_mesh.IsReady()) return;
+    if (!m_model.IsReady() || m_model->GetMeshes().size() == 0) return;
 
     UpdateOrbitCamera();
 
     m_rhi->BindFrameBuffer(m_fbo, m_fboWidth, m_fboHeight);
 
-    glClearColor(0.12f, 0.12f, 0.14f, 1.f);
+    m_rhi->SetCullingFace(false);
+    m_rhi->SetClearColor(0.12f, 0.12f, 0.14f, 1.f);
     m_rhi->Clear();
 
     LibMath::Matrix4 matrixViewProj = GetViewProj();
@@ -449,7 +451,10 @@ void MeshViewer::RenderScene()
     }
 
     if (shader != 0)
-        m_mesh->Draw();
+    {
+        for (Mesh const& mesh : m_model->GetMeshes())
+            mesh.Draw();
+    }
 
     if (m_displayMode == MeshDisplayMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -487,15 +492,22 @@ void MeshViewer::RenderGrid()
     std::vector<float> verts;
     verts.reserve((HALF * 2 + 1) * 4 * 3);
 
-    auto push = [&](float x, float y, float z) { verts.push_back(x); verts.push_back(y); verts.push_back(z); };
+    auto push = [&](float x, float y, float z) 
+        { 
+            verts.push_back(x); 
+            verts.push_back(y); 
+            verts.push_back(z); 
+        };
 
     for (int i = -HALF; i <= HALF; ++i)
     {
         float f = static_cast<float>(i) * STEP;
         // Lines along Z
-        push(f, 0.f, -HALF * STEP); push(f, 0.f, HALF * STEP);
+        push(f, 0.f, -HALF * STEP);
+        push(f, 0.f, HALF * STEP);
         // Lines along X
-        push(-HALF * STEP, 0.f, f); push(HALF * STEP, 0.f, f);
+        push(-HALF * STEP, 0.f, f);
+        push(HALF * STEP, 0.f, f);
     }
 
     glBindVertexArray(tmpVAO);
@@ -629,23 +641,25 @@ void MeshViewer::RenderPivot()
 void MeshViewer::RenderNormalsOverlay()
 {
     // Visualize normals as lines extending from each vertex
-    if (!m_mesh.IsValid() || !m_mesh.IsReady()) return;
+    if (!m_model.IsReady()) return;
     if (m_shaderFlat == 0) return;
 
-    const auto& verts = m_mesh->m_vertices;
-    if (verts.empty()) return;
-
     std::vector<float> lines;
-    lines.reserve(verts.size() * 6);
 
-    for (const auto& v : verts)
+    for (Mesh const& mesh : m_model->GetMeshes())
     {
-        lines.push_back(v.m_position[0]);
-        lines.push_back(v.m_position[1]);
-        lines.push_back(v.m_position[2]);
-        lines.push_back(v.m_position[0] + v.m_normal[0] * m_normalLength);
-        lines.push_back(v.m_position[1] + v.m_normal[1] * m_normalLength);
-        lines.push_back(v.m_position[2] + v.m_normal[2] * m_normalLength);
+        std::vector<Vertex> const& verts = mesh.m_vertices;
+        if (verts.empty()) return;
+
+        for (const auto& v : verts)
+        {
+            lines.push_back(v.m_position[0]);
+            lines.push_back(v.m_position[1]);
+            lines.push_back(v.m_position[2]);
+            lines.push_back(v.m_position[0] + v.m_normal[0] * m_normalLength);
+            lines.push_back(v.m_position[1] + v.m_normal[1] * m_normalLength);
+            lines.push_back(v.m_position[2] + v.m_normal[2] * m_normalLength);
+        }
     }
 
     LibMath::Matrix4 matrixViewProj = GetViewProj();
@@ -673,13 +687,13 @@ void MeshViewer::RenderNormalsOverlay()
 // Setup / teardown 
 void MeshViewer::LoadMesh(const Fs::path& path)
 {
-    m_mesh = m_resourceManager->CreateAsync<Mesh>(path.generic_string());
+    m_model = m_resourceManager->CreateAsync<Model>(path.generic_string());
     m_statsValid = false;
 }
 
 void MeshViewer::UnloadMesh()
 {
-    m_mesh = {};
+    m_model = {};
     m_vertexCount = 0;
     m_triangleCount = 0;
     m_boundsMin = { 1e9f,  1e9f,  1e9f };
@@ -688,8 +702,12 @@ void MeshViewer::UnloadMesh()
 
 void MeshViewer::FinalizeMeshLoad()
 {
-    m_vertexCount = m_mesh->GetVertexCount();
-    m_triangleCount = m_mesh->GetIndexCount() / 3;
+    for (Mesh const& mesh : m_model->GetMeshes())
+    {
+        m_vertexCount += mesh.GetVertexCount();
+        m_triangleCount += mesh.GetIndexCount();
+    }
+    m_triangleCount /= 3;
     m_statsValid = true;
     ComputeBounds();
     ResetCamera();
@@ -697,8 +715,8 @@ void MeshViewer::FinalizeMeshLoad()
 
 void MeshViewer::ComputeBounds()
 {
-    m_boundsMin = m_mesh->GetBoundsMin();
-    m_boundsMax = m_mesh->GetBoundsMax();
+    m_boundsMin = m_model->GetBoundsMin();
+    m_boundsMax = m_model->GetBoundsMax();
 }
 
 void MeshViewer::RebuildFBO(float width, float height)

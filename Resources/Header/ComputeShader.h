@@ -3,6 +3,7 @@
 
 
 #include "IResource.h"
+#include "RHI.h"
 
 class ComputeShader : public IResource
 {
@@ -24,7 +25,6 @@ public:
 
 private:
 	uint32_t m_shader = 0;
-
 };
 
 #endif // !COMPUTE_SHADER

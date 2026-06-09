@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <filesystem>
 
-class Mesh;
+class Model;
 namespace Fs = std::filesystem;
 
 namespace Apex::Editor
@@ -34,7 +34,7 @@ namespace Apex::Editor
         static constexpr float SIZE = 128.f;
 
     private:
-        uint32_t Render(const Fs::path& path, Apex::Resources::ResourceHandle<Mesh> handle);
+        uint32_t Render(const Fs::path& path, Apex::Resources::ResourceHandle<Model> handle);
         uint32_t RenderMaterialPreview(Apex::Resources::ResourceHandle<Apex::Rendering::Material> mat);
         void BuildShaders();
         void DestroyShaders();
@@ -42,14 +42,14 @@ namespace Apex::Editor
         Apex::Rendering::IRHI& m_rhi;
         Apex::Resources::ResourceManager& m_resourceManager;
 
-        std::unordered_map<std::string, Apex::Resources::ResourceHandle<Mesh>> m_loadingHandles;
+        std::unordered_map<std::string, Apex::Resources::ResourceHandle<Model>> m_loadingHandles;
         std::unordered_map<std::string, Apex::Resources::ResourceHandle<Apex::Rendering::Material>> m_matLoadingHandles;
 
         std::unordered_map<std::string, uint32_t> m_cache;
 
         Apex::Rendering::RHIShaderHandle m_shader = 0;
         Apex::Rendering::RHIShaderHandle m_matShader = 0;
-        Apex::Resources::ResourceHandle<Mesh> m_sphereMesh;
+        Apex::Resources::ResourceHandle<Model> m_sphereMesh;
     };
 }
 

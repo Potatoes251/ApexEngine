@@ -35,6 +35,7 @@ void Shader::UploadToGpu()
 		SetState(ResourceState::Failed);
 		return;
 	}
+	SetState(ResourceState::Uploaded);
 }
 
 void Shader::Use() const
@@ -50,6 +51,11 @@ void Shader::SetUniform(std::string_view const& name, int value)
 void Shader::SetUniform(std::string_view const& name, float value)
 {
 	m_rhi->SetUniformFloat(m_shader, name, value);
+}
+
+void Shader::SetUniform(std::string_view const& name, const float& value, int count)
+{
+	m_rhi->SetUniformFloatArray(m_shader, name, value, count);
 }
 
 void Shader::SetUniform(std::string_view const& name, LibMath::Vector3 const& value)

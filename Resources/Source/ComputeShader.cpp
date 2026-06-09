@@ -4,6 +4,7 @@
 void ComputeShader::UploadToGpu()
 {
 	m_shader = m_rhi->CreateComputeShader(m_path);
+	SetState(ResourceState::Uploaded);
 }
 
 void ComputeShader::Use()

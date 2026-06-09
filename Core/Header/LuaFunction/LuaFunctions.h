@@ -17,7 +17,8 @@
 #include "ViewComponentLua.h"
 #include "CharacterControllerLua.h"
 #include "ScriptcastLua.h"
-
+#include "ProjectileLua.h"
+#include "ShowMouseLua.h"
 
 #endif // !LUA_FUNCTIONS
 

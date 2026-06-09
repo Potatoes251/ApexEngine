@@ -2,8 +2,9 @@
 #define MESH_COLLIDER
 
 #include "Collider.h"
-#include "Mesh.h"
 #include "ResourceHandle.h"
+
+class Model;
 
 namespace Apex::Physic
 {
@@ -16,10 +17,10 @@ namespace Apex::Physic
 	class MeshCollider : public Collider
 	{
 	public:
-		MeshCollider(Resources::ResourceHandle<Mesh> mesh, MeshColliderType type, bool isTrigger, PhysMatHandle material = PhysMatHandle())
-			: m_mesh(mesh), m_type(type), Collider(material, isTrigger) {}
-		MeshCollider(MeshCollider const&);
-		MeshCollider& operator=(MeshCollider const&);
+		MeshCollider(Resources::ResourceHandle<Model> model, MeshColliderType type, bool isTrigger)
+			: m_model(model), m_type(type), Collider(isTrigger) {}
+		MeshCollider(MeshCollider const&) = default;
+		MeshCollider& operator=(MeshCollider const&) = default;
 
 		~MeshCollider() = default;
 
@@ -30,14 +31,14 @@ namespace Apex::Physic
 		const char* GetTypeName() const override { return "MeshCollider"; }
 		std::vector<ExposedVar> GetExposedVariables() override;
 
-		Resources::ResourceHandle<Mesh> GetMesh() const { return m_mesh; }
+		Resources::ResourceHandle<Model> GetModel() const { return m_model; }
 
 		void SetMeshColliderType(MeshColliderType type) { m_type = type; }
 
 		void Serialize(std::ostream& out) const override;
 
 	private:
-		Resources::ResourceHandle<Mesh> m_mesh;
+		Resources::ResourceHandle<Model> m_model;
 		MeshColliderType m_type;
 	};
 }

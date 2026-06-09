@@ -27,7 +27,6 @@ namespace Apex::Editor
 		ComponentsViewer(Apex::UserInterface::IGUI* gui,
 			Apex::Rendering::Scene* scene,
 			Apex::Resources::ResourceManager* resourceManager,
-			Apex::Physic::PhysicSystem* phys,
 			Apex::Scripting::LuaManager* lua);
 		
 		void SetSelectedObject(Apex::Data::Object* obj) { m_selectedObj = obj; }
@@ -37,6 +36,21 @@ namespace Apex::Editor
 
 		void Draw();
 
+	private:
+		void DrawHeader();
+		void DrawComponentsList();
+
+		void DrawAddComponentButton();
+		void DrawAddComponentPopup();
+
+		void DrawRenderComponentsMenu();
+		void DrawPhysicsComponentsMenu();
+		void DrawScriptComponentsMenu();
+		void DrawLightComponentsMenu();
+		void DrawCameraComponentsMenu();
+		void DrawControllerComponentsMenu();
+		void DrawMiscComponentsMenu();
+
 		void DrawTransform(Apex::Data::Object* obj);
 		void DrawComponent(Apex::Data::Object* obj, Apex::Component* comp);
 
@@ -44,16 +58,14 @@ namespace Apex::Editor
 
 		void HandleSelection(Apex::Component* comp);
 
-	private:
 		void DrawScriptComponent(Apex::Scripting::ScriptComponent* script);
 		void DrawVar(ExposedVar& var, Apex::Data::Object* obj, Apex::Component* comp);
 
 		bool DrawComponentEnum(ExposedVar var);
 		bool DrawComponent(std::string const& name, LibMath::Vector3& data);
-		bool DrawComponent(PhysicMaterial* mat);
 		bool DrawComponentColor3(ExposedVar var);
 		bool DrawComponentColor4(ExposedVar var);
-		void DrawComponent(std::string const& name, Resources::ResourceHandle<Mesh>* handle);
+		void DrawComponent(std::string const& name, Resources::ResourceHandle<Model>* handle);
 		void DrawComponent(std::string const& name, Resources::ResourceHandle<Rendering::Material>* material);
 		void DrawComponent(std::string const& name, Resources::ResourceHandle<Texture>* handle);
 
@@ -65,11 +77,10 @@ namespace Apex::Editor
 		UserInterface::IGUI* m_gui;
 		Rendering::Scene* m_scene = nullptr;
 		Resources::ResourceManager* m_resourceManager;
-		Resources::AssetPicker<Mesh> m_meshPicker;
+		Resources::AssetPicker<Model> m_meshPicker;
 		Resources::AssetPicker<Rendering::Material> m_materialPicker;
 		Resources::AssetPicker<Texture> m_texturePicker;
 		Resources::ScriptPicker m_scriptPicker;
-		Physic::PhysicSystem* m_phys;
 		Scripting::LuaManager* m_luaManager;
 		ThumbnailRenderer* m_thumbnailRenderer = nullptr;
 

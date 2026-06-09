@@ -35,6 +35,12 @@ Viewport::Viewport(Resources::ResourceHandle<Shader> pickingShader, Resources::R
 	m_camera.SetProjectionMatrix(m_width / m_height);
 }
 
+Viewport::~Viewport()
+{
+	m_rhi->DeleteFrameBuffer(m_fbo);
+	m_rhi->DeleteTexture(m_textureFbo);
+}
+
 void Viewport::SelectObject(Data::Object* selected, bool send)
 {
 	m_selectedObject = selected;
@@ -187,7 +193,9 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 
 	LibMath::Matrix4 view = m_camera.GetViewMatrix();
 	LibMath::Matrix4 proj = m_camera.GetProjection();
+	m_rhi->SetCullingEnabled(false);
 	m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), true, m_localGizmo);
+	m_rhi->SetCullingEnabled(true);
 
 	int id = GetMousePixelInFbo(mousePos[0], mousePos[1]);
 
@@ -221,10 +229,11 @@ void Viewport::PerformPicking(LibMath::Vector2 mousePos)
 	picking.m_aspectRatio = m_width / m_height;
 	picking.m_camera = &m_camera;
 	picking.m_flags |= UseIdAsColor;
-	picking.m_flags |= IgnoreModelShader;
+	picking.m_flags |= IgnoreMaterial;
 	picking.m_flags &= ~RenderSkybox;
 	picking.m_shader = m_pickingshader;
 	picking.m_target = m_fbo;
+	picking.m_rhi = m_rhi;
 
 	m_pickingshader->Use();
 	m_editor->GetApp()->GetScene()->Render(picking);
@@ -254,7 +263,7 @@ LibMath::Vector3 Viewport::GetAxis()
 
 	if (!m_localGizmo || !m_selectedObject) return axis;
 
-	return m_selectedObject->GetGlobalTransform().getRotation().rotate(axis);
+	return m_initialTransform.getRotation().rotate(axis);
 }
 
 LibMath::Vector3 Apex::Editor::Viewport::GetAxisPlane()
@@ -380,6 +389,7 @@ void Viewport::Draw()
 	RenderPassInfo pass;
 	pass.m_aspectRatio = aspectRatio;
 	pass.m_target = m_fbo;
+	pass.m_rhi = m_rhi;
 	if (m_showColliders)
 		pass.m_flags |= ShowCollider;
 
@@ -423,7 +433,9 @@ void Viewport::Draw()
 
 		LibMath::Matrix4 view = m_camera.GetViewMatrix();
 		LibMath::Matrix4 proj = m_camera.GetProjection();
+		m_rhi->SetCullingEnabled(false);
 		m_gizmo.DrawGizmos(m_selectedObject, m_currentGizmoMode, proj * view, m_camera.GetPosition(), false, m_localGizmo);
+		m_rhi->SetCullingEnabled(true);
 	}
 	m_rhi->UnBindFrameBuffer(m_width, m_height);
 
@@ -512,8 +524,8 @@ void Apex::Editor::Viewport::DrawPlayBar()
 		{
 			// Scan for .level files once when the popup opens
 			m_buildScenes.clear();
-			namespace fs = std::filesystem;
-			for (auto& entry : fs::recursive_directory_iterator("Assets/"))
+			namespace Fs = std::filesystem;
+			for (auto& entry : Fs::recursive_directory_iterator("Assets/"))
 			{
 				if (entry.path().extension() == ".level")
 				{
@@ -526,10 +538,11 @@ void Apex::Editor::Viewport::DrawPlayBar()
 			m_showBuildPopup = true;
 			m_gui->OpenPopup("Build Game");
 		}
+		DrawPillGroup({ m_panelPos[0] + 4.f, m_panelPos[1] + 64.f }, { 187.f, BUTTON + PAD * 2.f }, ROUND);
 		if (m_gui->Button("GenerateNavGraph"))
 		{
 			Scene* scene = m_editor->GetApp()->GetScene();
-			std::filesystem::path path{ m_editor->GetApp()->GetScenePath() };
+			std::filesystem::path path{ m_editor->GetApp()->GetScene()->GetName()};
 			path.replace_extension(".nav");
 			std::vector<Pathfinding::NavGenVolume*> navVol = scene->GetComponents<Pathfinding::NavGenVolume>();
 			if (!navVol.empty())
@@ -653,13 +666,28 @@ void Apex::Editor::Viewport::DrawCameraSpeed()
 	LibMath::Vector2 pos =
 	{
 		m_panelPos[0] + 5.f,
-		m_panelPos[1] + 78.f
+		m_panelPos[1] + 105.f
 	};
+
+	float backgroundWidth = 110.f;
+
+	// Add 10.f for every extra digit after the first.
+	// 0-9   -> 110.f
+	// 10-99 -> 120.f
+	// 100+  -> 130.f
+
+	float absSpeed = std::abs(speed);
+
+	while (absSpeed >= 10.f)
+	{
+		backgroundWidth += 10.f;
+		absSpeed /= 10.f;
+	}
 
 	// Background size
 	LibMath::Vector2 size =
 	{
-		speed < 10.f ? 110.f : 120.f ,
+		backgroundWidth,
 		HEIGHT
 	};
 
@@ -711,7 +739,9 @@ void Apex::Editor::Viewport::DrawSnapButtons(const float button, const float pad
 
 		if (IconButton(element.m_icon, element.m_label, { SNAP_BUTTON_WIDTH, SNAP_BUTTON_WIDTH }, *element.m_enabled))
 		{
-			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(element.m_enabled, *element.m_enabled, !*element.m_enabled));
+			CtrlZ::CommandManager::Get().Execute(std::make_unique<CtrlZ::SetValCommand<bool>>(
+				element.m_enabled, *element.m_enabled, !*element.m_enabled)
+			);
 		}
 
 		if (m_gui->IsItemHovered())

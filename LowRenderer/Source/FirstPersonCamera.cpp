@@ -76,6 +76,8 @@ void FirstPersonCamera::UpdateMatrices()
 
 void FirstPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 {
+	if (!IsEnabled()) return;
+
 	m_yaw += LibMath::Degree((float)dx * sensitivity);
 	m_pitch += LibMath::Degree((float)dy * sensitivity);
 	m_pitch = LibMath::Degree(LibMath::clamp(m_pitch.raw(), -89.f, 89.f));
@@ -84,8 +86,10 @@ void FirstPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 
 void FirstPersonCamera::ProcessScroll(double yoffset)
 {
+	if (!IsEnabled()) return;
+
 	m_speed *= (yoffset > 0) ? 1.1f : (1.f / 1.1f);
-	m_speed = LibMath::clamp(m_speed, 0.5f, 50.f);
+	m_speed = LibMath::clamp(m_speed, 0.5f, m_maxSpeed);
 }
 
 void FirstPersonCamera::Serialize(std::ostream& out) const

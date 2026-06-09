@@ -14,21 +14,22 @@ namespace Apex
 {
     struct ExposedVar
     {
-        std::string name;
-        enum Type { Float, Int, Bool, String, Enum, Vector3, PhysMaterial, Mesh, Texture, Material, Color3, Color4 } type;
-        void* data = nullptr;
-        std::variant<float, bool, std::string> value;
-        std::vector<std::string> enumNames;
+        enum Type { Float, Int, Bool, String, Enum, Vector3, Mesh, Texture, Material, Color3, Color4 } type;
 
         ExposedVar() = default;
 
         ExposedVar(std::string name, Type type, void* data)
-            : name(std::move(name)), type(type), data(data) {
+            : m_name(std::move(name)), type(type), m_data(data) {
         }
 
         ExposedVar(std::string name, Type type, void* data, std::vector<std::string> enumNames)
-            : name(std::move(name)), type(type), data(data), enumNames(std::move(enumNames)) {
+            : m_name(std::move(name)), type(type), m_data(data), m_enumNames(std::move(enumNames)) {
         }
+
+        std::string m_name;
+        void* m_data = nullptr;
+        std::variant<float, bool, std::string> m_value;
+        std::vector<std::string> m_enumNames;
     };  
 
     class Component

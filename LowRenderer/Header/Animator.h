@@ -6,11 +6,13 @@
 
 #include "../../Resources/header/ComputeShader.h"
 #include "../../Resources/header/Mesh.h"
+#include "../../Resources/header/Model.h"
 #include "../../Resources/header/ResourceManager.h"
 #include "../../Resources/header/Component.h"
 
 #include <memory>
 
+using LibMath::Matrix4;
 using std::weak_ptr;
 using std::shared_ptr;
 using Apex::Resources::ResourceHandle;
@@ -23,13 +25,12 @@ namespace Apex::Rendering
 	{
 	public:
 		Animator() = delete;
-		Animator(ResourceHandle<Mesh> mesh);
+		Animator(ResourceHandle<Model> model) : m_model(model) {}
 		~Animator() = default;
-		Animator(const Animator& other);
+		Animator(const Animator&) = default;
 		Animator& operator=(const Animator&) = default;
 
-		ResourceHandle<Mesh>	GetMesh() const { return m_mesh; }
-		void DrawSkeleton(std::vector<KeyFrame>& globalSkeleton);
+		ResourceHandle<Model>	GetModel() const { return m_model; }
 		void SetBlendRatio(float newRatio) { m_blendRatio = newRatio; }
 
 		//Component
@@ -39,7 +40,7 @@ namespace Apex::Rendering
 		std::vector<ExposedVar> GetExposedVariables() override;
 
 		//before update
-		void SetMesh(ResourceHandle<Mesh> mesh);
+		void SetModel(ResourceHandle<Model> model);
 		void SetFPS(float fps);				//base fps = 30
 
 		//during update
@@ -48,13 +49,13 @@ namespace Apex::Rendering
 		void Stop();
 
 		//Animations
-		void PlayRepeat(int animationIndex);															//Play_single_animation
-		void PlayRepeatInterpolated(int animationIndex);												//Play_single_animation_interpolated
-		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//Play_cross_fade_animation
-		void PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime);	//Play_cross_fade_animation_interpolated
-		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//Play_blend_space_animation
-		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//Play_blend_space_animation_interpolated
-		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//Play_layer_blend_space_animation
+		void PlayRepeat(int animationIndex);															//PlaySingleAnim
+		void PlayRepeatInterpolated(int animationIndex);												//PlaySingleAnimInterpolated
+		void PlayCrossFade(int animationIndexA, int animationIndexB, float crossfadeTime);				//PlayCrossFadeAnim
+		void PlayCrossFadeInterpolated(int animationIndexA, int animationIndexB, float crossfadeTime);	//PlayCrossFadeAnimInterpolated
+		void PlayBlended(int animationIndexA, int animationIndexB, float ratio);						//PlayBlendSpaceAnim
+		void PlayBlendedInterpolated(int animationIndexA, int animationIndexB, float ratio);			//PlayBlendSpaceAnimInterpolated
+		void PlayeLayerBlend(int animationIndexA, int animationIndexB, int origine);					//PlayLayerBlendSpaceAnim
 
 		//IK
 		int  AddIKInstance(int endBoneIndex, int chainLength);	//chainLength don't include endBone
@@ -65,6 +66,14 @@ namespace Apex::Rendering
 		//gpu
 		void SendSkeletonMatrixToGPU(const ResourceHandle<ComputeShader>& shader);
 	private:
+		struct IKInstance
+		{
+			bool				m_active = true;
+			int					m_endBoneIndex = -1;
+			int					m_chainLength = 0;
+			LibMath::Vector3	m_targetPosition;
+		};
+
 		enum AnimatorState
 		{
 			//Play + animation type + repeat? + interpolated?
@@ -78,14 +87,6 @@ namespace Apex::Rendering
 			PlayBlendSpaceAnim,
 			PlayBlendSpaceAnimInterpolated,
 			PlayLayerBlendSpaceAnim
-		};
-
-		struct IKInstance
-		{
-			bool				m_active = true;
-			int					m_endBoneIndex = -1;
-			int					m_chainLenght = 0;
-			LibMath::Vector3	m_targetPosition;
 		};
 
 		void WaitForResourcesToBeLoaded();
@@ -129,8 +130,8 @@ namespace Apex::Rendering
 		//speed
 		float					m_fps = 30.f;
 
-		//mesh infos
-		ResourceHandle<Mesh>	m_mesh;
+		//model infos
+		ResourceHandle<Model>	m_model;
 		int						m_boneCount = 0;
 		
 		//elapse times
@@ -148,7 +149,7 @@ namespace Apex::Rendering
 		float					m_blendRatio = 0;
 
 		//layer bending
-		int						m_layerBendingOrigine = 0;
+		int						m_layerBendingOrigin = 0;
 
 		//IK
 		vector<IKInstance>		m_IKInstances;

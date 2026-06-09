@@ -1,6 +1,7 @@
 local CharacterController = require("CharacterController")
 local Object = require("Object")
 local Vector3 = require("Vector3")
+local Camera = require("Camera")
 
 local Fight = Object:New()
 
@@ -10,7 +11,9 @@ function Fight:New()
     
     enemy = nil,
     player = nil,
-    
+    camera = nil,
+    battleCam = nil,
+
     playerScript = nil,
     playerTargetPos = nil,
     oldPos = nil,
@@ -30,10 +33,12 @@ end
 function Fight:Start()
     self.hud = CreateHUD("Fight")
 
+    self.camera = Camera.Get(self)
+
     self.enemy = Cast("Enemy", "Fighter")
     self.player = Cast("Player", "Fighter")
     self.playerScript = Cast("Player", "Player")
-    self.playerTargetPos = Cast("playerArenaPos")
+    self.playerTargetPos = Cast("playerArenaPos", "Empty")
 
     self.enemy:SetOpponent(self.player)
     self.player:SetOpponent(self.enemy)
@@ -56,6 +61,10 @@ function Fight:CheckEncounter(dt)
 end
 
 function Fight:Update(dt)
+    if not self.battleCam then
+        self.battleCam = self.playerTargetPos:GetCam()
+    end
+
     if not self.battleActive then 
         self:CheckEncounter(dt)
         return
@@ -80,6 +89,10 @@ end
 function Fight:OnBattleStart()
     if self.battleActive then return end
 
+    ShowMouse()
+    self.camera:SetEnabled(false)
+    self.battleCam:SetMain()
+
     self.battleActive = true
     self.oldPos = self.playerScript:GetPosition()
     if self.hud ~= 0 then 
@@ -88,7 +101,6 @@ function Fight:OnBattleStart()
     self.playerScript.cc:TeleportToTarget(self.playerTargetPos)
     self.playerScript:SetEnabled(false)
     self.playerScript:StopAnim()
-    self.player:SetEnabled(true)
 
     self.player:OnBattleStart()
     self.enemy:OnBattleStart()
@@ -108,7 +120,9 @@ function Fight:OnBattleEnd()
     self.playerScript.cc:Teleport(self.oldPos)
     self.playerScript:SetEnabled(true)
     self.playerScript:StartAnim()
-    self.player:SetEnabled(false)
+    HideMouse()
+    self.camera:SetEnabled(true)
+    self.camera:SetMain()
 end
 
 function Fight:StartPlayerTurn()

@@ -21,7 +21,7 @@ namespace Apex::Scripting
         LuaManager(const LuaManager& other) = delete;
         LuaManager& operator=(const LuaManager&) = delete;
 
-        lua_State* GetState() { return luaState; }
+        lua_State* GetState() { return m_luaState; }
 
         int LoadScript(const std::string& path);
 
@@ -37,7 +37,7 @@ namespace Apex::Scripting
         bool CallFunction(int instanceRef, const std::string& funcName, Apex::Physic::Collider* collider);
 
     private:
-        lua_State* luaState;
+        lua_State* m_luaState;
         std::vector<int> m_scriptRefs;
     };
 }

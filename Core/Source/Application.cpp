@@ -57,6 +57,7 @@ Apex::Application::Application(IWindow* window, IGUI* gui)
 {
     assert(m_instance == nullptr && "Only one Application instance allowed");
     m_instance = this;
+    m_saveManager = std::make_unique<Save::SaveManager>("Saves/");
 
     InitLog();
     InitWindow(window);
@@ -95,6 +96,10 @@ void Apex::Application::InitWindow(IWindow* window)
         {
             if (key == Key::Escape && down)
                 m_window->Close();
+
+            if (key == Key::O && down)
+                if (m_onSaveRequested)
+                    m_onSaveRequested();
         });
 }
 
@@ -157,28 +162,27 @@ void Apex::Application::LoadScene(bool isBuild, bool startScene)
 
         EnsureDefaultScene(scenePath);
     }
-
+    
     LoadScene(scenePath, startScene);
 }
 
 void Apex::Application::LoadScene(const std::string& path, bool startScene)
 {
-    m_scenePath = path;
-
     // Reset scene
     m_scene = std::make_unique<Scene>();
-
+    
     // Skybox
     auto cubemap = m_resourceManager->CreateAsync<Cubemap>(
         "ApexAssets/Textures/Skybox/px.png|ApexAssets/Textures/Skybox/nx.png|"
         "ApexAssets/Textures/Skybox/ny.png|ApexAssets/Textures/Skybox/py.png|"
         "ApexAssets/Textures/Skybox/pz.png|ApexAssets/Textures/Skybox/nz.png", true);
 
-    auto cube = m_resourceManager->CreateAsync<Mesh>("ApexAssets/Meshes/cube/cube.mesh", true);
+    auto cube = m_resourceManager->CreateAsync<Model>("ApexAssets/Meshes/cube/cube.mesh", true);
     auto shader = m_resourceManager->CreateAsync<Shader>(
         "ApexAssets/Shaders/SkyboxVert.glsl|ApexAssets/Shaders/SkyboxFrag.glsl", true);
 
     m_scene->SetSkybox(std::make_unique<Skybox>(cubemap, cube, shader));
+    m_scene->SetShader(m_resourceManager->CreateAsync<Shader>("ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag", true));
 
     // Load scene file
     SceneLoader loader(m_resourceManager.get(), m_scene->GetPhysic(), m_luaManager.get());
@@ -196,7 +200,7 @@ void Apex::Application::LoadScene(const std::string& path, bool startScene)
         if (body && collider)
             m_scene->GetPhysic()->CreateActor(*collider, *body);
     }
-
+    
     if (startScene)
         m_scene->Start();
 }
@@ -209,23 +213,26 @@ void Apex::Application::Tick()
         m_targetScene.clear();
     }
 
-    constexpr float fixedUpdateTime_s = 1.f / 60.f;
-
     m_deltaTime_s = m_window->GetDeltaTime();
 
-    m_scene->Update(m_deltaTime_s);
-
-    m_accumulator_s += m_deltaTime_s;
-
-    while (m_accumulator_s >= fixedUpdateTime_s)
+    if (m_running)
     {
-        m_scene->FixedUpdate(fixedUpdateTime_s);
-        m_accumulator_s -= fixedUpdateTime_s;
-    }
+        constexpr float FIXED_UPDATE_TIME_S = 1.f / 60.f;
 
-    m_scene->LateUpdate(m_deltaTime_s);
-    // listener is the camera so it updates after the camera
-    UpdateAudioListener();
+        m_scene->Update(m_deltaTime_s);
+        m_accumulator_s += m_deltaTime_s;
+
+        while (m_accumulator_s >= FIXED_UPDATE_TIME_S)
+        {
+            m_scene->FixedUpdate(FIXED_UPDATE_TIME_S);
+            m_accumulator_s -= FIXED_UPDATE_TIME_S;
+        }
+
+        m_scene->LateUpdate(m_deltaTime_s);
+
+        // listener is the camera so it updates after the camera
+        UpdateAudioListener();
+    }
 }
 
 void Apex::Application::UpdateAudioListener()
@@ -240,6 +247,8 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 {
     m_rhi->Clear();
 
+    if (!pass.m_rhi) pass.m_rhi = m_rhi.get();
+
     m_scene->ComputePass(pass);
 
     if (pass.m_flags & PerformCompute)
@@ -249,7 +258,7 @@ void Apex::Application::Render(UserInterface::IGUI* gui, RenderPassInfo pass)
 
     m_lightManager->UploadToGpu(visibleLights);
     m_shadowManager->RenderShadows(visibleLights, m_scene.get(), pass.m_camera);
-    m_shadowManager->BindShadowMaps();
+    m_shadowManager->BindShadowMaps(m_scene->GetShader());
 
     if (pass.m_target != RHI_INVALID)
     {
@@ -288,8 +297,6 @@ void Apex::Application::EnsureDefaultScene(const std::string& path)
 
     // Minimal valid .level file
     file << "{\n";
-    file << "\"materials\": [\n";
-    file << "],\n";
     file << "\"objects\": [\n";
     file << "]\n";
     file << "}";
@@ -312,25 +319,57 @@ std::string Apex::Application::LoadLastScene() const
 std::string Apex::Application::LoadBuildStartScene() const
 {
     std::ifstream file(m_buildScenesPath);
-    if (!file.is_open()) return "";
+    if (!file.is_open())
+        return "";
 
-    std::string content((std::istreambuf_iterator<char>(file)),
+    std::string content(
+        (std::istreambuf_iterator<char>(file)),
         std::istreambuf_iterator<char>());
 
-    // Find "scenes" key
-    size_t scenesPos = content.find("\"scenes\"");
-    if (scenesPos == std::string::npos) return "";
+    // Expects: { "scenes": [ "Assets/Scenes/scene.level", ... ] }
+    size_t scenePos = content.find("\"scenes\"");
+    if (scenePos == std::string::npos)
+        return "";
 
-    // Find the opening bracket of the array
-    size_t arrayStart = content.find('[', scenesPos);
-    if (arrayStart == std::string::npos) return "";
+    size_t arrayOpen = content.find('[', scenePos);
+    if (arrayOpen == std::string::npos)
+        return "";
 
-    // Find the first quoted string inside the array
-    size_t firstQuote = content.find('"', arrayStart + 1);
-    if (firstQuote == std::string::npos) return "";
+    size_t firstQuote = content.find('"', arrayOpen + 1);
+    if (firstQuote == std::string::npos)
+        return "";
 
     size_t secondQuote = content.find('"', firstQuote + 1);
-    if (secondQuote == std::string::npos) return "";
+    if (secondQuote == std::string::npos)
+        return "";
 
     return content.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+}
+
+void Apex::Application::AddCollectedObject(size_t id)
+{
+    if (std::find(
+        m_collectedObjects.begin(),
+        m_collectedObjects.end(),
+        id) == m_collectedObjects.end())
+    {
+        m_collectedObjects.push_back(id);
+    }
+}
+
+const std::vector<size_t>& Apex::Application::GetCollectedObjects() const
+{
+    return m_collectedObjects;
+}
+
+void Apex::Application::Pause()
+{
+    m_running = false;
+    m_window->SetCursorCaptured(false);
+}
+
+void Apex::Application::Unpause()
+{
+    m_running = true;
+    m_window->SetCursorCaptured(true);
 }

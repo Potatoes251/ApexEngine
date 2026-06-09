@@ -6,14 +6,14 @@
 #include "Log.h"
 
 using namespace Apex::Data;
-using namespace LibMath;
 using namespace Apex::SceneGraph;	
 
 Apex::Data::Object::Object()
 {
 	m_owner = std::make_shared<SceneNode>(this);
 	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
 }
 
 Apex::Data::Object::Object(size_t forcedId)
@@ -25,24 +25,27 @@ Apex::Data::Object::Object(size_t forcedId)
 	if (forcedId != INVALID_ID && m_nextId <= forcedId)
 		m_nextId = ++forcedId;
 
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
 }
 
-Object::Object(const Transform& localTransform, const Transform& globalTransform) :
+Object::Object(const LibMath::Transform& localTransform, const LibMath::Transform& globalTransform) :
 	m_localTransform(localTransform), m_globalTransform(globalTransform)
 {
 	m_owner = std::make_shared<SceneNode>(this);
 	m_id = m_nextId++;
-	m_name = "Object" + std::to_string(m_id);
+	m_name = GenerateUniqueName();
+	RegisterName(m_name);
 }
 
 Apex::Data::Object::~Object()
 {
+	UnregisterName(m_name);
 }
 
 std::unique_ptr<Object> Object::Clone()
 {
-	std::unique_ptr<Object> clone = std::make_unique<Object>();
+	std::unique_ptr<Object> clone = std::make_unique<Object>(m_id);
 	clone->SetName(m_name);
 	clone->SetLocalTransform(m_localTransform);
 
@@ -57,14 +60,6 @@ std::unique_ptr<Object> Object::Clone()
 		}
 
 		clone->AddComponentDirect(std::move(newComp));
-	}
-
-	std::shared_ptr<SceneNode> cloneNode = clone->GetSceneNode();
-	for (auto& child : m_owner->GetChildren())
-	{
-		std::unique_ptr<Object> childClone = child->GetObject()->Clone();
-		if (childClone)
-			cloneNode->AddChild(childClone->GetSceneNode());
 	}
 
 	clone->SetOnChangedCallback(m_onChanged);
@@ -82,38 +77,6 @@ void Object::SetId(size_t id)
 		m_nextId = ++id;
 }
 
-void Object::SetCompId(size_t oldId, size_t newId)
-{
-	if (oldId == newId || newId == INVALID_ID) return;
-
-	Component* comp = GetComponent(oldId);
-
-	if (!comp) return;
-
-	if (oldId != INVALID_ID)
-		m_freeCompIds.insert(oldId);
-
-	comp->SetId(newId);
-	m_freeCompIds.erase(newId);
-
-	if (m_nextCompId <= newId)
-		m_nextCompId = ++newId;
-}
-
-void Object::SetCompId(Component* comp, size_t newId)
-{
-	if (!comp || newId == INVALID_ID) return;
-
-	if (comp->GetId() != INVALID_ID)
-		m_freeCompIds.insert(comp->GetId());
-
-	comp->SetId(newId);
-	m_freeCompIds.erase(newId);
-
-	if (m_nextCompId <= newId)
-		m_nextCompId = ++newId;
-}
-
 size_t Object::NewId()
 {
 	m_id = m_nextId++;
@@ -125,27 +88,7 @@ void Object::RemoveId()
 	m_id = INVALID_ID;
 }
 
-void Object::RemoveCompId(size_t oldId)
-{
-	if (oldId == INVALID_ID) return;
-
-	Component* comp = GetComponent(oldId);
-
-	if (!comp) return;
-
-	m_freeCompIds.insert(comp->GetId());
-	comp->SetId(INVALID_ID);
-}
-
-void Object::RemoveCompId(Component* comp)
-{
-	if (!comp || comp->GetId() == INVALID_ID) return;
-
-	m_freeCompIds.insert(comp->GetId());
-	comp->SetId(INVALID_ID);
-}
-
-void Object::SetLocalTransform(const Transform& transform)
+void Object::SetLocalTransform(const LibMath::Transform& transform)
 {
 	m_localTransform = transform;
 	m_owner->MarkDirty();
@@ -171,7 +114,7 @@ void Object::SetLocalScale(const LibMath::Vector3& scale)
 	m_owner->MarkDirty();
 }
 
-void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
+void Apex::Data::Object::SetGlobalTransform(const LibMath::Transform& transform)
 {	
 	Object* parent = GetParent();
 	
@@ -192,16 +135,21 @@ void Apex::Data::Object::SetGlobalTransform(const Transform& transform)
 
 void Apex::Data::Object::SetName(std::string name)
 {
-	m_name = name;
-	OnChanged();
+	if (m_name != name)
+	{
+		UnregisterName(m_name);
+		RegisterName(name);
+		m_name = name;
+		OnChanged();
+	}
 }
 
-const Transform& Object::GetLocalTransform() const
+const LibMath::Transform& Object::GetLocalTransform() const
 {
 	return m_localTransform;
 }
 
-const Transform& Object::GetGlobalTransform() const
+const LibMath::Transform& Object::GetGlobalTransform() const
 {
 	if (m_owner && m_owner->IsDirty()) UpdateGlobalTransform();
 
@@ -310,15 +258,7 @@ size_t Object::AddComponentDirect(std::unique_ptr<Component> comp)
 	comp->m_owner = this;
 	m_components.push_back(std::move(comp));
 
-	if (m_freeCompIds.empty())
-	{
-		m_components.back()->SetId(m_nextCompId++);
-	}
-	else
-	{
-		m_components.back()->SetId(*m_freeCompIds.begin());
-		m_freeCompIds.erase(m_freeCompIds.begin());
-	}
+	m_components.back()->SetId(m_nextCompId++);
 
 	OnChanged();
 
@@ -356,8 +296,6 @@ void Object::RemoveComponent(Component* compToRemove, Physic::PhysicSystem* phys
 			if (rb && phys)
 				phys->RemoveActor(*rb);
 
-			m_freeCompIds.insert(compToRemove->GetId());
-
 			m_components.erase(m_components.begin() + i);
 
 			OnChanged();
@@ -380,8 +318,6 @@ void Object::RemoveComponent(size_t compId, Physic::PhysicSystem* phys)
 			if (rb && phys)
 				phys->RemoveActor(*rb);
 
-			m_freeCompIds.insert(compId);
-
 			m_components.erase(m_components.begin() + i);
 
 			OnChanged();
@@ -399,4 +335,35 @@ void Object::OnChanged()
 {
 	if (m_onChanged)
 		m_onChanged();
+}
+
+std::string Object::GenerateUniqueName()
+{
+	constexpr const char* baseName = "Object";
+
+	// First object keeps plain "Object"
+	if (!m_usedNames.contains(baseName))
+		return baseName;
+
+	size_t index = 1;
+
+	while (true)
+	{
+		std::string candidate = std::string(baseName) + std::to_string(index);
+
+		if (!m_usedNames.contains(candidate))
+			return candidate;
+
+		++index;
+	}
+}
+
+void Object::RegisterName(const std::string& name)
+{
+	m_usedNames.insert(name);
+}
+
+void Object::UnregisterName(const std::string& name)
+{
+	m_usedNames.erase(name);
 }

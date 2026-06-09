@@ -79,6 +79,15 @@ namespace Apex::Editor
 		void SaveUserSettings();
 
 	private:
+		void BuildSetupOutputDir(const Fs::path& outputDir);
+		void BuildCopyExecutables(const Fs::path& gameExeDir, const Fs::path& outputDir);
+		void BuildCopyFonts(const Fs::path& outputDir);
+		void BuildCopyEngineAssets(const Fs::path& outputDir);
+		void BuildCopySceneFiles(const std::vector<std::string>& scenePaths, const Fs::path& outputDir);
+		void BuildCollectDependencies(const std::vector<std::string>& scenePaths, std::unordered_set<std::string>& outAssets);
+		void BuildCopyAssets(const std::unordered_set<std::string>& assets, const Fs::path& outputDir);
+		void BuildWriteScenesJson(const std::vector<std::string>& scenePaths, const Fs::path& outputDir);
+
 		static const char* TypeToString(AssetType type);
 
 		void OpenTextureEditor(const std::filesystem::path& path);
@@ -93,6 +102,9 @@ namespace Apex::Editor
 		void CollectLuaDependencies(const std::string& scriptPath,
 			std::unordered_set<std::string>& out,
 			std::unordered_set<std::string>& visited);
+		void CollectHudDependencies(
+			const std::string& scriptPath,
+			std::unordered_set<std::string>& outHuds);
 		void CollectAssetsFromMats(const std::string& matPath,
 			std::unordered_set<std::string>& outAssets);
 

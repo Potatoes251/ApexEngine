@@ -22,6 +22,7 @@ namespace Apex::Rendering
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glEnable(GL_BLEND);
+		glEnable(GL_CULL_FACE);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	void OpenGLRHI::SetClearColor(float r, float g, float b, float a)
@@ -37,6 +38,17 @@ namespace Apex::Rendering
 	void OpenGLRHI::ClearDepth()
 	{
 		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	void OpenGLRHI::SetCullingFace(bool front)
+	{
+		glCullFace(front ? GL_FRONT : GL_BACK);
+	}
+
+	void OpenGLRHI::SetCullingEnabled(bool enabled)
+	{
+		if (enabled)	glEnable(GL_CULL_FACE);
+		else			glDisable(GL_CULL_FACE);
 	}
 
 	// ── VAO ───────────────────────────────────────────────────────
@@ -510,6 +522,12 @@ namespace Apex::Rendering
 	{
 		GLint location = glGetUniformLocation(GetShader(shader), name.data());
 		glUniform1f(location, value);
+	}
+
+	void OpenGLRHI::SetUniformFloatArray(RHIShaderHandle shader, const std::string_view& name, const float& value, int count)
+	{
+		GLint location = glGetUniformLocation(GetShader(shader), name.data());
+		glUniform1fv(location, count, &value);
 	}
 
 	void OpenGLRHI::SetUniformVec3(RHIShaderHandle shader, const std::string_view& name, const LibMath::Vector3& vec)

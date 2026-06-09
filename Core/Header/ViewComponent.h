@@ -26,8 +26,8 @@ namespace Apex::Perception
 		void OnFixedUpdate(float fixedDeltaTime_s) override;
 		void OnStart() override;
 
-		const std::vector<Apex::Physic::HitResult>& GetHits() const { return m_Hits; }
-		size_t GetNumberOfHits() const { return m_Hits.size(); }
+		const std::vector<Apex::Physic::HitResult>& GetHits() const { return m_hits; }
+		size_t GetNumberOfHits() const { return m_hits.size(); }
 
 		// Check if any of the hit object has a tag
 		bool SeesTag(std::string const& tag) const;
@@ -48,7 +48,7 @@ namespace Apex::Perception
 
 		std::vector<LibMath::Vector3>		m_localDirections;
 
-		std::vector<Apex::Physic::HitResult>	m_Hits;
+		std::vector<Apex::Physic::HitResult>	m_hits;
 
 		Apex::Physic::PhysicSystem*		m_physicSystem = nullptr;
 	};

@@ -9,7 +9,7 @@ void Cubemap::LoadFromFile()
 {
 	std::stringstream ss(m_path);
 	std::string item;
-	stbi_set_flip_vertically_on_load(false);
+	stbi_set_flip_vertically_on_load(true);
 
 	while (std::getline(ss, item, '|')) // split by '|'
 	{
@@ -36,9 +36,12 @@ void Cubemap::LoadFromFile()
 		for (auto& d : m_descs)
 			stbi_image_free(d.m_data);
 		m_descs.clear();
+		m_descs.shrink_to_fit();
 		SetState(ResourceState::Failed);
 		return;
 	}
+
+	SetState(ResourceState::Loaded);
 }
 
 void Cubemap::UploadToGpu()
@@ -49,6 +52,7 @@ void Cubemap::UploadToGpu()
 
 	m_descs.clear();
 	m_descs.shrink_to_fit();
+	SetState(ResourceState::Uploaded);
 }
 
 void Cubemap::Bind(uint32_t slot)
