@@ -26,6 +26,9 @@ namespace Apex::Rendering
 		float	GetSpeed() const { return m_speed; }
 		void	SetSpeed(float speed) { m_speed = LibMath::clamp(speed, 0.5f, m_maxSpeed); }
 
+		void	SetYaw(float degree);
+		void	SetPitch(float degree);
+
 		LibMath::Matrix4	GetViewProj();
 		LibMath::Matrix4	GetProjection();
 		LibMath::Matrix4	GetViewMatrix();
@@ -72,7 +75,6 @@ namespace Apex::Rendering
 
 		bool			m_dirty = true;
 		bool			m_isMain = false;
-	private:
 	};
 }
 

@@ -2,7 +2,7 @@
 #define EDITOR_ICON
 
 // ============================================================
-// EditorIcon.h — Loads PNG icons for use in ImageButton calls.
+// EditorIcon.h - Loads PNG icons for use in ImageButton calls.
 //
 // Icons are cached by path after first load so they are only
 // uploaded to the GPU once per editor session.

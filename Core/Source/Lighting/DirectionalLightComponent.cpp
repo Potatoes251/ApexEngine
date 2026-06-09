@@ -18,16 +18,6 @@ void DirectionalLightComponent::Serialize(std::ostream& out) const
     out << "        \"shadowExtent\": " << m_shadowExtents << "\n";
 }
 
-std::vector<ExposedVar> DirectionalLightComponent::GetExposedVariables()
-{
-    std::vector<ExposedVar> exposedVec = LightComponent::GetExposedVariables();
-
-    exposedVec.push_back({ "Shadow Distance", ExposedVar::Float, &m_shadowDistance });
-    exposedVec.push_back({ "Shadow Extent", ExposedVar::Float, &m_shadowExtents });
-
-    return exposedVec;
-}
-
 void DirectionalLightComponent::FillGpuData(void* data_out)
 {
     GPUDirectionalLight* data = (GPUDirectionalLight*)data_out;

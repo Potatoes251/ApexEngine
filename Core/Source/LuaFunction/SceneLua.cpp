@@ -29,7 +29,7 @@ int Apex::Scene::Lua_Scene_PauseScene(lua_State* L)
 
 int Apex::Scene::Lua_Scene_UnpauseScene(lua_State* L)
 {
-	Application::Get()->UnPause();
+	Application::Get()->Unpause();
 
 	return 0;
 }

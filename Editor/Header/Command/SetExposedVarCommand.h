@@ -16,7 +16,7 @@ namespace Apex::CtrlZ
 		{
 			m_targetCompId = comp->GetId();
 			m_targetId = obj->GetId();
-			m_varName = var.name;
+			m_varName = var.m_name;
 			m_newValue = newValue;
 			m_oldValue = oldValue;
 		}
@@ -32,9 +32,9 @@ namespace Apex::CtrlZ
 
 			for (ExposedVar& var : comp->GetExposedVariables())
 			{
-				if (var.name == m_varName)
+				if (var.m_name == m_varName)
 				{
-					*(T*)var.data = m_newValue;
+					*(T*)var.m_data = m_newValue;
 					return;
 				}
 			}
@@ -50,9 +50,9 @@ namespace Apex::CtrlZ
 
 			for (ExposedVar& var : comp->GetExposedVariables())
 			{
-				if (var.name == m_varName)
+				if (var.m_name == m_varName)
 				{
-					*(T*)var.data = m_oldValue;
+					*(T*)var.m_data = m_oldValue;
 					return;
 				}
 			}

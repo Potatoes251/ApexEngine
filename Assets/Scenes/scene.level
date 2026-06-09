@@ -93,8 +93,8 @@
     "id": 35,
     "parent": null,
     "name": "Painting",
-    "position": [-21.299885,3.197718,30.639408],
-    "rotation": [0.000000,0.584263,0.000000,0.811564],
+    "position": [-17.738672,3.197715,30.823687],
+    "rotation": [0.000000,0.666257,0.000000,0.745723],
     "scale": [2.213460,2.213460,2.213460],
     "components": {
       "MeshRenderer": {
@@ -123,7 +123,7 @@
         "script": "Assets/Scripts/Painting.lua",
         "vars": {
           "TargetScene": "Assets/Scenes/level_1.level",
-          "LoadTime": 1.500000
+          "LoadTime": 1.000000
         }
       }
     }
@@ -164,22 +164,30 @@
     "id": 37,
     "parent": null,
     "name": "Music",
-    "position": [6.517717,-1.226404,17.245037],
+    "position": [0.000000,0.000000,0.000000],
     "rotation": [0.000000,0.000000,0.000000,1.000000],
     "scale": [1.000000,1.000000,1.000000],
     "components": {
-      "AudioComponent": {
+      "MeshRenderer": {
         "enabled": true,
-        "sound": "Assets/Sounds/calmPiano.ogg",
-        "volume": 1.000000,
-        "channel": 1,
-        "loop": 1
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
+        "castShadow": true
       },
       "ScriptComponent": {
         "enabled": true,
         "script": "Assets/Scripts/MusicPlayer.lua",
         "vars": {
         }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/calmPiano.ogg",
+        "volume": 1.000000,
+        "channel": 1,
+        "loop": 1
       }
     }
   }

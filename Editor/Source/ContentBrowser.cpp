@@ -504,9 +504,7 @@ namespace Apex::Editor
         if (!m_selectedPath.empty() && m_renamingPath.empty())
         {
             if (m_gui.IsKeyPressed(UIKey::Delete))
-            {
                 DeleteSelected();
-            }
         }
 
         if (m_gui.IsWindowHovered() && !m_gui.IsAnyItemHovered() &&
@@ -532,7 +530,7 @@ namespace Apex::Editor
 
     Fs::path ContentBrowser::GetExternalDropDest(float mouseX, float mouseY) const
     {
-        for (const auto& rect : m_breadcrumbRects)
+        for (const auto& rect : m_breadCrumbRects)
             if (mouseX >= rect.m_x && mouseX <= rect.m_x + rect.m_width &&
                 mouseY >= rect.m_y && mouseY <= rect.m_y + rect.m_height)
                 return rect.m_path;
@@ -601,7 +599,7 @@ namespace Apex::Editor
         Fs::path relative = Fs::relative(displayPath, m_rootPath.parent_path());
         Fs::path accumulated = m_rootPath.parent_path();
 
-        m_breadcrumbRects.clear();
+        m_breadCrumbRects.clear();
 
         m_gui.PushFont(FontID::Default);
 
@@ -655,7 +653,11 @@ namespace Apex::Editor
         AssetEntry assetEntry = ClassifyEntry(entry);
         DrawEntryContextMenu(assetEntry);
 
-        if (open) { DrawFolderTree(path); m_gui.EndTreeNode(); }
+        if (open) 
+        { 
+            DrawFolderTree(path); 
+            m_gui.EndTreeNode(); 
+        }
     }
 
     bool ContentBrowser::DrawTreeNode(const Fs::path& path, bool isRenaming)
@@ -671,7 +673,11 @@ namespace Apex::Editor
 
     void ContentBrowser::HandleTreeNodeInput(const Fs::path& path, bool isRenaming)
     {
-        if (isRenaming) { DrawTreeNodeRename(); return; }
+        if (isRenaming) 
+        { 
+            DrawTreeNodeRename(); 
+            return; 
+        }
 
         if (m_gui.IsItemClicked())
         {
@@ -1016,13 +1022,10 @@ namespace Apex::Editor
         m_gui.Separator();
 
         if (entry.m_isFolder)
-        {
             if (m_gui.MenuItem("Open")) NavigateTo(entry.m_path);
-        }
+
         else if (m_gui.MenuItem("Load") && m_onLoad)
-        {
             m_onLoad(entry);
-        }
 
         m_gui.Separator();
 
@@ -1036,7 +1039,11 @@ namespace Apex::Editor
 
         m_gui.Separator();
 
-        if (m_gui.MenuItem("Delete")) { m_selectedPath = entry.m_path; DeleteSelected(); }
+        if (m_gui.MenuItem("Delete")) 
+        { 
+            m_selectedPath = entry.m_path; 
+            DeleteSelected(); 
+        }
 
         m_gui.PopFont();
         m_gui.PopStyleVariable();
@@ -1108,9 +1115,7 @@ namespace Apex::Editor
             Refresh();
 
         if (m_gui.MenuItem("Reveal in Explorer"))
-        {
             std::system(("explorer \"" + m_currentPath.string() + "\"").c_str());
-        }
 
         m_gui.PopFont();
         m_gui.PopStyleVariable();
@@ -1154,7 +1159,7 @@ namespace Apex::Editor
         LibMath::Vector2 buttonPos = m_gui.GetCursorPos();
 
         if (Fs::is_directory(accumulated))
-            m_breadcrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
+            m_breadCrumbRects.push_back({ accumulated, buttonPos[0], buttonPos[1], buttonWidth, buttonHeight });
 
         m_gui.PushID(idx);
         bool clicked = m_gui.InvisibleButton("##bc", LibMath::Vector2(buttonWidth, buttonHeight));

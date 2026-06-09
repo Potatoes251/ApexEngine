@@ -183,13 +183,13 @@ namespace Apex::UserInterface
 
     struct HUDInstance
     {
-        std::string  m_name;       
-        UICanvas     m_canvas;
-        bool         m_visible = false;
-
         HUDInstance() = default;
         HUDInstance(const HUDInstance&) = delete;
         HUDInstance& operator=(const HUDInstance&) = delete;
+
+        std::string  m_name;       
+        UICanvas     m_canvas;
+        bool         m_visible = false;
     };
 
     class UIManager

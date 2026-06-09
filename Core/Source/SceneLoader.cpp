@@ -73,10 +73,10 @@ void SceneLoader::LoadScene(Apex::Rendering::Scene& scene, const std::string& pa
 
     parser.Expect('}');
 
-    for (auto& [childId, parentId] : parentLinks)
+    for (auto& [childId, parentId] : m_parentLinks)
     {
-        auto child = objectsById[childId];
-        auto parent = objectsById[parentId];
+        auto child = m_objectsById[childId];
+        auto parent = m_objectsById[parentId];
 
         if (child && parent)
         {
@@ -96,7 +96,7 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
     size_t id = parser.ParseInt();
     obj->SetId(id);
 
-    objectsById[id] = obj;
+    m_objectsById[id] = obj;
     parser.Expect(',');
 
     // parent
@@ -109,7 +109,7 @@ Object* SceneLoader::ParseObject(Apex::Rendering::Scene& scene, SerialParser& pa
     else
     {
         size_t parentId = parser.ParseInt();
-        parentLinks.emplace_back(id, parentId);
+        m_parentLinks.emplace_back(id, parentId);
     }
 
     parser.Expect(',');

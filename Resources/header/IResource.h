@@ -11,12 +11,10 @@ enum class ResourceState
 };
 
 #include <atomic>
-//#include <string>
 
 #include "RHI.h"
 
 namespace Apex::Resources { class ResourceManager; }
-//namespace Apex::Rendering { class IRHI; }
 
 class IResource
 {

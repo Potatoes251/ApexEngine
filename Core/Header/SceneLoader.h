@@ -74,8 +74,8 @@ namespace Apex::Serialization
         Apex::Physic::PhysicSystem* m_physics;
         Apex::Scripting::LuaManager* m_luaManager;
 
-        std::unordered_map<size_t, Apex::Data::Object*> objectsById;
-        std::vector<std::pair<size_t, size_t>> parentLinks;
+        std::unordered_map<size_t, Apex::Data::Object*> m_objectsById;
+        std::vector<std::pair<size_t, size_t>> m_parentLinks;
     };
 }
 

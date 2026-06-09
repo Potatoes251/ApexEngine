@@ -29,7 +29,7 @@ namespace Apex::Save
 
     bool SaveManager::Save(SaveData data, uint32_t slotIndex)
     {
-        data.slotIndex = slotIndex;
+        data.m_slotIndex = slotIndex;
 
         const std::string path = BuildPath(slotIndex);
 
@@ -95,11 +95,11 @@ namespace Apex::Save
             auto data = Deserialize(json);
             if (!data) continue;
 
-            slots.push_back({ data->slotIndex, data->scenePath, data->score });
+            slots.push_back({ data->m_slotIndex, data->m_scenePath, data->m_score });
         }
 
         std::sort(slots.begin(), slots.end(),
-            [](const SlotInfo& a, const SlotInfo& b) { return a.slotIndex < b.slotIndex; });
+            [](const SlotInfo& a, const SlotInfo& b) { return a.m_slotIndex < b.m_slotIndex; });
 
         return slots;
     }
@@ -110,13 +110,13 @@ namespace Apex::Save
 
         // Destroy every object whose ID appears in the collected-items list.
         // This ensures items the player already picked up don't reappear.
-        for (const CollectedItem& item : data.collectedItems)
+        for (const CollectedItem& item : data.m_collectedItems)
         {
-            if (scene->GetObjectWithId(item.objectId))
+            if (scene->GetObjectWithId(item.m_objectId))
             {
-                scene->DestroyObject(item.objectId);
+                scene->DestroyObject(item.m_objectId);
                 LOG_INFO("SaveManager::ApplyToScene – removed collected item {}",
-                    item.objectId);
+                    item.m_objectId);
             }
         }
     }
@@ -157,22 +157,22 @@ namespace Apex::Save
         o.precision(6);
 
         o << "{\n";
-        o << "  \"slot\":      " << data.slotIndex << ",\n";
-        o << "  \"scene\":     \"" << EscapeString(data.scenePath) << "\",\n";
-        o << "  \"score\":     " << data.score << ",\n";
-        o << "  \"hp\":     " << data.hp << ",\n";
+        o << "  \"slot\":      " << data.m_slotIndex << ",\n";
+        o << "  \"scene\":     \"" << EscapeString(data.m_scenePath) << "\",\n";
+        o << "  \"score\":     " << data.m_score << ",\n";
+        o << "  \"hp\":     " << data.m_hp << ",\n";
         o << "  \"position\":  ["
-            << data.playerPosition[0] << ","
-            << data.playerPosition[1] << ","
-            << data.playerPosition[2] << "],\n";
+            << data.m_playerPosition[0] << ","
+            << data.m_playerPosition[1] << ","
+            << data.m_playerPosition[2] << "],\n";
 
         o << "  \"collected\": [";
 
-        for (size_t i = 0; i < data.collectedItems.size(); ++i)
+        for (size_t i = 0; i < data.m_collectedItems.size(); ++i)
         {
-            o << data.collectedItems[i].objectId;
+            o << data.m_collectedItems[i].m_objectId;
 
-            if (i + 1 < data.collectedItems.size())
+            if (i + 1 < data.m_collectedItems.size())
                 o << ", ";
         }
 
@@ -199,23 +199,23 @@ namespace Apex::Save
 
                 if (key == "slot")
                 {
-                    data.slotIndex = parser.ParseInt();
+                    data.m_slotIndex = parser.ParseInt();
                 }
                 else if (key == "scene")
                 {
-                    data.scenePath = parser.ParseString();
+                    data.m_scenePath = parser.ParseString();
                 }
                 else if (key == "score")
                 {
-                    data.score = parser.ParseInt();
+                    data.m_score = parser.ParseInt();
                 }
                 else if (key == "hp")
                 {
-                    data.hp = parser.ParseInt();
+                    data.m_hp = parser.ParseInt();
                 }
                 else if (key == "position")
                 {
-                    data.playerPosition = parser.ParseVector3();
+                    data.m_playerPosition = parser.ParseVector3();
                 }
                 else if (key == "collected")
                 {
@@ -224,8 +224,8 @@ namespace Apex::Save
                     while (!parser.Peek(']'))
                     {
                         CollectedItem item;
-                        item.objectId = static_cast<size_t>(parser.ParseInt());
-                        data.collectedItems.push_back(item);
+                        item.m_objectId = static_cast<size_t>(parser.ParseInt());
+                        data.m_collectedItems.push_back(item);
 
                         if (parser.Peek(','))
                             parser.Expect(',');

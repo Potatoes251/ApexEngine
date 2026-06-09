@@ -9,7 +9,7 @@ void Cubemap::LoadFromFile()
 {
 	std::stringstream ss(m_path);
 	std::string item;
-	stbi_set_flip_vertically_on_load(false);
+	stbi_set_flip_vertically_on_load(true);
 
 	while (std::getline(ss, item, '|')) // split by '|'
 	{

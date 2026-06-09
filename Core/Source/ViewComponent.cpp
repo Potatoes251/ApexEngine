@@ -49,7 +49,7 @@ std::vector<ExposedVar> ViewComponent::GetExposedVariables()
 
 void ViewComponent::OnFixedUpdate(float fixedDeltaTime_s)
 {
-	m_Hits.clear();
+	m_hits.clear();
 
 	LibMath::Vector3 origin = GetOwner()->GetGlobalPosition();
 	LibMath::Quaternion rotation = GetOwner()->GetGlobalRotation();
@@ -93,7 +93,7 @@ void ViewComponent::OnStart()
 
 bool ViewComponent::SeesTag(std::string const& tag) const
 {
-	for (HitResult const& hit : m_Hits)
+	for (HitResult const& hit : m_hits)
 	{
 		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
 		if (obj && obj->HasTag(tag))
@@ -106,7 +106,7 @@ Apex::Data::Object* ViewComponent::GetClosestWithTag(std::string const& tag) con
 {
 	float minDist = FLT_MAX;
 	Object* closest = nullptr;
-	for (HitResult const& hit : m_Hits)
+	for (HitResult const& hit : m_hits)
 	{
 		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
 		bool hasTag = obj && obj->HasTag(tag);
@@ -122,7 +122,7 @@ Apex::Data::Object* ViewComponent::GetClosestWithTag(std::string const& tag) con
 float ViewComponent::GetShortestDistanceWithTag(std::string const& tag) const
 {
 	float minDist = FLT_MAX;
-	for (HitResult const& hit : m_Hits)
+	for (HitResult const& hit : m_hits)
 	{
 		Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
 		bool hasTag = obj && obj->HasTag(tag);
@@ -144,7 +144,7 @@ void ViewComponent::CastRay(const LibMath::Vector3& origin, const LibMath::Vecto
 		{
 			Object* obj = Application::Get()->GetScene()->GetObjectWithId(hit.m_objId);
 			if (obj && obj != GetOwner())
-				m_Hits.push_back(hit);
+				m_hits.push_back(hit);
 		}
 	}
 }

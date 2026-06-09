@@ -66,6 +66,14 @@ namespace Apex::Rendering
 		//gpu
 		void SendSkeletonMatrixToGPU(const ResourceHandle<ComputeShader>& shader);
 	private:
+		struct IKInstance
+		{
+			bool				m_active = true;
+			int					m_endBoneIndex = -1;
+			int					m_chainLength = 0;
+			LibMath::Vector3	m_targetPosition;
+		};
+
 		enum AnimatorState
 		{
 			//Play + animation type + repeat? + interpolated?
@@ -79,14 +87,6 @@ namespace Apex::Rendering
 			PlayBlendSpaceAnim,
 			PlayBlendSpaceAnimInterpolated,
 			PlayLayerBlendSpaceAnim
-		};
-
-		struct IKInstance
-		{
-			bool				m_active = true;
-			int					m_endBoneIndex = -1;
-			int					m_chainLenght = 0;
-			LibMath::Vector3	m_targetPosition;
 		};
 
 		void WaitForResourcesToBeLoaded();
@@ -149,7 +149,7 @@ namespace Apex::Rendering
 		float					m_blendRatio = 0;
 
 		//layer bending
-		int						m_layerBendingOrigine = 0;
+		int						m_layerBendingOrigin = 0;
 
 		//IK
 		vector<IKInstance>		m_IKInstances;

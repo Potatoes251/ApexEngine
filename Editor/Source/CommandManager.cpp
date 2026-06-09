@@ -87,6 +87,4 @@ void CommandManager::Redo()
 	cmd->Execute();
 
 	m_undoStack.push_back(std::move(cmd));
-
-	m_undoStack.pop_front();
 }
