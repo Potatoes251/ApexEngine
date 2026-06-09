@@ -580,11 +580,15 @@ namespace Apex::Rendering
 	{
 		static GLuint vao = 0;
 
+		glDisable(GL_CULL_FACE);
+
 		if (vao == 0)
 			glGenVertexArrays(1, &vao);
 
 		glBindVertexArray(vao);
 		DrawArrays(3);
+
+		glEnable(GL_CULL_FACE);
 	}
 
 	void OpenGLRHI::DrawIndexed(uint32_t indexCount)
