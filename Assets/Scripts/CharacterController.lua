@@ -52,10 +52,6 @@ function CharacterController:IsInWater()
     return CC_IsInWater_Internal(self)
 end
 
-function CharacterController:AddImpulse(impulse)
-    CC_AddImpulse_Internal(self, impulse)
-end
-
 function CharacterController:SetVelocityX(x)
     CC_SetVelocityX_Internal(self, x)
 end

@@ -150,7 +150,7 @@ function Player:FixedUpdate(dt)
 
         self.hasLunged = true
 
-        self.cc:AddImpulse(forward + Vector3.New(0, self.lungeUpwardForce, 0))
+        self.cc:Move(forward + Vector3.New(0, self.lungeUpwardForce, 0))
     end
 
     --groundPound

@@ -26,7 +26,6 @@ void Apex::Controller::RegisterLua(Scripting::LuaManager& lua)
     lua.RegisterFunction("CC_IsGrounded_Internal", Apex::Controller::Lua_CC_IsGrounded);
     lua.RegisterFunction("CC_IsInWater_Internal", Apex::Controller::Lua_CC_IsInWater);
     lua.RegisterFunction("AIC_SetTarget_Internal", Apex::Controller::Lua_AIC_SetTarget);
-    lua.RegisterFunction("CC_AddImpulse_Internal", Apex::Controller::Lua_CC_AddImpulse);
     lua.RegisterFunction("CC_SetVelocityX_Internal", Apex::Controller::Lua_CC_SetVelocityX);
     lua.RegisterFunction("CC_SetVelocityY_Internal", Apex::Controller::Lua_CC_SetVelocityY);
     lua.RegisterFunction("CC_SetVelocityZ_Internal", Apex::Controller::Lua_CC_SetVelocityZ);
@@ -179,20 +178,6 @@ int Apex::Controller::Lua_GetAIController(lua_State* L)
 
     // push component as userdata
     lua_pushlightuserdata(L, cc);
-
-    return 1;
-}
-
-int Apex::Controller::Lua_CC_AddImpulse(lua_State* L)
-{
-    CharacterController* cc = Comp::GetComponent<CharacterController>(L, 1);
-
-    if (!cc)
-        return 0;
-
-    LuaVector3* impulse = CheckVector3(L, 2);
-
-    cc->AddImpulse(impulse->m_value);
 
     return 1;
 }
