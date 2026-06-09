@@ -20,6 +20,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
+#include <shellapi.h> // only needed for opening Visual Studio when opening a script from the editor
 #undef CreateWindow
 #endif
 
@@ -231,6 +232,14 @@ namespace Apex::Editor
                     m_editScene = m_app->GetScene()->Clone();
                     m_app->GetScene()->ClearDirty();
 
+                    break;
+                }
+                case AssetType::Script:
+                {
+                    std::filesystem::path absolutePath = std::filesystem::absolute(entry.m_path);
+
+					// Open Visual Studio with the script file
+                    ShellExecuteW(NULL, L"open", L"devenv.exe",absolutePath.c_str(), NULL, SW_SHOWNORMAL);
                     break;
                 }
                 default:
