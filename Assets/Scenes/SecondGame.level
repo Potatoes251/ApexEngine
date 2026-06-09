@@ -219,9 +219,15 @@
     "components": {
       "ScriptComponent": {
         "enabled": true,
-        "script": "Assets/Scripts/empty.lua",
+        "script": "Assets/Scripts/Empty.lua",
         "vars": {
         }
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": false,
+        "distance": 10.000000,
+        "speed": 0.000000
       }
     }
   },

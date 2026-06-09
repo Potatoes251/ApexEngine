@@ -45,6 +45,8 @@ ThirdPersonCamera& Apex::Rendering::ThirdPersonCamera::operator=(ThirdPersonCame
 
 void ThirdPersonCamera::ProcessMouse(double dx, double dy, float sensitivity)
 {
+	if (!IsEnabled()) return;
+
 	m_yaw += LibMath::Degree((float)dx * sensitivity);
 	m_pitch += LibMath::Degree((float)dy * sensitivity);
 	m_pitch = LibMath::Degree(LibMath::clamp(m_pitch.raw(), -89.f, 89.f));
@@ -73,6 +75,12 @@ void ThirdPersonCamera::Teleport(LibMath::Vector3 pos)
 {
 	Camera::Teleport(pos);
 	m_target = pos;
+}
+
+void ThirdPersonCamera::OnStart()
+{
+	Camera::OnStart();
+	Teleport(GetOwner()->GetGlobalPosition());
 }
 
 void ThirdPersonCamera::OnLateUpdate(float deltatime_s)
