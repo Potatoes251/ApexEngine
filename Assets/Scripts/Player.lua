@@ -126,11 +126,11 @@ function Player:FixedUpdate(dt)
         self.jumpTimer = 0.5
 
         if self.jumpCombo == 1 then
-            self.cc:SetVelocityY(8)
+            self.cc:SetVelocityY(4)
         elseif self.jumpCombo == 2 then
-            self.cc:SetVelocityY(11)
+            self.cc:SetVelocityY(6)
         elseif self.jumpCombo == 3 then
-            self.cc:SetVelocityY(16)
+            self.cc:SetVelocityY(8)
         end
     end
 

@@ -1,0 +1,28 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "Text",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.336439, 0.246751 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Salut",
+      "fontSize": 50.000000
+      "hAlign": 0,
+      "vAlign": 0,
+      "textColor": [ 1.000000, 0.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "Image",
+      "name": "Image",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.418986, 0.059119 ],
+      "size": [ 0.150000, 0.150000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "texture": "Assets/Textures/awesomeface.png"
+    }
+  ]
+}
