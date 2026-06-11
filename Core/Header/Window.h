@@ -48,6 +48,7 @@ namespace Apex::Windowing
 		virtual float	GetDeltaTime() const = 0;
 
 		virtual void	SetWindowTitle(const std::string& title) = 0;
+		virtual void	SetWindowIcon(const std::string& path) = 0;
 
 		// Input
 		virtual void	SetCursorCaptured(bool captured) = 0;

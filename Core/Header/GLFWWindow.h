@@ -40,6 +40,7 @@ namespace Apex::Windowing
 		float	GetDeltaTime() const override;
 		
 		void	SetWindowTitle(const std::string& title) override;
+		void	SetWindowIcon(const std::string& path) override;
 
 		// Input
 		void	SetCursorCaptured(bool captured) override;

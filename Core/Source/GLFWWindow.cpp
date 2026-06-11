@@ -3,6 +3,8 @@
 #include "InputSystem.h"
 #include "Log.h"
 
+#include "stb_image.h"
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
@@ -88,6 +90,19 @@ namespace Apex::Windowing
         if (m_crosshairCursor) glfwDestroyCursor(m_crosshairCursor);
         if (m_window)          glfwDestroyWindow(m_window);
         if (m_isPrimary)       glfwTerminate();
+    }
+
+    void GLFWWindow::SetWindowIcon(const std::string& path)
+    {
+        // Title bar (GLFW)
+        int width, height, channels;
+        unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+        if (pixels)
+        {
+            GLFWimage image{ width, height, pixels };
+            glfwSetWindowIcon(m_window, 1, &image);
+            stbi_image_free(pixels);
+        }
     }
 
     // ── Lifecycle ────────────────────────────────────────────────

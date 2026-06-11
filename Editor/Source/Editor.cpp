@@ -49,6 +49,8 @@ namespace Apex::Editor
 
         if (!m_window) return false;
 
+        m_window->SetWindowIcon("ApexAssets/Textures/EditorIcon.png");
+
         m_window->Maximize();
 
         m_window->SetCloseCallback([this]()
