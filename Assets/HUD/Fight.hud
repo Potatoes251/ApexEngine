@@ -1,0 +1,86 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "Player",
+      "anchor": "BottomLeft",
+      "visible": true,
+      "position": [ 0.050472, -0.314046 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Player",
+      "fontSize": 24.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "PlayerLife",
+      "anchor": "BottomLeft",
+      "visible": true,
+      "position": [ 0.056957, -0.240670 ],
+      "size": [ 0.200000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "Text",
+      "name": "Enemy",
+      "anchor": "TopRight",
+      "visible": true,
+      "position": [ -0.248585, 0.085325 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Enemy",
+      "fontSize": 24.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "EnemyLife",
+      "anchor": "TopRight",
+      "visible": true,
+      "position": [ -0.245071, 0.153459 ],
+      "size": [ 0.200000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "Button",
+      "name": "AttackButton",
+      "anchor": "BottomLeft",
+      "visible": true,
+      "position": [ 0.076415, -0.170864 ],
+      "size": [ 0.075000, 0.050000 ],
+      "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+      "label": "Attack",
+      "fontSize": 20.000000,
+      "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+      "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+      "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "Button",
+      "name": "FleeButton",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.170165, 0.828512 ],
+      "size": [ 0.075000, 0.050000 ],
+      "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+      "label": "Flee",
+      "fontSize": 20.000000,
+      "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+      "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+      "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    }
+  ]
+}

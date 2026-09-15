@@ -1,0 +1,200 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "ScoreLabel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.782193, 0.040252 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Text",
+      "fontSize": 36.000000
+      "hAlign": 1,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "Panel",
+      "name": "DeadPanel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.363561, 0.385115 ],
+      "size": [ 0.250000, 0.200000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 6.000000,
+      "colorBg": [ 0.544615, 0.110599, 0.110599, 0.800000 ],
+      "children": [
+        {
+          "type": "Text",
+          "name": "Text",
+          "anchor": "Center",
+          "visible": true,
+          "position": [ -0.081132, -0.007338 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "You are dead",
+          "fontSize": 24.000000
+          "hAlign": 1,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg1",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.380000, 0.045493 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg2",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.380000, 0.080000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg3",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.380000, 0.115000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg4",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.380000, 0.150000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg5",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.484000, 0.045000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg6",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.484000, 0.080084 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg7",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.484000, 0.115000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "ProgressBar",
+      "name": "HpSeg8",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.484000, 0.150000 ],
+      "size": [ 0.100000, 0.030000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "value": 1.000000,
+      "rounding": 4.000000,
+      "colorBg": [ 0.200000, 0.200000, 0.200000, 1.000000 ],
+      "colorFill": [ 0.200000, 0.700000, 0.200000, 1.000000 ]
+    },
+    {
+      "type": "Panel",
+      "name": "GameOverPanel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.362382, 0.386164 ],
+      "size": [ 0.250000, 0.200000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 6.000000,
+      "colorBg": [ 0.841294, 0.864615, 0.175583, 0.800000 ],
+      "children": [
+        {
+          "type": "Text",
+          "name": "Text",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.400000, 0.500000 ],
+          "size": [ 0.200000, 0.050000 ],
+          "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+          "text": "GAME OVER",
+          "fontSize": 36.000000
+          "hAlign": 1,
+          "vAlign": 1,
+          "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    },
+    {
+      "type": "Image",
+      "name": "LivesImage",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.023939, 0.038155 ],
+      "size": [ 0.050000, 0.080000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "texture": "Assets/Textures/Heart.png"
+    },
+    {
+      "type": "Text",
+      "name": "LivesLabel",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.081722, 0.048638 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Text",
+      "fontSize": 36.000000
+      "hAlign": 0,
+      "vAlign": 1,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    }
+  ]
+}

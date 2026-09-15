@@ -1,0 +1,269 @@
+{
+"objects": [
+  {
+    "id": 417,
+    "parent": null,
+    "name": "Light",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.341454,0.286514,-0.685735,0.575400],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 0.830000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 418,
+    "parent": null,
+    "name": "Player",
+    "position": [0.230901,1.806698,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 1.000000,
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Player/Player.mesh"
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/BattleManager.lua",
+        "vars": {
+        }
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Fighter.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 419,
+    "parent": null,
+    "name": "Cube",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [40.000000,1.000000,40.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Green.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [20.000000,0.500000,20.000000]
+      }
+    }
+  },
+  {
+    "id": 420,
+    "parent": null,
+    "name": "Grass",
+    "position": [10.676847,0.536870,-10.095831],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [20.000000,1.000000,20.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/cube/cube.mesh",
+        "materials": [
+            "Assets/Material/DarkGreen.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [10.000000,0.500000,10.000000]
+      }
+    }
+  },
+  {
+    "id": 421,
+    "parent": null,
+    "name": "arena",
+    "position": [-297.052002,1.438063,-1.916274],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Stage0/Stage0.mesh",
+        "materials": [
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_center.mat",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_sand.mat",
+            "Assets/Meshes/beach-battle-arenastage/textures/arena_center.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Stage0/Stage0.mesh",
+        "type": "Triangle"
+      }
+    }
+  },
+  {
+    "id": 422,
+    "parent": null,
+    "name": "playerArenaPos",
+    "position": [-290.191010,3.381442,-1.731381],
+    "rotation": [-0.000000,0.707107,-0.000000,-0.707107],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Empty.lua",
+        "vars": {
+        }
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": false,
+        "distance": 10.000000,
+        "speed": 0.000000
+      }
+    }
+  },
+  {
+    "id": 423,
+    "parent": null,
+    "name": "enemyArenaPos",
+    "position": [-302.768005,3.182716,-1.731377],
+    "rotation": [0.000000,0.707107,0.000000,0.707107],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
+        "castShadow": true
+      }
+    }
+  },
+  {
+    "id": 424,
+    "parent": null,
+    "name": "Enemy",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Fighter.lua",
+        "vars": {
+        }
+      }
+    }
+  }
+]
+}

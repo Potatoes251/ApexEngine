@@ -1,0 +1,7 @@
+{
+	"shader": "ApexAssets/Shaders/Mesh.vert|ApexAssets/Shaders/Mesh.frag",
+	"tint": [0.0745098, 0.709804, 0.0745098],
+	"textures": [
+		"Assets/Textures/Blank.png"
+	]
+}

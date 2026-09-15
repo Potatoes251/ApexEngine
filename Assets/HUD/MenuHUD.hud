@@ -1,0 +1,87 @@
+{
+  "widgets": [
+    {
+      "type": "Panel",
+      "name": "Panel",
+      "anchor": "Center",
+      "visible": true,
+      "position": [ -0.500000, -0.500000 ],
+      "size": [ 1.000000, 1.000000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "rounding": 6.000000,
+      "colorBg": [ 1.000000, 0.874510, 0.000000, 0.800000 ],
+      "children": [
+        {
+          "type": "Button",
+          "name": "NewGameButton",
+          "anchor": "TopLeft",
+          "visible": true,
+          "position": [ 0.100000, 0.100000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+          "label": "NewGame",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "ContinueButton",
+          "anchor": "TopRight",
+          "visible": true,
+          "position": [ -0.350000, 0.100000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+          "label": "Continue",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "LoadGameButton",
+          "anchor": "TopCenter",
+          "visible": true,
+          "position": [ -0.125000, 0.100000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.200000, 0.400000, 0.800000, 1.000000 ],
+          "label": "LoadGame",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "QuitButton",
+          "anchor": "BottomLeft",
+          "visible": true,
+          "position": [ 0.100000, -0.350000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 1.000000, 0.117647, 0.039216, 1.000000 ],
+          "label": "Quit",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        },
+        {
+          "type": "Button",
+          "name": "SettingButton",
+          "anchor": "BottomRight",
+          "visible": true,
+          "position": [ -0.350000, -0.350000 ],
+          "size": [ 0.250000, 0.250000 ],
+          "color": [ 0.827451, 0.827451, 0.827451, 1.000000 ],
+          "label": "Setting",
+          "fontSize": 50.000000,
+          "colorHover": [ 0.800000, 0.800000, 0.800000, 1.000000 ],
+          "colorPressed": [ 0.600000, 0.600000, 0.600000, 1.000000 ],
+          "colorText": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+        }
+      ]
+    }
+  ]
+}

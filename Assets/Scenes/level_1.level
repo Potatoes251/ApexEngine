@@ -1,0 +1,1355 @@
+{
+"objects": [
+  {
+    "id": 4741,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [1.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [20.000000,1.000000,20.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [20.000000,1.025000,20.000000]
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      }
+    }
+  },
+  {
+    "id": 4742,
+    "parent": null,
+    "name": "HUDController",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/HudController.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 4743,
+    "parent": null,
+    "name": "Light",
+    "position": [-1.000000,2.000000,0.000000],
+    "rotation": [-0.341454,-0.286514,0.685735,-0.575400],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 0.883000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 4744,
+    "parent": null,
+    "name": "Player",
+    "position": [0.534259,2.021664,4.421952],
+    "rotation": [0.000000,0.496519,0.000000,0.868026],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 5.000000,
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Player/Player.mesh"
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/BossFighter.lua",
+        "vars": {
+        }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      }
+    }
+  },
+  {
+    "id": 4745,
+    "parent": 5201,
+    "name": "WaterCurrent",
+    "position": [30.861206,-3.806236,0.080175],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [20.000000,9.385734,32.797966],
+    "components": {
+      "WaterVolume": {
+        "enabled": true,
+        "halfExtents": [10.000000,5.000000,16.000000],
+        "density": 1000.000000,
+        "drag": 0.500000,
+        "buoyancy Multiplier": 1.000000,
+        "flow Direction": [1.000000,0.000000,0.000000],
+        "flow Speed": 0.000000
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/cube/cube.mesh",
+        "materials": [
+            "Assets/Material/Water.mat"
+        ],
+        "castShadow": false 
+      }
+    }
+  },
+  {
+    "id": 4748,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [13.138493,1.596644,1.085545],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5200,
+    "parent": null,
+    "name": "Coins",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+
+    }
+  },
+  {
+    "id": 4746,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [48.398689,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [7.624840,1.000000,20.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4747,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [8.580971,1.596644,-3.946078],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5192,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [29.804852,-1.803777,-12.874237],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4749,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [48.000000,1.596643,-8.131828],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4750,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [48.000000,1.596643,10.051377],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5201,
+    "parent": null,
+    "name": "Platforms",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+
+    }
+  },
+  {
+    "id": 4751,
+    "parent": null,
+    "name": "Goomba",
+    "position": [6.741025,1.578444,-6.828671],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Goomba/Goomba.mesh",
+        "materials": [
+            "Assets/Material/Goomba.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Goomba.lua",
+        "vars": {
+        }
+      },
+      "ViewComponent": {
+        "enabled": true,
+        "range": 100.000000,
+		"horizontalFov": 1.500000,
+		"verticalFov": 1.000000,
+		"horizontalRays": 10,
+		"verticalRays": 10
+      },
+      "AIController": {
+        "enabled": true,
+        "groundedDistance": 0.8,
+        "speed": 5,
+        "rotationSpeed": 5,
+        "density": 980,
+"arrivalThreshold" :0.500000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.250000,
+        "radius": 0.200000
+      }
+    }
+  },
+  {
+    "id": 4752,
+    "parent": 5199,
+    "name": "PoolWall",
+    "position": [30.581680,-3.773233,18.222446],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [10.573005,5.424288,1.562416],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4753,
+    "parent": 5199,
+    "name": "PoolWall",
+    "position": [30.961494,-3.718727,-17.883265],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [10.573005,5.424288,1.562416],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4754,
+    "parent": 5199,
+    "name": "PoolWall",
+    "position": [20.143110,-3.990068,-0.149099],
+    "rotation": [0.000000,0.707107,0.000000,0.707107],
+    "scale": [19.865160,5.424288,1.562416],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4755,
+    "parent": 5199,
+    "name": "PoolWall",
+    "position": [39.734138,-3.990068,-0.149099],
+    "rotation": [0.000000,0.707107,0.000000,0.707107],
+    "scale": [19.865160,5.424288,1.562416],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4756,
+    "parent": 5199,
+    "name": "PoolWall",
+    "position": [29.979202,-7.835294,-0.149099],
+    "rotation": [-0.500000,0.500000,0.500000,0.500000],
+    "scale": [19.865160,11.818914,1.562416],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5199,
+    "parent": 5201,
+    "name": "Pool",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+
+    }
+  },
+  {
+    "id": 4757,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [62.219765,0.000002,0.771967],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,5.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4758,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [73.371742,0.000002,10.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,5.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4759,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [84.500000,0.000002,0.771967],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [5.000000,1.000000,5.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4760,
+    "parent": 5201,
+    "name": "Platform",
+    "position": [96.838928,0.000002,0.809082],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [6.000000,1.000000,10.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/Cube_Dirt_Single/Cube_Dirt_Single.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4763,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [73.292206,1.596640,10.540983],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4762,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [61.975533,1.596642,0.901356],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5189,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [96.052116,1.596640,-5.969030],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4764,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [84.224602,1.596640,0.824762],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 4765,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [96.052116,1.596640,6.135586],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5188,
+    "parent": null,
+    "name": "Star",
+    "position": [100.000000,2.360091,0.000000],
+    "rotation": [0.000000,0.750255,0.000000,-0.661150],
+    "scale": [0.276320,0.273651,0.276320],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/star/star.mesh",
+        "materials": [
+            "Assets/Material/star.mat"
+        ],
+        "castShadow": false 
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/FinishStar.lua",
+        "vars": {
+          "LoadTime": 1.000000,
+          "TargetScene": "Assets/Scenes/scene.level",
+          "ScoreValue": 100.000000
+        }
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/star/star.mesh",
+        "type": "Convex"
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/StarCollectSound.mp3",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      }
+    }
+  },
+  {
+    "id": 5190,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [29.804852,-2.241251,12.528892],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5191,
+    "parent": 5200,
+    "name": "Coin",
+    "position": [29.804852,-4.752098,-0.394014],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.270731,0.270731,0.270731],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Coin.lua",
+        "vars": {
+        }
+      },
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "ApexAssets/Meshes/Sphere/Sphere.mesh",
+        "type": "Convex"
+      }
+    }
+  },
+  {
+    "id": 5193,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-0.003097,7.689479],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.500000,2.500000,2.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000,2.500000,2.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/DamageVolume.lua",
+        "vars": {
+          "Damage": 1.000000,
+          "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 5194,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-0.003097,-8.060320],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [2.500000,2.500000,2.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000,2.500000,2.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/DamageVolume.lua",
+        "vars": {
+          "Damage": 1.000000,
+          "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 5195,
+    "parent": null,
+    "name": "Cube",
+    "position": [29.860744,-2.138443,0.243756],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.500000,1.500000,1.500000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Cube_Bricks/Cube_Bricks.mesh",
+        "materials": [
+            "Assets/Material/Red.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.500000,2.500000,2.500000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/DamageVolume.lua",
+        "vars": {
+          "Damage": 1.000000,
+          "IsInstant": false
+        }
+      }
+    }
+  },
+  {
+    "id": 4768,
+    "parent": null,
+    "name": "Bowser",
+    "position": [47.923370,2.543560,-2.606731],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.050000,0.050000,0.050000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh",
+        "materials": [
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.500000,
+        "radius": 1.000000
+      },
+      "AIController": {
+        "enabled": true,
+        "groundedDistance": 0.5,
+        "speed": 5,
+        "rotationSpeed": 5,
+        "density": 980,
+"arrivalThreshold" :0.500000
+      },
+      "ViewComponent": {
+        "enabled": true,
+        "range": 10.000000,
+		"horizontalFov": 1.500000,
+		"verticalFov": 1.000000,
+		"horizontalRays": 10,
+		"verticalRays": 10
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Bowser.lua",
+        "vars": {
+        }
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh"
+      }
+    }
+  },
+  {
+    "id": 4770,
+    "parent": 4768,
+    "name": "Tail",
+    "position": [0.000000,-20.000000,-30.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [1.000000,1.000000,1.000000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Tail.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 5198,
+    "parent": null,
+    "name": "Music",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets\Sounds\Level1music.ogg",
+        "volume": 1.000000,
+        "channel": 1,
+        "loop": 1
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/MusicPlayer.lua",
+        "vars": {
+        }
+      }
+    }
+  },
+  {
+    "id": 5202,
+    "parent": null,
+    "name": "Cube",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
+        "castShadow": true
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/marioDeathSound.ogg",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/Coin.wav",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/Fireball.wav",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      }
+    }
+  }
+]
+}

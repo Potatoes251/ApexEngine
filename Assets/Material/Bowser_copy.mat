@@ -1,0 +1,7 @@
+{
+	"computeShader": "ApexAssets/Shaders/SkinningComp.glsl",
+	"tint": [1, 1, 1],
+	"textures": [
+		"Assets/Textures/model8.png"
+	]
+}

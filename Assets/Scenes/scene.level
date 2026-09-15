@@ -1,0 +1,195 @@
+{
+"objects": [
+  {
+    "id": 33,
+    "parent": null,
+    "name": "Light",
+    "position": [-1.000000,2.000000,0.000000],
+    "rotation": [0.383022,0.321394,-0.663414,0.556670],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 0.883000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 34,
+    "parent": null,
+    "name": "Player",
+    "position": [7.597365,1.694018,24.275558],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 5.000000,
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Player/Player.mesh"
+      }
+    }
+  },
+  {
+    "id": 35,
+    "parent": null,
+    "name": "Painting",
+    "position": [-17.738672,3.197715,30.823687],
+    "rotation": [0.000000,0.666257,0.000000,0.745723],
+    "scale": [2.213460,2.213460,2.213460],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/DetailledQuad/DetailledQuad.mesh",
+        "materials": [
+            "Assets/Material/Painting.mat"
+        ],
+        "castShadow": false 
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [2.000000,2.000000,0.100000]
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Painting.lua",
+        "vars": {
+          "TargetScene": "Assets/Scenes/level_1.level",
+          "LoadTime": 1.000000
+        }
+      }
+    }
+  },
+  {
+    "id": 36,
+    "parent": null,
+    "name": "Map",
+    "position": [0.000000,-25.644464,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
+        "materials": [
+            "Assets/Material/Main_Map.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "MeshCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "mesh": "Assets/Meshes/SFMC_main/SFMC_main.mesh",
+        "type": "Triangle"
+      }
+    }
+  },
+  {
+    "id": 37,
+    "parent": null,
+    "name": "Music",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Default.mat"
+        ],
+        "castShadow": true
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/MusicPlayer.lua",
+        "vars": {
+        }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "Assets/Sounds/calmPiano.ogg",
+        "volume": 1.000000,
+        "channel": 1,
+        "loop": 1
+      }
+    }
+  },
+  {
+    "id": 5233,
+    "parent": null,
+    "name": "HUD",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/HudController.lua",
+        "vars": {
+        }
+      }
+    }
+  }
+]
+}

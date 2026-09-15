@@ -1,0 +1,7 @@
+{
+	"computeShader": "ApexAssets/Shaders/SkinningComp.glsl",
+	"tint": [0.258687, 0.258687, 0.258687],
+	"textures": [
+		"Assets/Textures/Blank.png"
+	]
+}

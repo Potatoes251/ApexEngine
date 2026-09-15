@@ -1,0 +1,282 @@
+{
+"objects": [
+  {
+    "id": 39,
+    "parent": null,
+    "name": "Light",
+    "position": [0.000000,0.000000,0.000000],
+    "rotation": [0.337427,0.279844,-0.691827,0.573765],
+    "scale": [1.000000,1.000000,1.000000],
+    "components": {
+      "DirectionalLight": {
+        "enabled": true,
+        "color": [1.000000, 1.000000, 1.000000],
+        "intensity": 1.000000,
+        "shadowDistance": 25.000000,
+        "shadowExtent": 10.000000
+      }
+    }
+  },
+  {
+    "id": 40,
+    "parent": null,
+    "name": "Player",
+    "position": [0.587845,0.697307,-1.001903],
+    "rotation": [-0.000000,0.731440,-0.000000,-0.681905],
+    "scale": [0.010000,0.010000,0.010000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Player/Player.mesh",
+        "materials": [
+            "Assets/Material/Player.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.750000,
+        "radius": 0.200000
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Player.lua",
+        "vars": {
+        }
+      },
+      "CharacterController": {
+        "enabled": true,
+        "groundedDistance": 0.800000,
+        "speed": 5.000000,
+        "rotationSpeed": 1.000000,
+        "density": 950.000000
+      },
+      "ThirdPersonCamera": {
+        "enabled": true,
+        "isMain": true,
+        "distance": 6.176000,
+        "speed": 10.000000
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Player/Player.mesh"
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/BossFighter.lua",
+        "vars": {
+        }
+      },
+      "AudioComponent": {
+        "enabled": true,
+        "sound": "",
+        "volume": 1.000000,
+        "channel": 0,
+        "loop": 0
+      }
+    }
+  },
+  {
+    "id": 38,
+    "parent": null,
+    "name": "Platform",
+    "position": [0.000000,-6.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [30.000000,10.000000,30.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/DarkGreen.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [15.000000,5.000000,15.000000]
+      }
+    }
+  },
+  {
+    "id": 42,
+    "parent": null,
+    "name": "Water",
+    "position": [-30.000000,-6.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [30.000000,9.000000,30.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/Water.mat"
+        ],
+        "castShadow": true
+      },
+      "WaterVolume": {
+        "enabled": true,
+        "halfExtents": [15.000000,4.500000,15.000000],
+        "density": 1000.000000,
+        "drag": 0.000000,
+        "buoyancy Multiplier": 1.000000,
+        "flow Direction": [0.000000,0.000000,1.000000],
+        "flow Speed": 5.000000
+      }
+    }
+  },
+  {
+    "id": 43,
+    "parent": null,
+    "name": "Platform1",
+    "position": [-60.000000,-6.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [30.000000,10.000000,30.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/DarkGreen.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [15.000000,5.000000,15.000000]
+      }
+    }
+  },
+  {
+    "id": 44,
+    "parent": null,
+    "name": "Cube",
+    "position": [-30.000000,-11.000000,0.000000],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [30.000000,1.000000,30.000000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "ApexAssets/Meshes/Cube/Cube.mesh",
+        "materials": [
+            "Assets/Material/DarkGreen.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Static",
+        "mass": 1.000000
+      },
+      "BoxCollider": {
+        "enabled": true,
+        "isTrigger": false,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfExtents": [15.000000,0.500000,15.000000]
+      }
+    }
+  },
+  {
+    "id": 45,
+    "parent": null,
+    "name": "Bowser",
+    "position": [-9.028682,0.680188,-9.513906],
+    "rotation": [0.000000,0.000000,0.000000,1.000000],
+    "scale": [0.050000,0.050000,0.050000],
+    "components": {
+      "MeshRenderer": {
+        "enabled": true,
+        "model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh",
+        "materials": [
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Black.mat",
+            "Assets/Material/Bowser.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/BowserEye.mat",
+            "Assets/Material/Bowser_copy.mat",
+            "Assets/Material/Bowser.mat"
+        ],
+        "castShadow": true
+      },
+      "Rigidbody": {
+        "enabled": true,
+        "type": "Kinematic",
+        "mass": 1.000000
+      },
+      "CapsuleCollider": {
+        "enabled": true,
+        "isTrigger": true,
+        "staticFriction": 0.500000,
+        "dynamicFriction": 0.500000,
+        "bounciness": 0.000000,
+        "halfHeight": 0.500000,
+        "radius": 1.000000
+      },
+      "AIController": {
+        "enabled": true,
+        "groundedDistance": 0.5,
+        "speed": 5,
+        "rotationSpeed": 5,
+        "density": 980,
+"arrivalThreshold" :0.500000
+      },
+      "ViewComponent": {
+        "enabled": true,
+        "range": 10.000000,
+		"horizontalFov": 1.500000,
+		"verticalFov": 1.000000,
+		"horizontalRays": 10,
+		"verticalRays": 10
+      },
+      "ScriptComponent": {
+        "enabled": true,
+        "script": "Assets/Scripts/Bowser.lua",
+        "vars": {
+        }
+      },
+      "Animator": {
+        "enabled": true,
+        "fps": 30.000000,
+		"model": "Assets/Meshes/Hurricane Kick/Hurricane Kick.mesh"
+      }
+    }
+  }
+]
+}
