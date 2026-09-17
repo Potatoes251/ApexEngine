@@ -10,7 +10,6 @@ A custom 3D game engine built from scratch in C++, developed as our 2nd-year end
 - [Screenshots](#screenshots)
 - [Games Built With the Engine](#games-built-with-the-engine)
 - [Core Features (3D Platformer)](#core-features-3d-platformer)
-- [Gameplay & Engine Bonus Features](#gameplay--engine-bonus-features)
 - [The Editor](#the-editor)
 - [My Contributions](#my-contributions)
 - [Tech Stack](#tech-stack)
@@ -71,7 +70,7 @@ The following list highlights some of my main contributions.
 
 - **Cascaded Shadow Mapping** - implemented the shadow mapping system, including cascade splitting for better shadow resolution across view distances
 - **Pathfinding** - a navigation graph is generated in the editor and baked out to a binary file; at runtime, the engine loads that graph and runs A* on it to find the shortest path
-- **LibMath** - wrote our custom math library (vectors, matrices, transforms) used throughout rendering, physics, and gameplay code; developed as a standalone school project across both 1st and 2nd year
+- **LibMath** - wrote my custom math library (vectors, matrices, transforms) used throughout rendering, physics, and gameplay code; developed as a standalone school project across both 1st and 2nd year
 - **Custom `.mesh` binary format** - designed a binary file format to store 3D models. When a model is first imported into the editor, it's converted and cached as a `.mesh` file, so only the lightweight custom format needs to be loaded afterward instead of re-parsing the original FBX
 - Hand-written GLSL shaders (alongside the rest of the team) for lighting, shadows, and other rendering passes
 
@@ -97,7 +96,7 @@ Full rationale for each library choice and integration notes live in the [docume
 
 ## Custom Libraries
 
-- **LibMath** - our own math library (vectors, matrices, transforms, ...), also a standalone school project developed across 1st and 2nd year
+- **LibMath** - my own math library (vectors, matrices, transforms, ...), also a standalone school project developed across 1st and 2nd year
 - **Custom `.mesh` format** - binary format for storing imported models, generated automatically the first time a model is dropped into the editor
 
 ## Build
