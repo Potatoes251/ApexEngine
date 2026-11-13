@@ -1,0 +1,42 @@
+{
+  "widgets": [
+    {
+      "type": "Text",
+      "name": "Text",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.100000, 0.100000 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "sqlut",
+      "fontSize": 24.000000
+      "hAlign": 0,
+      "vAlign": 0,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "Text",
+      "name": "Text",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.100000, 0.100000 ],
+      "size": [ 0.200000, 0.050000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "text": "Text",
+      "fontSize": 24.000000
+      "hAlign": 0,
+      "vAlign": 0,
+      "textColor": [ 1.000000, 1.000000, 1.000000, 1.000000 ]
+    },
+    {
+      "type": "Image",
+      "name": "Image",
+      "anchor": "TopLeft",
+      "visible": true,
+      "position": [ 0.289394, 0.308754 ],
+      "size": [ 0.150000, 0.150000 ],
+      "color": [ 1.000000, 1.000000, 1.000000, 1.000000 ],
+      "texture": "Assets/Textures/awesomeface.png"
+    }
+  ]
+}
