@@ -88,7 +88,7 @@ Written in C++, built on top of the following libraries:
 | 3D Model Import | [Autodesk FBX SDK](https://help.autodesk.com/view/FBX/2020/ENU/?guid=FBX_API_Reference_cpp_ref_index_html) |
 | Texture Loading | [stb_image](https://github.com/nothings/stb) |
 | Scripting | [Lua](https://www.lua.org/) |
-| Math | LibMath (custom, in-house) |
+| Math | [LibMath](https://github.com/Potatoes251/LibMath) (custom, in-house) |
 
 Shaders are hand-written GLSL.
 
